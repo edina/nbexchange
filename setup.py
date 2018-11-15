@@ -24,7 +24,7 @@ VERSION = None
 REQUIRED = ["alembic", "tornado", "jupyterhub"]
 
 # What packages are required for testing?
-TESTING = ["pytest", "pytest-cov", "pytest-tornado", "beautifulsoup4", "html5lib"]
+TESTING = ["pytest==3.10.0", "pytest-cov==2.6.0", "pytest-tornado", "beautifulsoup4", "html5lib"]
 
 # What packages are optional?
 EXTRAS = {

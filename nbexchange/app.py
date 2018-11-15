@@ -49,7 +49,6 @@ class NbExchange(Application):
     config_file = Unicode("nbexchange_config.py", help="The config file to load").tag(
         config=True
     )
-    generate_config = Bool(False, help="Generate default config file").tag(config=True)
 
     base_url = UnicodeFromEnv("/services/nbexchange/").tag(
         env="JUPYTERHUB_SERVICE_PREFIX", config=True
@@ -247,7 +246,7 @@ class NbExchange(Application):
     @catch_config_error
     def initialize(self, *args, **kwargs):
         super().initialize(*args, **kwargs)
-        if self.generate_config or self.subapp:
+        if self.subapp:
             return
         self.init_db()
         self.init_hub_auth()

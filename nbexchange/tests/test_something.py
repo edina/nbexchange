@@ -2,4 +2,4 @@ import pytest
 
 
 def test_this():
-    assert "Hello" == "Goodbye"
+    assert type("Hello") == str

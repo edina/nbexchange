@@ -24,12 +24,25 @@ VERSION = None
 REQUIRED = ["alembic", "tornado", "jupyterhub"]
 
 # What packages are required for testing?
-TESTING = ["pytest", "pytest-cov", "pytest-tornado"]
+TESTING = ["pytest", "pytest-cov", "pytest-tornado", "beautifulsoup4", "html5lib"]
 
 # What packages are optional?
 EXTRAS = {
     # 'fancy feature': ['django'],
 }
+
+
+def get_package_data():
+    """Get package data
+    (mostly alembic config)
+    """
+    package_data = {}
+    package_data['nbexchange'] = [
+        'alembic.ini',
+        'alembic/*',
+        'alembic/versions/*',
+    ]
+    return package_data
 
 # The rest you shouldn't have to touch too much :)
 # ------------------------------------------------
@@ -104,6 +117,7 @@ setup(
     python_requires=REQUIRES_PYTHON,
     url=URL,
     packages=find_packages(exclude=("tests",)),
+    package_data=get_package_data(),
     # If your package is a single module, use this instead of 'packages':
     # py_modules=['mypackage'],
     # entry_points={

@@ -90,6 +90,16 @@ class NbExchange(Application):
         """override default log format to include time"""
         return "%(color)s[%(levelname)1.1s %(asctime)s.%(msecs).03d %(name)s %(module)s:%(lineno)d]%(end_color)s %(message)s"
 
+    @staticmethod
+    def add_url_prefix(prefix, handlers):
+        """add a url prefix to handlers"""
+        for i, tup in enumerate(handlers):
+            lis = list(tup)
+            lis[0] = url_path_join(prefix, tup[0])
+            handlers[i] = tuple(lis)
+
+        return handlers
+
     def init_logging(self):
         """Initialize logging"""
         # This prevents double log messages because tornado use a root logger that

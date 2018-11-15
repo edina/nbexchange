@@ -1,0 +1,265 @@
+import logging
+import os
+import sys
+
+from nbexchange import orm, dbutil, base, apihandlers
+from datetime import datetime
+from getpass import getuser
+from jinja2 import Environment, FileSystemLoader
+from jupyterhub.app import JupyterHub
+from jupyterhub.log import CoroutineLogFormatter, log_request
+from jupyterhub.services.auth import HubAuth
+from jupyterhub.utils import url_path_join
+from sqlalchemy.exc import OperationalError, SQLAlchemyError
+from traitlets.config import Application, catch_config_error
+from traitlets import Bool, Dict, Integer, List, Unicode, default
+from tornado import web
+from tornado.httpserver import HTTPServer
+from tornado.ioloop import IOLoop
+from tornado.log import app_log, access_log, gen_log
+from urllib.parse import urlparse
+
+ROOT = os.path.dirname(__file__)
+STATIC_FILES_DIR = os.path.join(ROOT, "static")
+TEMPLATES_DIR = os.path.join(ROOT, "templates")
+
+
+class UnicodeFromEnv(Unicode):
+    """A Unicode trait that gets its default value from the environment
+    Use .tag(env='VARNAME') to specify the environment variable to use.
+    """
+
+    def default(self, obj=None):
+        env_key = self.metadata.get("env")
+        if env_key in os.environ:
+            return os.environ[env_key]
+        else:
+            return self.default_value
+
+
+class NbExchange(Application):
+    """The nbexchange application"""
+
+    @property
+    def version(self):
+        import pkg_resources
+
+        return pkg_resources.get_distribution("nbexchange").version
+
+    config_file = Unicode("nbexchange_config.py", help="The config file to load").tag(
+        config=True
+    )
+    generate_config = Bool(False, help="Generate default config file").tag(config=True)
+
+    base_url = UnicodeFromEnv("/services/nbexchange/").tag(
+        env="JUPYTERHUB_SERVICE_PREFIX", config=True
+    )
+    hub_api_url = UnicodeFromEnv("http://127.0.0.1:8081/hub/api/").tag(
+        env="JUPYTERHUB_API_URL", config=True
+    )
+    hub_api_token = UnicodeFromEnv("").tag(env="JUPYTERHUB_API_TOKEN", config=True)
+    hub_base_url = UnicodeFromEnv("http://127.0.0.1:8000/").tag(
+        env="JUPYTERHUB_BASE_URL", config=True
+    )
+
+    ip = Unicode("0.0.0.0").tag(config=True)
+
+    port = Integer(9000).tag(config=True)
+
+    template_paths = List(help="Paths to search for jinja templates.").tag(config=True)
+
+    @default("template_paths")
+    def _template_paths_default(self):
+        return [TEMPLATES_DIR]
+
+    tornado_settings = Dict()
+
+    _log_formatter_cls = CoroutineLogFormatter
+
+    @default("log_level")
+    def _log_level_default(self):
+        return logging.INFO
+
+    @default("log_datefmt")
+    def _log_datefmt_default(self):
+        """Exclude date from default date format"""
+        return "%Y-%m-%d %H:%M:%S"
+
+    @default("log_format")
+    def _log_format_default(self):
+        """override default log format to include time"""
+        return "%(color)s[%(levelname)1.1s %(asctime)s.%(msecs).03d %(name)s %(module)s:%(lineno)d]%(end_color)s %(message)s"
+
+    def init_logging(self):
+        """Initialize logging"""
+        # This prevents double log messages because tornado use a root logger that
+        # self.log is a child of. The logging module dipatches log messages to a log
+        # and all of its ancenstors until propagate is set to False.
+        self.log.propagate = False
+
+        _formatter = self._log_formatter_cls(
+            fmt=self.log_format, datefmt=self.log_datefmt
+        )
+
+        # hook up tornado 3's loggers to our app handlers
+        for log in (app_log, access_log, gen_log):
+            # ensure all log statements identify the application they come from
+            log.name = self.log.name
+        logger = logging.getLogger("tornado")
+        logger.propagate = True
+        logger.parent = self.log
+        logger.setLevel(self.log.level)
+
+    db_url = Unicode(
+        "sqlite:///nbexchange.sqlite",
+        help="url for the database. e.g. `sqlite:///nbexchange.sqlite`",
+    ).tag(config=True)
+    db_kwargs = Dict(
+        help="""Include any kwargs to pass to the database connection.
+        See sqlalchemy.create_engine for details.
+        """
+    ).tag(config=True)
+    upgrade_db = Bool(
+        False,
+        help="""Upgrade the database automatically on start.
+
+        Only safe if database is regularly backed up.
+        Only SQLite databases will be backed up to a local file automatically.
+    """,
+    ).tag(config=True)
+    reset_db = Bool(False, help="Purge and reset the database.").tag(config=True)
+    debug_db = Bool(
+        False, help="log all database transactions. This has A LOT of output"
+    ).tag(config=True)
+
+    def _check_db_path(self, path):
+        """More informative log messages for failed filesystem access"""
+        path = os.path.abspath(path)
+        parent, fname = os.path.split(path)
+        user = getuser()
+        if not os.path.isdir(parent):
+            self.log.error("Directory %s does not exist", parent)
+        if os.path.exists(parent) and not os.access(parent, os.W_OK):
+            self.log.error("%s cannot create files in %s", user, parent)
+        if os.path.exists(path) and not os.access(path, os.W_OK):
+            self.log.error("%s cannot edit %s", user, path)
+
+    def init_db(self):
+        """Initialize the nbexchange database"""
+
+        if self.upgrade_db:
+            dbutil.upgrade_if_needed(self.db_url, log=self.log)
+
+        try:
+            self.session_factory = orm.new_session_factory(
+                self.db_url,
+                reset=self.reset_db,
+                echo=self.debug_db,
+                log=self.log,
+                **self.db_kwargs
+            )
+            self.db = self.session_factory()
+        except OperationalError as e:
+            self.log.error("Failed to connect to db: %s", self.db_url)
+            self.log.debug("Database error was:", exc_info=True)
+            if self.db_url.startswith("sqlite:///"):
+                self._check_db_path(self.db_url.split(":///", 1)[1])
+            self.log.critical(
+                "\n".join(
+                    [
+                        "If you recently upgraded NbExchange, try running",
+                        "    nbexhchange upgrade-db",
+                        "to upgrade your nbexchange database schema",
+                    ]
+                )
+            )
+            self.exit(1)
+        except orm.DatabaseSchemaMismatch as e:
+            self.exit(e)
+
+    def init_hub_auth(self):
+        """Initialize hub authentication"""
+        self.hub_auth = HubAuth()
+
+    def init_tornado_settings(self):
+        """Initialize tornado config"""
+        jinja_options = dict(autoescape=True)
+        jinja_env = Environment(
+            loader=FileSystemLoader(self.template_paths), **jinja_options
+        )
+
+        # if running from git directory, disable caching of require.js
+        # otherwise cache based on server start time
+        parent = os.path.dirname(ROOT)
+        if os.path.isdir(os.path.join(parent, ".git")):
+            version_hash = ""
+        else:
+            version_hash = (datetime.now().strftime("%Y%m%d%H%M%S"),)
+
+        settings = dict(
+            log_function=log_request,
+            config=self.config,
+            log=self.log,
+            base_url=self.base_url,
+            hub_auth=self.hub_auth,
+            login_url=self.hub_auth.login_url,
+            hub_base_url=self.hub_base_url,
+            logout_url=url_path_join(self.hub_base_url, "hub/logout"),
+            static_path=STATIC_FILES_DIR,
+            static_url_prefix=url_path_join(self.base_url, "static/"),
+            template_path=self.template_paths,
+            jinja2_env=jinja_env,
+            version_hash=version_hash,
+            xsrf_cookies=True,
+            # Replace the default [jupyterhub] database connection with our own **for our tornado app only**
+            db=self.db,
+        )
+        # allow configured settings to have priority
+        settings.update(self.tornado_settings)
+        self.tornado_settings = settings
+
+    def init_handlers(self):
+        """Load hubshare's tornado request handlers"""
+        self.handlers = []
+        for handler in apihandlers.default_handlers:
+            print("LOOPING {}".format(handler))
+            for url in handler.urls:
+                print(url)
+                self.handlers.append((url_path_join(self.base_url, url), handler))
+        self.handlers.append((r".*", base.Template404))
+        self.log.info("##### ALL HANDLES" + str(self.handlers))
+
+    def init_tornado_application(self):
+        self.tornado_application = web.Application(
+            self.handlers, **self.tornado_settings
+        )
+
+    @catch_config_error
+    def initialize(self, *args, **kwargs):
+        super().initialize(*args, **kwargs)
+        if self.generate_config or self.subapp:
+            return
+        self.init_db()
+        self.init_hub_auth()
+        self.init_tornado_settings()
+        self.init_handlers()
+        self.init_tornado_application()
+
+    def stop(self):
+        self.http_server.stop()
+
+    def start(self, run_loop=True):
+        if self.subapp:
+            self.subapp.start()
+            return
+
+        self.http_server = HTTPServer(self.tornado_application, xheaders=True)
+        self.http_server.listen(self.port, address=self.ip)
+        if run_loop:
+            IOLoop.current().start()
+
+
+main = NbExchange.launch_instance
+
+if __name__ == "__main__":
+    main()

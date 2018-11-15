@@ -1,0 +1,12 @@
+{% extends "page.html" %}
+
+{% block main %}
+<h2>Who am I</h2>
+<p>user</p>
+
+<ul>
+  {% for key,value in user.items() %}
+  <li>{{ key|e }}: {{ value|e }}</li>
+  {% endfor %}
+</ul>
+{% endblock %}

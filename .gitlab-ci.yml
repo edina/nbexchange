@@ -4,6 +4,7 @@ variables:
 #  TWINE_REPOSITORY_URL: https://test.pypi.org/legacy/
 
 stages:
+  - lint
   - test
 # - deploy
 
@@ -18,6 +19,12 @@ stages:
 #    - twine upload dist/*.whl
 #  only:
 #    - /^v\d+\.\d+\.\d+([abc]\d*)?$/  # PEP-440 compliant version (tags)]
+lint:
+  image: python:3.6
+  stage: lint
+  script:
+    - pip install black
+    - black --check nbexchange
 
 test:
   image: python:3.6

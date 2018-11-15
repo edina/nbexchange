@@ -14,15 +14,29 @@ from datetime import datetime, timedelta
 
 from sqlalchemy.types import TypeDecorator, TEXT, LargeBinary
 from sqlalchemy import (
-    create_engine, event, exc, inspect, or_, select,
-    Column, Integer, ForeignKey, Unicode, Boolean,
-    DateTime, Enum, Table,
+    create_engine,
+    event,
+    exc,
+    inspect,
+    or_,
+    select,
+    Column,
+    Integer,
+    ForeignKey,
+    Unicode,
+    Boolean,
+    DateTime,
+    Enum,
+    Table,
 )
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.interfaces import PoolListener
 from sqlalchemy.orm import (
     Session,
-    interfaces, object_session, relationship, sessionmaker,
+    interfaces,
+    object_session,
+    relationship,
+    sessionmaker,
 )
 from sqlalchemy.pool import StaticPool
 from sqlalchemy.sql.expression import bindparam
@@ -33,10 +47,11 @@ utcnow = datetime.utcnow
 
 Base = declarative_base()
 
+
 class AssignmentActions(Enum):
-    release = 'release'
-    download = 'fetch'
-    submit = 'submit'
+    release = "release"
+    download = "fetch"
+    submit = "submit"
 
 
 # This is the action: a user does something with an assignment, at a given time
@@ -66,13 +81,19 @@ class Action(Base):
     
     """
 
-    __tablename__ = 'action'
+    __tablename__ = "action"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey('user.id', ondelete='CASCADE'), index=True)
-    assignment_id = Column(Integer, ForeignKey('assignment.id', ondelete='CASCADE'), index=True)
-    action = Column(Unicode(30), nullable=False, index=True) # constrain to 'release', 'download', 'submit'
-    location = Column(Unicode(200), nullable=True) # Loction for the file of this action
+    user_id = Column(Integer, ForeignKey("user.id", ondelete="CASCADE"), index=True)
+    assignment_id = Column(
+        Integer, ForeignKey("assignment.id", ondelete="CASCADE"), index=True
+    )
+    action = Column(
+        Unicode(30), nullable=False, index=True
+    )  # constrain to 'release', 'download', 'submit'
+    location = Column(
+        Unicode(200), nullable=True
+    )  # Loction for the file of this action
     timestamp = Column(DateTime, default=datetime.utcnow)
 
     # These are the relationship handles: a specific subscription has a single user to a single course
@@ -99,11 +120,11 @@ class Subscription(Base):
       print("User {} did a {} at {}".format(action.user.username, action.action, action.timestamp)
     """
 
-    __tablename__  = 'subscription'
-    
+    __tablename__ = "subscription"
+
     id = Column(Integer, primary_key=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey('user.id', ondelete='CASCADE'), index=True)
-    course_id = Column(Integer, ForeignKey('course.id', ondelete='CASCADE'), index=True)
+    user_id = Column(Integer, ForeignKey("user.id", ondelete="CASCADE"), index=True)
+    course_id = Column(Integer, ForeignKey("course.id", ondelete="CASCADE"), index=True)
     role = Column(Unicode(50), nullable=False)
 
     # These are the relationship handles: a specific subscription has a single user to a single course
@@ -111,7 +132,6 @@ class Subscription(Base):
     course = relationship("Course", back_populates="subscribers")
 
     #### Need to make unique user_id + course_id + role
-
 
     @classmethod
     def find_by_pk(cls, db, pk, log=None):
@@ -121,17 +141,27 @@ class Subscription(Base):
         if log:
             log.info("Subscription.find_by_pk - pk:{}".format(pk))
         return db.query(cls).filter(cls.id == pk).first()
-        
+
     @classmethod
     def find_by_set(cls, db, user_id, course_id, role, log=None):
         """Find a subscription by user, course, and role.
         Returns None if not found.
         """
         if log:
-            log.info("Subscription.find_by_set - user_id:{}, course_id:{}, role:{}".format(user_id, course_id, role))
-        return db.query(cls).filter(cls.user_id == user_id, cls.course_id == course_id,
-                                    cls.role == role).first()
-    
+            log.info(
+                "Subscription.find_by_set - user_id:{}, course_id:{}, role:{}".format(
+                    user_id, course_id, role
+                )
+            )
+        return (
+            db.query(cls)
+            .filter(
+                cls.user_id == user_id, cls.course_id == course_id, cls.role == role
+            )
+            .first()
+        )
+
+
 class User(Base):
     """ The user.
 
@@ -150,13 +180,13 @@ class User(Base):
       print("User {} did a {} at {} on assignment {} ".format(user.username,
        action.action, action.timestamp, action.assignment.assignment_code)
     """
-    
-    __tablename__ = 'user'
-    
+
+    __tablename__ = "user"
+
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(Unicode(200), nullable=False, index=True)
     org_id = Column(Integer, nullable=False, index=True)
-    
+
     ## User <-> Course Relationship
     # One to Many. One user has multiple courses
     courses = relationship("Subscription", back_populates="user")
@@ -165,7 +195,7 @@ class User(Base):
     # # One to Many. One user has multiple assignments
     actions = relationship("Action", back_populates="user")
 
-    #### Need to make unique org_id + name 
+    #### Need to make unique org_id + name
 
     @classmethod
     def find_by_pk(cls, db, pk, log=None):
@@ -175,7 +205,7 @@ class User(Base):
         if log:
             log.info("User.find_by_pk - pk:{}".format(pk))
         return db.query(cls).filter(cls.id == pk).first()
-        
+
     @classmethod
     def find_by_name(cls, db, name, log=None):
         """Find a user by name.
@@ -194,6 +224,7 @@ class User(Base):
             log.info("User.find_by_org - id:{}".format(id))
         return db.query(cls).filter(cls.org_id == id)
 
+
 class Course(Base):
     """ The list of courses we know, who's subscribed to them, and what
     assignments have been have been issued for each course
@@ -208,8 +239,8 @@ class Course(Base):
     crs.assignments.append(ass)
     """
 
-    __tablename__ = 'course'
-    
+    __tablename__ = "course"
+
     id = Column(Integer, primary_key=True, autoincrement=True)
     org_id = Column(Integer, nullable=False, index=True)
     course_code = Column(Unicode(200), nullable=False, index=True)
@@ -217,13 +248,13 @@ class Course(Base):
 
     ## course <-> user relationship
     # One to Many. One Course to many users. Each relationship has additional data
-    subscribers = relationship('Subscription', back_populates="course")
+    subscribers = relationship("Subscription", back_populates="course")
 
     ## course <-> assignment relationship
     # One to Many. One Course, many assignments. Can set assignmnt.course
-    assignments = relationship('Assignment', back_populates="course")
+    assignments = relationship("Assignment", back_populates="course")
 
-    #### Need to make unique org_id + course_code 
+    #### Need to make unique org_id + course_code
 
     @classmethod
     def find_by_pk(cls, db, pk, log=None):
@@ -241,7 +272,9 @@ class Course(Base):
         """
         if log:
             log.info("Course.find_by_code - code:{} (org_id:{})".format(code, org_id))
-        return db.query(cls).filter(cls.course_code == code, cls.org_id == org_id).first()
+        return (
+            db.query(cls).filter(cls.course_code == code, cls.org_id == org_id).first()
+        )
 
     @classmethod
     def find_by_org(cls, db, id, log=None):
@@ -251,6 +284,7 @@ class Course(Base):
         if log:
             log.info("Course.find_by_org - id:{}".format(id))
         return db.query(cls).filter(cls.org_id == id)
+
 
 class Assignment(Base):
     """The Assigments known for each course
@@ -272,7 +306,7 @@ class Assignment(Base):
     
     """
 
-    __tablename__ = 'assignment'
+    __tablename__ = "assignment"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     assignment_code = Column(Unicode(50), nullable=False, index=True)
@@ -280,14 +314,14 @@ class Assignment(Base):
 
     ## course <-> assignment mappings
     # each assignment has just one parent course
-    course_id = Column(Integer, ForeignKey('course.id', ondelete='CASCADE'), index=True)
+    course_id = Column(Integer, ForeignKey("course.id", ondelete="CASCADE"), index=True)
     # can set 'course.assignments'
     course = relationship("Course", back_populates="assignments")
 
     # Maps this assignment to multiple actions [thence to users]
     actions = relationship("Action", back_populates="assignment")
 
-    #### Need to make unique course_id + assignment_code + active 
+    #### Need to make unique course_id + assignment_code + active
 
     @classmethod
     def find_by_code(cls, db, code, course_id, active=True, log=None):
@@ -295,8 +329,20 @@ class Assignment(Base):
         Returns None if not found.
         """
         if log:
-            log.info("Assignment.find_by_code - code:{} (course_id:{}, active:{})".format(code, course_id, active))
-        return db.query(cls).filter(cls.assignment_code == code, cls.course_id == course_id, cls.active == active).first()
+            log.info(
+                "Assignment.find_by_code - code:{} (course_id:{}, active:{})".format(
+                    code, course_id, active
+                )
+            )
+        return (
+            db.query(cls)
+            .filter(
+                cls.assignment_code == code,
+                cls.course_id == course_id,
+                cls.active == active,
+            )
+            .first()
+        )
 
     @classmethod
     def find_for_course(cls, db, course_id, active=True, log=None):
@@ -304,14 +350,19 @@ class Assignment(Base):
     Returns None if not found.
     """
         if log:
-            log.info("Assignment.find_for_course - course_id:{}, active:{}".format(course_id, active))
-        return db.query(cls).filter(cls.course_id == course_id,
-                                    cls.active == active)
+            log.info(
+                "Assignment.find_for_course - course_id:{}, active:{}".format(
+                    course_id, active
+                )
+            )
+        return db.query(cls).filter(cls.course_id == course_id, cls.active == active)
+
 
 ### ref: https://docs.sqlalchemy.org/en/latest/orm/basic_relationships.html
 
 
 # General database utilities
+
 
 class DatabaseSchemaMismatch(Exception):
     """Exception raised when the database schema version does not match
@@ -322,8 +373,9 @@ class DatabaseSchemaMismatch(Exception):
 
 class ForeignKeysListener(PoolListener):
     """Enable foreign keys on sqlite"""
+
     def connect(self, dbapi_con, con_record):
-        dbapi_con.execute('pragma foreign_keys=ON')
+        dbapi_con.execute("pragma foreign_keys=ON")
 
 
 def _expire_relationship(target, relationship_prop):
@@ -368,6 +420,7 @@ def register_ping_connection(engine):
 
     https://docs.sqlalchemy.org/en/rel_1_1/core/pooling.html#disconnect-handling-pessimistic
     """
+
     @event.listens_for(engine, "engine_connect")
     def ping_connection(connection, branch):
         if branch:
@@ -392,7 +445,7 @@ def register_ping_connection(engine):
             # condition, which is based on inspection of the original exception
             # by the dialect in use.
             if err.connection_invalidated:
-                #app_log.error("Database connection error, attempting to reconnect: %s", err)
+                # app_log.error("Database connection error, attempting to reconnect: %s", err)
                 # run the same SELECT again - the connection will re-validate
                 # itself and establish a new connection.  The disconnect detection
                 # here also causes the whole connection pool to be invalidated
@@ -421,6 +474,7 @@ def check_db_revision(engine, log=None):
     my_table_names = set(Base.metadata.tables.keys())
 
     from nbexchange.dbutil import _temp_alembic_ini
+
     with _temp_alembic_ini(engine.url) as ini:
         cfg = alembic.config.Config(ini)
         scripts = ScriptDirectory.from_config(cfg)
@@ -435,58 +489,64 @@ def check_db_revision(engine, log=None):
 
     # check database schema version
     # it should always be defined at this point
-    alembic_revision = engine.execute('SELECT version_num FROM alembic_version').first()[0]
+    alembic_revision = engine.execute(
+        "SELECT version_num FROM alembic_version"
+    ).first()[0]
     if alembic_revision == head:
         log.debug("database schema version found: %s", alembic_revision)
         pass
     else:
-        raise DatabaseSchemaMismatch("Found database schema version {found} != {head}. "
-        "Backup your database and run `jupyterhub upgrade-db`"
-        " to upgrade to the latest schema.".format(
-            found=alembic_revision,
-            head=head,
-        ))
+        raise DatabaseSchemaMismatch(
+            "Found database schema version {found} != {head}. "
+            "Backup your database and run `jupyterhub upgrade-db`"
+            " to upgrade to the latest schema.".format(
+                found=alembic_revision, head=head
+            )
+        )
 
 
 def mysql_large_prefix_check(engine):
     """Check mysql has innodb_large_prefix set"""
-    if not str(engine.url).startswith('mysql'):
+    if not str(engine.url).startswith("mysql"):
         return False
-    variables =  dict(engine.execute(
-        'show variables where variable_name like '
-        '"innodb_large_prefix" or '
-        'variable_name like "innodb_file_format";').fetchall())
-    if (variables['innodb_file_format'] == 'Barracuda' and
-        variables['innodb_large_prefix'] == 'ON'):
+    variables = dict(
+        engine.execute(
+            "show variables where variable_name like "
+            '"innodb_large_prefix" or '
+            'variable_name like "innodb_file_format";'
+        ).fetchall()
+    )
+    if (
+        variables["innodb_file_format"] == "Barracuda"
+        and variables["innodb_large_prefix"] == "ON"
+    ):
         return True
     else:
         return False
 
 
 def add_row_format(base):
-    for t in  base.metadata.tables.values():
-        t.dialect_kwargs['mysql_ROW_FORMAT'] = 'DYNAMIC'
+    for t in base.metadata.tables.values():
+        t.dialect_kwargs["mysql_ROW_FORMAT"] = "DYNAMIC"
 
 
-def new_session_factory(url="sqlite:///:memory:",
-                        reset=False,
-                        expire_on_commit=False,
-                        log=None,
-                        **kwargs):
+def new_session_factory(
+    url="sqlite:///:memory:", reset=False, expire_on_commit=False, log=None, **kwargs
+):
     """Create a new session at url"""
     log.info("orm.new_session_factory: db_url:{}, reset:{}".format(url, reset))
-    if url.startswith('sqlite'):
-        kwargs.setdefault('connect_args', {'check_same_thread': False})
-        listeners = kwargs.setdefault('listeners', [])
+    if url.startswith("sqlite"):
+        kwargs.setdefault("connect_args", {"check_same_thread": False})
+        listeners = kwargs.setdefault("listeners", [])
         listeners.append(ForeignKeysListener())
 
-    elif url.startswith('mysql'):
-        kwargs.setdefault('pool_recycle', 60)
+    elif url.startswith("mysql"):
+        kwargs.setdefault("pool_recycle", 60)
 
-    if url.endswith(':memory:'):
+    if url.endswith(":memory:"):
         # If we're using an in-memory database, ensure that only one connection
         # is ever created.
-        kwargs.setdefault('poolclass', StaticPool)
+        kwargs.setdefault("poolclass", StaticPool)
 
     engine = create_engine(url, **kwargs)
     log.info("orm.new_session_factory: engine:{}".format(engine))
@@ -497,7 +557,7 @@ def new_session_factory(url="sqlite:///:memory:",
         Base.metadata.drop_all(engine)
 
     if mysql_large_prefix_check(engine):  # if mysql is allows large indexes
-        add_row_format(Base)              # set format on the tables
+        add_row_format(Base)  # set format on the tables
     # check the db revision (will raise, pointing to `upgrade-db` if version doesn't match)
     check_db_revision(engine, log)
 
@@ -507,7 +567,5 @@ def new_session_factory(url="sqlite:///:memory:",
     # SQLAlchemy to expire objects after committing - we don't expect
     # concurrent runs of the hub talking to the same db. Turning
     # this off gives us a major performance boost
-    session_factory = sessionmaker(bind=engine,
-                                   expire_on_commit=expire_on_commit,
-    )
+    session_factory = sessionmaker(bind=engine, expire_on_commit=expire_on_commit)
     return session_factory

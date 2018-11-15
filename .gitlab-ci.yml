@@ -31,3 +31,6 @@ test:
   stage: test
   script:
     - python setup.py test
+  artifacts:
+    reports:
+      junit: pytest-results.xml

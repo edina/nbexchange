@@ -56,4 +56,3 @@ def test_env_page(app):
 
     title = soup.find_all(text="Environment")
     assert len(title) >= 1
-

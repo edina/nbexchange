@@ -147,7 +147,10 @@ POST: (with assignment_code, role=instructor, with data): Add ("release") an ass
                 )
 
         self.log.info("Assignments: {}".format(models))
-        self.write(models)
+        self.write({
+            "status": "success",
+            "result": models
+        })
 
 
     # This is uploading an **assignment**, not a submission

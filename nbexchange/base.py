@@ -31,6 +31,9 @@ class BaseHandler(HubAuthenticated, JupyterHubBaseHandler):
         if not (current_course and current_role):
             return
 
+        # TODO: this puts a hard restriction on the usernames having an underscore in them, which we do not want
+        # THe solution is to get the organisation id from the user state stored in jupyterhub instead of deriving it
+        # from the username
         org_id, name = hub_user.get("name").split("_", 1)  # we only want the first part
         org_id = 1 if org_id is None else org_id
         self.org_id = org_id

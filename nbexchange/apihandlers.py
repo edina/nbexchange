@@ -146,13 +146,9 @@ POST: (with assignment_code, role=instructor, with data): Add ("release") an ass
                     }
                 )
 
-        self.log.info("Assignments:{}".format(models))
+        self.log.info("Assignments: {}".format(models))
+        self.write(models)
 
-        self.finish(
-            self.render_template(
-                "assignment.html", nbex_user=this_user, nbex_assignment=models
-            )
-        )
 
     # This is uploading an **assignment**, not a submission
     @web.authenticated

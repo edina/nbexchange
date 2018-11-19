@@ -231,12 +231,10 @@ class NbExchange(Application):
         """Load hubshare's tornado request handlers"""
         self.handlers = []
         for handler in apihandlers.default_handlers:
-            print("LOOPING {}".format(handler))
             for url in handler.urls:
-                print(url)
                 self.handlers.append((url_path_join(self.base_url, url), handler))
         self.handlers.append((r".*", base.Template404))
-        self.log.info("##### ALL HANDLES" + str(self.handlers))
+        self.log.info("##### ALL HANDLERS" + str(self.handlers))
 
     def init_tornado_application(self):
         self.tornado_application = web.Application(

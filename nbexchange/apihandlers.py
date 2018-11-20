@@ -115,7 +115,7 @@ POST: (with assignment_code, role=instructor, with data): Add ("release") an ass
                         "status": random.choice(
                             ["fetched", "other_status"]
                         ),  # TODO: random status for now
-                        "path": f"/tmp/random_path_{assignment_code}.ipynb"
+                        "path": f"/tmp/random_path_{assignment_code}.ipynb",
                         "actions": [
                             [action.user.name, action.action.role]
                             for action in assignment.actions

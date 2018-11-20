@@ -123,7 +123,7 @@ class BaseHandler(HubAuthenticated, JupyterHubBaseHandler):
         import random
 
         course = random.choice(courses)
-        return (course["course_code"], course["role"], course["course_title"])
+        return course["course_code"], course["role"], course["course_title"]
 
     @property
     def hub_auth(self):

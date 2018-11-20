@@ -1,5 +1,6 @@
 import json
 import os
+import random
 import re
 
 from nbexchange import orm
@@ -110,7 +111,7 @@ POST: (with assignment_code, role=instructor, with data): Add ("release") an ass
                 models.append(
                     {
                         "ormAssignment": assignment,
-                        "assignment_id": assignment_code,
+                        "assignment_id": assignment.assignment_code,
                         "course_id": assignment.course.course_code,
                         "status": random.choice(
                             ["fetched", "other_status"]
@@ -141,12 +142,12 @@ POST: (with assignment_code, role=instructor, with data): Add ("release") an ass
                 models.append(
                     {
                         "ormAssignment": assignment,
-                        "assignment_id": assignment_code,
+                        "assignment_id": assignment.assignment_code,
                         "course_id": assignment.course.course_code,
                         "status": random.choice(
                             ["fetched", "other_status"]
                         ),  # TODO: random status for now
-                        "path": f"/tmp/random_path_{assignment_code}.ipynb",
+                        "path": f"/tmp/random_path_{assignment.assignment_code}.ipynb",
                         "actions": [
                             [action.user.name, action.action.role]
                             for action in assignment.actions

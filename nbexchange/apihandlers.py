@@ -110,8 +110,12 @@ POST: (with assignment_code, role=instructor, with data): Add ("release") an ass
                 models.append(
                     {
                         "ormAssignment": assignment,
-                        "assignment_code": assignment_code,
-                        "course": assignment.course.course_code,
+                        "assignment_id": assignment_code,
+                        "course_id": assignment.course.course_code,
+                        "status": random.choice(
+                            ["fetched", "other_status"]
+                        ),  # TODO: random status for now
+                        "path": f"/tmp/random_path_{assignment_code}.ipynb"
                         "actions": [
                             [action.user.name, action.action.role]
                             for action in assignment.actions
@@ -137,8 +141,12 @@ POST: (with assignment_code, role=instructor, with data): Add ("release") an ass
                 models.append(
                     {
                         "ormAssignment": assignment,
-                        "assignment_code": assignment_code,
-                        "course": assignment.course.course_code,
+                        "assignment_id": assignment_code,
+                        "course_id": assignment.course.course_code,
+                        "status": random.choice(
+                            ["fetched", "other_status"]
+                        ),  # TODO: random status for now
+                        "path": f"/tmp/random_path_{assignment_code}.ipynb",
                         "actions": [
                             [action.user.name, action.action.role]
                             for action in assignment.actions
@@ -147,7 +155,7 @@ POST: (with assignment_code, role=instructor, with data): Add ("release") an ass
                 )
 
         self.log.info("Assignments: {}".format(models))
-        self.write({"status": "success", "result": models})
+        self.write({"success": True, "value": models})
 
     # This is uploading an **assignment**, not a submission
     @web.authenticated

@@ -88,10 +88,7 @@ class BaseHandler(HubAuthenticated, JupyterHubBaseHandler):
             if not subscription.course.course_code in courses:
                 courses[subscription.course.course_code] = {}
             courses[subscription.course.course_code][subscription.role] = 1
-        for action in user.actions:
-            if not action.course.course_code in actions:
-                actions[action.course.course_code] = {}
-            actions[action.course.course_code][action.action] = action.timestamp
+
         model = {
             "kind": "user",
             "ormUser": user,
@@ -99,8 +96,7 @@ class BaseHandler(HubAuthenticated, JupyterHubBaseHandler):
             "org_id": user.org_id,
             "current_course": current_course,
             "current_role": current_role,
-            "courses": courses,
-            "actions": actions,
+            "courses": courses
         }
         return model
 

@@ -219,7 +219,8 @@ class NbExchange(Application):
             template_path=self.template_paths,
             jinja2_env=jinja_env,
             version_hash=version_hash,
-            xsrf_cookies=True,
+            xsrf_cookies=False,
+            debug=True,
             # Replace the default [jupyterhub] database connection with our own **for our tornado app only**
             db=self.db,
         )

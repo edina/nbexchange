@@ -122,7 +122,9 @@ POST: (with assignment_code, role=instructor, with data): Add ("release") an ass
                         ),  # TODO: random status for now
                         "path": f"/tmp/random_path_{assignment_code}.ipynb",
                         "notebooks": [],  # TODO: Nbgrader expexts this for some reason
-                        "timestamp": datetime.datetime.now(gettz("UTC")).strftime("%Y-%m-%d %H:%M:%S.%f %Z"),  # TODO: this should be pulled from the database
+                        "timestamp": datetime.datetime.now(gettz("UTC")).strftime(
+                            "%Y-%m-%d %H:%M:%S.%f %Z"
+                        ),  # TODO: this should be pulled from the database
                         "actions": [
                             [action.user.name, action.action.role]
                             for action in assignment.actions
@@ -154,7 +156,9 @@ POST: (with assignment_code, role=instructor, with data): Add ("release") an ass
                         ),  # TODO: random status for now
                         "path": f"/tmp/random_path_{assignment.assignment_code}.ipynb",
                         "notebooks": [],  # TODO: Nbgrader expexts this for some reason
-                        "timestamp": datetime.datetime.now(gettz("UTC")).strftime("%Y-%m-%d %H:%M:%S.%f %Z"),  # TODO: this should be pulled from the database
+                        "timestamp": datetime.datetime.now(gettz("UTC")).strftime(
+                            "%Y-%m-%d %H:%M:%S.%f %Z"
+                        ),  # TODO: this should be pulled from the database
                         "actions": [
                             [action.user.name, action.action.role]
                             for action in assignment.actions
@@ -168,7 +172,9 @@ POST: (with assignment_code, role=instructor, with data): Add ("release") an ass
     # This is releasing an **assignment**, not a student submission
     @web.authenticated
     def post(self, course_code, assignment_code=None):
-        self.log.info(f"Called POST /assignment with arguments: course {course_code} and  assignment {assignment_code}")
+        self.log.info(
+            f"Called POST /assignment with arguments: course {course_code} and  assignment {assignment_code}"
+        )
         if not (course_code and assignment_code):
             self.log.info(
                 "Posting an Assigment requires a course code and an assignment code"
@@ -222,14 +228,20 @@ POST: (with assignment_code, role=instructor, with data): Add ("release") an ass
         # $index is currently hard-coded to '1' (meaning we over-write re-submissions)
         index = 1
         path = "/".join(
-            [self.base_storage_location, "release", course_code, assignment_code, str(index)]
+            [
+                self.base_storage_location,
+                "release",
+                course_code,
+                assignment_code,
+                str(index),
+            ]
         )
 
         model = []
 
         try:
             # Write the uploaded file to the desired location
-            file_info = self.request.files['assignment'][0]
+            file_info = self.request.files["assignment"][0]
 
             filename, content_type = file_info["filename"], file_info["content_type"]
             note = "Received file {}, of type {}".format(filename, content_type)
@@ -244,10 +256,10 @@ POST: (with assignment_code, role=instructor, with data): Add ("release") an ass
             # Ensure the directory exists
             os.makedirs(os.path.dirname(release_filename), exist_ok=True)
             handle = open(release_filename, "w+b")
-            handle.write(file_info['body'])
+            handle.write(file_info["body"])
 
-        except Exception as e: # TODO: exception handling
-            self.log.warning(f"Error: {e}") # TODO: improve error message
+        except Exception as e:  # TODO: exception handling
+            self.log.warning(f"Error: {e}")  # TODO: improve error message
 
             self.log.info("Upload failed")
             self.db.rollback()

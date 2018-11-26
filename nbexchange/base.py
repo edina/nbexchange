@@ -96,7 +96,7 @@ class BaseHandler(HubAuthenticated, JupyterHubBaseHandler):
             "org_id": user.org_id,
             "current_course": current_course,
             "current_role": current_role,
-            "courses": courses
+            "courses": courses,
         }
         return model
 

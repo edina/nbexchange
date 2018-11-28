@@ -23,7 +23,7 @@ class BaseHandler(HubAuthenticated, JupyterHubBaseHandler):
         hub_name = hub_user.get("name")
 
         ### Bodge.
-        items = self._bodge_course_details()
+        items = self._bodge_course_details(hub_name)
         current_course = items[0]
         current_role = items[1] if items[1] else None
         course_title = items[2] if items[2] else None
@@ -100,25 +100,24 @@ class BaseHandler(HubAuthenticated, JupyterHubBaseHandler):
         }
         return model
 
-    def _bodge_course_details(self):
-        # A bodge: a list of course/role dictionaries
-        courses = [
-            {
-                "course_code": "course_1",
+    def _bodge_course_details(self, name):
+        # A bodge: specific users have specific roles on specific courses
+        courses = {
+            '1_kiz': {
+                "course_code": "course_2",
                 "role": "student",
                 "course_title": "Their funky course",
             },
-            {
+            '1_bert': {
                 "course_code": "course_2",
                 "role": "instructor",
-                "course_title": "My weird course",
+                "course_title": "Their funky course",
             },
-            {"course_code": "course_2", "role": "student", "course_title": None},
-            {"course_code": "course_3", "role": "student", "course_title": None},
-        ]
-        import random
+            '1_aseales': {"course_code": "course_2", "role": "student", "course_title": "Their funky course",},
+            '2_kiz': {"course_code": "course_1", "role": "student", "course_title": "The Weird Course"},
+        }
 
-        course = random.choice(courses)
+        course = courses[name]
         return course["course_code"], course["role"], course["course_title"]
 
     @property

@@ -172,13 +172,14 @@ POST: (with assignment_code, role=instructor, with data): Add ("release") an ass
     # This is releasing an **assignment**, not a student submission
     @web.authenticated
     def post(self, course_code, assignment_code=None):
+
         self.log.info(
             f"Called POST /assignment with arguments: course {course_code} and  assignment {assignment_code}"
         )
         if not (course_code and assignment_code):
-            self.log.info(
-                "Posting an Assigment requires a course code and an assignment code"
-            )
+            note = "Posting an Assigment requires a course code and an assignment code"
+            self.log.info(note)
+            self.write({"success": False, "note": note})
             return
 
         # Un url-encode variables
@@ -195,10 +196,14 @@ POST: (with assignment_code, role=instructor, with data): Add ("release") an ass
 
         this_user = self.nbex_user
         if not course_code in this_user["courses"]:
-            self.log.info("User not subscribed to course {}".format(course_code))
+            note = "User not subscribed to course {}".format(course_code)
+            self.log.info(note)
+            self.write({"success": False, "note": note})
             return
         if not "instructor" in this_user["courses"][course_code]:
-            self.log.info("User not an instructor to course {}".format(course_code))
+            note = "User not an instructor to course {}".format(course_code)
+            self.log.info(note)
+            self.write({"success": False, "note": note})
             return
 
         # The course will exist: the user object creates it if it doesn't exist
@@ -276,12 +281,7 @@ POST: (with assignment_code, role=instructor, with data): Add ("release") an ass
         )
         self.db.add(action)
         self.db.commit()
-
-        self.finish(
-            self.render_template(
-                "release.html", nbex_user=this_user, nbex_release=model
-            )
-        )
+        self.write({"success": True, "note": "Released"})
 
 
 class Submission(BaseHandler):

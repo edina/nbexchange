@@ -103,18 +103,26 @@ class BaseHandler(HubAuthenticated, JupyterHubBaseHandler):
     def _bodge_course_details(self, name):
         # A bodge: specific users have specific roles on specific courses
         courses = {
-            '1_kiz': {
+            "1_kiz": {
                 "course_code": "course_2",
                 "role": "student",
                 "course_title": "Their funky course",
             },
-            '1_bert': {
+            "1_bert": {
                 "course_code": "course_2",
                 "role": "instructor",
                 "course_title": "Their funky course",
             },
-            '1_aseales': {"course_code": "course_2", "role": "student", "course_title": "Their funky course",},
-            '2_kiz': {"course_code": "course_1", "role": "student", "course_title": "The Weird Course"},
+            "1_aseales": {
+                "course_code": "course_2",
+                "role": "student",
+                "course_title": "Their funky course",
+            },
+            "2_kiz": {
+                "course_code": "course_1",
+                "role": "student",
+                "course_title": "The Weird Course",
+            },
         }
 
         course = courses[name]

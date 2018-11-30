@@ -49,9 +49,10 @@ Base = declarative_base()
 
 
 class AssignmentActions(Enum):
-    release = "release"
-    download = "fetch"
-    submit = "submit"
+    release = "released"
+    download = "fetched"
+    submit = "submitted"
+    remove = "removed"
 
 
 # This is the action: a user does something with an assignment, at a given time
@@ -90,7 +91,7 @@ class Action(Base):
     )
     action = Column(
         Unicode(30), nullable=False, index=True
-    )  # constrain to 'release', 'download', 'submit'
+    )  # constrain to AssignmentActions above, por favor...
     location = Column(
         Unicode(200), nullable=True
     )  # Loction for the file of this action

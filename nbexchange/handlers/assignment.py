@@ -3,6 +3,7 @@ import json
 import os
 import random
 import re
+import time
 import uuid
 
 from dateutil.tz import gettz
@@ -10,7 +11,7 @@ from dateutil.tz import gettz
 from nbexchange import orm
 from nbexchange.base import BaseHandler
 
-from tornado import web
+from tornado import web, httputil
 from urllib.parse import quote_plus, unquote, unquote_plus
 from urllib.request import urlopen
 
@@ -31,33 +32,7 @@ This relys on users being logged in, and the user-object having additional data:
 'role' (as per LTI)
 """
 
-class AssignmentCore(BaseHandler):
-
-    def get_assignment_list(self, course):
-
-        models = []
-
-        assignments = orm.Assignment.find_for_course(
-            db=self.db, course_id=course.id
-        )
-        for assignment in assignments:
-            for action in assignment.actions:
-                models.append(
-                    {
-                        "assignment_id": assignment.assignment_code,
-                        "course_id": assignment.course.course_code,
-                        "status": action.action,  # currently called 'action' in our db
-                        "path": action.location,
-                        # "notebooks": [],  # TODO: Nbgrader expexts this for some reason
-                        "timestamp": datetime.datetime.now(gettz("UTC")).strftime(
-                            "%Y-%m-%d %H:%M:%S.%f %Z"
-                        ),  # TODO: this should be pulled from the database
-                    }
-                )
-        return models
-
-
-class Assignments(AssignmentCore):
+class Assignments(BaseHandler):
     """.../assignments/
 parmas:
     course_id: course_code
@@ -107,7 +82,25 @@ GET: (without assignment_code) gets list of assignments for $course_code
         self.log.debug("Course:{}".format(course_code))
             # we're passing in the course object here
 
-        models = self.get_assignment_list(course)
+        models = []
+
+        assignments = orm.Assignment.find_for_course(
+            db=self.db, course_id=course.id
+        )
+        for assignment in assignments:
+            for action in assignment.actions:
+                models.append(
+                    {
+                        "assignment_id": assignment.assignment_code,
+                        "course_id": assignment.course.course_code,
+                        "status": action.action,  # currently called 'action' in our db
+                        "path": action.location,
+                        # "notebooks": [],  # TODO: Nbgrader expexts this for some reason
+                        "timestamp": datetime.datetime.now(gettz("UTC")).strftime(
+                            "%Y-%m-%d %H:%M:%S.%f %Z"
+                        ),  # TODO: this should be pulled from the database
+                    }
+                )
 
         self.log.debug("Assignments: {}".format(models))
         self.write({"success": True, "value": models})
@@ -173,9 +166,17 @@ POST: (role=instructor, with file): Add ("release") an assignment
 
         note = ""
         self.log.debug("Course:{} assignment:{}".format(course_code, assignment_code))
-        # Thge location for the data-object is actually held in the last 'released' action for the given assignment
+
+        # The location for the data-object is actually held in the 'released' action for the given assignment
+        # We want the last one...
         assignment = orm.Assignment.find_by_code(
             db=self.db, code=assignment_code, course_id=course.id
+        )
+        self._headers = httputil.HTTPHeaders(
+            {
+                "Content-Type": "application/gzip",
+                "Date": httputil.format_timestamp(time.time()),
+            }
         )
         if assignment:
             self.log.info("Adding action {} for user {} against assignment {}".format("download", this_user["ormUser"].id, assignment.id))
@@ -208,7 +209,6 @@ POST: (role=instructor, with file): Add ("release") an assignment
             self.db.add(action)
             self.db.commit()
             self.log.info("action commited")
-            ##### OK, so can't return data this way... needs to be a data-return thing....
             self.write(data)
         else:
             self.write(data)
@@ -274,16 +274,15 @@ POST: (role=instructor, with file): Add ("release") an assignment
             self.db.add(assignment)
             # deliberately no commit: we need to be able to roll-back if there's no data!
 
-        # storage is dynamically in $path/release/$course_code/$assignment_code/$index/
-        # $index is currently hard-coded to '1' (meaning we over-write re-submissions)
-        index = 1
+        # storage is dynamically in $path/release/$course_code/$assignment_code/<timestamp>/
+        # Note - this means we can have multiple versions of the same release on the system
         release_file = "/".join(
             [
                 self.base_storage_location,
                 "released",
                 course_code,
                 assignment_code,
-                str(index),
+                str(int(time.time())),
             ]
         )
 

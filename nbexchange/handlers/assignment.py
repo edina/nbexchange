@@ -32,6 +32,7 @@ This relys on users being logged in, and the user-object having additional data:
 'role' (as per LTI)
 """
 
+
 class Assignments(BaseHandler):
     """.../assignments/
 parmas:
@@ -39,6 +40,7 @@ parmas:
 
 GET: (without assignment_code) gets list of assignments for $course_code
 """
+
     urls = ["assignments"]
 
     @web.authenticated
@@ -47,12 +49,16 @@ GET: (without assignment_code) gets list of assignments for $course_code
 
         params = self.request.arguments
         self.log.debug("params:{}".format(params))
-        course_code = self.request.arguments["course_id"][0].decode("utf-8")  if "course_id" in self.request.arguments else None
+        course_code = (
+            self.request.arguments["course_id"][0].decode("utf-8")
+            if "course_id" in self.request.arguments
+            else None
+        )
 
         models = []
 
-        if not course_code and not assignment_code:
-            note = "Assigment call requires both a course code and an assignment code"
+        if not course_code:
+            note = "Assigment call requires both a course code"
             self.log.info(note)
             self.write({"success": False, "value": models, "note": note})
 
@@ -80,13 +86,11 @@ GET: (without assignment_code) gets list of assignments for $course_code
             self.write({"success": False, "value": models, "note": note})
 
         self.log.debug("Course:{}".format(course_code))
-            # we're passing in the course object here
+        # we're passing in the course object here
 
         models = []
 
-        assignments = orm.Assignment.find_for_course(
-            db=self.db, course_id=course.id
-        )
+        assignments = orm.Assignment.find_for_course(db=self.db, course_id=course.id)
         for assignment in assignments:
             for action in assignment.actions:
                 models.append(
@@ -120,18 +124,28 @@ POST: (role=instructor, with file): Add ("release") an assignment
     urls = ["assignment"]
 
     @web.authenticated
-    def get(self):       #def get(self, course_code, assignment_code=None):
+    def get(self):  # def get(self, course_code, assignment_code=None):
         self.log.debug("+++++ assignment GET starting")
 
         params = self.request.arguments
         self.log.debug("params:{}".format(params))
-        course_code = self.request.arguments["course_id"][0].decode("utf-8")  if "course_id" in self.request.arguments else None
-        assignment_code = self.request.arguments["assignment_id"][0].decode("utf-8")  if "assignment_id" in self.request.arguments else None
+        course_code = (
+            self.request.arguments["course_id"][0].decode("utf-8")
+            if "course_id" in self.request.arguments
+            else None
+        )
+        assignment_code = (
+            self.request.arguments["assignment_id"][0].decode("utf-8")
+            if "assignment_id" in self.request.arguments
+            else None
+        )
 
         models = []
 
         if not course_code and not assignment_code:
-            self.log.info("Assigment call requires both a course code and an assignment code!!")
+            self.log.info(
+                "Assigment call requires both a course code and an assignment code!!"
+            )
             return
 
         # Un url-encode variables
@@ -162,7 +176,7 @@ POST: (role=instructor, with file): Add ("release") an assignment
             note = f"Course {course_code} does not exist"
             self.log.info(note)
             self.write({"success": False, "note": note})
-            return # needs a proper 'fail' here
+            return  # needs a proper 'fail' here
 
         note = ""
         self.log.debug("Course:{} assignment:{}".format(course_code, assignment_code))
@@ -179,13 +193,17 @@ POST: (role=instructor, with file): Add ("release") an assignment
             }
         )
         if assignment:
-            self.log.info("Adding action {} for user {} against assignment {}".format("download", this_user["ormUser"].id, assignment.id))
+            self.log.info(
+                "Adding action {} for user {} against assignment {}".format(
+                    "download", this_user["ormUser"].id, assignment.id
+                )
+            )
             data = b""
 
             release_file = None
             for action in assignment.actions:
                 self.log.info(f"Action: {action.action}")
-                if action.action == 'released':
+                if action.action == "released":
                     self.log.info(f"Found release: {action.location}")
                     release_file = action.location
                     # no break, as we want the /last/ released action!
@@ -213,13 +231,16 @@ POST: (role=instructor, with file): Add ("release") an assignment
         else:
             self.write(data)
 
-
     # This is releasing an **assignment**, not a student submission
     @web.authenticated
     def post(self):
 
-        course_code = self.request.arguments["course_id"][0].decode("utf-8") 
-        assignment_code = self.request.arguments["assignment_id"][0].decode("utf-8")  if "assignment_id" in self.request.arguments else None
+        course_code = self.request.arguments["course_id"][0].decode("utf-8")
+        assignment_code = (
+            self.request.arguments["assignment_id"][0].decode("utf-8")
+            if "assignment_id" in self.request.arguments
+            else None
+        )
 
         self.log.debug(
             f"Called POST /assignment with arguments: course {course_code} and  assignment {assignment_code}"
@@ -320,11 +341,15 @@ POST: (role=instructor, with file): Add ("release") an assignment
         self.db.commit()
         assignment = orm.Assignment.find_by_code(
             db=self.db, code=assignment_code, course_id=course.id
-        )       
+        )
 
         # Record the action.
         # Note we record the path to the files.
-        self.log.info("!!!!!!!!!!!!!! assignment details for upload:{}|{}".format(assignment.id, assignment.course_id))
+        self.log.info(
+            "!!!!!!!!!!!!!! assignment details for upload:{}|{}".format(
+                assignment.id, assignment.course_id
+            )
+        )
         action = orm.Action(
             user_id=this_user["ormUser"].id,
             assignment_id=assignment.id,
@@ -335,7 +360,5 @@ POST: (role=instructor, with file): Add ("release") an assignment
         self.db.commit()
         self.write({"success": True, "note": "Released"})
 
-default_handlers = [
-    Assignment,
-    Assignments,
-]
+
+default_handlers = [Assignment, Assignments]

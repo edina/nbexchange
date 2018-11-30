@@ -46,7 +46,5 @@ class Submissions(BaseHandler):
 
         self.write("##### I received a POST for /submissions")
 
-default_handlers = [
-    Submission,
-    Submissions,
-]
+
+default_handlers = [Submission, Submissions]

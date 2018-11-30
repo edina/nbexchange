@@ -44,9 +44,6 @@ GET: gets the user (creates if not present), and subscribes to the current cours
         self.finish(self.render_template("user.html", nbex_user=user))
 
 
-
-
-
 class Feedback(BaseHandler):
     urls = ["/feedback"]
     pass
@@ -67,10 +64,4 @@ class HomeHandler(BaseHandler):
         self.write("################  Hello World, this is home")
 
 
-default_handlers = [
-    EnvHandler,
-    HomeHandler,
-    User,
-
-    Feedback,
-]
+default_handlers = [EnvHandler, HomeHandler, User, Feedback]

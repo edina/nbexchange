@@ -3,6 +3,7 @@ import os
 import sys
 
 from nbexchange import orm, dbutil, base, apihandlers
+from nbexchange.handlers import assignment, submission
 from datetime import datetime
 from getpass import getuser
 from jinja2 import Environment, FileSystemLoader
@@ -219,7 +220,8 @@ class NbExchange(Application):
             template_path=self.template_paths,
             jinja2_env=jinja_env,
             version_hash=version_hash,
-            xsrf_cookies=True,
+            xsrf_cookies=False,
+            debug=True,
             # Replace the default [jupyterhub] database connection with our own **for our tornado app only**
             db=self.db,
         )
@@ -231,6 +233,12 @@ class NbExchange(Application):
         """Load hubshare's tornado request handlers"""
         self.handlers = []
         for handler in apihandlers.default_handlers:
+            for url in handler.urls:
+                self.handlers.append((url_path_join(self.base_url, url), handler))
+        for handler in assignment.default_handlers:
+            for url in handler.urls:
+                self.handlers.append((url_path_join(self.base_url, url), handler))
+        for handler in submission.default_handlers:
             for url in handler.urls:
                 self.handlers.append((url_path_join(self.base_url, url), handler))
         self.handlers.append((r".*", base.Template404))

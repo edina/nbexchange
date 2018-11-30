@@ -2,16 +2,23 @@
 import os
 import pytest
 import requests
+import logging
+from getpass import getuser
 from tornado import ioloop
 from tornado.httpclient import AsyncHTTPClient
 from traitlets.config.loader import PyFileConfigLoader
 
+from nbexchange import orm
 from nbexchange.app import NbExchange
 
 here = os.path.abspath(os.path.dirname(__file__))
 root = os.path.join(here, os.pardir, os.pardir)
 
 testing_config = os.path.join(here, "testing_config.py")
+logger = logging.getLogger(__name__)
+
+# global db session object
+_db = None
 
 
 @pytest.fixture
@@ -69,3 +76,15 @@ def app(request, io_loop, _nbexchange_config):
     )
 
     return nbexchange
+
+
+@pytest.fixture
+def db():
+    """Get a db session"""
+    global _db
+    if _db is None:
+        _db = orm.new_session_factory("sqlite:///:memory:", log=logger)()
+        user = orm.User(name=getuser(), org_id=1)  # TODO: remove Magic number
+        _db.add(user)
+        _db.commit()
+    return _db

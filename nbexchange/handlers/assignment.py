@@ -99,7 +99,7 @@ GET: (without assignment_code) gets list of assignments for $course_code
                         "course_id": assignment.course.course_code,
                         "status": action.action,  # currently called 'action' in our db
                         "path": action.location,
-                        # "notebooks": [],  # TODO: Nbgrader expexts this for some reason
+                        "notebooks": [],  # TODO: Nbgrader expexts this for some reason (but doesn't use it anywhere)
                         "timestamp": datetime.datetime.now(gettz("UTC")).strftime(
                             "%Y-%m-%d %H:%M:%S.%f %Z"
                         ),  # TODO: this should be pulled from the database
@@ -223,6 +223,7 @@ POST: (role=instructor, with file): Add ("release") an assignment
                 user_id=this_user["ormUser"].id,
                 assignment_id=assignment.id,
                 action="fetched",
+                location="/tmp/nbgrader-expects-a-file-path" # TODO: nbgrader expets a file path here.
             )
             self.db.add(action)
             self.db.commit()

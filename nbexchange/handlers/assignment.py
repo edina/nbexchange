@@ -223,7 +223,7 @@ POST: (role=instructor, with file): Add ("release") an assignment
                 user_id=this_user["ormUser"].id,
                 assignment_id=assignment.id,
                 action="fetched",
-                location="/tmp/nbgrader-expects-a-file-path" # TODO: nbgrader expets a file path here.
+                location="/tmp/nbgrader-expects-a-file-path",  # TODO: nbgrader expets a file path here.
             )
             self.db.add(action)
             self.db.commit()

@@ -99,7 +99,11 @@ GET: (without assignment_code) gets list of assignments for $course_code
                         "course_id": assignment.course.course_code,
                         "status": action.action,  # currently called 'action' in our db
                         "path": action.location,
+<<<<<<< HEAD
                         "notebooks": [],  # The calue of this array is filled in after the zip file is fetched
+=======
+                        "notebooks": [],  # TODO: Nbgrader expexts this for some reason (but doesn't use it anywhere)
+>>>>>>> 4710a80839f78740e40dd55eacc381da9aae55ac
                         "timestamp": datetime.datetime.now(gettz("UTC")).strftime(
                             "%Y-%m-%d %H:%M:%S.%f %Z"
                         ),  # TODO: this should be pulled from the database
@@ -223,7 +227,11 @@ POST: (role=instructor, with file): Add ("release") an assignment
                 user_id=this_user["ormUser"].id,
                 assignment_id=assignment.id,
                 action="fetched",
+<<<<<<< HEAD
                 location=release_file,
+=======
+                location="/tmp/nbgrader-expects-a-file-path",  # TODO: nbgrader expets a file path here.
+>>>>>>> 4710a80839f78740e40dd55eacc381da9aae55ac
             )
             self.db.add(action)
             self.db.commit()

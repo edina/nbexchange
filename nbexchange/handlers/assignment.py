@@ -35,11 +35,11 @@ This relys on users being logged in, and the user-object having additional data:
 
 class Assignments(BaseHandler):
     """.../assignments/
-parmas:
-    course_id: course_code
+    parmas:
+        course_id: course_code
 
-GET: (without assignment_code) gets list of assignments for $course_code
-"""
+    GET: (without assignment_code) gets list of assignments for $course_code
+    """
 
     urls = ["assignments"]
 
@@ -99,7 +99,7 @@ GET: (without assignment_code) gets list of assignments for $course_code
                         "course_id": assignment.course.course_code,
                         "status": action.action,  # currently called 'action' in our db
                         "path": action.location,
-                        "notebooks": [],  # This is a list of ipynb files - needs to be set in nbgrader
+                        "notebooks": [{"name": x.name} for x in assignment.notebooks],
                         "timestamp": datetime.datetime.now(gettz("UTC")).strftime(
                             "%Y-%m-%d %H:%M:%S.%f %Z"
                         ),  # TODO: this should be pulled from the database
@@ -112,13 +112,13 @@ GET: (without assignment_code) gets list of assignments for $course_code
 
 class Assignment(BaseHandler):
     """.../assignment/
-parmas:
-    course_id: course_code
-    assignment_id: assignment_code
+    parmas:
+        course_id: course_code
+        assignment_id: assignment_code
 
-GET: downloads assignment
-POST: (role=instructor, with file): Add ("release") an assignment
-"""
+    GET: downloads assignment
+    POST: (role=instructor, with file): Add ("release") an assignment
+    """
 
     # urls = ["assignment/([^/]+)(?:/?([^/]+))?"]
     urls = ["assignment"]
@@ -344,6 +344,13 @@ POST: (role=instructor, with file): Add ("release") an assignment
             db=self.db, code=assignment_code, course_id=course.id
         )
 
+        # Record the notebooks associated with this assignment
+        notebooks = self.get_arguments("notebooks")
+
+        for notebook in notebooks:
+            new_notebook = orm.Notebook(name=notebook)
+            assignment.notebooks.append(new_notebook)
+
         # Record the action.
         # Note we record the path to the files.
         self.log.info(
@@ -360,6 +367,3 @@ POST: (role=instructor, with file): Add ("release") an assignment
         self.db.add(action)
         self.db.commit()
         self.write({"success": True, "note": "Released"})
-
-
-default_handlers = [Assignment, Assignments]

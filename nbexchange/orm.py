@@ -2,6 +2,7 @@
 
 # Copyright (c) Jupyter Development Team.
 # Distributed under the terms of the Modified BSD License.
+from uuid import uuid4
 
 import alembic.config
 import alembic.command
@@ -28,6 +29,8 @@ from sqlalchemy import (
     DateTime,
     Enum,
     Table,
+    UniqueConstraint,
+    String,
 )
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.interfaces import PoolListener
@@ -322,6 +325,9 @@ class Assignment(Base):
     # Maps this assignment to multiple actions [thence to users]
     actions = relationship("Action", back_populates="assignment")
 
+    # Tracks the notebooks in each assignment
+    notebooks = relationship("Notebook", backref="assignment", order_by="Notebook.name")
+
     #### Need to make unique course_id + assignment_code + active
 
     @classmethod
@@ -357,6 +363,28 @@ class Assignment(Base):
                 )
             )
         return db.query(cls).filter(cls.course_id == course_id, cls.active == active)
+
+
+class Notebook(Base):
+
+    __tablename__ = "notebook"
+    __table_args__ = (UniqueConstraint("name", "assignment_id"),)
+
+    #: Unique id of the notebook (automatically incremented)
+    id = Column(Integer(), primary_key=True, autoincrement=True)
+
+    #: Unique human-readable name for the notebook, such as "Problem 1". Note
+    #: the uniqueness is only constrained within assignments (e.g. it is ok for
+    #: two different assignments to both have notebooks called "Problem 1", but
+    #: the same assignment cannot have two notebooks with the same name).
+    name = Column(String(128), nullable=False)
+
+    assignment = None
+    #: Unique id of :attr:`~nbexchange.orm.Notebook.assignment`
+    assignment_id = Column(Integer(), ForeignKey("assignment.id"))
+
+    def __repr__(self):
+        return "Notebook<{}/{}>".format(self.assignment.name, self.name)
 
 
 ### ref: https://docs.sqlalchemy.org/en/latest/orm/basic_relationships.html

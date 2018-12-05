@@ -1,13 +1,10 @@
 import logging
 import os
-import sys
 
-from nbexchange import orm, dbutil, base, apihandlers
-from nbexchange.handlers import assignment, submission
+from nbexchange import orm, dbutil, base, handlers
 from datetime import datetime
 from getpass import getuser
 from jinja2 import Environment, FileSystemLoader
-from jupyterhub.app import JupyterHub
 from jupyterhub.log import CoroutineLogFormatter, log_request
 from jupyterhub.services.auth import HubAuth
 from jupyterhub.utils import url_path_join
@@ -18,7 +15,6 @@ from tornado import web
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from tornado.log import app_log, access_log, gen_log
-from urllib.parse import urlparse
 
 ROOT = os.path.dirname(__file__)
 STATIC_FILES_DIR = os.path.join(ROOT, "static")
@@ -232,15 +228,11 @@ class NbExchange(Application):
     def init_handlers(self):
         """Load hubshare's tornado request handlers"""
         self.handlers = []
-        for handler in apihandlers.default_handlers:
+
+        for handler in handlers.default_handlers:
             for url in handler.urls:
                 self.handlers.append((url_path_join(self.base_url, url), handler))
-        for handler in assignment.default_handlers:
-            for url in handler.urls:
-                self.handlers.append((url_path_join(self.base_url, url), handler))
-        for handler in submission.default_handlers:
-            for url in handler.urls:
-                self.handlers.append((url_path_join(self.base_url, url), handler))
+
         self.handlers.append((r".*", base.Template404))
         self.log.info("##### ALL HANDLERS" + str(self.handlers))
 

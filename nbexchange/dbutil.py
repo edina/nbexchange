@@ -126,7 +126,7 @@ def upgrade_if_needed(db_url, backup=True, log=None):
 
 def _alembic(args):
     """Run an alembic command with a temporary alembic.ini"""
-    from app import NbExchange
+    from nbexchange.app import NbExchange
 
     hub = NbExchange()
     hub.load_config_file(hub.config_file)

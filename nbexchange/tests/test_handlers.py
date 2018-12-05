@@ -4,7 +4,6 @@ import pytest
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse
-from nbexchange import apihandlers
 from nbexchange.app import NbExchange
 from nbexchange.base import BaseHandler
 from nbexchange.tests.utils import async_requests

@@ -85,7 +85,9 @@ class Assignments(BaseHandler):
             self.log.info(note)
             self.write({"success": False, "value": models, "note": note})
 
-        assignments = orm.Assignment.find_for_course(db=self.db, course_id=course.id, log=self.log)
+        assignments = orm.Assignment.find_for_course(
+            db=self.db, course_id=course.id, log=self.log
+        )
 
         for assignment in assignments:
             self.log.debug("==========")
@@ -97,7 +99,9 @@ class Assignments(BaseHandler):
                     action.action != orm.AssignmentActions.release
                     and this_user.get("ormUser").id != action.user_id
                 ):
-                    self.log.debug(f"ormuser: {this_user.get('ormUser').id} - actionUser {action.user_id}")
+                    self.log.debug(
+                        f"ormuser: {this_user.get('ormUser').id} - actionUser {action.user_id}"
+                    )
                     self.log.debug("Action does not belong to user, skip action")
                     continue
                 models.append(

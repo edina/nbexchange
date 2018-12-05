@@ -91,13 +91,18 @@ class Assignments(BaseHandler):
         models = []
 
         assignments = orm.Assignment.find_for_course(db=self.db, course_id=course.id)
+        # self.log.info(f"Found {len(assignments.c)} assignments")
         for assignment in assignments:
+            self.log.info("==========")
+            self.log.info(f"Assignment: {assignment}")
+            self.log.info(f"Assignemtn Actions: {assignment.actions}")
             for action in assignment.actions:
+                self.log.info(f"Assignment Action: {action}")
                 models.append(
                     {
                         "assignment_id": assignment.assignment_code,
                         "course_id": assignment.course.course_code,
-                        "status": action.action,  # currently called 'action' in our db
+                        "status": action.action.value,  # currently called 'action' in our db
                         "path": action.location,
                         "notebooks": [{"name": x.name} for x in assignment.notebooks],
                         "timestamp": datetime.datetime.now(gettz("UTC")).strftime(
@@ -203,7 +208,7 @@ class Assignment(BaseHandler):
             release_file = None
             for action in assignment.actions:
                 self.log.info(f"Action: {action.action}")
-                if action.action == "released":
+                if action.action == orm.AssignmentActions.release:
                     self.log.info(f"Found release: {action.location}")
                     release_file = action.location
                     # no break, as we want the /last/ released action!
@@ -222,7 +227,7 @@ class Assignment(BaseHandler):
             action = orm.Action(
                 user_id=this_user["ormUser"].id,
                 assignment_id=assignment.id,
-                action="fetched",
+                action=orm.AssignmentActions.download,
                 location=release_file,
             )
             self.db.add(action)
@@ -301,7 +306,7 @@ class Assignment(BaseHandler):
         release_file = "/".join(
             [
                 self.base_storage_location,
-                "released",
+                orm.AssignmentActions.release.value,
                 course_code,
                 assignment_code,
                 str(int(time.time())),
@@ -361,7 +366,7 @@ class Assignment(BaseHandler):
         action = orm.Action(
             user_id=this_user["ormUser"].id,
             assignment_id=assignment.id,
-            action="released",
+            action=orm.AssignmentActions.release,
             location=release_file,
         )
         self.db.add(action)

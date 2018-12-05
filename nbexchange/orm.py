@@ -51,7 +51,7 @@ utcnow = datetime.utcnow
 Base = declarative_base()
 
 
-class AssignmentActions(Enum):
+class AssignmentActions(enum.Enum):
     release = "released"
     download = "fetched"
     submit = "submitted"
@@ -93,8 +93,8 @@ class Action(Base):
         Integer, ForeignKey("assignment.id", ondelete="CASCADE"), index=True
     )
     action = Column(
-        Unicode(30), nullable=False, index=True
-    )  # constrain to AssignmentActions above, por favor...
+        Enum(AssignmentActions), nullable=False, index=True
+    )
     location = Column(
         Unicode(200), nullable=True
     )  # Loction for the file of this action
@@ -103,6 +103,9 @@ class Action(Base):
     # These are the relationship handles: a specific subscription has a single user to a single course
     user = relationship("User", back_populates="actions")
     assignment = relationship("Assignment", back_populates="actions")
+
+    def __repr__(self):
+        return "Assignment #{} {} by {} at {}".format(self.assignment_id, self.action, self.user_id, self.timestamp)
 
 
 # This is the subscription: a user on a course, with a role
@@ -164,6 +167,9 @@ class Subscription(Base):
             )
             .first()
         )
+
+    def __repr__(self):
+        return "Subscription for user {} to course {} as a {}".format(self.user_id, self.course_id, self.role)
 
 
 class User(Base):
@@ -228,6 +234,9 @@ class User(Base):
             log.info("User.find_by_org - id:{}".format(id))
         return db.query(cls).filter(cls.org_id == id)
 
+    def __repr__(self):
+        return "User/{}".format(self.name)
+
 
 class Course(Base):
     """ The list of courses we know, who's subscribed to them, and what
@@ -289,6 +298,9 @@ class Course(Base):
             log.info("Course.find_by_org - id:{}".format(id))
         return db.query(cls).filter(cls.org_id == id)
 
+    def __repr__(self):
+        return "Course/{} {}".format(self.course_code, self.course_title)
+
 
 class Assignment(Base):
     """The Assigments known for each course
@@ -347,6 +359,8 @@ class Assignment(Base):
                 cls.assignment_code == code,
                 cls.course_id == course_id,
                 cls.active == active,
+            ).order_by(
+                model.Entry.amount.desc()
             )
             .first()
         )
@@ -363,6 +377,9 @@ class Assignment(Base):
                 )
             )
         return db.query(cls).filter(cls.course_id == course_id, cls.active == active)
+
+    def __repr__(self):
+        return "Assignment {} for course {}".format(self.assignment_code, self.course_id)
 
 
 class Notebook(Base):

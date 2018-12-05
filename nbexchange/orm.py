@@ -92,9 +92,7 @@ class Action(Base):
     assignment_id = Column(
         Integer, ForeignKey("assignment.id", ondelete="CASCADE"), index=True
     )
-    action = Column(
-        Enum(AssignmentActions), nullable=False, index=True
-    )
+    action = Column(Enum(AssignmentActions), nullable=False, index=True)
     location = Column(
         Unicode(200), nullable=True
     )  # Loction for the file of this action
@@ -105,7 +103,9 @@ class Action(Base):
     assignment = relationship("Assignment", back_populates="actions")
 
     def __repr__(self):
-        return "Assignment #{} {} by {} at {}".format(self.assignment_id, self.action, self.user_id, self.timestamp)
+        return "Assignment #{} {} by {} at {}".format(
+            self.assignment_id, self.action, self.user_id, self.timestamp
+        )
 
 
 # This is the subscription: a user on a course, with a role
@@ -169,7 +169,9 @@ class Subscription(Base):
         )
 
     def __repr__(self):
-        return "Subscription for user {} to course {} as a {}".format(self.user_id, self.course_id, self.role)
+        return "Subscription for user {} to course {} as a {}".format(
+            self.user_id, self.course_id, self.role
+        )
 
 
 class User(Base):
@@ -359,9 +361,8 @@ class Assignment(Base):
                 cls.assignment_code == code,
                 cls.course_id == course_id,
                 cls.active == active,
-            ).order_by(
-                model.Entry.amount.desc()
             )
+            .order_by(model.Entry.amount.desc())
             .first()
         )
 
@@ -379,7 +380,9 @@ class Assignment(Base):
         return db.query(cls).filter(cls.course_id == course_id, cls.active == active)
 
     def __repr__(self):
-        return "Assignment {} for course {}".format(self.assignment_code, self.course_id)
+        return "Assignment {} for course {}".format(
+            self.assignment_code, self.course_id
+        )
 
 
 class Notebook(Base):

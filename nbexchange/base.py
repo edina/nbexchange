@@ -41,11 +41,7 @@ class BaseHandler(HubAuthenticated, JupyterHubBaseHandler):
             self.log.debug(
                 "New user details: name:{}, org_id:{}".format(hub_username, org_id)
             )
-<<<<<<< HEAD
-            user = orm.User(name=hub_name, org_id=self.org_id)
-=======
             user = orm.User(name=hub_username, org_id=org_id)
->>>>>>> Assignment list will show a user their own fetched assignment instead of all fetched assignments
             self.db.add(user)
 
         course = orm.Course.find_by_code(

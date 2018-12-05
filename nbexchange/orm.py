@@ -404,11 +404,7 @@ class Assignment(Base):
                 cls.course_id == course_id,
                 cls.active == active,
             )
-<<<<<<< HEAD
             .order_by(cls.id.desc())
-=======
-            .order_by(Assignment.id.desc())
->>>>>>> Assignment list will show a user their own fetched assignment instead of all fetched assignments
             .first()
         )
 

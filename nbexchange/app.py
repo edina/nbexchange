@@ -1,13 +1,14 @@
 import logging
 import os
 
-from nbexchange import orm, dbutil, base, handlers
 from datetime import datetime
 from getpass import getuser
 from jinja2 import Environment, FileSystemLoader
 from jupyterhub.log import CoroutineLogFormatter, log_request
 from jupyterhub.services.auth import HubAuth
 from jupyterhub.utils import url_path_join
+from nbexchange import orm, dbutil, base, handlers
+from nbexchange.handlers import assignment, submission
 from sqlalchemy.exc import OperationalError, SQLAlchemyError
 from traitlets.config import Application, catch_config_error
 from traitlets import Bool, Dict, Integer, List, Unicode, default

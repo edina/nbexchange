@@ -13,36 +13,35 @@ import os
 from alembic.script import ScriptDirectory
 from datetime import datetime, timedelta
 
-from sqlalchemy.types import TypeDecorator, TEXT, LargeBinary
 from sqlalchemy import (
-    create_engine,
-    event,
-    exc,
-    inspect,
-    or_,
-    select,
-    Column,
-    Integer,
-    ForeignKey,
-    Unicode,
     Boolean,
+    Column,
+    create_engine,
     DateTime,
     Enum,
+    event,
+    exc,
+    ForeignKey,
+    inspect,
+    Integer,
+    or_,
+    select,
     Table,
+    Unicode,
     UniqueConstraint,
-    String,
 )
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.interfaces import PoolListener
 from sqlalchemy.orm import (
-    Session,
     interfaces,
     object_session,
     relationship,
+    Session,
     sessionmaker,
 )
 from sqlalchemy.pool import StaticPool
 from sqlalchemy.sql.expression import bindparam
+from sqlalchemy.types import TypeDecorator, TEXT, LargeBinary
 from tornado.log import app_log
 
 # top-level variable for easier mocking in tests
@@ -50,12 +49,12 @@ utcnow = datetime.utcnow
 
 Base = declarative_base()
 
-
+# The keys for the enum match the hard-coded values used by nbgrader in their code
 class AssignmentActions(enum.Enum):
-    release = "released"
-    download = "fetched"
-    submit = "submitted"
-    remove = "removed"
+    released = "released"
+    fetched = "fetched"
+    submitted = "submitted"
+    removed = "removed"
 
 
 # This is the action: a user does something with an assignment, at a given time
@@ -128,6 +127,7 @@ class Subscription(Base):
     """
 
     __tablename__ = "subscription"
+    __table_args__ = (UniqueConstraint("user_id", "course_id", "role"),)
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(Integer, ForeignKey("user.id", ondelete="CASCADE"), index=True)
@@ -138,8 +138,6 @@ class Subscription(Base):
     user = relationship("User", back_populates="courses")
     course = relationship("Course", back_populates="subscribers")
 
-    #### Need to make unique user_id + course_id + role
-
     @classmethod
     def find_by_pk(cls, db, pk, log=None):
         """Find a subscription by Primary Key.
@@ -147,7 +145,12 @@ class Subscription(Base):
         """
         if log:
             log.info("Subscription.find_by_pk - pk:{}".format(pk))
-        return db.query(cls).filter(cls.id == pk).first()
+        if pk is None:
+            raise ValueError("Primary Key needs to be defined")
+        if isinstance(pk, int):
+            return db.query(cls).filter(cls.id == pk).first()
+        else:
+            raise TypeError(f"Primary Keys are required to be Ints")
 
     @classmethod
     def find_by_set(cls, db, user_id, course_id, role, log=None):
@@ -194,6 +197,7 @@ class User(Base):
     """
 
     __tablename__ = "user"
+    __table_args__ = (UniqueConstraint("name", "org_id"),)
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(Unicode(200), nullable=False, index=True)
@@ -207,8 +211,6 @@ class User(Base):
     # # One to Many. One user has multiple assignments
     actions = relationship("Action", back_populates="user")
 
-    #### Need to make unique org_id + name
-
     @classmethod
     def find_by_pk(cls, db, pk, log=None):
         """Find a course by Primary Key.
@@ -216,7 +218,13 @@ class User(Base):
         """
         if log:
             log.info("User.find_by_pk - pk:{}".format(pk))
-        return db.query(cls).filter(cls.id == pk).first()
+
+        if pk is None:
+            raise ValueError("Primary Key needs to be defined")
+        if isinstance(pk, int):
+            return db.query(cls).filter(cls.id == pk).first()
+        else:
+            raise TypeError(f"Primary Keys are required to be Ints")
 
     @classmethod
     def find_by_name(cls, db, name, log=None):
@@ -225,16 +233,21 @@ class User(Base):
         """
         if log:
             log.info("User.find_by_name - name:{}".format(name))
+        if name is None:
+            raise ValueError("Name needs to be defined")
         return db.query(cls).filter(cls.name == name).first()
 
     @classmethod
-    def find_by_org(cls, db, id, log=None):
+    def find_by_org(cls, db, org_id, log=None):
         """Find all users for an organisation.
         Returns None if not found.
         """
         if log:
-            log.info("User.find_by_org - id:{}".format(id))
-        return db.query(cls).filter(cls.org_id == id)
+            log.info("User.find_by_org - id:{}".format(org_id))
+        org_id = int(float(org_id)) if org_id else None
+        if org_id is None:
+            raise ValueError("org_id needs to be defined, and a number")
+        return list(db.query(cls).filter(cls.org_id == org_id))
 
     def __repr__(self):
         return "User/{}".format(self.name)
@@ -255,6 +268,7 @@ class Course(Base):
     """
 
     __tablename__ = "course"
+    __table_args__ = (UniqueConstraint("course_code", "org_id"),)
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     org_id = Column(Integer, nullable=False, index=True)
@@ -269,8 +283,6 @@ class Course(Base):
     # One to Many. One Course, many assignments. Can set assignmnt.course
     assignments = relationship("Assignment", back_populates="course")
 
-    #### Need to make unique org_id + course_code
-
     @classmethod
     def find_by_pk(cls, db, pk, log=None):
         """Find a course by Primary Key.
@@ -278,7 +290,12 @@ class Course(Base):
         """
         if log:
             log.info("Course.find_by_pk - pk:{}".format(pk))
-        return db.query(cls).filter(cls.id == pk).first()
+        if pk is None:
+            raise ValueError("Primary Key needs to be defined")
+        if isinstance(pk, int):
+            return db.query(cls).filter(cls.id == pk).first()
+        else:
+            raise TypeError(f"Primary Keys are required to be Ints")
 
     @classmethod
     def find_by_code(cls, db, code, org_id, log=None):
@@ -287,18 +304,26 @@ class Course(Base):
         """
         if log:
             log.info("Course.find_by_code - code:{} (org_id:{})".format(code, org_id))
+        if code is None:
+            raise ValueError("code needs to be defined")
+        org_id = int(float(org_id)) if org_id else None
+        if org_id is None:
+            raise ValueError("org_id needs to be defined, and a number")
         return (
             db.query(cls).filter(cls.course_code == code, cls.org_id == org_id).first()
         )
 
     @classmethod
-    def find_by_org(cls, db, id, log=None):
+    def find_by_org(cls, db, org_id, log=None):
         """Find all courses or an organisation.
         Returns None if not found.
         """
         if log:
-            log.info("Course.find_by_org - id:{}".format(id))
-        return db.query(cls).filter(cls.org_id == id)
+            log.info("Course.find_by_org - id:{}".format(org_id))
+        org_id = int(float(org_id)) if org_id else None
+        if org_id is None:
+            raise ValueError("org_id needs to be defined, and a number")
+        return list(db.query(cls).filter(cls.org_id == org_id))
 
     def __repr__(self):
         return "Course/{} {}".format(self.course_code, self.course_title)
@@ -325,6 +350,7 @@ class Assignment(Base):
     """
 
     __tablename__ = "assignment"
+    __table_args__ = (UniqueConstraint("course_id", "assignment_code", "active"),)
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     assignment_code = Column(Unicode(50), nullable=False, index=True)
@@ -342,11 +368,23 @@ class Assignment(Base):
     # Tracks the notebooks in each assignment
     notebooks = relationship("Notebook", backref="assignment", order_by="Notebook.name")
 
-    #### Need to make unique course_id + assignment_code + active
+    @classmethod
+    def find_by_pk(cls, db, pk, log=None):
+        """Find an Assignment by Primary Key.
+        Returns None if not found.
+        """
+        if log:
+            log.info("Assignmetn.find_by_pk - pk:{}".format(pk))
+        if pk is None:
+            raise ValueError("Primary Key needs to be defined")
+        if isinstance(pk, int):
+            return db.query(cls).filter(cls.id == pk).first()
+        else:
+            raise TypeError(f"Primary Keys are required to be Ints")
 
     @classmethod
-    def find_by_code(cls, db, code, course_id, active=True, log=None):
-        """Find an assignmetn by code.
+    def find_by_code(cls, db, code, course_id=None, active=True, log=None):
+        """Find an assignment by code.
         Returns None if not found.
         """
         if log:
@@ -355,6 +393,10 @@ class Assignment(Base):
                     code, course_id, active
                 )
             )
+        if code is None:
+            raise ValueError("code needs to be defined")
+        if course_id and not isinstance(course_id, int):
+            raise TypeError(f"Course_id, if specified, must be an Int")
         return (
             db.query(cls)
             .filter(
@@ -362,7 +404,7 @@ class Assignment(Base):
                 cls.course_id == course_id,
                 cls.active == active,
             )
-            .order_by(model.Entry.amount.desc())
+            .order_by(cls.id.desc())
             .first()
         )
 
@@ -397,7 +439,7 @@ class Notebook(Base):
     #: the uniqueness is only constrained within assignments (e.g. it is ok for
     #: two different assignments to both have notebooks called "Problem 1", but
     #: the same assignment cannot have two notebooks with the same name).
-    name = Column(String(128), nullable=False)
+    name = Column(Unicode(128), nullable=False)
 
     assignment = None
     #: Unique id of :attr:`~nbexchange.orm.Notebook.assignment`

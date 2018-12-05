@@ -1,16 +1,12 @@
 import datetime
-import json
 import os
-import random
 import re
 import time
 import uuid
 
 from dateutil.tz import gettz
-
 from nbexchange import orm
 from nbexchange.base import BaseHandler
-
 from tornado import web, httputil
 from urllib.parse import quote_plus, unquote, unquote_plus
 from urllib.request import urlopen
@@ -200,7 +196,9 @@ class Assignment(BaseHandler):
         if assignment:
             self.log.info(
                 "Adding action {} for user {} against assignment {}".format(
-                    "download", this_user["ormUser"].id, assignment.id
+                    orm.AssignmentActions.fetched.value,
+                    this_user["ormUser"].id,
+                    assignment.id,
                 )
             )
             data = b""
@@ -208,7 +206,7 @@ class Assignment(BaseHandler):
             release_file = None
             for action in assignment.actions:
                 self.log.info(f"Action: {action.action}")
-                if action.action == orm.AssignmentActions.release:
+                if action.action == orm.AssignmentActions.released:
                     self.log.info(f"Found release: {action.location}")
                     release_file = action.location
                     # no break, as we want the /last/ released action!
@@ -227,7 +225,7 @@ class Assignment(BaseHandler):
             action = orm.Action(
                 user_id=this_user["ormUser"].id,
                 assignment_id=assignment.id,
-                action=orm.AssignmentActions.download,
+                action=orm.AssignmentActions.fetched,
                 location=release_file,
             )
             self.db.add(action)
@@ -306,7 +304,7 @@ class Assignment(BaseHandler):
         release_file = "/".join(
             [
                 self.base_storage_location,
-                orm.AssignmentActions.release.value,
+                orm.AssignmentActions.released.value,
                 course_code,
                 assignment_code,
                 str(int(time.time())),
@@ -366,7 +364,7 @@ class Assignment(BaseHandler):
         action = orm.Action(
             user_id=this_user["ormUser"].id,
             assignment_id=assignment.id,
-            action=orm.AssignmentActions.release,
+            action=orm.AssignmentActions.released,
             location=release_file,
         )
         self.db.add(action)

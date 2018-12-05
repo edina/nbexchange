@@ -10,6 +10,9 @@ from sqlalchemy.exc import IntegrityError
 #
 # NOTE: All objects & relationships that are built up remain until the end of
 # the test-run.
+from nbexchange.orm import AssignmentActions
+
+
 @pytest.fixture
 def course_quirk(db):
     orm_thing = orm.Course.find_by_code(db, code="quirk", org_id=2)
@@ -319,7 +322,7 @@ def test_action_release(db, course_strange, assignment_tree, user_johaannes):
     #     db.add(action)
 
     # proper action
-    does_a = "released"
+    does_a = AssignmentActions.released
     action = orm.Action(
         user_id=user_johaannes.id,
         assignment_id=assignment_tree.id,
@@ -328,3 +331,15 @@ def test_action_release(db, course_strange, assignment_tree, user_johaannes):
     )
     db.add(action)
     db.commit()
+
+    assert action.action == AssignmentActions.released
+    assert action.user.name == user_johaannes.name
+    assert action.location == release_file
+
+
+def test_assignment_actions_enum():
+
+    assert "released" in AssignmentActions.__members__
+    assert "fetched" in AssignmentActions.__members__
+    assert "submitted" in AssignmentActions.__members__
+    assert "removed" in AssignmentActions.__members__

@@ -1,10 +1,8 @@
-from nbexchange import orm
-
-from tornado import gen, web
-
 from jupyterhub.handlers import BaseHandler as JupyterHubBaseHandler
 from jupyterhub.services.auth import HubAuthenticated
 from jupyterhub.utils import url_path_join
+from nbexchange import orm
+from tornado import gen, web
 
 
 class BaseHandler(HubAuthenticated, JupyterHubBaseHandler):
@@ -43,7 +41,7 @@ class BaseHandler(HubAuthenticated, JupyterHubBaseHandler):
             self.log.info(
                 "New user details: name:{}, org_id:{}".format(hub_name, org_id)
             )
-            user = orm.User(name=hub_name, org_id=org_id)
+            user = orm.User(name=hub_name, org_id=self.org_id)
             self.db.add(user)
 
         course = orm.Course.find_by_code(

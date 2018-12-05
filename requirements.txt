@@ -4,7 +4,4 @@ jupyterhub==0.9.4
 alembic
 datetime
 jinja2
-jupyterhub
 sqlalchemy
-traitlets
-tornado

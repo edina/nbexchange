@@ -1,12 +1,12 @@
 """Database utilities for NbExchange"""
 # Completely derived from the Jupyterhub code!!
-from nbexchange import orm
 import os
 import shutil
 import sys
 
 from contextlib import contextmanager
 from datetime import datetime
+from nbexchange import orm
 from sqlalchemy import create_engine
 from subprocess import check_call
 from tempfile import TemporaryDirectory

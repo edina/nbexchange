@@ -243,7 +243,9 @@ class NbExchange(Application):
 
     @catch_config_error
     def initialize(self, *args, **kwargs):
+        """Load configuration settings."""
         super().initialize(*args, **kwargs)
+        self.load_config_file(self.config_file)
         if self.subapp:
             return
         self.init_db()

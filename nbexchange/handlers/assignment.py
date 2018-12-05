@@ -41,20 +41,18 @@ class Assignments(BaseHandler):
 
     @web.authenticated
     def get(self):
-        self.log.debug("+++++ assignment GET starting")
 
-        params = self.request.arguments
-        self.log.debug("params:{}".format(params))
+        self.log.debug("+++++ assignment GET starting")
+        models = []
+
+        # Endpoint needs to be called with a course_id parameters
         course_code = (
             self.request.arguments["course_id"][0].decode("utf-8")
             if "course_id" in self.request.arguments
             else None
         )
-
-        models = []
-
         if not course_code:
-            note = "Assigment call requires both a course code"
+            note = "Assigment call requires a course id"
             self.log.info(note)
             self.write({"success": False, "value": models, "note": note})
 
@@ -65,10 +63,16 @@ class Assignments(BaseHandler):
             else unquote_plus(course_code)
         )
 
+        # Who is my user?
         this_user = self.nbex_user
-
-        if not course_code in this_user["courses"]:
-            note = "User not subscribed to course {}".format(course_code)
+        self.log.debug(f"User: {this_user.get('name')}")
+        # For what course do we want to see the assignments?
+        self.log.debug(f"Course: {course_code}")
+        # Is our user subscribed to this course?
+        if course_code not in this_user["courses"]:
+            note = "User {} not subscribed to course {}".format(
+                this_user.get("name"), course_code
+            )
             self.log.info(note)
             self.write({"success": False, "value": models, "note": note})
 
@@ -76,24 +80,26 @@ class Assignments(BaseHandler):
         course = orm.Course.find_by_code(
             db=self.db, code=course_code, org_id=this_user["org_id"], log=self.log
         )
-        if course is None:
+        if not course:
             note = "Course {} does not exist".format(course_code)
             self.log.info(note)
             self.write({"success": False, "value": models, "note": note})
 
-        self.log.debug("Course:{}".format(course_code))
-        # we're passing in the course object here
+        assignments = orm.Assignment.find_for_course(db=self.db, course_id=course.id, log=self.log)
 
-        models = []
-
-        assignments = orm.Assignment.find_for_course(db=self.db, course_id=course.id)
-        # self.log.info(f"Found {len(assignments.c)} assignments")
         for assignment in assignments:
-            self.log.info("==========")
-            self.log.info(f"Assignment: {assignment}")
-            self.log.info(f"Assignemtn Actions: {assignment.actions}")
+            self.log.debug("==========")
+            self.log.debug(f"Assignment: {assignment}")
+            self.log.debug(f"Assignment Actions: {assignment.actions}")
             for action in assignment.actions:
-                self.log.info(f"Assignment Action: {action}")
+                # For every action that is not "released" checked if the user id matches
+                if (
+                    action.action != orm.AssignmentActions.release
+                    and this_user.get("ormUser").id != action.user_id
+                ):
+                    self.log.debug(f"ormuser: {this_user.get('ormUser').id} - actionUser {action.user_id}")
+                    self.log.debug("Action does not belong to user, skip action")
+                    continue
                 models.append(
                     {
                         "assignment_id": assignment.assignment_code,
@@ -101,9 +107,9 @@ class Assignments(BaseHandler):
                         "status": action.action.value,  # currently called 'action' in our db
                         "path": action.location,
                         "notebooks": [{"name": x.name} for x in assignment.notebooks],
-                        "timestamp": datetime.datetime.now(gettz("UTC")).strftime(
+                        "timestamp": action.timestamp.strftime(
                             "%Y-%m-%d %H:%M:%S.%f %Z"
-                        ),  # TODO: this should be pulled from the database
+                        ),
                     }
                 )
 

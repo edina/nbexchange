@@ -18,10 +18,10 @@ class BaseHandler(HubAuthenticated, JupyterHubBaseHandler):
     def nbex_user(self):
 
         hub_user = self.get_current_user()
-        hub_name = hub_user.get("name")
+        hub_username = hub_user.get("name")
 
         ### Bodge.
-        items = self._bodge_course_details(hub_name)
+        items = self._bodge_course_details(hub_username)
         current_course = items[0]
         current_role = items[1] if items[1] else None
         course_title = items[2] if items[2] else None
@@ -36,29 +36,33 @@ class BaseHandler(HubAuthenticated, JupyterHubBaseHandler):
         org_id = 1 if org_id is None else org_id
         self.org_id = org_id
 
-        user = orm.User.find_by_name(db=self.db, name=hub_name, log=self.log)
+        user = orm.User.find_by_name(db=self.db, name=hub_username, log=self.log)
         if user is None:
-            self.log.info(
-                "New user details: name:{}, org_id:{}".format(hub_name, org_id)
+            self.log.debug(
+                "New user details: name:{}, org_id:{}".format(hub_username, org_id)
             )
+<<<<<<< HEAD
             user = orm.User(name=hub_name, org_id=self.org_id)
+=======
+            user = orm.User(name=hub_username, org_id=org_id)
+>>>>>>> Assignment list will show a user their own fetched assignment instead of all fetched assignments
             self.db.add(user)
 
         course = orm.Course.find_by_code(
             db=self.db, code=current_course, org_id=org_id, log=self.log
         )
         if course is None:
-            self.log.info(
+            self.log.debug(
                 "New course details: code:{}, org_id:{}".format(current_course, org_id)
             )
             course = orm.Course(org_id=org_id, course_code=current_course)
             if course_title:
-                self.log.info("Adding title {}".format(course_title))
+                self.log.debug("Adding title {}".format(course_title))
                 course.course_title = course_title
             self.db.add(course)
 
         # Check to see if we have a subscription (for this course)
-        self.log.info(
+        self.log.debug(
             "Looking for subscription for: user:{}, course:{}, role:{} ".format(
                 user.id, course.id, current_role
             )
@@ -68,7 +72,7 @@ class BaseHandler(HubAuthenticated, JupyterHubBaseHandler):
             db=self.db, user_id=user.id, course_id=course.id, role=current_role
         )
         if subscription is None:
-            self.log.info(
+            self.log.debug(
                 "New subscription details: user:{}, course:{}, role:{} ".format(
                     user.id, course.id, current_role
                 )
@@ -81,7 +85,7 @@ class BaseHandler(HubAuthenticated, JupyterHubBaseHandler):
         self.db.commit()
 
         courses = {}
-        actions = {}
+
         for subscription in user.courses:
             if not subscription.course.course_code in courses:
                 courses[subscription.course.course_code] = {}

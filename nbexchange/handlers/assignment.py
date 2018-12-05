@@ -96,7 +96,7 @@ class Assignments(BaseHandler):
             for action in assignment.actions:
                 # For every action that is not "released" checked if the user id matches
                 if (
-                    action.action != orm.AssignmentActions.release
+                    action.action != orm.AssignmentActions.released
                     and this_user.get("ormUser").id != action.user_id
                 ):
                     self.log.debug(

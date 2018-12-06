@@ -18,11 +18,10 @@ class BaseHandler(HubOAuthenticated, JupyterHubBaseHandler):
     base_storage_location = "/tmp"
 
     def get_auth_state(self, username=None):
-        url = "{}users/{}".format(
-            self.settings["hub_api_url"],
-            username
-        )
-        headers = {"Authorization": "token {}".format(os.environ.get("JUPYTERHUB_API_TOKEN"))}
+        url = "{}users/{}".format(self.settings["hub_api_url"], username)
+        headers = {
+            "Authorization": "token {}".format(os.environ.get("JUPYTERHUB_API_TOKEN"))
+        }
         r = requests.get(url, headers=headers)
         r.raise_for_status()
         user = r.json()
@@ -110,7 +109,7 @@ class BaseHandler(HubOAuthenticated, JupyterHubBaseHandler):
             "current_course": current_course,
             "current_role": current_role,
             "courses": courses,
-            "auth_state": hub_auth_state
+            "auth_state": hub_auth_state,
         }
         return model
 

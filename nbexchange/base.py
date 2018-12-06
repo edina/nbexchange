@@ -1,9 +1,11 @@
+import re
+
 from jupyterhub.handlers import BaseHandler as JupyterHubBaseHandler
 from jupyterhub.services.auth import HubAuthenticated
 from jupyterhub.utils import url_path_join
 from nbexchange import orm
 from tornado import gen, web
-
+from urllib.parse import quote_plus, unquote, unquote_plus
 
 class BaseHandler(HubAuthenticated, JupyterHubBaseHandler):
     """An nbexchange base handler"""
@@ -154,6 +156,9 @@ class BaseHandler(HubAuthenticated, JupyterHubBaseHandler):
     def finish(self, *args, **kwargs):
         return super(JupyterHubBaseHandler, self).finish(*args, **kwargs)
 
+    def param_decode(self, value):
+        unquote(value) if re.search("%20", value) else unquote_plus(value)
+        return value
 
 class Template404(BaseHandler):
     """Render nbexchange's 404 template"""

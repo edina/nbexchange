@@ -211,6 +211,8 @@ class NbExchange(Application):
             hub_auth=self.hub_auth,
             login_url=self.hub_auth.login_url,
             hub_base_url=self.hub_base_url,
+            hub_api_url=self.hub_api_url,
+            hub_api_token=self.hub_api_token,
             logout_url=url_path_join(self.hub_base_url, "hub/logout"),
             static_path=STATIC_FILES_DIR,
             static_url_prefix=url_path_join(self.base_url, "static/"),
@@ -227,7 +229,7 @@ class NbExchange(Application):
         self.tornado_settings = settings
 
     def init_handlers(self):
-        """Load hubshare's tornado request handlers"""
+        """Load nbexchange's tornado request handlers"""
         self.handlers = []
 
         for handler in handlers.default_handlers:

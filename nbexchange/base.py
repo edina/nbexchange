@@ -1,14 +1,15 @@
 import re
-
+import os
+import requests
 from jupyterhub.handlers import BaseHandler as JupyterHubBaseHandler
-from jupyterhub.services.auth import HubAuthenticated
+from jupyterhub.services.auth import HubAuthenticated, HubOAuthenticated
 from jupyterhub.utils import url_path_join
 from nbexchange import orm
 from tornado import gen, web
 from urllib.parse import quote_plus, unquote, unquote_plus
 
 
-class BaseHandler(HubAuthenticated, JupyterHubBaseHandler):
+class BaseHandler(HubOAuthenticated, JupyterHubBaseHandler):
     """An nbexchange base handler"""
 
     # register URL patterns
@@ -17,17 +18,28 @@ class BaseHandler(HubAuthenticated, JupyterHubBaseHandler):
     # Root location for data to be written to
     base_storage_location = "/tmp"
 
+    def get_auth_state(self, username=None):
+        url = "{}users/{}".format(self.settings["hub_api_url"], username)
+        headers = {
+            "Authorization": "token {}".format(os.environ.get("JUPYTERHUB_API_TOKEN"))
+        }
+        r = requests.get(url, headers=headers)
+        r.raise_for_status()
+        user = r.json()
+        return user.get("auth_state", {})
+
     @property
     def nbex_user(self):
 
         hub_user = self.get_current_user()
         hub_username = hub_user.get("name")
+        hub_auth_state = self.get_auth_state(username=hub_username)
 
         ### Bodge.
-        items = self._bodge_course_details(hub_username)
-        current_course = items[0]
-        current_role = items[1] if items[1] else None
-        course_title = items[2] if items[2] else None
+
+        current_course = hub_auth_state.get("course_id")
+        current_role = hub_auth_state.get("course_role")
+        course_title = hub_auth_state.get("course_title", "no_title")
 
         if not (current_course and current_role):
             return
@@ -98,36 +110,9 @@ class BaseHandler(HubAuthenticated, JupyterHubBaseHandler):
             "current_course": current_course,
             "current_role": current_role,
             "courses": courses,
+            "auth_state": hub_auth_state,
         }
         return model
-
-    def _bodge_course_details(self, name):
-        # A bodge: specific users have specific roles on specific courses
-        courses = {
-            "1_kiz": {
-                "course_code": "course_2",
-                "role": "student",
-                "course_title": "Their funky course",
-            },
-            "1_bert": {
-                "course_code": "course_2",
-                "role": "instructor",
-                "course_title": "Their funky course",
-            },
-            "1_aseales": {
-                "course_code": "course_2",
-                "role": "student",
-                "course_title": "Their funky course",
-            },
-            "2_kiz": {
-                "course_code": "course_1",
-                "role": "student",
-                "course_title": "The Weird Course",
-            },
-        }
-
-        course = courses[name]
-        return course["course_code"], course["role"], course["course_title"]
 
     @property
     def hub_auth(self):

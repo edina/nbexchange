@@ -35,6 +35,7 @@ class Assignments(BaseHandler):
         course_id: course_code
 
     GET: (without assignment_code) gets list of assignments for $course_code
+         (with assignment_code) gets list of containing [hopefully 1 specific assignment] for $course_code
     """
 
     urls = ["assignments"]
@@ -51,6 +52,7 @@ class Assignments(BaseHandler):
             if "course_id" in self.request.arguments
             else None
         )
+
         if not course_code:
             note = "Assigment call requires a course id"
             self.log.info(note)

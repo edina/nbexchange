@@ -1,11 +1,12 @@
+import re
 import os
-
 import requests
 from jupyterhub.handlers import BaseHandler as JupyterHubBaseHandler
 from jupyterhub.services.auth import HubAuthenticated, HubOAuthenticated
 from jupyterhub.utils import url_path_join
 from nbexchange import orm
 from tornado import gen, web
+from urllib.parse import quote_plus, unquote, unquote_plus
 
 
 class BaseHandler(HubOAuthenticated, JupyterHubBaseHandler):
@@ -140,6 +141,10 @@ class BaseHandler(HubOAuthenticated, JupyterHubBaseHandler):
 
     def finish(self, *args, **kwargs):
         return super(JupyterHubBaseHandler, self).finish(*args, **kwargs)
+
+    def param_decode(self, value):
+        unquote(value) if re.search("%20", value) else unquote_plus(value)
+        return value
 
 
 class Template404(BaseHandler):

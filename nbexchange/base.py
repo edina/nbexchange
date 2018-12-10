@@ -7,6 +7,7 @@ from nbexchange import orm
 from tornado import gen, web
 from urllib.parse import quote_plus, unquote, unquote_plus
 
+
 class BaseHandler(HubAuthenticated, JupyterHubBaseHandler):
     """An nbexchange base handler"""
 
@@ -159,6 +160,7 @@ class BaseHandler(HubAuthenticated, JupyterHubBaseHandler):
     def param_decode(self, value):
         unquote(value) if re.search("%20", value) else unquote_plus(value)
         return value
+
 
 class Template404(BaseHandler):
     """Render nbexchange's 404 template"""

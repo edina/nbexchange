@@ -90,7 +90,6 @@ class Collections(BaseHandler):
             self.log.info(note)
             self.write({"success": False, "value": models, "note": note})
 
-
         assignments = orm.Assignment.find_for_course(
             db=self.db, course_id=course.id, log=self.log
         )
@@ -108,7 +107,9 @@ class Collections(BaseHandler):
                             "course_id": assignment.course.course_code,
                             "status": action.action.value,  # currently called 'action' in our db
                             "path": action.location,
-                            "notebooks": [{"name": x.name} for x in assignment.notebooks],
+                            "notebooks": [
+                                {"name": x.name} for x in assignment.notebooks
+                            ],
                             "timestamp": action.timestamp.strftime(
                                 "%Y-%m-%d %H:%M:%S.%f %Z"
                             ),
@@ -117,4 +118,3 @@ class Collections(BaseHandler):
 
         self.log.debug("Assignments: {}".format(models))
         self.write({"success": True, "value": models})
-

@@ -87,7 +87,6 @@ class Assignments(BaseHandler):
             self.log.info(note)
             self.write({"success": False, "value": models, "note": note})
 
-
         assignments = orm.Assignment.find_for_course(
             db=self.db, course_id=course.id, log=self.log
         )

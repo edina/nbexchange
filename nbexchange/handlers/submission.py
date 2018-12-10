@@ -80,6 +80,7 @@ POST: (with file) submits an assignment
             note = "User not subscribed to course {}".format(course_code)
             self.log.info(note)
             self.write({"success": False, "note": note})
+            return
 
         # The course will exist: the user object creates it if it doesn't exist
         #  - and we know the user is subscribed to the course as an instructor (above)
@@ -95,6 +96,7 @@ POST: (with file) submits an assignment
             note = "User not fetched assignment {}".format(assignment_code)
             self.log.info(note)
             self.write({"success": False, "note": note})
+            return
 
         # storage is dynamically in $path/submitted/$course_code/$assignment_code/$username/<timestamp>/
         # Note - this means that a user can submit multiple times, and we have all copies

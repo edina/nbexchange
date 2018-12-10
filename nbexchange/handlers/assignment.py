@@ -55,6 +55,7 @@ class Assignments(BaseHandler):
             note = "Assigment call requires a course id"
             self.log.info(note)
             self.write({"success": False, "value": models, "note": note})
+            return
 
         # Un url-encode variables
         course_code = (
@@ -74,7 +75,8 @@ class Assignments(BaseHandler):
                 this_user.get("name"), course_code
             )
             self.log.info(note)
-            self.write({"success": False, "value": models, "note": note})
+            self.finish({"success": False, "value": models, "note": note})
+            return
 
         # Find the course being referred to
         course = orm.Course.find_by_code(
@@ -83,7 +85,8 @@ class Assignments(BaseHandler):
         if not course:
             note = "Course {} does not exist".format(course_code)
             self.log.info(note)
-            self.write({"success": False, "value": models, "note": note})
+            self.finish({"success": False, "value": models, "note": note})
+            return
 
         assignments = orm.Assignment.find_for_course(
             db=self.db, course_id=course.id, log=self.log
@@ -178,6 +181,7 @@ class Assignment(BaseHandler):
             note = f"User not subscribed to course {course_code}"
             self.log.info(note)
             self.write({"success": False, "note": note})
+            return
 
         # Find the course being referred to
         course = orm.Course.find_by_code(
@@ -262,7 +266,8 @@ class Assignment(BaseHandler):
         if not (course_code and assignment_code):
             note = "Posting an Assigment requires a course code and an assignment code"
             self.log.info(note)
-            self.write({"success": False, "note": note})
+            self.finish({"success": False, "note": note})
+            return
 
         # Un url-encode variables
         course_code = (
@@ -281,10 +286,12 @@ class Assignment(BaseHandler):
             note = "User not subscribed to course {}".format(course_code)
             self.log.info(note)
             self.write({"success": False, "note": note})
+            return
         if not "instructor" in this_user["courses"][course_code]:
             note = "User not an instructor to course {}".format(course_code)
             self.log.info(note)
             self.write({"success": False, "note": note})
+            return
 
         # The course will exist: the user object creates it if it doesn't exist
         #  - and we know the user is subscribed to the course as an instructor (above)

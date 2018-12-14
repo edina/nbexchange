@@ -146,6 +146,23 @@ class BaseHandler(HubOAuthenticated, JupyterHubBaseHandler):
         unquote(value) if re.search("%20", value) else unquote_plus(value)
         return value
 
+    def get_params(self, param_list):
+
+        return_params = []
+
+        for param in param_list:
+            value = (
+                self.request.arguments[param][0].decode("utf-8")
+                if param in self.request.arguments
+                else None
+            )
+            value = (
+                self.param_decode(value)
+                if value
+                else None
+            )
+            return_params.append(value)
+        return return_params
 
 class Template404(BaseHandler):
     """Render nbexchange's 404 template"""

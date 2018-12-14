@@ -43,36 +43,13 @@ POST: (with file) submits an assignment
     @web.authenticated
     def post(self):
 
-        params = self.request.arguments
-        course_code = (
-            self.request.arguments["course_id"][0].decode("utf-8")
-            if "course_id" in self.request.arguments
-            else None
-        )
-        assignment_code = (
-            self.request.arguments["assignment_id"][0].decode("utf-8")
-            if "assignment_id" in self.request.arguments
-            else None
-        )
+        [course_code, assignment_code] = self.get_params(["course_id", "assignment_id"])
 
         if not course_code and not assignment_code:
             self.log.info(
                 "Assigment call requires both a course code and an assignment code!!"
             )
             return
-
-        # Un url-encode variables
-        course_code = (
-            unquote(course_code)
-            if re.search("%20", course_code)
-            else unquote_plus(course_code)
-        )
-
-        assignment_code = (
-            unquote(assignment_code)
-            if re.search("%20", assignment_code)
-            else unquote_plus(assignment_code)
-        )
 
         this_user = self.nbex_user
 

@@ -40,17 +40,8 @@ class Collections(BaseHandler):
 
         models = []
 
-        # Endpoint needs to be called with a course_id parameters
-        course_code = (
-            self.request.arguments["course_id"][0].decode("utf-8")
-            if "course_id" in self.request.arguments
-            else None
-        )
-        assignment_code = (
-            self.request.arguments["assignment_id"][0].decode("utf-8")
-            if "assignment_id" in self.request.arguments
-            else None
-        )
+        [course_code, assignment_code] = self.get_params(["course_id", "assignment_id"])
+
         if not course_code:
             note = "collections call requires a course id"
             self.log.info(note)
@@ -59,10 +50,6 @@ class Collections(BaseHandler):
             note = "collections call requires an assignment id"
             self.log.info(note)
             self.write({"success": False, "value": models, "note": note})
-
-        # Un url-encode variables
-        course_code = self.param_decode(course_code)
-        assignment_code = self.param_decode(assignment_code)
 
         # Who is my user?
         this_user = self.nbex_user
@@ -136,22 +123,8 @@ class Collection(BaseHandler):
 
         models = []
 
-        # Endpoint needs to be called with a course_id parameters
-        course_code = (
-            self.request.arguments["course_id"][0].decode("utf-8")
-            if "course_id" in self.request.arguments
-            else None
-        )
-        assignment_code = (
-            self.request.arguments["assignment_id"][0].decode("utf-8")
-            if "assignment_id" in self.request.arguments
-            else None
-        )
-        path = (
-            self.request.arguments["path"][0].decode("utf-8")
-            if "path" in self.request.arguments
-            else None
-        )
+        [course_code, assignment_code, path] = self.get_params(["course_id", "assignment_id", "path"])
+
         if not course_code:
             note = "collection call requires a course id"
             self.log.info(note)
@@ -164,11 +137,6 @@ class Collection(BaseHandler):
             note = "collection call requires a path"
             self.log.info(note)
             self.write({"success": False, "value": models, "note": note})
-
-        # Un url-encode variables
-        course_code = self.param_decode(course_code)
-        assignment_code = self.param_decode(assignment_code)
-        path = self.param_decode(path)
 
         # Who is my user?
         this_user = self.nbex_user

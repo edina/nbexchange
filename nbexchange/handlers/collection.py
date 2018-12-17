@@ -58,13 +58,11 @@ class Collections(BaseHandler):
         self.log.debug(f"Course: {course_code}")
         # Is our user subscribed to this course?
         if course_code not in this_user["courses"]:
-            note = "User {} not subscribed to course {}".format(
-                this_user.get("name"), course_code
-            )
+            note = f"User {this_user.get('name')} not subscribed to course {course_code}"
             self.log.info(note)
             self.write({"success": False, "value": models, "note": note})
         if not "instructor" in this_user["courses"][course_code]:
-            note = "User not an instructor to course {}".format(course_code)
+            note = f"User not an instructor to course {course_code}"
             self.log.info(note)
             self.write({"success": False, "note": note})
 
@@ -73,7 +71,7 @@ class Collections(BaseHandler):
             db=self.db, code=course_code, org_id=this_user["org_id"], log=self.log
         )
         if not course:
-            note = "Course {} does not exist".format(course_code)
+            note = f"Course {course_code} does not exist"
             self.log.info(note)
             self.write({"success": False, "value": models, "note": note})
 
@@ -102,7 +100,7 @@ class Collections(BaseHandler):
                         }
                     )
 
-        self.log.debug("Assignments: {}".format(models))
+        self.log.debug(f"Assignments: {models}")
         self.write({"success": True, "value": models})
 
 class Collection(BaseHandler):
@@ -126,15 +124,15 @@ class Collection(BaseHandler):
         [course_code, assignment_code, path] = self.get_params(["course_id", "assignment_id", "path"])
 
         if not course_code:
-            note = "collection call requires a course id"
+            note = f"collection call requires a course id"
             self.log.info(note)
             self.write({"success": False, "value": models, "note": note})
         if not assignment_code:
-            note = "collection call requires an assignment id"
+            note = f"collection call requires an assignment id"
             self.log.info(note)
             self.write({"success": False, "value": models, "note": note})
         if not path:
-            note = "collection call requires a path"
+            note = f"collection call requires a path"
             self.log.info(note)
             self.write({"success": False, "value": models, "note": note})
 
@@ -145,13 +143,11 @@ class Collection(BaseHandler):
         self.log.debug(f"Course: {course_code}")
         # Is our user subscribed to this course?
         if course_code not in this_user["courses"]:
-            note = "User {} not subscribed to course {}".format(
-                this_user.get("name"), course_code
-            )
+            note = f"User {this_user.get('name')} not subscribed to course {course_code}"
             self.log.info(note)
             self.write({"success": False, "value": models, "note": note})
         if not "instructor" in this_user["courses"][course_code]:
-            note = "User not an instructor to course {}".format(course_code)
+            note = f"User not an instructor to course {course_code}"
             self.log.info(note)
             self.write({"success": False, "note": note})
 
@@ -160,7 +156,7 @@ class Collection(BaseHandler):
             db=self.db, code=course_code, org_id=this_user["org_id"], log=self.log
         )
         if not course:
-            note = "Course {} does not exist".format(course_code)
+            note = f"Course {course_code} does not exist"
             self.log.info(note)
             self.write({"success": False, "value": models, "note": note})
 

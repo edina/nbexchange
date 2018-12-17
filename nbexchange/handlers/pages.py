@@ -13,5 +13,5 @@ class HomeHandler(BaseHandler):
     urls = ["/"]
 
     def get(self):
-        self.log.info("################  Hello World, this is home")
-        self.write("################  Hello World, this is home")
+        self.log.info(f"################  Hello World, this is home")
+        self.write(f"################  Hello World, this is home")

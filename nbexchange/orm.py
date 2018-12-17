@@ -80,7 +80,7 @@ class Action(Base):
 
     # What action have users taken for this Assignment
     for action is ass.users:
-      print("User {} did a {} at {}".format(action.user.username, action.action, action.timestamp)
+      print(f"User {action.user.username} did a {action.action} at {action.timestamp}")
     
     """
 
@@ -102,9 +102,7 @@ class Action(Base):
     assignment = relationship("Assignment", back_populates="actions")
 
     def __repr__(self):
-        return "Assignment #{} {} by {} at {}".format(
-            self.assignment_id, self.action, self.user_id, self.timestamp
-        )
+        return f"Assignment #{self.assignment_id} {self.action} by {self.user_id} at {self.timestamp}"
 
 
 # This is the subscription: a user on a course, with a role
@@ -120,10 +118,7 @@ class Subscription(Base):
     # create a new subscription, hard-coded linking
     subscr = Subscription(role='Student', user_id = usr.id)
     subscr.course_id = crs.id
-    
-    # What action have users taken for this Assignment
-    for action is ass.users:
-      print("User {} did a {} at {}".format(action.user.username, action.action, action.timestamp)
+
     """
 
     __tablename__ = "subscription"
@@ -144,9 +139,9 @@ class Subscription(Base):
         Returns None if not found.
         """
         if log:
-            log.info("Subscription.find_by_pk - pk:{}".format(pk))
+            log.info(f"Subscription.find_by_pk - pk:{pk}")
         if pk is None:
-            raise ValueError("Primary Key needs to be defined")
+            raise ValueError(f"Primary Key needs to be defined")
         if isinstance(pk, int):
             return db.query(cls).filter(cls.id == pk).first()
         else:
@@ -159,9 +154,7 @@ class Subscription(Base):
         """
         if log:
             log.info(
-                "Subscription.find_by_set - user_id:{}, course_id:{}, role:{}".format(
-                    user_id, course_id, role
-                )
+                f"Subscription.find_by_set - user_id:{user_id}, course_id:{course_id}, role:{role}"
             )
         return (
             db.query(cls)
@@ -172,9 +165,7 @@ class Subscription(Base):
         )
 
     def __repr__(self):
-        return "Subscription for user {} to course {} as a {}".format(
-            self.user_id, self.course_id, self.role
-        )
+        return f"Subscription for user {self.user_id} to course {self.course_id} as a {self.role}"
 
 
 class User(Base):
@@ -188,12 +179,6 @@ class User(Base):
     usr = User( name = self.get_current_user().get('name') )
     user.courses.append(crs)
     user.assignments.append(ass)
-
-
-    # What action have users taken for this Assignment
-    for action is user.assignments:
-      print("User {} did a {} at {} on assignment {} ".format(user.username,
-       action.action, action.timestamp, action.assignment.assignment_code)
     """
 
     __tablename__ = "user"
@@ -217,10 +202,10 @@ class User(Base):
         Returns None if not found.
         """
         if log:
-            log.info("User.find_by_pk - pk:{}".format(pk))
+            log.info(f"User.find_by_pk - pk:{pk}")
 
         if pk is None:
-            raise ValueError("Primary Key needs to be defined")
+            raise ValueError(f"Primary Key needs to be defined")
         if isinstance(pk, int):
             return db.query(cls).filter(cls.id == pk).first()
         else:
@@ -232,9 +217,9 @@ class User(Base):
         Returns None if not found.
         """
         if log:
-            log.info("User.find_by_name - name:{}".format(name))
+            log.info(f"User.find_by_name - name:{name}")
         if name is None:
-            raise ValueError("Name needs to be defined")
+            raise ValueError(f"Name needs to be defined")
         return db.query(cls).filter(cls.name == name).first()
 
     @classmethod
@@ -243,14 +228,14 @@ class User(Base):
         Returns None if not found.
         """
         if log:
-            log.info("User.find_by_org - id:{}".format(org_id))
+            log.info(f"User.find_by_org - id:{org_id}")
         org_id = int(float(org_id)) if org_id else None
         if org_id is None:
-            raise ValueError("org_id needs to be defined, and a number")
+            raise ValueError(f"org_id needs to be defined, and a number")
         return list(db.query(cls).filter(cls.org_id == org_id))
 
     def __repr__(self):
-        return "User/{}".format(self.name)
+        return f"User/{self.name}"
 
 
 class Course(Base):
@@ -289,9 +274,9 @@ class Course(Base):
         Returns None if not found.
         """
         if log:
-            log.info("Course.find_by_pk - pk:{}".format(pk))
+            log.info(f"Course.find_by_pk - pk:{pk}")
         if pk is None:
-            raise ValueError("Primary Key needs to be defined")
+            raise ValueError(f"Primary Key needs to be defined")
         if isinstance(pk, int):
             return db.query(cls).filter(cls.id == pk).first()
         else:
@@ -303,12 +288,12 @@ class Course(Base):
         Returns None if not found.
         """
         if log:
-            log.info("Course.find_by_code - code:{} (org_id:{})".format(code, org_id))
+            log.info(f"Course.find_by_code - code:{code} (org_id:{org_id})")
         if code is None:
-            raise ValueError("code needs to be defined")
+            raise ValueError(f"code needs to be defined")
         org_id = int(float(org_id)) if org_id else None
         if org_id is None:
-            raise ValueError("org_id needs to be defined, and a number")
+            raise ValueError(f"org_id needs to be defined, and a number")
         return (
             db.query(cls).filter(cls.course_code == code, cls.org_id == org_id).first()
         )
@@ -319,14 +304,14 @@ class Course(Base):
         Returns None if not found.
         """
         if log:
-            log.info("Course.find_by_org - id:{}".format(org_id))
+            log.info(f"Course.find_by_org - id:{org_id}")
         org_id = int(float(org_id)) if org_id else None
         if org_id is None:
-            raise ValueError("org_id needs to be defined, and a number")
+            raise ValueError(f"org_id needs to be defined, and a number")
         return list(db.query(cls).filter(cls.org_id == org_id))
 
     def __repr__(self):
-        return "Course/{} {}".format(self.course_code, self.course_title)
+        return f"Course/{self.course_code} {self.course_title}"
 
 
 class Assignment(Base):
@@ -343,10 +328,6 @@ class Assignment(Base):
     acc.user_id = self.get_current_user().id
     acc.assignment_id = ass.id
     ass.users.append(acc)
-
-    for action is ass.users:
-      print("User {} did a {} at {}".format(action.user.username, action.action, action.timestamp)
-    
     """
 
     __tablename__ = "assignment"
@@ -374,9 +355,9 @@ class Assignment(Base):
         Returns None if not found.
         """
         if log:
-            log.info("Assignmetn.find_by_pk - pk:{}".format(pk))
+            log.info(f"Assignmetn.find_by_pk - pk:{pk}")
         if pk is None:
-            raise ValueError("Primary Key needs to be defined")
+            raise ValueError(f"Primary Key needs to be defined")
         if isinstance(pk, int):
             return db.query(cls).filter(cls.id == pk).first()
         else:
@@ -389,12 +370,10 @@ class Assignment(Base):
         """
         if log:
             log.info(
-                "Assignment.find_by_code - code:{} (course_id:{}, active:{})".format(
-                    code, course_id, active
-                )
+                f"Assignment.find_by_code - code:{code} (course_id:{course_id}, active:{active})"
             )
         if code is None:
-            raise ValueError("code needs to be defined")
+            raise ValueError(f"code needs to be defined")
         if course_id and not isinstance(course_id, int):
             raise TypeError(f"Course_id, if specified, must be an Int")
         return (
@@ -415,16 +394,12 @@ class Assignment(Base):
     """
         if log:
             log.info(
-                "Assignment.find_for_course - course_id:{}, active:{}".format(
-                    course_id, active
-                )
+                f"Assignment.find_for_course - course_id:{course_id}, active:{active}"
             )
         return db.query(cls).filter(cls.course_id == course_id, cls.active == active)
 
     def __repr__(self):
-        return "Assignment {} for course {}".format(
-            self.assignment_code, self.course_id
-        )
+        return f"Assignment {self.assignment_code} for course {self.course_id}"
 
 
 class Notebook(Base):
@@ -446,7 +421,7 @@ class Notebook(Base):
     assignment_id = Column(Integer(), ForeignKey("assignment.id"))
 
     def __repr__(self):
-        return "Notebook<{}/{}>".format(self.assignment.name, self.name)
+        return f"Notebook<{self.assignment.name}/{self.name}>"
 
 
 ### ref: https://docs.sqlalchemy.org/en/latest/orm/basic_relationships.html
@@ -574,7 +549,7 @@ def check_db_revision(engine, log=None):
 
         if not my_table_names.intersection(current_table_names):
             # no tables have been created, stamp with current revision
-            log.info("Stamping empty database with alembic revision %s", head)
+            log.info(f"Stamping empty database with alembic revision {head}")
             alembic.command.stamp(cfg, head)
             return
 
@@ -584,15 +559,13 @@ def check_db_revision(engine, log=None):
         "SELECT version_num FROM alembic_version"
     ).first()[0]
     if alembic_revision == head:
-        log.debug("database schema version found: %s", alembic_revision)
+        log.debug(f"database schema version found: {alembic_revision}")
         pass
     else:
         raise DatabaseSchemaMismatch(
-            "Found database schema version {found} != {head}. "
+            f"Found database schema version {alembic_revision} != {head}. "
             "Backup your database and run `jupyterhub upgrade-db`"
-            " to upgrade to the latest schema.".format(
-                found=alembic_revision, head=head
-            )
+            " to upgrade to the latest schema."
         )
 
 
@@ -625,7 +598,7 @@ def new_session_factory(
     url="sqlite:///:memory:", reset=False, expire_on_commit=False, log=None, **kwargs
 ):
     """Create a new session at url"""
-    log.info("orm.new_session_factory: db_url:{}, reset:{}".format(url, reset))
+    log.info(f"orm.new_session_factory: db_url:{url}, reset:{reset}")
     if url.startswith("sqlite"):
         kwargs.setdefault("connect_args", {"check_same_thread": False})
         listeners = kwargs.setdefault("listeners", [])
@@ -640,7 +613,7 @@ def new_session_factory(
         kwargs.setdefault("poolclass", StaticPool)
 
     engine = create_engine(url, **kwargs)
-    log.info("orm.new_session_factory: engine:{}".format(engine))
+    log.info(f"orm.new_session_factory: engine:{engine}")
     # enable pessimistic disconnect handling
     register_ping_connection(engine)
 

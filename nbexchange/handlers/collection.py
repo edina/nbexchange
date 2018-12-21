@@ -61,7 +61,8 @@ class Collections(BaseHandler):
             note = f"User {this_user.get('name')} not subscribed to course {course_code}"
             self.log.info(note)
             self.write({"success": False, "value": models, "note": note})
-        if not "instructor" in this_user["courses"][course_code]:
+        if not "instructor" in map(str.casefold, this_user["courses"][course_code]):
+            # if not "instructor" in this_user["courses"][course_code]:
             note = f"User not an instructor to course {course_code}"
             self.log.info(note)
             self.write({"success": False, "note": note})
@@ -146,7 +147,8 @@ class Collection(BaseHandler):
             note = f"User {this_user.get('name')} not subscribed to course {course_code}"
             self.log.info(note)
             self.write({"success": False, "value": models, "note": note})
-        if not "instructor" in this_user["courses"][course_code]:
+        if not "instructor" in map(str.casefold, this_user["courses"][course_code]):
+            # if not "instructor" in this_user["courses"][course_code]:
             note = f"User not an instructor to course {course_code}"
             self.log.info(note)
             self.write({"success": False, "note": note})

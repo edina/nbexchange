@@ -230,7 +230,7 @@ class Assignment(BaseHandler):
             self.log.info(note)
             self.write({"success": False, "note": note})
             return
-        if not "instructor" in this_user["courses"][course_code]:
+        if not "instructor" in map(str.casefold, this_user["courses"][course_code]):
             note = f"User not an instructor to course {course_code}"
             self.log.info(note)
             self.write({"success": False, "note": note})

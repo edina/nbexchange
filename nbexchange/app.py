@@ -163,7 +163,7 @@ class NbExchange(Application):
                 reset=self.reset_db,
                 echo=self.debug_db,
                 log=self.log,
-                **self.db_kwargs
+                **self.db_kwargs,
             )
             self.db = self.session_factory()
         except OperationalError as e:

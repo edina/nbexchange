@@ -58,7 +58,9 @@ class Collections(BaseHandler):
         self.log.debug(f"Course: {course_code}")
         # Is our user subscribed to this course?
         if course_code not in this_user["courses"]:
-            note = f"User {this_user.get('name')} not subscribed to course {course_code}"
+            note = (
+                f"User {this_user.get('name')} not subscribed to course {course_code}"
+            )
             self.log.info(note)
             self.write({"success": False, "value": models, "note": note})
         if not "instructor" in map(str.casefold, this_user["courses"][course_code]):
@@ -104,6 +106,7 @@ class Collections(BaseHandler):
         self.log.debug(f"Assignments: {models}")
         self.write({"success": True, "value": models})
 
+
 class Collection(BaseHandler):
     """.../collection/
     parmas:
@@ -122,7 +125,9 @@ class Collection(BaseHandler):
 
         models = []
 
-        [course_code, assignment_code, path] = self.get_params(["course_id", "assignment_id", "path"])
+        [course_code, assignment_code, path] = self.get_params(
+            ["course_id", "assignment_id", "path"]
+        )
 
         if not course_code:
             note = f"collection call requires a course id"
@@ -144,7 +149,9 @@ class Collection(BaseHandler):
         self.log.debug(f"Course: {course_code}")
         # Is our user subscribed to this course?
         if course_code not in this_user["courses"]:
-            note = f"User {this_user.get('name')} not subscribed to course {course_code}"
+            note = (
+                f"User {this_user.get('name')} not subscribed to course {course_code}"
+            )
             self.log.info(note)
             self.write({"success": False, "value": models, "note": note})
         if not "instructor" in map(str.casefold, this_user["courses"][course_code]):
@@ -162,7 +169,6 @@ class Collection(BaseHandler):
             self.log.info(note)
             self.write({"success": False, "value": models, "note": note})
 
-
         assignments = orm.Assignment.find_for_course(
             db=self.db, course_id=course.id, log=self.log
         )
@@ -175,17 +181,17 @@ class Collection(BaseHandler):
                 # the path should be unique, but lets just double-check its "submitted" too
                 if (
                     action.action == orm.AssignmentActions.submitted
-                    and
-                    action.location == path ):
+                    and action.location == path
+                ):
 
-                        try:
-                            handle = open(path, "r+b")
-                            data = handle.read()
-                            handle.close
-                        except Exception as e:  # TODO: exception handling
-                            self.log.warning(f"Error: {e}")  # TODO: improve error message
-                            self.log.info("Recovery failed")
+                    try:
+                        handle = open(path, "r+b")
+                        data = handle.read()
+                        handle.close
+                    except Exception as e:  # TODO: exception handling
+                        self.log.warning(f"Error: {e}")  # TODO: improve error message
+                        self.log.info("Recovery failed")
 
-                            # error 500??
-                            raise Exception
+                        # error 500??
+                        raise Exception
         self.write(data)

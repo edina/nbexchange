@@ -20,9 +20,7 @@ class BaseHandler(HubOAuthenticated, JupyterHubBaseHandler):
 
     def get_auth_state(self, username=None):
         url = f"{self.settings['hub_api_url']}users/{username}"
-        headers = {
-            "Authorization": f"token {os.environ.get('JUPYTERHUB_API_TOKEN')}"
-        }
+        headers = {"Authorization": f"token {os.environ.get('JUPYTERHUB_API_TOKEN')}"}
         r = requests.get(url, headers=headers)
         r.raise_for_status()
         user = r.json()
@@ -53,9 +51,7 @@ class BaseHandler(HubOAuthenticated, JupyterHubBaseHandler):
 
         user = orm.User.find_by_name(db=self.db, name=hub_username, log=self.log)
         if user is None:
-            self.log.debug(
-                f"New user details: name:{hub_username}, org_id:{org_id}"
-            )
+            self.log.debug(f"New user details: name:{hub_username}, org_id:{org_id}")
             user = orm.User(name=hub_username, org_id=org_id)
             self.db.add(user)
 
@@ -152,13 +148,10 @@ class BaseHandler(HubOAuthenticated, JupyterHubBaseHandler):
                 if param in self.request.arguments
                 else None
             )
-            value = (
-                self.param_decode(value)
-                if value
-                else None
-            )
+            value = self.param_decode(value) if value else None
             return_params.append(value)
         return return_params
+
 
 class Template404(BaseHandler):
     """Render nbexchange's 404 template"""

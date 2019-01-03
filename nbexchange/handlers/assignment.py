@@ -60,7 +60,9 @@ class Assignments(BaseHandler):
         self.log.debug(f"Course: {course_code}")
         # Is our user subscribed to this course?
         if course_code not in this_user["courses"]:
-            note = f"User {this_user.get('name')} not subscribed to course {course_code}"
+            note = (
+                f"User {this_user.get('name')} not subscribed to course {course_code}"
+            )
             self.log.info(note)
             self.finish({"success": False, "value": models, "note": note})
             return
@@ -172,7 +174,7 @@ class Assignment(BaseHandler):
         if assignment:
             self.log.info(
                 f"Adding action {orm.AssignmentActions.fetched.value} for user {this_user['ormUser'].id} against assignment {assignment.id}"
-                )
+            )
             data = b""
 
             release_file = None

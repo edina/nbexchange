@@ -43,28 +43,15 @@ class Assignments(BaseHandler):
     @web.authenticated
     def get(self):
 
-        self.log.debug("+++++ assignment GET starting")
         models = []
 
-        # Endpoint needs to be called with a course_id parameters
-        course_code = (
-            self.request.arguments["course_id"][0].decode("utf-8")
-            if "course_id" in self.request.arguments
-            else None
-        )
+        [course_code] = self.get_params(["course_id"])
 
         if not course_code:
-            note = "Assigment call requires a course id"
+            note = f"Assigment call requires a course id"
             self.log.info(note)
             self.write({"success": False, "value": models, "note": note})
             return
-
-        # Un url-encode variables
-        course_code = (
-            unquote(course_code)
-            if re.search("%20", course_code)
-            else unquote_plus(course_code)
-        )
 
         # Who is my user?
         this_user = self.nbex_user
@@ -73,8 +60,8 @@ class Assignments(BaseHandler):
         self.log.debug(f"Course: {course_code}")
         # Is our user subscribed to this course?
         if course_code not in this_user["courses"]:
-            note = "User {} not subscribed to course {}".format(
-                this_user.get("name"), course_code
+            note = (
+                f"User {this_user.get('name')} not subscribed to course {course_code}"
             )
             self.log.info(note)
             self.finish({"success": False, "value": models, "note": note})
@@ -85,7 +72,7 @@ class Assignments(BaseHandler):
             db=self.db, code=course_code, org_id=this_user["org_id"], log=self.log
         )
         if not course:
-            note = "Course {} does not exist".format(course_code)
+            note = f"Course {course_code} does not exist"
             self.log.info(note)
             self.finish({"success": False, "value": models, "note": note})
             return
@@ -95,7 +82,7 @@ class Assignments(BaseHandler):
         )
 
         for assignment in assignments:
-            self.log.debug("==========")
+            self.log.debug(f"==========")
             self.log.debug(f"Assignment: {assignment}")
             self.log.debug(f"Assignment Actions: {assignment.actions}")
             for action in assignment.actions:
@@ -122,7 +109,7 @@ class Assignments(BaseHandler):
                     }
                 )
 
-        self.log.debug("Assignments: {}".format(models))
+        self.log.debug(f"Assignments: {models}")
         self.write({"success": True, "value": models})
 
 
@@ -141,41 +128,16 @@ class Assignment(BaseHandler):
 
     @web.authenticated
     def get(self):  # def get(self, course_code, assignment_code=None):
-        self.log.debug("+++++ assignment GET starting")
-
-        params = self.request.arguments
-        self.log.debug("params:{}".format(params))
-        course_code = (
-            self.request.arguments["course_id"][0].decode("utf-8")
-            if "course_id" in self.request.arguments
-            else None
-        )
-        assignment_code = (
-            self.request.arguments["assignment_id"][0].decode("utf-8")
-            if "assignment_id" in self.request.arguments
-            else None
-        )
 
         models = []
+
+        [course_code, assignment_code] = self.get_params(["course_id", "assignment_id"])
 
         if not course_code and not assignment_code:
             self.log.info(
                 "Assigment call requires both a course code and an assignment code!!"
             )
             return
-
-        # Un url-encode variables
-        course_code = (
-            unquote(course_code)
-            if re.search("%20", course_code)
-            else unquote_plus(course_code)
-        )
-
-        assignment_code = (
-            unquote(assignment_code)
-            if re.search("%20", assignment_code)
-            else unquote_plus(assignment_code)
-        )
 
         this_user = self.nbex_user
 
@@ -196,7 +158,7 @@ class Assignment(BaseHandler):
             return  # needs a proper 'fail' here
 
         note = ""
-        self.log.debug("Course:{} assignment:{}".format(course_code, assignment_code))
+        self.log.debug(f"Course:{course_code} assignment:{assignment_code}")
 
         # The location for the data-object is actually held in the 'released' action for the given assignment
         # We want the last one...
@@ -211,11 +173,7 @@ class Assignment(BaseHandler):
         )
         if assignment:
             self.log.info(
-                "Adding action {} for user {} against assignment {}".format(
-                    orm.AssignmentActions.fetched.value,
-                    this_user["ormUser"].id,
-                    assignment.id,
-                )
+                f"Adding action {orm.AssignmentActions.fetched.value} for user {this_user['ormUser'].id} against assignment {assignment.id}"
             )
             data = b""
 
@@ -233,7 +191,7 @@ class Assignment(BaseHandler):
                 handle.close
             except Exception as e:  # TODO: exception handling
                 self.log.warning(f"Error: {e}")  # TODO: improve error message
-                self.log.info("Recovery failed")
+                self.log.info(f"Recovery failed")
 
                 # error 500??
                 raise Exception
@@ -255,42 +213,27 @@ class Assignment(BaseHandler):
     @web.authenticated
     def post(self):
 
-        course_code = self.request.arguments["course_id"][0].decode("utf-8")
-        assignment_code = (
-            self.request.arguments["assignment_id"][0].decode("utf-8")
-            if "assignment_id" in self.request.arguments
-            else None
-        )
+        model = []
+
+        [course_code, assignment_code] = self.get_params(["course_id", "assignment_id"])
 
         self.log.debug(
             f"Called POST /assignment with arguments: course {course_code} and  assignment {assignment_code}"
         )
         if not (course_code and assignment_code):
-            note = "Posting an Assigment requires a course code and an assignment code"
+            note = f"Posting an Assigment requires a course code and an assignment code"
             self.log.info(note)
             self.finish({"success": False, "note": note})
             return
 
-        # Un url-encode variables
-        course_code = (
-            unquote(course_code)
-            if re.search("%20", course_code)
-            else unquote_plus(course_code)
-        )
-        assignment_code = (
-            unquote(assignment_code)
-            if re.search("%20", assignment_code)
-            else unquote_plus(assignment_code)
-        )
-
         this_user = self.nbex_user
         if not course_code in this_user["courses"]:
-            note = "User not subscribed to course {}".format(course_code)
+            note = f"User not subscribed to course {course_code}"
             self.log.info(note)
             self.write({"success": False, "note": note})
             return
-        if not "instructor" in this_user["courses"][course_code]:
-            note = "User not an instructor to course {}".format(course_code)
+        if not "instructor" in map(str.casefold, this_user["courses"][course_code]):
+            note = f"User not an instructor to course {course_code}"
             self.log.info(note)
             self.write({"success": False, "note": note})
             return
@@ -307,9 +250,7 @@ class Assignment(BaseHandler):
         )
         if assignment is None:
             self.log.info(
-                "New Assignment details: assignment_code:{}, course_id:{}".format(
-                    assignment_code, course.id
-                )
+                f"New Assignment details: assignment_code:{assignment_code}, course_id:{course.id}"
             )
             # defaults active
             assignment = orm.Assignment(
@@ -330,14 +271,12 @@ class Assignment(BaseHandler):
             ]
         )
 
-        model = []
-
         try:
             # Write the uploaded file to the desired location
             file_info = self.request.files["assignment"][0]
 
             filename, content_type = file_info["filename"], file_info["content_type"]
-            note = "Received file {}, of type {}".format(filename, content_type)
+            note = f"Received file {filename}, of type {content_type}"
             self.log.info(note)
             model.append(note)
             extn = os.path.splitext(filename)[1]
@@ -355,7 +294,7 @@ class Assignment(BaseHandler):
         except Exception as e:  # TODO: exception handling
             self.log.warning(f"Error: {e}")  # TODO: improve error message
 
-            self.log.info("Upload failed")
+            self.log.info(f"Upload failed")
             self.db.rollback()
             # error 500??
             raise Exception
@@ -376,9 +315,7 @@ class Assignment(BaseHandler):
         # Record the action.
         # Note we record the path to the files.
         self.log.info(
-            "!!!!!!!!!!!!!! assignment details for upload:{}|{}".format(
-                assignment.id, assignment.course_id
-            )
+            f"!!!!!!!!!!!!!! assignment details for upload:{assignment.id}|{assignment.course_id}"
         )
         action = orm.Action(
             user_id=this_user["ormUser"].id,

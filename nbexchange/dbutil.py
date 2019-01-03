@@ -90,12 +90,12 @@ def backup_db_file(db_file, log=None):
     for i in range(1, 10):
         if not os.path.exists(backup_db_file):
             break
-        backup_db_file = "{}.{}.{}".format(db_file, timestamp, i)
+        backup_db_file = f"{db_file}.{timestamp}.{i}"
 
     if os.path.exists(backup_db_file):
-        raise OSError("backup db file already exists: %s" % backup_db_file)
+        raise OSError(f"backup db file already exists: {backup_db_file}")
     if log:
-        log.info("Backing up %s => %s", db_file, backup_db_file)
+        log.info(f"Backing up {db_file} => {backup_db_file}")
     shutil.copy(db_file, backup_db_file)
 
 
@@ -116,7 +116,7 @@ def upgrade_if_needed(db_url, backup=True, log=None):
     else:
         # nothing to do
         return
-    log.info("Upgrading %s", db_url)
+    log.info(f"Upgrading {db_url}")
     # we need to upgrade, backup the database
     if backup and db_url.startswith("sqlite:///"):
         db_file = db_url.split(":///", 1)[1]

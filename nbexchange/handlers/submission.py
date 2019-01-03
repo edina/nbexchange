@@ -43,41 +43,18 @@ POST: (with file) submits an assignment
     @web.authenticated
     def post(self):
 
-        params = self.request.arguments
-        course_code = (
-            self.request.arguments["course_id"][0].decode("utf-8")
-            if "course_id" in self.request.arguments
-            else None
-        )
-        assignment_code = (
-            self.request.arguments["assignment_id"][0].decode("utf-8")
-            if "assignment_id" in self.request.arguments
-            else None
-        )
+        [course_code, assignment_code] = self.get_params(["course_id", "assignment_id"])
 
         if not course_code and not assignment_code:
             self.log.info(
-                "Assigment call requires both a course code and an assignment code!!"
+                f"Assigment call requires both a course code and an assignment code!!"
             )
             return
-
-        # Un url-encode variables
-        course_code = (
-            unquote(course_code)
-            if re.search("%20", course_code)
-            else unquote_plus(course_code)
-        )
-
-        assignment_code = (
-            unquote(assignment_code)
-            if re.search("%20", assignment_code)
-            else unquote_plus(assignment_code)
-        )
 
         this_user = self.nbex_user
 
         if not course_code in this_user["courses"]:
-            note = "User not subscribed to course {}".format(course_code)
+            note = f"User not subscribed to course {course_code}"
             self.log.info(note)
             self.write({"success": False, "note": note})
             return
@@ -93,7 +70,7 @@ POST: (with file) submits an assignment
             db=self.db, code=assignment_code, course_id=course.id
         )
         if assignment is None:
-            note = "User not fetched assignment {}".format(assignment_code)
+            note = f"User not fetched assignment {assignment_code}"
             self.log.info(note)
             self.write({"success": False, "note": note})
             return
@@ -116,7 +93,7 @@ POST: (with file) submits an assignment
             file_info = self.request.files["assignment"][0]
 
             filename, content_type = file_info["filename"], file_info["content_type"]
-            note = "Received file {}, of type {}".format(filename, content_type)
+            note = f"Received file {filename}, of type {content_type}"
             self.log.info(note)
             extn = os.path.splitext(filename)[1]
             cname = str(uuid.uuid4()) + extn
@@ -133,7 +110,7 @@ POST: (with file) submits an assignment
         except Exception as e:  # TODO: exception handling
             self.log.warning(f"Error: {e}")  # TODO: improve error message
 
-            self.log.info("Upload failed")
+            self.log.info(f"Upload failed")
             self.db.rollback()
             # error 500??
             raise Exception
@@ -147,9 +124,7 @@ POST: (with file) submits an assignment
         # Record the action.
         # Note we record the path to the files.
         self.log.info(
-            "!!!!!!!!!!!!!! submission details for upload:{}|{}".format(
-                assignment.id, assignment.course_id
-            )
+            f"!!!!!!!!!!!!!! submission details for upload:{assignment.id}|{assignment.course_id}"
         )
         action = orm.Action(
             user_id=this_user["ormUser"].id,
@@ -168,4 +143,4 @@ class Submissions(BaseHandler):
     @web.authenticated
     def post(self):
 
-        self.write("##### I received a POST for /submissions")
+        self.write(f"##### I received a POST for /submissions")

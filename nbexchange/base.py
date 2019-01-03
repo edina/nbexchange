@@ -19,10 +19,8 @@ class BaseHandler(HubOAuthenticated, JupyterHubBaseHandler):
     base_storage_location = "/tmp"
 
     def get_auth_state(self, username=None):
-        url = "{}users/{}".format(self.settings["hub_api_url"], username)
-        headers = {
-            "Authorization": "token {}".format(os.environ.get("JUPYTERHUB_API_TOKEN"))
-        }
+        url = f"{self.settings['hub_api_url']}users/{username}"
+        headers = {"Authorization": f"token {os.environ.get('JUPYTERHUB_API_TOKEN')}"}
         r = requests.get(url, headers=headers)
         r.raise_for_status()
         user = r.json()
@@ -53,9 +51,7 @@ class BaseHandler(HubOAuthenticated, JupyterHubBaseHandler):
 
         user = orm.User.find_by_name(db=self.db, name=hub_username, log=self.log)
         if user is None:
-            self.log.debug(
-                "New user details: name:{}, org_id:{}".format(hub_username, org_id)
-            )
+            self.log.debug(f"New user details: name:{hub_username}, org_id:{org_id}")
             user = orm.User(name=hub_username, org_id=org_id)
             self.db.add(user)
 
@@ -64,19 +60,17 @@ class BaseHandler(HubOAuthenticated, JupyterHubBaseHandler):
         )
         if course is None:
             self.log.debug(
-                "New course details: code:{}, org_id:{}".format(current_course, org_id)
+                f"New course details: code:{current_course}, org_id:{org_id}"
             )
             course = orm.Course(org_id=org_id, course_code=current_course)
             if course_title:
-                self.log.debug("Adding title {}".format(course_title))
+                self.log.debug(f"Adding title {course_title}")
                 course.course_title = course_title
             self.db.add(course)
 
         # Check to see if we have a subscription (for this course)
         self.log.debug(
-            "Looking for subscription for: user:{}, course:{}, role:{} ".format(
-                user.id, course.id, current_role
-            )
+            f"Looking for subscription for: user:{user.id}, course:{course.id}, role:{current_role}"
         )
 
         subscription = orm.Subscription.find_by_set(
@@ -84,9 +78,7 @@ class BaseHandler(HubOAuthenticated, JupyterHubBaseHandler):
         )
         if subscription is None:
             self.log.debug(
-                "New subscription details: user:{}, course:{}, role:{} ".format(
-                    user.id, course.id, current_role
-                )
+                f"New subscription details: user:{user.id}, course:{course.id}, role:{current_role}"
             )
             subscription = orm.Subscription(
                 user_id=user.id, course_id=course.id, role=current_role
@@ -145,6 +137,20 @@ class BaseHandler(HubOAuthenticated, JupyterHubBaseHandler):
     def param_decode(self, value):
         unquote(value) if re.search("%20", value) else unquote_plus(value)
         return value
+
+    def get_params(self, param_list):
+
+        return_params = []
+
+        for param in param_list:
+            value = (
+                self.request.arguments[param][0].decode("utf-8")
+                if param in self.request.arguments
+                else None
+            )
+            value = self.param_decode(value) if value else None
+            return_params.append(value)
+        return return_params
 
 
 class Template404(BaseHandler):

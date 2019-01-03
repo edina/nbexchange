@@ -40,17 +40,8 @@ class Collections(BaseHandler):
 
         models = []
 
-        # Endpoint needs to be called with a course_id parameters
-        course_code = (
-            self.request.arguments["course_id"][0].decode("utf-8")
-            if "course_id" in self.request.arguments
-            else None
-        )
-        assignment_code = (
-            self.request.arguments["assignment_id"][0].decode("utf-8")
-            if "assignment_id" in self.request.arguments
-            else None
-        )
+        [course_code, assignment_code] = self.get_params(["course_id", "assignment_id"])
+
         if not course_code:
             note = "collections call requires a course id"
             self.log.info(note)
@@ -60,10 +51,6 @@ class Collections(BaseHandler):
             self.log.info(note)
             self.write({"success": False, "value": models, "note": note})
 
-        # Un url-encode variables
-        course_code = self.param_decode(course_code)
-        assignment_code = self.param_decode(assignment_code)
-
         # Who is my user?
         this_user = self.nbex_user
         self.log.debug(f"User: {this_user.get('name')}")
@@ -71,13 +58,14 @@ class Collections(BaseHandler):
         self.log.debug(f"Course: {course_code}")
         # Is our user subscribed to this course?
         if course_code not in this_user["courses"]:
-            note = "User {} not subscribed to course {}".format(
-                this_user.get("name"), course_code
+            note = (
+                f"User {this_user.get('name')} not subscribed to course {course_code}"
             )
             self.log.info(note)
             self.write({"success": False, "value": models, "note": note})
-        if not "instructor" in this_user["courses"][course_code]:
-            note = "User not an instructor to course {}".format(course_code)
+        if not "instructor" in map(str.casefold, this_user["courses"][course_code]):
+            # if not "instructor" in this_user["courses"][course_code]:
+            note = f"User not an instructor to course {course_code}"
             self.log.info(note)
             self.write({"success": False, "note": note})
 
@@ -86,7 +74,7 @@ class Collections(BaseHandler):
             db=self.db, code=course_code, org_id=this_user["org_id"], log=self.log
         )
         if not course:
-            note = "Course {} does not exist".format(course_code)
+            note = f"Course {course_code} does not exist"
             self.log.info(note)
             self.write({"success": False, "value": models, "note": note})
 
@@ -95,7 +83,6 @@ class Collections(BaseHandler):
         )
 
         for assignment in assignments:
-            self.log.debug("+++++++++")
             self.log.debug(f"Assignment: {assignment}")
             self.log.debug(f"Assignment Actions: {assignment.actions}")
             for action in assignment.actions:
@@ -116,5 +103,95 @@ class Collections(BaseHandler):
                         }
                     )
 
-        self.log.debug("Assignments: {}".format(models))
+        self.log.debug(f"Assignments: {models}")
         self.write({"success": True, "value": models})
+
+
+class Collection(BaseHandler):
+    """.../collection/
+    parmas:
+        course_id: course_code
+        assignment_id: assignment_code
+        path: url_encoded_path
+
+    GET: Downloads the specified file (checking that it's "submitted", for this course/assignment,
+    and the user has access to do so)
+    """
+
+    urls = ["collection"]
+
+    @web.authenticated
+    def get(self):
+
+        models = []
+
+        [course_code, assignment_code, path] = self.get_params(
+            ["course_id", "assignment_id", "path"]
+        )
+
+        if not course_code:
+            note = f"collection call requires a course id"
+            self.log.info(note)
+            self.write({"success": False, "value": models, "note": note})
+        if not assignment_code:
+            note = f"collection call requires an assignment id"
+            self.log.info(note)
+            self.write({"success": False, "value": models, "note": note})
+        if not path:
+            note = f"collection call requires a path"
+            self.log.info(note)
+            self.write({"success": False, "value": models, "note": note})
+
+        # Who is my user?
+        this_user = self.nbex_user
+        self.log.debug(f"User: {this_user.get('name')}")
+        # For what course do we want to see the assignments?
+        self.log.debug(f"Course: {course_code}")
+        # Is our user subscribed to this course?
+        if course_code not in this_user["courses"]:
+            note = (
+                f"User {this_user.get('name')} not subscribed to course {course_code}"
+            )
+            self.log.info(note)
+            self.write({"success": False, "value": models, "note": note})
+        if not "instructor" in map(str.casefold, this_user["courses"][course_code]):
+            # if not "instructor" in this_user["courses"][course_code]:
+            note = f"User not an instructor to course {course_code}"
+            self.log.info(note)
+            self.write({"success": False, "note": note})
+
+        # Find the course being referred to
+        course = orm.Course.find_by_code(
+            db=self.db, code=course_code, org_id=this_user["org_id"], log=self.log
+        )
+        if not course:
+            note = f"Course {course_code} does not exist"
+            self.log.info(note)
+            self.write({"success": False, "value": models, "note": note})
+
+        assignments = orm.Assignment.find_for_course(
+            db=self.db, course_id=course.id, log=self.log
+        )
+
+        data = b""
+        for assignment in assignments:
+            self.log.debug(f"Assignment: {assignment}")
+            self.log.debug(f"Assignment Actions: {assignment.actions}")
+            for action in assignment.actions:
+                # the path should be unique, but lets just double-check its "submitted" too
+                if (
+                    action.action == orm.AssignmentActions.submitted
+                    and action.location == path
+                ):
+
+                    try:
+                        handle = open(path, "r+b")
+                        data = handle.read()
+                        handle.close
+                    except Exception as e:  # TODO: exception handling
+                        self.log.warning(f"Error: {e}")  # TODO: improve error message
+                        self.log.info("Recovery failed")
+
+                        # error 500??
+                        raise Exception
+        self.write(data)

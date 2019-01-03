@@ -145,11 +145,11 @@ class NbExchange(Application):
         parent, fname = os.path.split(path)
         user = getuser()
         if not os.path.isdir(parent):
-            self.log.error("Directory %s does not exist", parent)
+            self.log.error(f"Directory {parent} does not exist")
         if os.path.exists(parent) and not os.access(parent, os.W_OK):
-            self.log.error("%s cannot create files in %s", user, parent)
+            self.log.error(f"{user} cannot create files in {parent}")
         if os.path.exists(path) and not os.access(path, os.W_OK):
-            self.log.error("%s cannot edit %s", user, path)
+            self.log.error(f"{user} cannot edit {path}")
 
     def init_db(self):
         """Initialize the nbexchange database"""
@@ -163,12 +163,12 @@ class NbExchange(Application):
                 reset=self.reset_db,
                 echo=self.debug_db,
                 log=self.log,
-                **self.db_kwargs
+                **self.db_kwargs,
             )
             self.db = self.session_factory()
         except OperationalError as e:
-            self.log.error("Failed to connect to db: %s", self.db_url)
-            self.log.debug("Database error was:", exc_info=True)
+            self.log.error(f"Failed to connect to db: {self.db_url}")
+            self.log.debug(f"Database error was:", exc_info=True)
             if self.db_url.startswith("sqlite:///"):
                 self._check_db_path(self.db_url.split(":///", 1)[1])
             self.log.critical(

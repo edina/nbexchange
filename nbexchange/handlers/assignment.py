@@ -264,6 +264,7 @@ class Assignment(BaseHandler):
         release_file = "/".join(
             [
                 self.base_storage_location,
+                this_user["org_id"],
                 orm.AssignmentActions.released.value,
                 course_code,
                 assignment_code,

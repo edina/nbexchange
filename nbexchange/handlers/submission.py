@@ -80,7 +80,8 @@ POST: (with file) submits an assignment
         release_file = "/".join(
             [
                 self.base_storage_location,
-                "submitted",
+                this_user["org_id"],
+                orm.AssignmentActions.submitted.value,
                 course_code,
                 assignment_code,
                 this_user["name"],

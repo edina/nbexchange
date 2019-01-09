@@ -6,10 +6,11 @@ from jupyterhub.services.auth import HubAuthenticated, HubOAuthenticated
 from jupyterhub.utils import url_path_join
 from nbexchange import orm
 from tornado import gen, web
+from raven.contrib.tornado import SentryMixin
 from urllib.parse import quote_plus, unquote, unquote_plus
 
 
-class BaseHandler(HubOAuthenticated, JupyterHubBaseHandler):
+class BaseHandler(HubOAuthenticated, SentryMixin, JupyterHubBaseHandler):
     """An nbexchange base handler"""
 
     # register URL patterns

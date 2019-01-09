@@ -16,6 +16,7 @@ from tornado import web
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from tornado.log import app_log, access_log, gen_log
+from raven.contrib.tornado import AsyncSentryClient
 
 ROOT = os.path.dirname(__file__)
 STATIC_FILES_DIR = os.path.join(ROOT, "static")
@@ -64,6 +65,8 @@ class NbExchange(Application):
     port = Integer(9000).tag(config=True)
 
     template_paths = List(help="Paths to search for jinja templates.").tag(config=True)
+
+    sentry_dsn = UnicodeFromEnv("").tag(env="SENTRY_DSN", config=False)
 
     @default("template_paths")
     def _template_paths_default(self):
@@ -243,6 +246,7 @@ class NbExchange(Application):
         self.tornado_application = web.Application(
             self.handlers, **self.tornado_settings
         )
+        self.tornado_application.sentry_client = AsyncSentryClient(self.sentry_dsn)
 
     @catch_config_error
     def initialize(self, *args, **kwargs):

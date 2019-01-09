@@ -1,7 +1,8 @@
-traitlets
-tornado==5.1.1
-jupyterhub==0.9.4
 alembic
 datetime
 jinja2
+jupyterhub==0.9.4
+raven
 sqlalchemy
+tornado==5.1.1
+traitlets

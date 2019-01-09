@@ -11,7 +11,7 @@ default_handlers = [
     Collections,
     Submission,
     Submissions,
-    User,
-    EnvHandler,
+    # User,
+    # EnvHandler,
     HomeHandler,
 ]

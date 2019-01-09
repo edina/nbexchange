@@ -45,25 +45,18 @@ def test_main_page(app):
     """Check the main page"""
     r = yield async_requests.get(app.url + "/")
     assert r.status_code == 200
-    assert re.search(r"Hello World, this is home", r.text)
+    assert re.search(r"NbExchange", r.text)
 
 
-@pytest.mark.gen_test
-@pytest.mark.remote
-def test_env_page(app):
-    """Check the environment page"""
-    r = yield async_requests.get(app.url + "/env")
-    assert r.status_code == 200
-
-    soup = BeautifulSoup(r.text, "html5lib")
-
-    title = soup.find_all(text="Environment")
-    assert len(title) >= 1
-
-
-@pytest.mark.gen_test
-@pytest.mark.remote
-def test_user_page_unauthenticated(app):
-    """Check the user page"""
-    r = yield async_requests.get(app.url + "/user")
-    assert r.status_code == 404
+## DISABLED test for old /env endpoint
+# @pytest.mark.gen_test
+# @pytest.mark.remote
+# def test_env_page(app):
+#     """Check the environment page"""
+#     r = yield async_requests.get(app.url + "/env")
+#     assert r.status_code == 200
+#
+#     soup = BeautifulSoup(r.text, "html5lib")
+#
+#     title = soup.find_all(text="Environment")
+#     assert len(title) >= 1

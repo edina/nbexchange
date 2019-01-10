@@ -21,10 +21,16 @@ REQUIRES_PYTHON = ">=3.6.0"
 VERSION = None
 
 # What packages are required for this module to be executed?
-REQUIRED = ["alembic", "tornado", "jupyterhub"]
+REQUIRED = ["alembic", "tornado", "jupyterhub", "raven"]
 
 # What packages are required for testing?
-TESTING = ["pytest==3.10.0", "pytest-cov==2.6.0", "pytest-tornado", "beautifulsoup4", "html5lib"]
+TESTING = [
+    "pytest==3.10.0",
+    "pytest-cov==2.6.0",
+    "pytest-tornado",
+    "beautifulsoup4",
+    "html5lib",
+]
 
 # What packages are optional?
 EXTRAS = {
@@ -37,12 +43,9 @@ def get_package_data():
     (mostly alembic config)
     """
     package_data = {}
-    package_data['nbexchange'] = [
-        'alembic.ini',
-        'alembic/*',
-        'alembic/versions/*',
-    ]
+    package_data["nbexchange"] = ["alembic.ini", "alembic/*", "alembic/versions/*"]
     return package_data
+
 
 # The rest you shouldn't have to touch too much :)
 # ------------------------------------------------
@@ -130,7 +133,7 @@ setup(
     extras_require=EXTRAS,
     include_package_data=True,
     license="MIT",
-    scripts=['scripts/nbexchange'],
+    scripts=["scripts/nbexchange"],
     classifiers=[
         # Trove classifiers
         # Full list: https://pypi.python.org/pypi?%3Aaction=list_classifiers

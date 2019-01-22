@@ -14,11 +14,6 @@ from urllib.request import urlopen
 """
 All URLs relative to /services/nbexchange
 
-Collection calls:
-.../collections?course_id=$course_code?assignment_id=assignment_code
-GET: returns list of actions for the assignment
-
-
 This relys on users being logged in, and the user-object having additional data:
 'role' (as per LTI)
 """

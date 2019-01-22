@@ -14,14 +14,6 @@ from urllib.request import urlopen
 """
 All URLs relative to /services/nbexchange
 
-Submission calls:
-.../submissions?course_id=$course_code
-GET: gets list of users who've submitted so far
-
-.../submission?course_id=$course_code&assignment_id=$assignment_code
-GET: gets the assignment for that user [Instructor only]
-POST (with data) stores the submission for that user
-
 This relys on users being logged in, and the user-object having additional data:
 'role' (as per LTI)
 """
@@ -33,7 +25,6 @@ parmas:
     course_id: course_code
     assignment_id: assignment_code
 
-[? GET: (role=instructor) collects an assignment ?]
 POST: (with file) submits an assignment
 """
 
@@ -135,7 +126,7 @@ POST: (with file) submits an assignment
         )
         self.db.add(action)
         self.db.commit()
-        self.write({"success": True, "note": "Released"})
+        self.write({"success": True, "note": "Submitted"})
 
 
 class Submissions(BaseHandler):

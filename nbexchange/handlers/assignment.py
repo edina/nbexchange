@@ -14,16 +14,6 @@ from urllib.request import urlopen
 """
 All URLs relative to /services/nbexchange
 
-Assinments calls:
-.../assignments?course_id=$course_code
-GET: returns list of assignments
-
-Assignment calls:
-.../assignment?course_id=$course_code[&assignment_id=$assignment_code]
-
-GET: Downloads that assignment
-POST Upload that assignment
-
 This relys on users being logged in, and the user-object having additional data:
 'role' (as per LTI)
 """
@@ -34,8 +24,7 @@ class Assignments(BaseHandler):
     parmas:
         course_id: course_code
 
-    GET: (without assignment_code) gets list of assignments for $course_code
-         (with assignment_code) gets list of containing [hopefully 1 specific assignment] for $course_code
+    GET: gets list of assignments for $course_code
     """
 
     urls = ["assignments"]

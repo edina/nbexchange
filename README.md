@@ -4,25 +4,99 @@
 
 A Jupyterhub service that replaces the nbgrader Exchange.
 
-[Service API specification](specification.md)
+<!-- TOC -->
 
-This is a minimal example of Jupyterhub running with one service
+- [nbexchange](#nbexchange)
+    - [API Specification for the NBExchange service](#api-specification-for-the-nbexchange-service)
+        - [Assignments](#assignments)
+        - [Assignment](#assignment)
+        - [Submission](#submission)
+        - [Collections](#collections)
+        - [Collection](#collection)
+    - [Deployment](#deployment)
+        - [Local building](#local-building)
 
-Facts:
-- The dummy authenticator is used, which means every username/password combinations is accepted
-- The sudospawner is used, so we can spawn a notebook for every user without the need for kubernetes
-- In order for the sudospawner to work, the user needs to exist and have a home directory (you can add users in the docker build file)
-- The service is a tornado app, heavily leverage example code from `nbgrader` and `hubshare`
-- The service will be available (to logged in users) on `http://$HUB_URL/services/nbexchange`
+<!-- /TOC -->
 
-The urls avaiable should be:
+## API Specification for the NBExchange service
 
-    http://$HUB_URL/services/nbexchange/user
-    http://$HUB_URL/services/nbexchange/assignment/$COURSE_CODE
-    http://$HUB_URL/services/nbexchange/assignment/$COURSE_CODE/$ASSIGNMENT?CODE
+All URLs relative to `/services/nbexchange`
 
-and POST requests to
+### Assignments
 
-    http://$HUB_URL/services/nbexchange/assignment/$COURSE_CODE/$ASSIGNMENT?CODE
+    .../assignments?course_id=$course_code
 
-(hoever that will only accept conenctions from users who are `instructors` on the given course)
+**GET**: returns list of assignments
+
+Returns 
+```
+{"success": True,
+    "value": [{
+        "assignment_id": $assignment_code,
+        "course_id": $course_code,
+        "status": Str,
+        "path": path,
+        "notebooks": [{"name": x.name} for x in assignment.notebooks],
+        "timestamp": action.timestamp.strftime(
+            "%Y-%m-%d %H:%M:%S.%f %Z"
+        ),
+    },
+    {},..
+    ]}
+```
+or
+
+    {"success": False, "note": $note}
+
+
+### Assignment
+
+    .../assignment?course_id=$course_code&assignment_id=$assignment_code
+
+**GET**: downloads assignment
+
+Returns binary data or raises Exception
+     
+**POST**: (role=instructor, with file): Add ("release") an assignment
+returns
+
+    {"success": True, "note": "Released"}
+
+or raises Exception
+
+### Submission
+
+    .../submission?course_id=$course_code&assignment_id=$assignment_code
+
+**POST**: stores the submission for that user
+returns
+
+    {"success": True, "note": "Released"}
+
+or raises Exception
+
+### Collections
+
+    .../collections?course_id=$course_code&assignment_id=$assignment_code
+
+**GET**: gets a list of submitted items
+Return: _same as Assignments_
+
+### Collection
+
+    .../collections?course_id=$course_code&assignment_id=$assignment_code&path=$url_encoded_path
+
+**GET**: downloads submitted assignment
+Return: _same as Assignment_
+
+## Configuration
+
+The configuration for the hub service is part of `<ENV>_config` in `kubenetes_deployment`
+
+## Deployment
+
+The code is built into `k8s-hub`.
+
+### Local building
+
+The code can be tested in `dummy-jupyterhub`

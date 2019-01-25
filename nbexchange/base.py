@@ -46,8 +46,13 @@ class BaseHandler(HubOAuthenticated, SentryMixin, JupyterHubBaseHandler):
         # TODO: this puts a hard restriction on the usernames having an underscore in them, which we do not want
         # THe solution is to get the organisation id from the user state stored in jupyterhub instead of deriving it
         # from the username
-        org_id, name = hub_user.get("name").split("_", 1)  # we only want the first part
-        org_id = 1 if org_id is None else org_id
+        try:
+            org_id, name = hub_user.get("name").split(
+                "_", 1
+            )  # we only want the first part
+        except ValueError:
+            org_id = 1
+
         self.org_id = org_id
 
         user = orm.User.find_by_name(db=self.db, name=hub_username, log=self.log)

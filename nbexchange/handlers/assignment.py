@@ -195,8 +195,6 @@ class Assignment(BaseHandler):
             self.db.commit()
             self.log.info("action commited")
             self.write(data)
-        else:
-            self.write(data)
 
     # This is releasing an **assignment**, not a student submission
     @web.authenticated
@@ -237,6 +235,15 @@ class Assignment(BaseHandler):
         assignment = orm.Assignment.find_by_code(
             db=self.db, code=assignment_code, course_id=course.id
         )
+
+        if assignment is None:
+            # Look for inactive assignments
+            assignment = orm.Assignment.find_by_code(
+                db=self.db, code=assignment_code, course_id=course.id, active=False
+            )
+
+        self.log.warn(f"The value of assignment here is : {assignment}")
+
         if assignment is None:
             self.log.info(
                 f"New Assignment details: assignment_code:{assignment_code}, course_id:{course.id}"
@@ -247,6 +254,9 @@ class Assignment(BaseHandler):
             )
             self.db.add(assignment)
             # deliberately no commit: we need to be able to roll-back if there's no data!
+
+        # Set assignment to active
+        assignment.active = True
 
         # storage is dynamically in $path/release/$course_code/$assignment_code/<timestamp>/
         # Note - this means we can have multiple versions of the same release on the system
@@ -316,3 +326,49 @@ class Assignment(BaseHandler):
         self.db.add(action)
         self.db.commit()
         self.write({"success": True, "note": "Released"})
+
+    # This is unreleasing an assignment
+    @web.authenticated
+    def delete(self):
+
+        [course_code, assignment_code] = self.get_params(["course_id", "assignment_id"])
+
+        self.log.debug(
+            f"Called DELETE /assignment with arguments: course {course_code} and  assignment {assignment_code}"
+        )
+        if not (course_code and assignment_code):
+            note = f"Unreleasing an Assigment requires a course code and an assignment code"
+            self.log.info(note)
+            self.finish({"success": False, "note": note})
+            return
+
+        this_user = self.nbex_user
+
+        if not course_code in this_user["courses"]:
+            note = f"User not subscribed to course {course_code}"
+            self.log.info(note)
+            self.write({"success": False, "note": note})
+            return
+        if not "instructor" in map(str.casefold, this_user["courses"][course_code]):
+            note = f"User not an instructor to course {course_code}"
+            self.log.info(note)
+            self.write({"success": False, "note": note})
+            return
+
+        course = orm.Course.find_by_code(
+            db=self.db, code=course_code, org_id=this_user["org_id"], log=self.log
+        )
+
+        assignment = orm.Assignment.find_by_code(
+            db=self.db, code=assignment_code, course_id=course.id
+        )
+
+        # Set assignment to inactive
+        assignment.active = False
+        # Delete the associated notebook
+        for notebook in assignment.notebooks:
+            self.db.delete(notebook)
+
+        self.db.commit()
+
+        self.write({"success": True, "note": "Assignment deleted"})

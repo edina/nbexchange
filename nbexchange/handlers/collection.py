@@ -37,14 +37,11 @@ class Collections(BaseHandler):
 
         [course_code, assignment_code] = self.get_params(["course_id", "assignment_id"])
 
-        if not course_code:
-            note = "collections call requires a course id"
+        if not (course_code and assignment_code):
+            note = "Collections call requires both a course code and an assignment code"
             self.log.info(note)
-            self.write({"success": False, "value": models, "note": note})
-        if not assignment_code:
-            note = "collections call requires an assignment id"
-            self.log.info(note)
-            self.write({"success": False, "value": models, "note": note})
+            self.write({"success": False, "note": note})
+            return
 
         # Who is my user?
         this_user = self.nbex_user
@@ -53,16 +50,17 @@ class Collections(BaseHandler):
         self.log.debug(f"Course: {course_code}")
         # Is our user subscribed to this course?
         if course_code not in this_user["courses"]:
-            note = (
-                f"User {this_user.get('name')} not subscribed to course {course_code}"
-            )
+            note = f"User not subscribed to course {course_code}"
             self.log.info(note)
             self.write({"success": False, "value": models, "note": note})
-        if not "instructor" in map(str.casefold, this_user["courses"][course_code]):
-            # if not "instructor" in this_user["courses"][course_code]:
+            return
+        if (
+            not "instructor" == this_user["current_role"].casefold()
+        ):  # we may need to revisit this
             note = f"User not an instructor to course {course_code}"
             self.log.info(note)
             self.write({"success": False, "note": note})
+            return
 
         # Find the course being referred to
         course = orm.Course.find_by_code(
@@ -72,6 +70,7 @@ class Collections(BaseHandler):
             note = f"Course {course_code} does not exist"
             self.log.info(note)
             self.write({"success": False, "value": models, "note": note})
+            return
 
         assignments = orm.Assignment.find_for_course(
             db=self.db, course_id=course.id, log=self.log
@@ -101,6 +100,10 @@ class Collections(BaseHandler):
         self.log.debug(f"Assignments: {models}")
         self.write({"success": True, "value": models})
 
+    # This has no authentiction wrapper, so false implication os service
+    def post(self):
+        raise web.HTTPError(501)
+
 
 class Collection(BaseHandler):
     """.../collection/
@@ -124,18 +127,13 @@ class Collection(BaseHandler):
             ["course_id", "assignment_id", "path"]
         )
 
-        if not course_code:
-            note = f"collection call requires a course id"
+        if not (course_code and assignment_code and path):
+            note = (
+                "Collection call requires a course code, an assignment code, and a path"
+            )
             self.log.info(note)
-            self.write({"success": False, "value": models, "note": note})
-        if not assignment_code:
-            note = f"collection call requires an assignment id"
-            self.log.info(note)
-            self.write({"success": False, "value": models, "note": note})
-        if not path:
-            note = f"collection call requires a path"
-            self.log.info(note)
-            self.write({"success": False, "value": models, "note": note})
+            self.write({"success": False, "note": note})
+            return
 
         # Who is my user?
         this_user = self.nbex_user
@@ -144,16 +142,19 @@ class Collection(BaseHandler):
         self.log.debug(f"Course: {course_code}")
         # Is our user subscribed to this course?
         if course_code not in this_user["courses"]:
-            note = (
-                f"User {this_user.get('name')} not subscribed to course {course_code}"
-            )
+            note = f"User not subscribed to course {course_code}"
             self.log.info(note)
-            self.write({"success": False, "value": models, "note": note})
-        if not "instructor" in map(str.casefold, this_user["courses"][course_code]):
-            # if not "instructor" in this_user["courses"][course_code]:
+            self.write({"success": False, "note": note})
+            return
+        self.log.info(f"user: {this_user}")
+
+        if (
+            not "instructor" == this_user["current_role"].casefold()
+        ):  # we may need to revisit this
             note = f"User not an instructor to course {course_code}"
             self.log.info(note)
             self.write({"success": False, "note": note})
+            return
 
         # Find the course being referred to
         course = orm.Course.find_by_code(
@@ -162,17 +163,26 @@ class Collection(BaseHandler):
         if not course:
             note = f"Course {course_code} does not exist"
             self.log.info(note)
-            self.write({"success": False, "value": models, "note": note})
+            self.write({"success": False, "note": note})
+            return
 
         assignments = orm.Assignment.find_for_course(
             db=self.db, course_id=course.id, log=self.log
         )
 
         data = b""
+        self._headers = httputil.HTTPHeaders(
+            {
+                "Content-Type": "application/gzip",
+                "Date": httputil.format_timestamp(time.time()),
+            }
+        )
+
         for assignment in assignments:
             self.log.debug(f"Assignment: {assignment}")
             self.log.debug(f"Assignment Actions: {assignment.actions}")
             for action in assignment.actions:
+
                 # the path should be unique, but lets just double-check its "submitted" too
                 if (
                     action.action == orm.AssignmentActions.submitted
@@ -189,4 +199,18 @@ class Collection(BaseHandler):
 
                         # error 500??
                         raise Exception
+
+                    action = orm.Action(
+                        user_id=this_user["ormUser"].id,
+                        assignment_id=assignment.id,
+                        action=orm.AssignmentActions.collected,
+                        location=path,
+                    )
+                    self.db.add(action)
+                    self.db.commit()
+
         self.write(data)
+
+    # This has no authentiction wrapper, so false implication os service
+    def post(self):
+        raise web.HTTPError(501)

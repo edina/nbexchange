@@ -30,20 +30,25 @@ POST: (with file) submits an assignment
 
     urls = ["submission"]
 
+    # This has no authentiction wrapper, so false implication os service
+    def get(self):
+        raise web.HTTPError(501)
+
     # This is a student submitting an assignment, not an instructor "release"
     @web.authenticated
     def post(self):
 
         [course_code, assignment_code] = self.get_params(["course_id", "assignment_id"])
-
-        if not course_code and not assignment_code:
-            self.log.info(
-                f"Assigment call requires both a course code and an assignment code!!"
-            )
+        self.log.debug(
+            f"Called POST /submission with arguments: course {course_code} and  assignment {assignment_code}"
+        )
+        if not (course_code and assignment_code):
+            note = f"Submission call requires both a course code and an assignment code"
+            self.log.info(note)
+            self.finish({"success": False, "note": note})
             return
 
         this_user = self.nbex_user
-
         if not course_code in this_user["courses"]:
             note = f"User not subscribed to course {course_code}"
             self.log.info(note)
@@ -80,6 +85,13 @@ POST: (with file) submits an assignment
             ]
         )
 
+        if not self.request.files:
+            self.log.warning(
+                f"Error: No file supplies in upload"
+            )  # TODO: improve error message
+            self.db.rollback()
+            raise web.HTTPError(412)  # precondition failed
+
         try:
             # Write the uploaded file to the desired location
             file_info = self.request.files["assignment"][0]
@@ -105,7 +117,7 @@ POST: (with file) submits an assignment
             self.log.info(f"Upload failed")
             self.db.rollback()
             # error 500??
-            raise Exception
+            raise web.HTTPError(418)
 
         # now commit the assignment, and get it back to find the id
         self.db.commit()
@@ -132,7 +144,10 @@ POST: (with file) submits an assignment
 class Submissions(BaseHandler):
     urls = ["submissions"]
 
-    @web.authenticated
-    def post(self):
+    # This has no authentiction wrapper, so false implication os service
+    def get(self):
+        raise web.HTTPError(501)
 
-        self.write(f"##### I received a POST for /submissions")
+    # This has no authentiction wrapper, so false implication os service
+    def post(self):
+        raise web.HTTPError(501)

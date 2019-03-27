@@ -1,7 +1,8 @@
 alembic
 datetime
-jinja2
+#jinja2
 jupyterhub==0.9.4
+psycopg2==2.7.4
 raven
 sqlalchemy
 tornado==5.1.1

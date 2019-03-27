@@ -1,9 +1,10 @@
 import logging
 import os
+import psycopg2
+import sys
 
 from datetime import datetime
 from getpass import getuser
-from jinja2 import Environment, FileSystemLoader
 from jupyterhub.log import CoroutineLogFormatter, log_request
 from jupyterhub.services.auth import HubAuth
 from jupyterhub.utils import url_path_join
@@ -20,7 +21,6 @@ from raven.contrib.tornado import AsyncSentryClient
 
 ROOT = os.path.dirname(__file__)
 STATIC_FILES_DIR = os.path.join(ROOT, "static")
-TEMPLATES_DIR = os.path.join(ROOT, "templates")
 
 
 class UnicodeFromEnv(Unicode):
@@ -29,7 +29,9 @@ class UnicodeFromEnv(Unicode):
     """
 
     def default(self, obj=None):
+        sys.stderr.write(f"stderr - object: {obj}")
         env_key = self.metadata.get("env")
+        sys.stderr.write(f"stderr - looking for: {env_key} in {os.environ}")
         if env_key in os.environ:
             return os.environ[env_key]
         else:
@@ -64,13 +66,7 @@ class NbExchange(Application):
 
     port = Integer(9000).tag(config=True)
 
-    template_paths = List(help="Paths to search for jinja templates.").tag(config=True)
-
     sentry_dsn = UnicodeFromEnv("").tag(env="SENTRY_DSN", config=False)
-
-    @default("template_paths")
-    def _template_paths_default(self):
-        return [TEMPLATES_DIR]
 
     tornado_settings = Dict()
 
@@ -120,10 +116,29 @@ class NbExchange(Application):
         logger.parent = self.log
         logger.setLevel(self.log.level)
 
-    db_url = Unicode(
-        "sqlite:///nbexchange.sqlite",
-        help="url for the database. e.g. `sqlite:///nbexchange.sqlite`",
-    ).tag(config=True)
+    db_drivername = os.environ.get("NBEX_DB_DRIVER", "sqlite")
+    db_database = os.environ.get("NBEX_DB_DATABASE", "nbexchange2.sqlite")
+    db_username = os.environ.get("NBEX_DB_USER", "")
+    db_password = os.environ.get("NBEX_DB_PASSWORD", "")
+    db_host = os.environ.get("NBEX_DB_HOST", "")
+    db_port = os.environ.get("NBEX_DB_PORT", "")
+    # db_url = Unicode(
+    #     "sqlite:///nbexchange.sqlite",
+    #     help="url for the database. e.g. `sqlite:///nbexchange.sqlite`",
+    # ).tag(config=True)
+
+    def db_url(self):
+        user_identification = ""
+        host = ""
+        if self.db_username and self.db_password:
+            user_identification = f"{self.db_username}:{self.db_password}@"
+        if self.db_host:
+            host = self.db_host
+        if self.db_port:
+            host = f"{host}:{self.db_port}"
+        url = f"{self.db_drivername}://{user_identification}{host}/{self.db_database}"
+        return url
+
     db_kwargs = Dict(
         help="""Include any kwargs to pass to the database connection.
         See sqlalchemy.create_engine for details.
@@ -156,13 +171,13 @@ class NbExchange(Application):
 
     def init_db(self):
         """Initialize the nbexchange database"""
-
+        self.log.debug(f"db_url = {self.db_url()}")
         if self.upgrade_db:
-            dbutil.upgrade_if_needed(self.db_url, log=self.log)
+            dbutil.upgrade_if_needed(self.db_url(), log=self.log)
 
         try:
             self.session_factory = orm.new_session_factory(
-                self.db_url,
+                self.db_url(),
                 reset=self.reset_db,
                 echo=self.debug_db,
                 log=self.log,
@@ -170,10 +185,10 @@ class NbExchange(Application):
             )
             self.db = self.session_factory()
         except OperationalError as e:
-            self.log.error(f"Failed to connect to db: {self.db_url}")
+            self.log.error(f"Failed to connect to db: {self.db_url()}")
             self.log.debug(f"Database error was:", exc_info=True)
-            if self.db_url.startswith("sqlite:///"):
-                self._check_db_path(self.db_url.split(":///", 1)[1])
+            if self.db_url().startswith("sqlite:///"):
+                self._check_db_path(self.db_url().split(":///", 1)[1])
             self.log.critical(
                 "\n".join(
                     [
@@ -193,10 +208,6 @@ class NbExchange(Application):
 
     def init_tornado_settings(self):
         """Initialize tornado config"""
-        jinja_options = dict(autoescape=True)
-        jinja_env = Environment(
-            loader=FileSystemLoader(self.template_paths), **jinja_options
-        )
 
         # if running from git directory, disable caching of require.js
         # otherwise cache based on server start time
@@ -219,8 +230,6 @@ class NbExchange(Application):
             logout_url=url_path_join(self.hub_base_url, "hub/logout"),
             static_path=STATIC_FILES_DIR,
             static_url_prefix=url_path_join(self.base_url, "static/"),
-            template_path=self.template_paths,
-            jinja2_env=jinja_env,
             version_hash=version_hash,
             xsrf_cookies=False,
             debug=True,
@@ -275,6 +284,7 @@ class NbExchange(Application):
             IOLoop.current().start()
 
 
+sys.stderr.write("nbexchange stderr: {}\n".format(dict(os.environ)))
 main = NbExchange.launch_instance
 
 if __name__ == "__main__":

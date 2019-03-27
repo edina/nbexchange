@@ -7,7 +7,7 @@ class EnvHandler(BaseHandler):
     urls = ["/env"]
 
     def get(self):
-        self.finish(self.render_template("env.html", env=os.environ))
+        self.write(f"NB Exchange environment: {os.environ}")
 
 
 class HomeHandler(BaseHandler):

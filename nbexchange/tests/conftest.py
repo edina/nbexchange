@@ -55,6 +55,9 @@ def _nbexchange_config():
     return cfg
 
 
+# Factory as fixture - see https://docs.pytest.org/en/latest/fixture.html#factories-as-fixtures
+# This way we can test different database configurations, depending on the
+# environment variables passed in
 @pytest.fixture
 def app(request, io_loop, _nbexchange_config):
     """Launch the NbExchange app

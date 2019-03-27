@@ -1,8 +1,64 @@
 # async-request utility from jupyterhub.tests.utils v0.8.1
 # used under BSD license
+import glob
+import io
+import requests
+import sys
 
 from concurrent.futures import ThreadPoolExecutor
-import requests
+from functools import partial
+from urllib.parse import urljoin
+
+
+def tar_source(filename):
+
+    import tarfile
+
+    tar_file = io.BytesIO()
+
+    with tarfile.open(fileobj=tar_file, mode="w:gz") as tar_handle:
+        tar_handle.add(filename, arcname=".")
+    tar_file.seek(0)
+    return tar_file.read()
+
+
+def api_request(self, url, method="GET", *args, **kwargs):
+
+    headers = {}
+
+    if method == "GET":
+        get_req = partial(requests.get, url, headers=headers)
+        return get_req(*args, **kwargs)
+    elif method == "POST":
+        post_req = partial(requests.post, url, headers=headers)
+        return post_req(*args, **kwargs)
+    elif method == "DELETE":
+        delete_req = partial(requests.delete, url, headers=headers)
+        return delete_req(*args, **kwargs)
+    else:
+        raise NotImplementedError(f"HTTP Method {method} is not implemented")
+
+
+def upload(self, url, file):
+    files = {"assignment": ("assignment.tar.gz", file)}
+
+    path = f"assignment?course_id={quote_plus(self.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}"
+    url = url + path
+
+    r = self.api_request(
+        url, method="POST", data={"notebooks": self.notebooks}, files=files
+    )
+    self.log.debug(f"Got back {r.status_code} after file upload")
+
+    try:
+        data = r.json()
+    except json.decoder.JSONDecodeError:
+        self.fail(r.text)
+
+    if not data["success"]:
+        self.fail(data["note"])
+
+    self.log.info("Successfully uploaded released assignment.")
 
 
 class _AsyncRequests:

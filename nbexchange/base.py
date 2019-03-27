@@ -17,7 +17,7 @@ class BaseHandler(HubOAuthenticated, SentryMixin, JupyterHubBaseHandler):
     urls = []
 
     # Root location for data to be written to
-    base_storage_location = "/disk/remote/courses"  # TODO should be a config parameter
+    base_storage_location = os.environ.get("NBEX_BASE_STORE", "/tmp/courses")
 
     def get_auth_state(self, username=None):
         url = f"{self.settings['hub_api_url']}users/{username}"

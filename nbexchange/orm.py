@@ -55,6 +55,7 @@ class AssignmentActions(enum.Enum):
     fetched = "fetched"
     submitted = "submitted"
     removed = "removed"
+    collected = "collected"
 
 
 # This is the action: a user does something with an assignment, at a given time

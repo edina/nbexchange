@@ -1,7 +1,7 @@
 alembic
 datetime
 #jinja2
-jupyterhub==0.9.4
+jupyterhub==0.9.5
 psycopg2==2.7.4
 raven
 sqlalchemy

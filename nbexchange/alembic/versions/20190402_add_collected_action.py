@@ -1,8 +1,8 @@
 """Add item to Action Enum table 
 
-Revision ID: d500457efb3b
-Revises: 9794df114fd9
-Create Date: 2018-10-29 16:08:09.549850
+Revision ID: 20190202
+Revises: d500457efb3b
+Create Date: 2019-04-02 15:40
 
 """
 import sqlalchemy as sa

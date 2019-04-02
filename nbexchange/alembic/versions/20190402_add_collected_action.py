@@ -32,12 +32,23 @@ class OldAssignmentActions(Enum):
 
 
 def upgrade():
-    op.alter_column(
-        "action", "action", type_=sa.Enum(NewAssignmentActions), nullable=False
-    )
+
+    with op.batch_alter_table("action") as batch_op:
+
+        batch_op.alter_column(
+            "action",
+            "action",
+            existing_type=sa.Enum(OldAssignmentActions, name="assignmentactions"),
+            type_=sa.Enum(NewAssignmentActions, name="assignmentactions"),
+        )
 
 
 def downgrade():
-    op.alter_column(
-        "action", "action", type_=sa.Enum(OldAssignmentActions), nullable=False
-    )
+
+    with op.batch_alter_table("action") as batch_op:
+        batch_op.alter_column(
+            "action",
+            "action",
+            existing_type=sa.Enum(NewAssignmentActions, name="assignmentactions"),
+            type_=sa.Enum(OldAssignmentActions, name="assignmentactions"),
+        )

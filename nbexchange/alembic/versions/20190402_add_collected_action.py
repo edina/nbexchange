@@ -17,23 +17,35 @@ down_revision = "d500457efb3b"
 branch_labels = None
 depends_on = None
 
+
 class NewAssignmentActions(Enum):
     release = "release"
     download = "fetch"
     submit = "submit"
     collected = "collected"
 
+
 class OldAssignmentActions(Enum):
     release = "release"
     download = "fetch"
     submit = "submit"
 
+
 def upgrade():
     op.alter_column(
-        "action", "action", type_= sa.Enum(NewAssignmentActions), nullable=False, index=True
+        "action",
+        "action",
+        type_=sa.Enum(NewAssignmentActions),
+        nullable=False,
+        index=True,
     )
+
 
 def downgrade():
     op.alter_column(
-        "action", "action", type_= sa.Enum(OldAssignmentActions), nullable=False, index=True
+        "action",
+        "action",
+        type_=sa.Enum(OldAssignmentActions),
+        nullable=False,
+        index=True,
     )

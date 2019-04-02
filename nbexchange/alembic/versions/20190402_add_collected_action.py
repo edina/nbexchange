@@ -33,19 +33,11 @@ class OldAssignmentActions(Enum):
 
 def upgrade():
     op.alter_column(
-        "action",
-        "action",
-        type_=sa.Enum(NewAssignmentActions),
-        nullable=False,
-        index=True,
+        "action", "action", type_=sa.Enum(NewAssignmentActions), nullable=False
     )
 
 
 def downgrade():
     op.alter_column(
-        "action",
-        "action",
-        type_=sa.Enum(OldAssignmentActions),
-        nullable=False,
-        index=True,
+        "action", "action", type_=sa.Enum(OldAssignmentActions), nullable=False
     )

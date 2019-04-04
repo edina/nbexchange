@@ -19,16 +19,18 @@ depends_on = None
 
 
 class NewAssignmentActions(Enum):
-    release = "release"
-    download = "fetch"
-    submit = "submit"
+    released = "released"
+    fetched = "fetched"
+    submitted = "submitted"
+    removed = "removed"
     collected = "collected"
 
 
 class OldAssignmentActions(Enum):
-    release = "release"
-    download = "fetch"
-    submit = "submit"
+    released = "released"
+    fetched = "fetched"
+    submitted = "submitted"
+    removed = "removed"
 
 
 def upgrade():

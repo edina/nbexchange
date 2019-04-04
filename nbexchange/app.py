@@ -39,16 +39,20 @@ class UnicodeFromEnv(Unicode):
 
 
 flags = {
-    'debug': ({'Application': {'log_level': logging.DEBUG}},
-        "set log level to logging.DEBUG (maximize logging output)"),
-    'upgrade-db': ({'NbExchange': {'upgrade_db': True}},
+    "debug": (
+        {"Application": {"log_level": logging.DEBUG}},
+        "set log level to logging.DEBUG (maximize logging output)",
+    ),
+    "upgrade-db": (
+        {"NbExchange": {"upgrade_db": True}},
         """Automatically upgrade the database if needed on startup.
 
         Only safe if the database has been backed up.
         Only SQLite database files will be backed up automatically.
-        """
+        """,
     ),
 }
+
 
 class NbExchange(Application):
     """The nbexchange application"""

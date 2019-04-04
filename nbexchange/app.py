@@ -38,14 +38,34 @@ class UnicodeFromEnv(Unicode):
             return self.default_value
 
 
+flags = {
+    'debug': ({'Application': {'log_level': logging.DEBUG}},
+        "set log level to logging.DEBUG (maximize logging output)"),
+    'upgrade-db': ({'NbExchange': {'upgrade_db': True}},
+        """Automatically upgrade the database if needed on startup.
+
+        Only safe if the database has been backed up.
+        Only SQLite database files will be backed up automatically.
+        """
+    ),
+}
+
 class NbExchange(Application):
     """The nbexchange application"""
+
+    name = "nbexchange"
 
     @property
     def version(self):
         import pkg_resources
 
         return pkg_resources.get_distribution("nbexchange").version
+
+    description = """
+        Manage notebook submissions and collections for nbgrader
+    """
+
+    flags = Dict(flags)
 
     config_file = Unicode("nbexchange_config.py", help="The config file to load").tag(
         config=True
@@ -116,6 +136,7 @@ class NbExchange(Application):
         logger.parent = self.log
         logger.setLevel(self.log.level)
 
+    # TODO: switch to a SINGLE NBEX_DB_URL environment variable
     db_drivername = os.environ.get("NBEX_DB_DRIVER", "sqlite")
     db_database = os.environ.get("NBEX_DB_DATABASE", "nbexchange2.sqlite")
     db_username = os.environ.get("NBEX_DB_USER", "")

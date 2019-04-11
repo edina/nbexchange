@@ -21,7 +21,7 @@ REQUIRES_PYTHON = ">=3.6.0"
 VERSION = None
 
 # What packages are required for this module to be executed?
-REQUIRED = ["alembic", "tornado==5.1.1", "jupyterhub==0.9.5", "raven"]
+REQUIRED = ["alembic", "tornado==5.1.1", "jupyterhub==0.9.5", "raven", "sqlalchemy==1.2.18"]
 
 # What packages are required for testing?
 TESTING = [

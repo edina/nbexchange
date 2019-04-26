@@ -118,3 +118,5 @@ dmypy.json
 # IDE
 .idea/
 .vscode/
+# Helm values
+prod-values.yaml

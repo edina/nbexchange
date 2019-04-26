@@ -1,16 +1,15 @@
 import re
 import os
 import requests
-from jupyterhub.handlers import BaseHandler as JupyterHubBaseHandler
-from jupyterhub.services.auth import HubAuthenticated, HubOAuthenticated
 from jupyterhub.utils import url_path_join
 from nbexchange import orm
 from tornado import gen, web
+from tornado.log import app_log
 from raven.contrib.tornado import SentryMixin
 from urllib.parse import quote_plus, unquote, unquote_plus
 
 
-class BaseHandler(HubOAuthenticated, SentryMixin, JupyterHubBaseHandler):
+class BaseHandler(SentryMixin, web.RequestHandler):
     """An nbexchange base handler"""
 
     # register URL patterns
@@ -19,26 +18,44 @@ class BaseHandler(HubOAuthenticated, SentryMixin, JupyterHubBaseHandler):
     # Root location for data to be written to
     base_storage_location = os.environ.get("NBEX_BASE_STORE", "/tmp/courses")
 
-    def get_auth_state(self, username=None):
-        url = f"{self.settings['hub_api_url']}users/{username}"
-        headers = {"Authorization": f"token {os.environ.get('JUPYTERHUB_API_TOKEN')}"}
-        r = requests.get(url, headers=headers)
-        r.raise_for_status()
-        user = r.json()
-        return user.get("auth_state", {})
+    @property
+    def naas_url(self):
+        return self.settings["naas_url"]
+
+    def get_current_user(self):
+
+        # Call Django to Authenticate Our User
+        api_endpoint = f"{self.naas_url}/api/users/current/"
+
+        cookies = dict()
+        # Pass through cookies
+        for name in self.request.cookies:
+            cookies[name] = self.get_cookie(name)
+
+        r = requests.get(api_endpoint, cookies=cookies)
+        result = r.json()
+
+        self.log.debug("CODE: {} \nRESULT: {}".format(r.status_code, result))
+
+        if r.status_code == 401:
+            raise web.HTTPError(401)
+
+        return {
+            "name": result["username"],
+            "course_id": result["course_code"],
+            "course_title": result["course_title"],
+            "course_role": result["role"],
+        }
 
     @property
     def nbex_user(self):
 
         hub_user = self.get_current_user()
         hub_username = hub_user.get("name")
-        hub_auth_state = self.get_auth_state(username=hub_username)
 
-        ### Bodge.
-
-        current_course = hub_auth_state.get("course_id")
-        current_role = hub_auth_state.get("course_role")
-        course_title = hub_auth_state.get("course_title", "no_title")
+        current_course = hub_user.get("course_id")
+        current_role = hub_user.get("course_role")
+        course_title = hub_user.get("course_title", "no_title")
 
         if not (current_course and current_role):
             return
@@ -108,37 +125,24 @@ class BaseHandler(HubOAuthenticated, SentryMixin, JupyterHubBaseHandler):
             "current_course": current_course,
             "current_role": current_role,
             "courses": courses,
-            "auth_state": hub_auth_state,
         }
         return model
 
     @property
-    def hub_auth(self):
-        return self.settings.get("hub_auth")
+    def db(self):
+        return self.settings["db"]
 
     @property
-    def csp_report_uri(self):
-        return self.settings.get(
-            "csp_report_uri",
-            url_path_join(
-                self.settings.get("hub_base_url", "/hub"), "security/csp-report"
-            ),
-        )
-
-    @property
-    def template_namespace(self):
-        user = self.get_current_user()
-        return dict(
-            prefix=self.base_url,
-            user=user,
-            login_url=self.settings["login_url"],
-            logout_url=self.settings["logout_url"],
-            static_url=self.static_url,
-            version_hash=self.version_hash,
-        )
+    def log(self):
+        """I can't seem to avoid typing self.log"""
+        return self.settings.get("log", app_log)
 
     def finish(self, *args, **kwargs):
-        return super(JupyterHubBaseHandler, self).finish(*args, **kwargs)
+        """Roll back any uncommitted transactions from the handler."""
+        if self.db.dirty:
+            self.log.warning("Rolling back dirty objects %s", self.db.dirty)
+            self.db.rollback()
+        super().finish(*args, **kwargs)
 
     def param_decode(self, value):
         unquote(value) if re.search("%20", value) else unquote_plus(value)

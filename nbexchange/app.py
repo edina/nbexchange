@@ -6,13 +6,24 @@ import sys
 from datetime import datetime
 from getpass import getuser
 from jupyterhub.log import CoroutineLogFormatter, log_request
-from jupyterhub.services.auth import HubAuth
+
+# from jupyterhub.services.auth import HubAuth
 from jupyterhub.utils import url_path_join
 from nbexchange import orm, dbutil, base, handlers
 from nbexchange.handlers import assignment, submission
 from sqlalchemy.exc import OperationalError, SQLAlchemyError
 from traitlets.config import Application, catch_config_error
-from traitlets import Bool, Dict, Integer, List, Unicode, default
+from traitlets import (
+    Bool,
+    Dict,
+    Integer,
+    List,
+    Unicode,
+    default,
+    TraitType,
+    TraitError,
+    class_of,
+)
 from tornado import web
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
@@ -75,16 +86,11 @@ class NbExchange(Application):
         config=True
     )
 
-    base_url = UnicodeFromEnv("/services/nbexchange/").tag(
-        env="JUPYTERHUB_SERVICE_PREFIX", config=True
-    )
-    hub_api_url = UnicodeFromEnv("http://127.0.0.1:8081/hub/api/").tag(
-        env="JUPYTERHUB_API_URL", config=True
-    )
-    hub_api_token = UnicodeFromEnv("").tag(env="JUPYTERHUB_API_TOKEN", config=True)
-    hub_base_url = UnicodeFromEnv("http://127.0.0.1:8000/").tag(
-        env="JUPYTERHUB_BASE_URL", config=True
-    )
+    base_url = os.environ.get("JUPYTERHUB_SERVICE_PREFIX", "/services/nbexchange/")
+    hub_api_url = os.environ.get("JUPYTERHUB_API_URL", "http://127.0.0.1:8081/hub/api/")
+    hub_api_token = os.environ.get("JUPYTERHUB_API_TOKEN", "")
+    hub_base_url = os.environ.get("JUPYTERHUB_BASE_URL", "http://127.0.0.1:8000/")
+    naas_url = os.environ.get("NAAS_URL", "https://127.0.0.1:8080")
 
     ip = Unicode("0.0.0.0").tag(config=True)
 
@@ -140,29 +146,7 @@ class NbExchange(Application):
         logger.parent = self.log
         logger.setLevel(self.log.level)
 
-    # TODO: switch to a SINGLE NBEX_DB_URL environment variable
-    db_drivername = os.environ.get("NBEX_DB_DRIVER", "sqlite")
-    db_database = os.environ.get("NBEX_DB_DATABASE", "nbexchange2.sqlite")
-    db_username = os.environ.get("NBEX_DB_USER", "")
-    db_password = os.environ.get("NBEX_DB_PASSWORD", "")
-    db_host = os.environ.get("NBEX_DB_HOST", "")
-    db_port = os.environ.get("NBEX_DB_PORT", "")
-    # db_url = Unicode(
-    #     "sqlite:///nbexchange.sqlite",
-    #     help="url for the database. e.g. `sqlite:///nbexchange.sqlite`",
-    # ).tag(config=True)
-
-    def db_url(self):
-        user_identification = ""
-        host = ""
-        if self.db_username and self.db_password:
-            user_identification = f"{self.db_username}:{self.db_password}@"
-        if self.db_host:
-            host = self.db_host
-        if self.db_port:
-            host = f"{host}:{self.db_port}"
-        url = f"{self.db_drivername}://{user_identification}{host}/{self.db_database}"
-        return url
+    db_url = os.environ.get("NBEX_DB_URL", "sqlite:///nbexchange2.sqlite")
 
     db_kwargs = Dict(
         help="""Include any kwargs to pass to the database connection.
@@ -196,13 +180,13 @@ class NbExchange(Application):
 
     def init_db(self):
         """Initialize the nbexchange database"""
-        self.log.debug(f"db_url = {self.db_url()}")
+        self.log.debug(f"db_url = {self.db_url}")
         if self.upgrade_db:
-            dbutil.upgrade_if_needed(self.db_url(), log=self.log)
+            dbutil.upgrade_if_needed(self.db_url, log=self.log)
 
         try:
             self.session_factory = orm.new_session_factory(
-                self.db_url(),
+                self.db_url,
                 reset=self.reset_db,
                 echo=self.debug_db,
                 log=self.log,
@@ -210,15 +194,15 @@ class NbExchange(Application):
             )
             self.db = self.session_factory()
         except OperationalError as e:
-            self.log.error(f"Failed to connect to db: {self.db_url()}")
+            self.log.error(f"Failed to connect to db: {self.db_url}")
             self.log.debug(f"Database error was:", exc_info=True)
-            if self.db_url().startswith("sqlite:///"):
-                self._check_db_path(self.db_url().split(":///", 1)[1])
+            if self.db_url.startswith("sqlite:///"):
+                self._check_db_path(self.db_url.split(":///", 1)[1])
             self.log.critical(
                 "\n".join(
                     [
                         "If you recently upgraded NbExchange, try running",
-                        "    nbexhchange upgrade-db",
+                        "    nbexchange upgrade-db",
                         "to upgrade your nbexchange database schema",
                     ]
                 )
@@ -226,10 +210,6 @@ class NbExchange(Application):
             self.exit(1)
         except orm.DatabaseSchemaMismatch as e:
             self.exit(e)
-
-    def init_hub_auth(self):
-        """Initialize hub authentication"""
-        self.hub_auth = HubAuth()
 
     def init_tornado_settings(self):
         """Initialize tornado config"""
@@ -247,8 +227,7 @@ class NbExchange(Application):
             config=self.config,
             log=self.log,
             base_url=self.base_url,
-            hub_auth=self.hub_auth,
-            login_url=self.hub_auth.login_url,
+            naas_url=self.naas_url,
             hub_base_url=self.hub_base_url,
             hub_api_url=self.hub_api_url,
             hub_api_token=self.hub_api_token,
@@ -263,6 +242,8 @@ class NbExchange(Application):
         )
         # allow configured settings to have priority
         settings.update(self.tornado_settings)
+        self.log.info(os.environ.get("JUPYTERHUB_API_URL"))
+        self.log.info(settings)
         self.tornado_settings = settings
 
     def init_handlers(self):
@@ -290,7 +271,7 @@ class NbExchange(Application):
         if self.subapp:
             return
         self.init_db()
-        self.init_hub_auth()
+        # self.init_hub_auth()
         self.init_tornado_settings()
         self.init_handlers()
         self.init_tornado_application()
@@ -309,8 +290,5 @@ class NbExchange(Application):
             IOLoop.current().start()
 
 
-sys.stderr.write("nbexchange stderr: {}\n".format(dict(os.environ)))
-main = NbExchange.launch_instance
-
 if __name__ == "__main__":
-    main()
+    NbExchange.launch_instance()

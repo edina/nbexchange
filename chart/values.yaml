@@ -1,0 +1,33 @@
+# Default values for nbexchange.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: registry.gitlab.edina.ac.uk:1875/naas/nbexchange
+  tag: latest
+  pullPolicy: IfNotPresent
+
+environment:
+  NBEX_DB_URL: ""
+  JUPYTERHUB_API_URL: http://hub:8081/hub/api/
+  JUPYTERHUB_API_TOKEN: "fake token"
+  JUPYTERHUB_BASE_URL: http://hub:8000/
+  NAAS_URL: "https://noteable-dev.edina.ac.uk"
+  SENTRY_DSN: ""
+
+nameOverride: ""
+fullnameOverride: ""
+
+service:
+  type: ClusterIP
+  port: 9000
+
+resources: {}
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

@@ -21,13 +21,20 @@ REQUIRES_PYTHON = ">=3.6.0"
 VERSION = None
 
 # What packages are required for this module to be executed?
-REQUIRED = ["alembic", "tornado==5.1.1", "jupyterhub==0.9.5", "raven", "sqlalchemy==1.2.18"]
+REQUIRED = [
+    "alembic",
+    "tornado==6.0.2",
+    "psycopg2",
+    "jupyterhub==0.9.6",
+    "raven",
+    "sqlalchemy==1.2.18",
+]
 
 # What packages are required for testing?
 TESTING = [
     "pytest==3.10.0",
     "pytest-cov==2.6.0",
-    "pytest-tornado",
+    "pytest-tornado==0.7.0",
     "beautifulsoup4",
     "html5lib",
     "psycopg2-binary",

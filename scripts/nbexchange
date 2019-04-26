@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from nbexchange.app import main
+from nbexchange.app import NbExchange
 
 if __name__ == '__main__':
-    main()
+    NbExchange.launch_instance()

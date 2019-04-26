@@ -152,7 +152,8 @@ class Assignment(BaseHandler):
         # The location for the data-object is actually held in the 'released' action for the given assignment
         # We want the last one...
         assignment = orm.Assignment.find_by_code(
-            db=self.db, code=assignment_code, course_id=course.id
+            db=self.db, code=assignment_code, course_id=course.id,
+            action=orm.AssignmentActions.released.value
         )
 
         if assignment is None:
@@ -167,40 +168,44 @@ class Assignment(BaseHandler):
                 "Date": httputil.format_timestamp(time.time()),
             }
         )
-        self.log.info(
-            f"Adding action {orm.AssignmentActions.fetched.value} for user {this_user['ormUser'].id} against assignment {assignment.id}"
-        )
+
         data = b""
 
         release_file = None
-        for action in assignment.actions:
-            self.log.info(f"Action: {action.action}")
-            if action.action == orm.AssignmentActions.released:
-                self.log.info(f"Found release: {action.location}")
-                release_file = action.location
-                # no break, as we want the /last/ released action!
 
-        try:
-            handle = open(release_file, "r+b")
-            data = handle.read()
-            handle.close
-        except Exception as e:  # TODO: exception handling
-            self.log.warning(f"Error: {e}")  # TODO: improve error message
-            self.log.info(f"Recovery failed")
+        # We will get 0-n release actions for this assignment, we just want the last one
+        # Using a reversed for loop as there may be 0 elements :)
+        for action in reversed(assignment.actions):
+            release_file = action.location
 
-            # error 500??
+        if release_file:
+            try:
+                handle = open(release_file, "r+b")
+                data = handle.read()
+                handle.close
+            except Exception as e:  # TODO: exception handling
+                self.log.warning(f"Error: {e}")  # TODO: improve error message
+                self.log.info(f"Unable to oprn file")
+
+                # error 500??
+                raise Exception
+
+            self.log.info(
+                f"Adding action {orm.AssignmentActions.fetched.value} for user {this_user['ormUser'].id} against assignment {assignment.id}"
+            )
+            action = orm.Action(
+                user_id=this_user["ormUser"].id,
+                assignment_id=assignment.id,
+                action=orm.AssignmentActions.fetched,
+                location=release_file,
+            )
+            self.db.add(action)
+            self.db.commit()
+            self.log.info("record of fetch action committed")
+            self.write(data)
+        else:
+            self.log.info("no release file found")
             raise Exception
-
-        action = orm.Action(
-            user_id=this_user["ormUser"].id,
-            assignment_id=assignment.id,
-            action=orm.AssignmentActions.fetched,
-            location=release_file,
-        )
-        self.db.add(action)
-        self.db.commit()
-        self.log.info("action commited")
-        self.write(data)
 
     # This is releasing an **assignment**, not a student submission
     @web.authenticated

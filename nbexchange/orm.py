@@ -365,8 +365,18 @@ class Assignment(Base):
             raise TypeError(f"Primary Keys are required to be Ints")
 
     @classmethod
-    def find_by_code(cls, db, code, course_id=None, active=True, log=None):
+    def find_by_code(cls, db, code, course_id=None, active=True, log=None, action=None):
         """Find an assignment by code.
+
+        assignment = orm.Assignment.find_by_code(
+            db=self.db, code=assignment_code, course_id=course.id
+        )
+
+        optional params:
+            'active' True/False - defaults to true
+            'action' Allows one to restrict the search to a specific action. Not used
+                if set to None. Defaults to None
+
         Returns None if not found.
         """
         if log:
@@ -377,13 +387,16 @@ class Assignment(Base):
             raise ValueError(f"code needs to be defined")
         if course_id and not isinstance(course_id, int):
             raise TypeError(f"Course_id, if specified, must be an Int")
-        return (
-            db.query(cls)
-            .filter(
+        filters = [
                 cls.assignment_code == code,
                 cls.course_id == course_id,
                 cls.active == active,
-            )
+        ]
+        if action:
+            filters.append( cls.actions.any( Action.action == action ) )
+        return (
+            db.query(cls)
+            .filter(*filters)
             .order_by(cls.id.desc())
             .first()
         )

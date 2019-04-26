@@ -35,11 +35,18 @@ spec:
             httpGet:
               path: /services/nbexchange/
               port: http
+          volumeMounts:
+            - mountPath: /disk/remote/courses/
+              name: courses
           envFrom:
           - configMapRef:
               name: nbexchange-config
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+      - name: courses
+        hostPath:
+          path: /disk/remote/courses/
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

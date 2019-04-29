@@ -177,8 +177,9 @@ class Assignment(BaseHandler):
 
         # We will get 0-n release actions for this assignment, we just want the last one
         # Using a reversed for loop as there may be 0 elements :)
-        for action in reversed(assignment.actions):
+        for action in assignment.actions:
             release_file = action.location
+            break
 
         if release_file:
             try:

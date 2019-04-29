@@ -2,6 +2,7 @@
 # used under BSD license
 import glob
 import io
+import json
 import requests
 import sys
 
@@ -50,28 +51,6 @@ def api_request(self, url, method="GET", *args, **kwargs):
         return delete_req(*args, **kwargs)
     else:
         raise NotImplementedError(f"HTTP Method {method} is not implemented")
-
-
-def upload(self, url, file):
-    files = {"assignment": ("assignment.tar.gz", file)}
-
-    path = f"assignment?course_id={quote_plus(self.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}"
-    url = url + path
-
-    r = self.api_request(
-        url, method="POST", data={"notebooks": self.notebooks}, files=files
-    )
-    self.log.debug(f"Got back {r.status_code} after file upload")
-
-    try:
-        data = r.json()
-    except json.decoder.JSONDecodeError:
-        self.fail(r.text)
-
-    if not data["success"]:
-        self.fail(data["note"])
-
-    self.log.info("Successfully uploaded released assignment.")
 
 
 class _AsyncRequests:

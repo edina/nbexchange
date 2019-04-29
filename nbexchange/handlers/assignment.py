@@ -152,8 +152,10 @@ class Assignment(BaseHandler):
         # The location for the data-object is actually held in the 'released' action for the given assignment
         # We want the last one...
         assignment = orm.Assignment.find_by_code(
-            db=self.db, code=assignment_code, course_id=course.id,
-            action=orm.AssignmentActions.released.value
+            db=self.db,
+            code=assignment_code,
+            course_id=course.id,
+            action=orm.AssignmentActions.released.value,
         )
 
         if assignment is None:

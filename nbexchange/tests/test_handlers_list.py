@@ -11,10 +11,10 @@ from nbexchange.tests.test_handlers_base import BaseTestHandlers
 from nbexchange.tests.utils import (
     async_requests,
     tar_source,
-    user_kiz,
-    user_bert,
-    auth_inst,
-    auth_stud,
+    user_kiz_instructor,
+    user_brobbere_instructor,
+    user_kiz_student,
+    user_brobbere_student,
 )
 
 logger = logging.getLogger(__file__)
@@ -34,9 +34,10 @@ class TestHandlersFetch(BaseTestHandlers):
     # Requires a course_id param
     @pytest.mark.gen_test
     def test_assignments1(self, app):
-        with patch.object(BaseHandler, "get_current_user", return_value=user_kiz):
-            with patch.object(BaseHandler, "get_auth_state", return_value=auth_inst):
-                r = yield async_requests.get(app.url + "/assignments")
+        with patch.object(
+            BaseHandler, "get_current_user", return_value=user_kiz_instructor
+        ):
+            r = yield async_requests.get(app.url + "/assignments")
         assert r.status_code == 200
         response_data = r.json()
         assert response_data["success"] == False
@@ -45,11 +46,10 @@ class TestHandlersFetch(BaseTestHandlers):
     # test when not subscribed
     @pytest.mark.gen_test
     def test_assignments2(self, app):
-        with patch.object(BaseHandler, "get_current_user", return_value=user_kiz):
-            with patch.object(BaseHandler, "get_auth_state", return_value=auth_inst):
-                r = yield async_requests.get(
-                    app.url + "/assignments?course_id=course_a"
-                )
+        with patch.object(
+            BaseHandler, "get_current_user", return_value=user_kiz_instructor
+        ):
+            r = yield async_requests.get(app.url + "/assignments?course_id=course_a")
         assert r.status_code == 200
         response_data = r.json()
         assert response_data["success"] == False
@@ -58,11 +58,10 @@ class TestHandlersFetch(BaseTestHandlers):
     # test when subscribed
     @pytest.mark.gen_test
     def test_assignments3(self, app):
-        with patch.object(BaseHandler, "get_current_user", return_value=user_kiz):
-            with patch.object(BaseHandler, "get_auth_state", return_value=auth_inst):
-                r = yield async_requests.get(
-                    app.url + "/assignments?course_id=course_2"
-                )
+        with patch.object(
+            BaseHandler, "get_current_user", return_value=user_kiz_instructor
+        ):
+            r = yield async_requests.get(app.url + "/assignments?course_id=course_2")
         assert r.status_code == 200
         response_data = r.json()
         assert response_data["success"] == True

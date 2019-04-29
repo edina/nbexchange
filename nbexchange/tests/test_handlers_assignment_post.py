@@ -10,10 +10,10 @@ from nbexchange.base import BaseHandler
 from nbexchange.tests.utils import (
     async_requests,
     tar_source,
-    user_kiz,
-    user_bert,
-    auth_inst,
-    auth_stud,
+    user_kiz_instructor,
+    user_brobbere_instructor,
+    user_kiz_student,
+    user_brobbere_student,
 )
 
 logger = logging.getLogger(__file__)
@@ -31,7 +31,8 @@ def test_post_assignments0(app):
 # subscribed user makes no difference (501, because we've hard-coded it)
 @pytest.mark.gen_test
 def test_post_assignments1(app):
-    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz):
-        with patch.object(BaseHandler, "get_auth_state", return_value=auth_inst):
-            r = yield async_requests.post(app.url + "/assignments?course_id=course_2")
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_kiz_instructor
+    ):
+        r = yield async_requests.post(app.url + "/assignments?course_id=course_2")
     assert r.status_code == 501

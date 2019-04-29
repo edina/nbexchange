@@ -13,15 +13,31 @@ from urllib.parse import urljoin
 user_kiz = {"name": "1_kiz"}
 user_bert = {"name": "1_bert"}
 
-auth_inst = {
+user_kiz_instructor = {
+    "name": "1_kiz",
     "course_id": "course_2",
     "course_role": "Instructor",
     "course_title": "A title",
 }
-auth_stud = {
+
+user_kiz_student = {
+    "name": "1_kiz",
     "course_id": "course_2",
     "course_role": "Student",
     "course_title": "A title",
+}
+
+user_brobbere_instructor = {
+    "name": "1_brobbere",
+    "course_id": "course_2",
+    "course_role": "Instructor",
+    "course_title": "A title",
+}
+
+user_brobbere_student = {
+    "name": "1_brobbere",
+    "course_id": "course_2",
+    "course_role": "Student",
 }
 
 

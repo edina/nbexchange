@@ -10,10 +10,10 @@ from nbexchange.base import BaseHandler
 from nbexchange.tests.utils import (
     async_requests,
     tar_source,
-    user_kiz,
-    user_bert,
-    auth_inst,
-    auth_stud,
+    user_kiz_instructor,
+    user_brobbere_instructor,
+    user_kiz_student,
+    user_brobbere_student,
 )
 
 logger = logging.getLogger(__file__)
@@ -30,9 +30,10 @@ def test_post_submission0(app):
 # subscribed user makes no difference (501, because we've hard-coded it)
 @pytest.mark.gen_test
 def test_post_submission1(app):
-    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz):
-        with patch.object(BaseHandler, "get_auth_state", return_value=auth_inst):
-            r = yield async_requests.get(app.url + "/submission?course_id=course_2")
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_kiz_instructor
+    ):
+        r = yield async_requests.get(app.url + "/submission?course_id=course_2")
     assert r.status_code == 501
 
 
@@ -48,9 +49,10 @@ def test_post_assignments0(app):
 # Requires both params (none)
 @pytest.mark.gen_test
 def test_post_submision1(app):
-    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz):
-        with patch.object(BaseHandler, "get_auth_state", return_value=auth_inst):
-            r = yield async_requests.post(app.url + "/submission")
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_kiz_instructor
+    ):
+        r = yield async_requests.post(app.url + "/submission")
     assert r.status_code == 200
     response_data = r.json()
     assert response_data["success"] == False
@@ -63,9 +65,10 @@ def test_post_submision1(app):
 # Requires both params (just course)
 @pytest.mark.gen_test
 def test_post_submision2(app):
-    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz):
-        with patch.object(BaseHandler, "get_auth_state", return_value=auth_inst):
-            r = yield async_requests.post(app.url + "/submission?course_id=course_a")
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_kiz_instructor
+    ):
+        r = yield async_requests.post(app.url + "/submission?course_id=course_a")
     assert r.status_code == 200
     response_data = r.json()
     assert response_data["success"] == False
@@ -78,11 +81,10 @@ def test_post_submision2(app):
 # Requires both params (just assignment)
 @pytest.mark.gen_test
 def test_post_submision3(app):
-    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz):
-        with patch.object(BaseHandler, "get_auth_state", return_value=auth_inst):
-            r = yield async_requests.post(
-                app.url + "/submission?assignment_id=assign_a"
-            )
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_kiz_instructor
+    ):
+        r = yield async_requests.post(app.url + "/submission?assignment_id=assign_a")
     assert r.status_code == 200
     response_data = r.json()
     assert response_data["success"] == False
@@ -95,11 +97,10 @@ def test_post_submision3(app):
 # User not fetched assignment
 @pytest.mark.gen_test
 def test_post_submision4(app):
-    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz):
-        with patch.object(BaseHandler, "get_auth_state", return_value=auth_stud):
-            r = yield async_requests.post(
-                app.url + "/submission?course_id=course_2&assignment_id=assign_c"
-            )
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+        r = yield async_requests.post(
+            app.url + "/submission?course_id=course_2&assignment_id=assign_c"
+        )
     assert r.status_code == 200
     response_data = r.json()
     assert response_data["success"] == False
@@ -109,7 +110,7 @@ def test_post_submision4(app):
 # # Student can submit
 # @pytest.mark.gen_test
 # def test_post_submision4(app):
-#     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz):
+#     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
 #         with patch.object(BaseHandler, "get_auth_state", return_value=auth_stud):
 #             r = yield async_requests.post(
 #                 app.url + "/submission?course_id=course_2&assignment_id=assign_a",
@@ -124,9 +125,8 @@ def test_post_submision4(app):
 # # instructor can submit
 # @pytest.mark.gen_test
 # def test_post_submision5(app):
-#     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz):
-#         with patch.object(BaseHandler, "get_auth_state", return_value=auth_inst):
-#             r = yield async_requests.post(
+#     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
+# #             r = yield async_requests.post(
 #                 app.url + "/submission?course_id=course_2&assignment_id=assign_a",
 #                 files=files,
 #             )
@@ -139,8 +139,7 @@ def test_post_submision4(app):
 # # fails if no file is part of post request
 # @pytest.mark.gen_test
 # def test_post_submision4(app):
-#     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz):
-#         with patch.object(BaseHandler, "get_auth_state", return_value=auth_stud):
+#     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
 #             r = yield async_requests.post(
 #                 app.url + "/submission?course_id=course_2&assignment_id=assign_a"
 #             )
@@ -150,8 +149,7 @@ def test_post_submision4(app):
 # # Picks up the first attribute if more than 1 (wrong course)
 # @pytest.mark.gen_test
 # def test_post_submision4(app):
-#     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz):
-#         with patch.object(BaseHandler, "get_auth_state", return_value=auth_stud):
+#     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
 #             r = yield async_requests.post(
 #                 app.url
 #                 + "/submission?course_id=course_1&course_2&assignment_id=assign_a",
@@ -166,8 +164,7 @@ def test_post_submision4(app):
 # # Picks up the first attribute if more than 1 (right course)
 # @pytest.mark.gen_test
 # def test_post_submision4(app):
-#     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz):
-#         with patch.object(BaseHandler, "get_auth_state", return_value=auth_stud):
+#     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
 #             r = yield async_requests.post(
 #                 app.url + "/submission?course_id=course_2&assignment_id=assign_a",
 #                 files=files,

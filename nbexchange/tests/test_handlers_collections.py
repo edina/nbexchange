@@ -10,10 +10,10 @@ from nbexchange.base import BaseHandler
 from nbexchange.tests.utils import (
     async_requests,
     tar_source,
-    user_kiz,
-    user_bert,
-    auth_inst,
-    auth_stud,
+    user_kiz_instructor,
+    user_brobbere_instructor,
+    user_kiz_student,
+    user_brobbere_student,
 )
 
 logger = logging.getLogger(__file__)
@@ -30,9 +30,10 @@ def test_post_collections0(app):
 # subscribed user makes no difference (501, because we've hard-coded it)
 @pytest.mark.gen_test
 def test_post_assignments1(app):
-    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz):
-        with patch.object(BaseHandler, "get_auth_state", return_value=auth_inst):
-            r = yield async_requests.post(app.url + "/collections?course_id=course_2")
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_kiz_instructor
+    ):
+        r = yield async_requests.post(app.url + "/collections?course_id=course_2")
     assert r.status_code == 501
 
 
@@ -49,9 +50,10 @@ def test_collections0(app):
 # Requires both params (none)
 @pytest.mark.gen_test
 def test_collections1(app):
-    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz):
-        with patch.object(BaseHandler, "get_auth_state", return_value=auth_inst):
-            r = yield async_requests.get(app.url + "/collections")
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_kiz_instructor
+    ):
+        r = yield async_requests.get(app.url + "/collections")
     response_data = r.json()
     assert response_data["success"] == False
     assert (
@@ -63,9 +65,10 @@ def test_collections1(app):
 # Requires both params (just course)
 @pytest.mark.gen_test
 def test_collections2(app):
-    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz):
-        with patch.object(BaseHandler, "get_auth_state", return_value=auth_inst):
-            r = yield async_requests.get(app.url + "/collections?course_id=course_a")
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_kiz_instructor
+    ):
+        r = yield async_requests.get(app.url + "/collections?course_id=course_a")
     assert r.status_code == 200
     response_data = r.json()
     assert response_data["success"] == False
@@ -78,11 +81,10 @@ def test_collections2(app):
 # Requires both params (just assignment)
 @pytest.mark.gen_test
 def test_collections3(app):
-    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz):
-        with patch.object(BaseHandler, "get_auth_state", return_value=auth_inst):
-            r = yield async_requests.get(
-                app.url + "/collections?assignment_id=assign_a"
-            )
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_kiz_instructor
+    ):
+        r = yield async_requests.get(app.url + "/collections?assignment_id=assign_a")
     assert r.status_code == 200
     response_data = r.json()
     assert response_data["success"] == False
@@ -95,72 +97,76 @@ def test_collections3(app):
 # both params, incorrect course
 @pytest.mark.gen_test
 def test_collections4(app):
-    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz):
-        with patch.object(BaseHandler, "get_auth_state", return_value=auth_inst):
-            r = yield async_requests.get(
-                app.url + "/collections?course_id=course_1&assignment_id=assign_a"
-            )
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_kiz_instructor
+    ):
+        r = yield async_requests.get(
+            app.url + "/collections?course_id=course_1&assignment_id=assign_a"
+        )
     assert r.status_code == 200
     response_data = r.json()
     assert response_data["success"] == False
     assert response_data["note"] == "User not subscribed to course course_1"
 
 
-# # both params, correct course, assignment does not exist
-# # returns true, but empty
-# @pytest.mark.gen_test
-# def test_collections5(app):
-#     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz):
-#         with patch.object(BaseHandler, "get_auth_state", return_value=auth_inst):
-#             r = yield async_requests.get(
-#                 app.url + "/collections?course_id=course_2&assignment_id=assign_b2"
-#             )
-#     assert r.status_code == 200
-#     response_data = r.json()
-#     assert response_data["success"] == True
-#     assert "note" not in response_data  # just that it's missing
-#     assert "value" in response_data  # just that it's present (it will have no content)
+# both params, correct course, assignment does not exist
+# returns true, but empty
+@pytest.mark.gen_test
+@pytest.mark.skip
+def test_collections5(app):
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_kiz_instructor
+    ):
+        r = yield async_requests.get(
+            app.url + "/collections?course_id=course_2&assignment_id=assign_b2"
+        )
+    assert r.status_code == 200
+    response_data = r.json()
+    assert response_data["success"] == True
+    assert "note" not in response_data  # just that it's missing
+    assert "value" in response_data  # just that it's present (it will have no content)
 
 
-# # both params, correct details
-# @pytest.mark.gen_test
-# def test_collections6(app):
-#     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz):
-#         with patch.object(BaseHandler, "get_auth_state", return_value=auth_inst):
-#             r = yield async_requests.get(
-#                 app.url + "/collections?course_id=course_2&assignment_id=assign_a"
-#             )
-#     assert r.status_code == 200
-#     response_data = r.json()
-#     assert response_data["success"] == True
-#     assert "note" not in response_data  # just that it's missing
-#     assert "value" in response_data  # just that it's present (it will have no content)
+# both params, correct details
+@pytest.mark.gen_test
+@pytest.mark.skip
+def test_collections6(app):
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_kiz_instructor
+    ):
+        r = yield async_requests.get(
+            app.url + "/collections?course_id=course_2&assignment_id=assign_a"
+        )
+    assert r.status_code == 200
+    response_data = r.json()
+    assert response_data["success"] == True
+    assert "note" not in response_data  # just that it's missing
+    assert "value" in response_data  # just that it's present (it will have no content)
 
 
-# # both params, correct course, assignment does not exist - differnet user, same role
-# # Passes, because instructor on course
-# @pytest.mark.gen_test
-# def test_collections7(app):
-#     with patch.object(BaseHandler, "get_current_user", return_value=user_bert):
-#         with patch.object(BaseHandler, "get_auth_state", return_value=auth_inst):
-#             r = yield async_requests.get(
-#                 app.url + "/collections?course_id=course_2&assignment_id=assign_a"
-#             )
-#     assert r.status_code == 200
-#     response_data = r.json()
-#     assert response_data["success"] == True
-#     assert "note" not in response_data  # just that it's missing
-#     assert "value" in response_data  # just that it's present (it will have no content)
+# both params, correct course, assignment does not exist - differnet user, same role
+# Passes, because instructor on course
+@pytest.mark.gen_test
+@pytest.mark.skip
+def test_collections7(app):
+    with patch.object(BaseHandler, "get_current_user", return_value=user_bert):
+        r = yield async_requests.get(
+            app.url + "/collections?course_id=course_2&assignment_id=assign_a"
+        )
+    assert r.status_code == 200
+    response_data = r.json()
+    assert response_data["success"] == True
+    assert "note" not in response_data  # just that it's missing
+    assert "value" in response_data  # just that it's present (it will have no content)
 
 
 # student cannot collect
 @pytest.mark.gen_test
 def test_collections8(app):
-    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz):
-        with patch.object(BaseHandler, "get_auth_state", return_value=auth_stud):
-            r = yield async_requests.get(
-                app.url + "/collections?course_id=course_2&assignment_id=assign_a"
-            )
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+        r = yield async_requests.get(
+            app.url + "/collections?course_id=course_2&assignment_id=assign_a"
+        )
     assert r.status_code == 200
     response_data = r.json()
     assert response_data["success"] == False
@@ -170,29 +176,30 @@ def test_collections8(app):
 # Picks up the first attribute if more than 1 (wrong course)
 @pytest.mark.gen_test
 def test_collections9(app):
-    with patch.object(BaseHandler, "get_current_user", return_value=user_bert):
-        with patch.object(BaseHandler, "get_auth_state", return_value=auth_inst):
-            r = yield async_requests.get(
-                app.url
-                + "/collections?course_id=course_1&course_2&assignment_id=assign_a"
-            )
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_brobbere_instructor
+    ):
+        r = yield async_requests.get(
+            app.url + "/collections?course_id=course_1&course_2&assignment_id=assign_a"
+        )
     assert r.status_code == 200
     response_data = r.json()
     assert response_data["success"] == False
     assert response_data["note"] == "User not subscribed to course course_1"
 
 
-# # Picks up the first attribute if more than 1 (right course)
-# @pytest.mark.gen_test
-# def test_collections10(app):
-#     with patch.object(BaseHandler, "get_current_user", return_value=user_bert):
-#         with patch.object(BaseHandler, "get_auth_state", return_value=auth_inst):
-#             r = yield async_requests.get(
-#                 app.url
-#                 + "/collections?course_id=course_2&course_1&assignment_id=assign_a"
-#             )
-#     assert r.status_code == 200
-#     response_data = r.json()
-#     assert response_data["success"] == True
-#     assert "note" not in response_data  # just that it's missing
-#     assert "value" in response_data  # just that it's present (it will have no content)
+# Picks up the first attribute if more than 1 (right course)
+@pytest.mark.gen_test
+def test_collections10(app):
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_brobbere_instructor
+    ):
+        r = yield async_requests.get(
+            app.url + "/collections?course_id=course_2&course_1&assignment_id=assign_a"
+        )
+    assert r.status_code == 200
+    response_data = r.json()
+    assert response_data["success"] == True
+    assert "note" not in response_data  # just that it's missing
+    assert "value" in response_data  # just that it's present (it will have no content)
+

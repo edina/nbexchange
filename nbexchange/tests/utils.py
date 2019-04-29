@@ -9,6 +9,19 @@ from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 from urllib.parse import urljoin
 
+user_kiz = {"name": "1_kiz"}
+user_bert = {"name": "1_bert"}
+
+auth_inst = {
+    "course_id": "course_2",
+    "course_role": "Instructor",
+    "course_title": "A title",
+}
+auth_stud = {
+    "course_id": "course_2",
+    "course_role": "Student",
+    "course_title": "A title",
+}
 
 def tar_source(filename):
 

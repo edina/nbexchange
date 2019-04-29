@@ -37,6 +37,7 @@ def test_post_assignments1(app):
             r = yield async_requests.post(app.url + "/collection?course_id=course_2")
     assert r.status_code == 501
 
+
 ##### GET /collection (download/collect student submissions) #####
 
 # require authenticated user (404 because the bounce to login fails)
@@ -187,5 +188,3 @@ def test_collection6(app):
 #     assert r.status_code == 200
 #     assert r.headers["Content-Type"] == "application/gzip"
 #     assert int(r.headers["Content-Length"]) > 0
-
-

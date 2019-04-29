@@ -222,7 +222,7 @@ def test_assignment11(app):
 #     assert response_data["success"] == True
 #     assert response_data["note"] == "Released"
 
-    
+
 ##### fetch assignment (download) now upload has happened ######
 
 # # fetch assignment, correct details, same user as releaser

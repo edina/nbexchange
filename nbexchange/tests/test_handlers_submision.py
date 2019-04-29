@@ -91,6 +91,7 @@ def test_post_submision3(app):
         == "Submission call requires both a course code and an assignment code"
     )
 
+
 # User not fetched assignment
 @pytest.mark.gen_test
 def test_post_submision4(app):
@@ -102,10 +103,8 @@ def test_post_submision4(app):
     assert r.status_code == 200
     response_data = r.json()
     assert response_data["success"] == False
-    assert (
-        response_data["note"]
-        == "User not fetched assignment assign_c"
-    )
+    assert response_data["note"] == "User not fetched assignment assign_c"
+
 
 # # Student can submit
 # @pytest.mark.gen_test
@@ -177,4 +176,3 @@ def test_post_submision4(app):
 #     response_data = r.json()
 #     assert response_data["success"] == True
 #     assert response_data["note"] == "Submitted"
-

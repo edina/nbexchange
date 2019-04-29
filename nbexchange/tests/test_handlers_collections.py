@@ -35,6 +35,7 @@ def test_post_assignments1(app):
             r = yield async_requests.post(app.url + "/collections?course_id=course_2")
     assert r.status_code == 501
 
+
 ##### GET /collections (list available assignments for collection) #####
 
 # require authenticated user (404 because the bounce to login fails)
@@ -195,4 +196,3 @@ def test_collections9(app):
 #     assert response_data["success"] == True
 #     assert "note" not in response_data  # just that it's missing
 #     assert "value" in response_data  # just that it's present (it will have no content)
-

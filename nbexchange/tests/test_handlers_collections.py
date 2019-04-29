@@ -202,4 +202,3 @@ def test_collections10(app):
     assert response_data["success"] == True
     assert "note" not in response_data  # just that it's missing
     assert "value" in response_data  # just that it's present (it will have no content)
-

@@ -37,7 +37,7 @@ def test_assignment1(app):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):
-            r = yield async_requests.get(app.url + "/assignment")
+        r = yield async_requests.get(app.url + "/assignment")
     response_data = r.json()
     assert response_data["success"] == False
     assert (
@@ -52,7 +52,7 @@ def test_assignment2(app):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):
-            r = yield async_requests.get(app.url + "/assignment?course_id=course_a")
+        r = yield async_requests.get(app.url + "/assignment?course_id=course_a")
     assert r.status_code == 200
     response_data = r.json()
     assert response_data["success"] == False
@@ -68,7 +68,7 @@ def test_assignment3(app):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):
-            r = yield async_requests.get(app.url + "/assignment?assignment_id=assign_a")
+        r = yield async_requests.get(app.url + "/assignment?assignment_id=assign_a")
     assert r.status_code == 200
     response_data = r.json()
     assert response_data["success"] == False
@@ -84,9 +84,9 @@ def test_assignment4(app):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):
-            r = yield async_requests.get(
-                app.url + "/assignment?course_id=course_1&assignment_id=assign_a"
-            )
+        r = yield async_requests.get(
+            app.url + "/assignment?course_id=course_1&assignment_id=assign_a"
+        )
     assert r.status_code == 200
     response_data = r.json()
     assert response_data["success"] == False
@@ -99,9 +99,9 @@ def test_assignment5(app):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):
-            r = yield async_requests.get(
-                app.url + "/assignment?course_id=course_2&assignment_id=assign_a"
-            )
+        r = yield async_requests.get(
+            app.url + "/assignment?course_id=course_2&assignment_id=assign_a"
+        )
     assert r.status_code == 200
     response_data = r.json()
     assert response_data["success"] == False
@@ -111,10 +111,12 @@ def test_assignment5(app):
 # both params, correct course, assignment does not exist - differnet user, same role
 @pytest.mark.gen_test
 def test_assignment6(app):
-    with patch.object(BaseHandler, "get_current_user", return_value=user_brobbere_instructor):
-            r = yield async_requests.get(
-                app.url + "/assignment?course_id=course_2&assignment_id=assign_a"
-            )
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_brobbere_instructor
+    ):
+        r = yield async_requests.get(
+            app.url + "/assignment?course_id=course_2&assignment_id=assign_a"
+        )
     assert r.status_code == 200
     response_data = r.json()
     assert response_data["success"] == False
@@ -125,9 +127,9 @@ def test_assignment6(app):
 @pytest.mark.gen_test
 def test_assignment7(app):
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
-            r = yield async_requests.get(
-                app.url + "/assignment?course_id=course_2&assignment_id=assign_a"
-            )
+        r = yield async_requests.get(
+            app.url + "/assignment?course_id=course_2&assignment_id=assign_a"
+        )
     assert r.status_code == 200
     response_data = r.json()
     assert response_data["success"] == False
@@ -198,29 +200,33 @@ def test_assignment11(app):
 
 # set up the file to be uploaded
 
+
 @pytest.mark.gen_test
 @pytest.mark.skip
 def test_post_assignment5(app):
-    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
-            import io
-            import tarfile
-            import time
-            from contextlib import closing
-            from datetime import datetime
-            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f %Z")
-            tar_file = io.BytesIO()
-            files = {"assignment": ("assignment.tar.gz", tar_file)}
-            with tarfile.open(fileobj=tar_file, mode="w:gz") as tar_handle:
-                with closing(io.BytesIO(timestamp.encode())) as fobj:
-                    tarinfo = tarfile.TarInfo("timestamp.txt")
-                    tarinfo.size = len(fobj.getvalue())
-                    tarinfo.mtime = time.time()
-                    tar_handle.addfile(tarinfo, fileobj=fobj)
-            tar_file.seek(0)
-            r = yield async_requests.post(
-                app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-                files=files,
-            )
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_kiz_instructor
+    ):
+        import io
+        import tarfile
+        import time
+        from contextlib import closing
+        from datetime import datetime
+
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f %Z")
+        tar_file = io.BytesIO()
+        files = {"assignment": ("assignment.tar.gz", tar_file)}
+        with tarfile.open(fileobj=tar_file, mode="w:gz") as tar_handle:
+            with closing(io.BytesIO(timestamp.encode())) as fobj:
+                tarinfo = tarfile.TarInfo("timestamp.txt")
+                tarinfo.size = len(fobj.getvalue())
+                tarinfo.mtime = time.time()
+                tar_handle.addfile(tarinfo, fileobj=fobj)
+        tar_file.seek(0)
+        r = yield async_requests.post(
+            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
+            files=files,
+        )
     assert r.status_code == 200
     response_data = r.json()
     assert response_data["success"] == True
@@ -233,23 +239,28 @@ def test_post_assignment5(app):
 @pytest.mark.gen_test
 @pytest.mark.skip
 def test_assignment13(app):
-    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
-            r = yield async_requests.get(
-                app.url + "/assignment?course_id=course_2&assignment_id=assign_a"
-            )
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_kiz_instructor
+    ):
+        r = yield async_requests.get(
+            app.url + "/assignment?course_id=course_2&assignment_id=assign_a"
+        )
     assert r.status_code == 200
     # assert r.headers["Content-Type"] == "application/gzip"
     # assert int(r.headers["Content-Length"]) > 0
     sys.stdout.write(f"content: {r.json()}")
 
+
 # fetch assignment, correct details, different user, different role
 @pytest.mark.gen_test
 @pytest.mark.skip
 def test_assignment14(app):
-    with patch.object(BaseHandler, "get_current_user", return_value=user_brobbere_student):
-            r = yield async_requests.get(
-                app.url + "/assignment?course_id=course_2&assignment_id=assign_a"
-            )
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_brobbere_student
+    ):
+        r = yield async_requests.get(
+            app.url + "/assignment?course_id=course_2&assignment_id=assign_a"
+        )
     assert r.status_code == 200
     assert r.headers["Content-Type"] == "application/gzip"
     assert int(r.headers["Content-Length"]) > 0
@@ -259,11 +270,13 @@ def test_assignment14(app):
 @pytest.mark.gen_test
 @pytest.mark.skip
 def test_assignment15(app):
-    with patch.object(BaseHandler, "get_current_user", return_value=user_brobbere_student):
-            r = yield async_requests.get(
-                app.url
-                + "/assignment?course_id=course_1&course_id=course_2&assignment_id=assign_a"
-            )
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_brobbere_student
+    ):
+        r = yield async_requests.get(
+            app.url
+            + "/assignment?course_id=course_1&course_id=course_2&assignment_id=assign_a"
+        )
     assert r.status_code == 200
     response_data = r.json()
     assert response_data["success"] == False
@@ -274,11 +287,12 @@ def test_assignment15(app):
 @pytest.mark.gen_test
 @pytest.mark.skip
 def test_assignment16(app):
-    with patch.object(BaseHandler, "get_current_user", return_value=user_brobbere_student):
-            r = yield async_requests.get(
-                app.url
-                + "/assignment?course_id=course_2&course_1&assignment_id=assign_a"
-            )
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_brobbere_student
+    ):
+        r = yield async_requests.get(
+            app.url + "/assignment?course_id=course_2&course_1&assignment_id=assign_a"
+        )
     assert r.status_code == 200
     assert r.headers["Content-Type"] == "application/gzip"
     assert int(r.headers["Content-Length"]) > 0

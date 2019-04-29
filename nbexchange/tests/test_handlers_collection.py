@@ -67,17 +67,19 @@ def test_collection1(app):
 # Requires three params (given course & assignment)
 @pytest.mark.gen_test
 def test_collection2(app):
-    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
-            collected_data = None
-            r = yield async_requests.get(
-                app.url + "/collections?course_id=course_2&assignment_id=assign_a"
-            )  ## Get the data we need to make test the call we want to make
-            response_data = r.json()
-            collected_data = response_data["value"][0]
-            r = yield async_requests.get(
-                app.url
-                + f"/collection?course_id={collected_data['course_id']}&assignment_id={collected_data['assignment_id']}"
-            )
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_kiz_instructor
+    ):
+        collected_data = None
+        r = yield async_requests.get(
+            app.url + "/collections?course_id=course_2&assignment_id=assign_a"
+        )  ## Get the data we need to make test the call we want to make
+        response_data = r.json()
+        collected_data = response_data["value"][0]
+        r = yield async_requests.get(
+            app.url
+            + f"/collection?course_id={collected_data['course_id']}&assignment_id={collected_data['assignment_id']}"
+        )
     assert r.status_code == 200
     response_data = r.json()
     assert response_data["success"] == False

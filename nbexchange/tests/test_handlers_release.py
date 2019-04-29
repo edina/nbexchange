@@ -84,13 +84,10 @@ def test_post_assignment3(app):
 # Student cannot release
 @pytest.mark.gen_test
 def test_post_assignment4(app):
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_kiz_instructor
-    ):
-        with patch.object(BaseHandler, "get_auth_state", return_value=auth_stud):
-            r = yield async_requests.post(
-                app.url + "/assignment?course_id=course_2&assignment_id=assign_a"
-            )
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+        r = yield async_requests.post(
+            app.url + "/assignment?course_id=course_2&assignment_id=assign_a"
+        )
     assert r.status_code == 200
     response_data = r.json()
     assert response_data["success"] == False

@@ -111,7 +111,6 @@ def test_post_submision4(app):
 # @pytest.mark.gen_test
 # def test_post_submision4(app):
 #     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
-#         with patch.object(BaseHandler, "get_auth_state", return_value=auth_stud):
 #             r = yield async_requests.post(
 #                 app.url + "/submission?course_id=course_2&assignment_id=assign_a",
 #                 files=files,

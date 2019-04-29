@@ -158,12 +158,13 @@ def test_collection2(app):
 # Has all three params, student can't collect (note this is hard-coded params, as students can list items available for collection)
 @pytest.mark.gen_test
 def test_collection6(app):
-    with patch.object(BaseHandler, "get_current_user", return_value=user_bert):
-        with patch.object(BaseHandler, "get_auth_state", return_value=auth_stud):
-            r = yield async_requests.get(
-                app.url
-                + f"/collection?course_id=course_2&path=/foo/car/file.gz&assignment_id=assign_a"
-            )
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_brobbere_student
+    ):
+        r = yield async_requests.get(
+            app.url
+            + f"/collection?course_id=course_2&path=/foo/car/file.gz&assignment_id=assign_a"
+        )
     assert r.status_code == 200
     response_data = r.json()
     assert response_data["success"] == False

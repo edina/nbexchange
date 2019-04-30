@@ -6,7 +6,7 @@ import uuid
 
 from dateutil.tz import gettz
 from nbexchange import orm
-from nbexchange.base import BaseHandler
+from nbexchange.base import BaseHandler, authenticated
 from tornado import web, httputil
 from urllib.parse import quote_plus
 from urllib.request import urlopen
@@ -30,7 +30,7 @@ class Collections(BaseHandler):
 
     urls = ["collections"]
 
-    @web.authenticated
+    @authenticated
     def get(self):
 
         models = []
@@ -118,7 +118,7 @@ class Collection(BaseHandler):
 
     urls = ["collection"]
 
-    @web.authenticated
+    @authenticated
     def get(self):
 
         models = []

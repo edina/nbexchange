@@ -6,7 +6,7 @@ import uuid
 
 from dateutil.tz import gettz
 from nbexchange import orm
-from nbexchange.base import BaseHandler
+from nbexchange.base import BaseHandler, authenticated
 from tornado import web, httputil
 from urllib.parse import quote_plus, unquote, unquote_plus
 from urllib.request import urlopen
@@ -29,7 +29,7 @@ class Assignments(BaseHandler):
 
     urls = ["assignments"]
 
-    @web.authenticated
+    @authenticated
     def get(self):
 
         models = []
@@ -117,7 +117,7 @@ class Assignment(BaseHandler):
     # urls = ["assignment/([^/]+)(?:/?([^/]+))?"]
     urls = ["assignment"]
 
-    @web.authenticated
+    @authenticated
     def get(self):  # def get(self, course_code, assignment_code=None):
 
         [course_code, assignment_code] = self.get_params(["course_id", "assignment_id"])
@@ -211,7 +211,7 @@ class Assignment(BaseHandler):
             raise Exception
 
     # This is releasing an **assignment**, not a student submission
-    @web.authenticated
+    @authenticated
     def post(self):
 
         [course_code, assignment_code] = self.get_params(["course_id", "assignment_id"])
@@ -348,7 +348,7 @@ class Assignment(BaseHandler):
         self.write({"success": True, "note": "Released"})
 
     # This is unreleasing an assignment
-    @web.authenticated
+    @authenticated
     def delete(self):
 
         [course_code, assignment_code] = self.get_params(["course_id", "assignment_id"])

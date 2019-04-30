@@ -662,5 +662,7 @@ def new_session_factory(
     # SQLAlchemy to expire objects after committing - we don't expect
     # concurrent runs of the hub talking to the same db. Turning
     # this off gives us a major performance boost
-    session_factory = sessionmaker(bind=engine, expire_on_commit=expire_on_commit)
+    session_factory = sessionmaker(
+        bind=engine, expire_on_commit=expire_on_commit, autoflush=True
+    )
     return session_factory

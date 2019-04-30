@@ -193,6 +193,7 @@ class NbExchange(Application):
                 reset=self.reset_db,
                 echo=self.debug_db,
                 log=self.log,
+                expire_on_commit=True,
                 **self.db_kwargs,
             )
             self.db = self.session_factory()

@@ -146,7 +146,7 @@ class NbExchange(Application):
         logger.parent = self.log
         logger.setLevel(self.log.level)
 
-    db_url = os.environ.get("NBEX_DB_URL", "sqlite:///nbexchange2.sqlite")
+    db_url = os.environ.get("NBEX_DB_URL", "sqlite:///:memory:")  # nbexchange2.sqlite")
 
     db_kwargs = Dict(
         help="""Include any kwargs to pass to the database connection.

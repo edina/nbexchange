@@ -6,7 +6,7 @@ import uuid
 
 from dateutil.tz import gettz
 from nbexchange import orm
-from nbexchange.base import BaseHandler
+from nbexchange.base import BaseHandler, authenticated
 from tornado import web, httputil
 from urllib.parse import quote_plus, unquote, unquote_plus
 from urllib.request import urlopen
@@ -29,7 +29,7 @@ class Assignments(BaseHandler):
 
     urls = ["assignments"]
 
-    @web.authenticated
+    @authenticated
     def get(self):
 
         models = []
@@ -117,7 +117,7 @@ class Assignment(BaseHandler):
     # urls = ["assignment/([^/]+)(?:/?([^/]+))?"]
     urls = ["assignment"]
 
-    @web.authenticated
+    @authenticated
     def get(self):  # def get(self, course_code, assignment_code=None):
 
         [course_code, assignment_code] = self.get_params(["course_id", "assignment_id"])
@@ -152,7 +152,10 @@ class Assignment(BaseHandler):
         # The location for the data-object is actually held in the 'released' action for the given assignment
         # We want the last one...
         assignment = orm.Assignment.find_by_code(
-            db=self.db, code=assignment_code, course_id=course.id
+            db=self.db,
+            code=assignment_code,
+            course_id=course.id,
+            action=orm.AssignmentActions.released.value,
         )
 
         if assignment is None:
@@ -167,43 +170,48 @@ class Assignment(BaseHandler):
                 "Date": httputil.format_timestamp(time.time()),
             }
         )
-        self.log.info(
-            f"Adding action {orm.AssignmentActions.fetched.value} for user {this_user['ormUser'].id} against assignment {assignment.id}"
-        )
+
         data = b""
 
         release_file = None
+
+        # We will get 0-n release actions for this assignment, we just want the last one
+        # Using a reversed for loop as there may be 0 elements :)
         for action in assignment.actions:
-            self.log.info(f"Action: {action.action}")
-            if action.action == orm.AssignmentActions.released:
-                self.log.info(f"Found release: {action.location}")
-                release_file = action.location
-                # no break, as we want the /last/ released action!
+            release_file = action.location
+            break
 
-        try:
-            handle = open(release_file, "r+b")
-            data = handle.read()
-            handle.close
-        except Exception as e:  # TODO: exception handling
-            self.log.warning(f"Error: {e}")  # TODO: improve error message
-            self.log.info(f"Recovery failed")
+        if release_file:
+            try:
+                handle = open(release_file, "r+b")
+                data = handle.read()
+                handle.close
+            except Exception as e:  # TODO: exception handling
+                self.log.warning(f"Error: {e}")  # TODO: improve error message
+                self.log.info(f"Unable to oprn file")
 
-            # error 500??
+                # error 500??
+                raise Exception
+
+            self.log.info(
+                f"Adding action {orm.AssignmentActions.fetched.value} for user {this_user['ormUser'].id} against assignment {assignment.id}"
+            )
+            action = orm.Action(
+                user_id=this_user["ormUser"].id,
+                assignment_id=assignment.id,
+                action=orm.AssignmentActions.fetched,
+                location=release_file,
+            )
+            self.db.add(action)
+            self.db.commit()
+            self.log.info("record of fetch action committed")
+            self.write(data)
+        else:
+            self.log.info("no release file found")
             raise Exception
 
-        action = orm.Action(
-            user_id=this_user["ormUser"].id,
-            assignment_id=assignment.id,
-            action=orm.AssignmentActions.fetched,
-            location=release_file,
-        )
-        self.db.add(action)
-        self.db.commit()
-        self.log.info("action commited")
-        self.write(data)
-
     # This is releasing an **assignment**, not a student submission
-    @web.authenticated
+    @authenticated
     def post(self):
 
         [course_code, assignment_code] = self.get_params(["course_id", "assignment_id"])
@@ -340,7 +348,7 @@ class Assignment(BaseHandler):
         self.write({"success": True, "note": "Released"})
 
     # This is unreleasing an assignment
-    @web.authenticated
+    @authenticated
     def delete(self):
 
         [course_code, assignment_code] = self.get_params(["course_id", "assignment_id"])

@@ -231,7 +231,6 @@ class NbExchange(Application):
             hub_base_url=self.hub_base_url,
             hub_api_url=self.hub_api_url,
             hub_api_token=self.hub_api_token,
-            logout_url=url_path_join(self.hub_base_url, "hub/logout"),
             static_path=STATIC_FILES_DIR,
             static_url_prefix=url_path_join(self.base_url, "static/"),
             version_hash=version_hash,

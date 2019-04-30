@@ -6,7 +6,7 @@ import uuid
 
 from dateutil.tz import gettz
 from nbexchange import orm
-from nbexchange.base import BaseHandler
+from nbexchange.base import BaseHandler, authenticated
 from tornado import web, httputil
 from urllib.parse import quote_plus
 from urllib.request import urlopen
@@ -30,7 +30,7 @@ class Collections(BaseHandler):
 
     urls = ["collections"]
 
-    @web.authenticated
+    @authenticated
     def get(self):
 
         models = []
@@ -118,7 +118,7 @@ class Collection(BaseHandler):
 
     urls = ["collection"]
 
-    @web.authenticated
+    @authenticated
     def get(self):
 
         models = []
@@ -166,8 +166,14 @@ class Collection(BaseHandler):
             self.write({"success": False, "note": note})
             return
 
+        # We need to key off the assignment, but we're actually looking
+        # for the action with a action and a specific path
         assignments = orm.Assignment.find_for_course(
-            db=self.db, course_id=course.id, log=self.log
+            db=self.db,
+            course_id=course.id,
+            log=self.log,
+            action=orm.AssignmentActions.submitted.value,
+            path=path,
         )
 
         data = b""
@@ -178,38 +184,45 @@ class Collection(BaseHandler):
             }
         )
 
+        # I do not want to assume there will just be one.
         for assignment in assignments:
             self.log.debug(f"Assignment: {assignment}")
             self.log.debug(f"Assignment Actions: {assignment.actions}")
+
+            release_file = None
+
+            # We will get 0-n submit actions for this path (where n should be 1),
+            # we just want the last one
+            # Using a reversed for loop as there may be 0 elements :)
             for action in assignment.actions:
+                release_file = action.location
+                break
 
-                # the path should be unique, but lets just double-check its "submitted" too
-                if (
-                    action.action == orm.AssignmentActions.submitted
-                    and action.location == path
-                ):
+            if release_file:
+                try:
+                    handle = open(path, "r+b")
+                    data = handle.read()
+                    handle.close
+                except Exception as e:  # TODO: exception handling
+                    self.log.warning(f"Error: {e}")  # TODO: improve error message
+                    self.log.info("Recovery failed")
 
-                    try:
-                        handle = open(path, "r+b")
-                        data = handle.read()
-                        handle.close
-                    except Exception as e:  # TODO: exception handling
-                        self.log.warning(f"Error: {e}")  # TODO: improve error message
-                        self.log.info("Recovery failed")
+                    # error 500??
+                    raise Exception
 
-                        # error 500??
-                        raise Exception
-
-                    action = orm.Action(
-                        user_id=this_user["ormUser"].id,
-                        assignment_id=assignment.id,
-                        action=orm.AssignmentActions.collected,
-                        location=path,
-                    )
-                    self.db.add(action)
-                    self.db.commit()
-
-        self.write(data)
+                self.log.info(
+                    f"Adding action {orm.AssignmentActions.collected.value} for path {path}"
+                )
+                action = orm.Action(
+                    user_id=this_user["ormUser"].id,
+                    assignment_id=assignment.id,
+                    action=orm.AssignmentActions.collected,
+                    location=path,
+                )
+                self.db.add(action)
+                self.db.commit()
+                self.log.info("record of fetch action committed")
+                self.write(data)
 
     # This has no authentiction wrapper, so false implication os service
     def post(self):

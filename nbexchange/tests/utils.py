@@ -2,12 +2,43 @@
 # used under BSD license
 import glob
 import io
+import json
 import requests
 import sys
 
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 from urllib.parse import urljoin
+
+user_kiz = {"name": "1_kiz"}
+user_bert = {"name": "1_bert"}
+
+user_kiz_instructor = {
+    "name": "1_kiz",
+    "course_id": "course_2",
+    "course_role": "Instructor",
+    "course_title": "A title",
+}
+
+user_kiz_student = {
+    "name": "1_kiz",
+    "course_id": "course_2",
+    "course_role": "Student",
+    "course_title": "A title",
+}
+
+user_brobbere_instructor = {
+    "name": "1_brobbere",
+    "course_id": "course_2",
+    "course_role": "Instructor",
+    "course_title": "A title",
+}
+
+user_brobbere_student = {
+    "name": "1_brobbere",
+    "course_id": "course_2",
+    "course_role": "Student",
+}
 
 
 def tar_source(filename):
@@ -37,28 +68,6 @@ def api_request(self, url, method="GET", *args, **kwargs):
         return delete_req(*args, **kwargs)
     else:
         raise NotImplementedError(f"HTTP Method {method} is not implemented")
-
-
-def upload(self, url, file):
-    files = {"assignment": ("assignment.tar.gz", file)}
-
-    path = f"assignment?course_id={quote_plus(self.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}"
-    url = url + path
-
-    r = self.api_request(
-        url, method="POST", data={"notebooks": self.notebooks}, files=files
-    )
-    self.log.debug(f"Got back {r.status_code} after file upload")
-
-    try:
-        data = r.json()
-    except json.decoder.JSONDecodeError:
-        self.fail(r.text)
-
-    if not data["success"]:
-        self.fail(data["note"])
-
-    self.log.info("Successfully uploaded released assignment.")
 
 
 class _AsyncRequests:

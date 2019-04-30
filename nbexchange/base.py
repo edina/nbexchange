@@ -1,12 +1,48 @@
 import re
 import os
 import requests
+import functools
+
 from jupyterhub.utils import url_path_join
 from nbexchange import orm
 from tornado import gen, web
 from tornado.log import app_log
 from raven.contrib.tornado import SentryMixin
 from urllib.parse import quote_plus, unquote, unquote_plus
+from typing import (
+    Dict,
+    Any,
+    Union,
+    Optional,
+    Awaitable,
+    Tuple,
+    List,
+    Callable,
+    Iterable,
+    Generator,
+    Type,
+    cast,
+    overload,
+)
+
+
+def authenticated(
+    method: Callable[..., Optional[Awaitable[None]]]
+) -> Callable[..., Optional[Awaitable[None]]]:
+    """Decorate methods with this to require that the user be logged in.
+
+    If the user is not logged in, raise a 403 error
+    """
+
+    @functools.wraps(method)
+    def wrapper(  # type: ignore
+        self: web.RequestHandler, *args, **kwargs
+    ) -> Optional[Awaitable[None]]:
+        if not self.current_user:
+            raise web.HTTPError(403)
+        return method(self, *args, **kwargs)
+
+    return wrapper
 
 
 class BaseHandler(SentryMixin, web.RequestHandler):
@@ -32,13 +68,17 @@ class BaseHandler(SentryMixin, web.RequestHandler):
         for name in self.request.cookies:
             cookies[name] = self.get_cookie(name)
 
-        r = requests.get(api_endpoint, cookies=cookies)
+        try:
+            r = requests.get(api_endpoint, cookies=cookies)
+        except requests.exceptions.ConnectionError:
+            return None
+
         result = r.json()
 
         self.log.debug("CODE: {} \nRESULT: {}".format(r.status_code, result))
 
         if r.status_code == 401:
-            raise web.HTTPError(401)
+            return None
 
         return {
             "name": result["username"],

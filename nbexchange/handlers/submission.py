@@ -6,7 +6,7 @@ import uuid
 
 from dateutil.tz import gettz
 from nbexchange import orm
-from nbexchange.base import BaseHandler
+from nbexchange.base import BaseHandler, authenticated
 from tornado import web
 from urllib.parse import quote_plus, unquote, unquote_plus
 from urllib.request import urlopen
@@ -35,7 +35,7 @@ POST: (with file) submits an assignment
         raise web.HTTPError(501)
 
     # This is a student submitting an assignment, not an instructor "release"
-    @web.authenticated
+    @authenticated
     def post(self):
 
         [course_code, assignment_code] = self.get_params(["course_id", "assignment_id"])

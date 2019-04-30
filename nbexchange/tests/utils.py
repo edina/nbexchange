@@ -70,6 +70,19 @@ def api_request(self, url, method="GET", *args, **kwargs):
         raise NotImplementedError(f"HTTP Method {method} is not implemented")
 
 
+def get_files_dict(filename):
+    import tarfile
+
+    tar_file = io.BytesIO()
+
+    with tarfile.open(fileobj=tar_file, mode="w:gz") as tar_handle:
+        tar_handle.add(filename, arcname=".")
+    tar_file.seek(0)
+    tar_file = tar_file.read()
+    files = {"assignment": ("assignment.tar.gz", tar_file)}
+    return files
+
+
 class _AsyncRequests:
     """Wrapper around requests to return a Future from request methods
     A single thread is allocated to avoid blocking the IOLoop thread.

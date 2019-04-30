@@ -11,7 +11,7 @@ from nbexchange.app import NbExchange
 from nbexchange.base import BaseHandler
 from nbexchange.tests.utils import (
     async_requests,
-    tar_source,
+    get_files_dict,
     user_kiz_instructor,
     user_brobbere_instructor,
     user_kiz_student,
@@ -21,6 +21,8 @@ from nbexchange.tests.utils import (
 logger = logging.getLogger(__file__)
 logger.setLevel(logging.ERROR)
 
+# set up the file to be uploaded as part of the testing later
+files = get_files_dict(sys.argv[0])  # ourself :)
 
 ##### GET /assignment (download/fetch assignment)  ######
 
@@ -94,9 +96,7 @@ def test_assignment4(app):
 
 
 # both params, correct course, assignment does not exist
-# TODO: only works with empty databae
 @pytest.mark.gen_test
-@pytest.mark.skip
 def test_assignment5(app):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
@@ -111,7 +111,6 @@ def test_assignment5(app):
 
 
 # both params, correct course, assignment does not exist - differnet user, same role
-# TODO: only works with empty databae
 @pytest.mark.gen_test
 def test_assignment6(app):
     with patch.object(
@@ -127,7 +126,6 @@ def test_assignment6(app):
 
 
 # both params, correct course, assignment does not exist - same user, different role
-# TODO: only works with empty database
 @pytest.mark.gen_test
 def test_assignment7(app):
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
@@ -141,7 +139,6 @@ def test_assignment7(app):
 
 
 # both params, correct course, assignment does not exist - different user, different role
-# TODO: only works with empty database
 @pytest.mark.gen_test
 def test_assignment8(app):
     with patch.object(
@@ -203,49 +200,17 @@ def test_assignment11(app):
     assert response_data["note"] == "Assignment assign_a does not exist"
 
 
-###### do a release here
-
-# set up the file to be uploaded
-
-
+# fetch assignment, correct details, same user as releaser
+# (needs to be released before it can be fetched )
 @pytest.mark.gen_test
-# @pytest.mark.skip
-def test_post_assignment5(app):
+def test_assignment13(app):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):
-        import io
-        import tarfile
-        import time
-        from contextlib import closing
-        from datetime import datetime
-
-        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f %Z")
-        tar_file = io.BytesIO()
-        files = {"assignment": ("assignment.tar.gz", tar_file)}
-        with tarfile.open(fileobj=tar_file, mode="w:gz") as tar_handle:
-            with closing(io.BytesIO(timestamp.encode())) as fobj:
-                tarinfo = tarfile.TarInfo("timestamp.txt")
-                tarinfo.size = len(fobj.getvalue())
-                tarinfo.mtime = time.time()
-                tar_handle.addfile(tarinfo, fileobj=fobj)
-        tar_file.seek(0)
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
             files=files,
         )
-    assert r.status_code == 200
-    response_data = r.json()
-    assert response_data["success"] == True
-    assert response_data["note"] == "Released"
-
-
-##### fetch assignment (download) now upload has happened ######
-
-# fetch assignment, correct details, same user as releaser
-@pytest.mark.gen_test
-@pytest.mark.skip
-def test_assignment13(app):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):
@@ -253,15 +218,21 @@ def test_assignment13(app):
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a"
         )
     assert r.status_code == 200
-    # assert r.headers["Content-Type"] == "application/gzip"
-    # assert int(r.headers["Content-Length"]) > 0
-    sys.stdout.write(f"content: {r.json()}")
+    assert r.headers["Content-Type"] == "application/gzip"
+    assert int(r.headers["Content-Length"]) > 0
 
 
 # fetch assignment, correct details, different user, different role
+# (needs to be released before it can be fetched )
 @pytest.mark.gen_test
-# @pytest.mark.skip
 def test_assignment14(app):
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_kiz_instructor
+    ):
+        r = yield async_requests.post(
+            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
+            files=files,
+        )
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_brobbere_student
     ):
@@ -275,7 +246,6 @@ def test_assignment14(app):
 
 # fetch assignment, correct details, different user, different role - Picks up the first attribute if more than 1 (wrong course)
 @pytest.mark.gen_test
-# @pytest.mark.skip
 def test_assignment15(app):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_brobbere_student
@@ -288,18 +258,3 @@ def test_assignment15(app):
     response_data = r.json()
     assert response_data["success"] == False
     assert response_data["note"] == "User not subscribed to course course_1"
-
-
-# fetch assignment, correct details, different user, different role
-@pytest.mark.gen_test
-# @pytest.mark.skip
-def test_assignment16(app):
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_brobbere_student
-    ):
-        r = yield async_requests.get(
-            app.url + "/assignment?course_id=course_2&course_1&assignment_id=assign_a"
-        )
-    assert r.status_code == 200
-    assert r.headers["Content-Type"] == "application/gzip"
-    assert int(r.headers["Content-Length"]) > 0

@@ -16,6 +16,7 @@ A Jupyterhub service that replaces the nbgrader Exchange.
     - [Configuration](#configuration)
     - [Deployment](#deployment)
 - [Local Testing](#local-testing)
+    - [Local database](#local-database)
     - [Local building](#local-building)
     - [The Simple Development Cycle](#the-simple-development-cycle)
     - [The Notebook Client?](#the-notebook-client)
@@ -104,6 +105,14 @@ The configuration for the hub service is part of `<ENV>_config` in `kubenetes_de
 NBExchange is a Jupyterhub _service_, so `k8s-hub` installs it, and therefore deployed via `kubernetes-deployment`
 
 # Local Testing
+
+## Local database
+
+The default, if you don't change it, database for nbexchange is an in-memory sqlite database.
+
+This is almost certainly **NOT** what you actually want to use.
+
+The the `NBEX_DB_URL` environment variable to set to something else (eg `NBEX_DB_URL = sqlite:///my_exchange_db.sqlite` or `NBEX_DB_URL = postgresql://user:pass@some_host:5432/my_db` )
 
 ## Local building
 

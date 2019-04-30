@@ -9,7 +9,7 @@ from nbexchange.app import NbExchange
 from nbexchange.base import BaseHandler
 from nbexchange.tests.utils import (
     async_requests,
-    tar_source,
+    get_files_dict,
     user_kiz_instructor,
     user_brobbere_instructor,
     user_kiz_student,
@@ -19,6 +19,8 @@ from nbexchange.tests.utils import (
 logger = logging.getLogger(__file__)
 logger.setLevel(logging.ERROR)
 
+# set up the file to be uploaded as part of the testing later
+files = get_files_dict(sys.argv[0])  # ourself :)
 
 ##### POST /collection #####
 
@@ -65,9 +67,27 @@ def test_collection1(app):
 
 
 # Requires three params (given course & assignment)
+# (needs to be submitted before it can listed for collection )
+# (needs to be fetched before it can be submitted )
+# (needs to be released before it can be fetched )
 @pytest.mark.gen_test
-@pytest.mark.skip
 def test_collection2(app):
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_kiz_instructor
+    ):
+        r = yield async_requests.post(
+            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
+            files=files,
+        )
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+        r = yield async_requests.get(
+            app.url + "/assignment?course_id=course_2&assignment_id=assign_a"
+        )
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+        r = yield async_requests.post(
+            app.url + "/submission?course_id=course_2&assignment_id=assign_a",
+            files=files,
+        )
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):
@@ -90,75 +110,146 @@ def test_collection2(app):
     )
 
 
-# # Requires three params (given course & path)
-# @pytest.mark.gen_test
-# def test_collection3(app):
-#     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
-#             collected_data = None
-#             r = yield async_requests.get(
-#                 app.url + "/collections?course_id=course_2&assignment_id=assign_a"
-#             )  ## Get the data we need to make test the call we want to make
-#             response_data = r.json()
-#             collected_data = response_data["value"][0]
-#             r = yield async_requests.get(
-#                 app.url
-#                 + f"/collection?course_id={collected_data['course_id']}&path={collected_data['path']}"
-#             )
-#     assert r.status_code == 200
-#     response_data = r.json()
-#     assert response_data["success"] == False
-#     assert (
-#         response_data["note"]
-#         == "Collection call requires a course code, an assignment code, and a path"
-#     )
+# Requires three params (given course & path)
+# (needs to be submitted before it can listed for collection )
+# (needs to be fetched before it can be submitted )
+# (needs to be released before it can be fetched )
+@pytest.mark.gen_test
+def test_collection3(app):
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_kiz_instructor
+    ):
+        r = yield async_requests.post(
+            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
+            files=files,
+        )
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+        r = yield async_requests.get(
+            app.url + "/assignment?course_id=course_2&assignment_id=assign_a"
+        )
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+        r = yield async_requests.post(
+            app.url + "/submission?course_id=course_2&assignment_id=assign_a",
+            files=files,
+        )
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_kiz_instructor
+    ):
+        collected_data = None
+        r = yield async_requests.get(
+            app.url + "/collections?course_id=course_2&assignment_id=assign_a"
+        )  ## Get the data we need to make test the call we want to make
+        response_data = r.json()
+        collected_data = response_data["value"][0]
+        r = yield async_requests.get(
+            app.url
+            + f"/collection?course_id={collected_data['course_id']}&path={collected_data['path']}"
+        )
+    assert r.status_code == 200
+    response_data = r.json()
+    assert response_data["success"] == False
+    assert (
+        response_data["note"]
+        == "Collection call requires a course code, an assignment code, and a path"
+    )
 
 
-# # Requires three params (given assignment & path)
-# @pytest.mark.gen_test
-# def test_collection4(app):
-#     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
-#             collected_data = None
-#             r = yield async_requests.get(
-#                 app.url + "/collections?course_id=course_2&assignment_id=assign_a"
-#             )  ## Get the data we need to make test the call we want to make
-#             response_data = r.json()
-#             collected_data = response_data["value"][0]
-#             r = yield async_requests.get(
-#                 app.url
-#                 + f"/collection?path={collected_data['path']}&assignment_id={collected_data['assignment_id']}"
-#             )
-#     assert r.status_code == 200
-#     response_data = r.json()
-#     assert response_data["success"] == False
-#     assert (
-#         response_data["note"]
-#         == "Collection call requires a course code, an assignment code, and a path"
-#     )
+# Requires three params (given assignment & path)
+# (needs to be submitted before it can listed for collection )
+# (needs to be fetched before it can be submitted )
+# (needs to be released before it can be fetched )
+@pytest.mark.gen_test
+def test_collection4(app):
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_kiz_instructor
+    ):
+        r = yield async_requests.post(
+            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
+            files=files,
+        )
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+        r = yield async_requests.get(
+            app.url + "/assignment?course_id=course_2&assignment_id=assign_a"
+        )
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+        r = yield async_requests.post(
+            app.url + "/submission?course_id=course_2&assignment_id=assign_a",
+            files=files,
+        )
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_kiz_instructor
+    ):
+        collected_data = None
+        r = yield async_requests.get(
+            app.url + "/collections?course_id=course_2&assignment_id=assign_a"
+        )  ## Get the data we need to make test the call we want to make
+        response_data = r.json()
+        collected_data = response_data["value"][0]
+        r = yield async_requests.get(
+            app.url
+            + f"/collection?path={collected_data['path']}&assignment_id={collected_data['assignment_id']}"
+        )
+    assert r.status_code == 200
+    response_data = r.json()
+    assert response_data["success"] == False
+    assert (
+        response_data["note"]
+        == "Collection call requires a course code, an assignment code, and a path"
+    )
 
 
-# # Has all three params, not subscribed to course
-# @pytest.mark.gen_test
-# def test_collection5(app):
-#     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
-#             collected_data = None
-#             r = yield async_requests.get(
-#                 app.url + "/collections?course_id=course_2&assignment_id=assign_a"
-#             )  ## Get the data we need to make test the call we want to make
-#             response_data = r.json()
-#             collected_data = response_data["value"][0]
-#             r = yield async_requests.get(
-#                 app.url
-#                 + f"/collection?course_id=course_1&path={collected_data['path']}&assignment_id={collected_data['assignment_id']}"
-#             )
-#     assert r.status_code == 200
-#     response_data = r.json()
-#     assert response_data["success"] == False
-#     assert response_data["note"] == "User not subscribed to course course_1"
+# Has all three params, not subscribed to course
+# (needs to be submitted before it can listed for collection )
+# (needs to be fetched before it can be submitted )
+# (needs to be released before it can be fetched )
+@pytest.mark.gen_test
+def test_collection5(app):
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_kiz_instructor
+    ):
+        r = yield async_requests.post(
+            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
+            files=files,
+        )
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+        r = yield async_requests.get(
+            app.url + "/assignment?course_id=course_2&assignment_id=assign_a"
+        )
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+        r = yield async_requests.post(
+            app.url + "/submission?course_id=course_2&assignment_id=assign_a",
+            files=files,
+        )
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_kiz_instructor
+    ):
+        collected_data = None
+        r = yield async_requests.get(
+            app.url + "/collections?course_id=course_2&assignment_id=assign_a"
+        )  ## Get the data we need to make test the call we want to make
+        response_data = r.json()
+        collected_data = response_data["value"][0]
+        r = yield async_requests.get(
+            app.url
+            + f"/collection?course_id=course_1&path={collected_data['path']}&assignment_id={collected_data['assignment_id']}"
+        )
+    assert r.status_code == 200
+    response_data = r.json()
+    assert response_data["success"] == False
+    assert response_data["note"] == "User not subscribed to course course_1"
 
 
 # Has all three params, student can't collect (note this is hard-coded params, as students can list items available for collection)
+# (needs to be released to register the assignment )
 @pytest.mark.gen_test
 def test_collection6(app):
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_kiz_instructor
+    ):
+        r = yield async_requests.post(
+            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
+            files=files,
+        )
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_brobbere_student
     ):
@@ -172,20 +263,41 @@ def test_collection6(app):
     assert response_data["note"] == f"User not an instructor to course course_2"
 
 
-# # Has all three params, instructor can collect
-# @pytest.mark.gen_test
-# def test_collection7(app):
-#     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
-#             collected_data = None
-#             r = yield async_requests.get(
-#                 app.url + "/collections?course_id=course_2&assignment_id=assign_a"
-#             )  ## Get the data we need to make test the call we want to make
-#             response_data = r.json()
-#             collected_data = response_data["value"][0]
-#             r = yield async_requests.get(
-#                 app.url
-#                 + f"/collection?course_id={collected_data['course_id']}&path={collected_data['path']}&assignment_id={collected_data['assignment_id']}"
-#             )
-#     assert r.status_code == 200
-#     assert r.headers["Content-Type"] == "application/gzip"
-#     assert int(r.headers["Content-Length"]) > 0
+# Has all three params, instructor can collect
+# (needs to be submitted before it can listed for collection )
+# (needs to be fetched before it can be submitted )
+# (needs to be released before it can be fetched )
+@pytest.mark.gen_test
+def test_collection7(app):
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_kiz_instructor
+    ):
+        r = yield async_requests.post(
+            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
+            files=files,
+        )
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+        r = yield async_requests.get(
+            app.url + "/assignment?course_id=course_2&assignment_id=assign_a"
+        )
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+        r = yield async_requests.post(
+            app.url + "/submission?course_id=course_2&assignment_id=assign_a",
+            files=files,
+        )
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_kiz_instructor
+    ):
+        collected_data = None
+        r = yield async_requests.get(
+            app.url + "/collections?course_id=course_2&assignment_id=assign_a"
+        )  ## Get the data we need to make test the call we want to make
+        response_data = r.json()
+        collected_data = response_data["value"][0]
+        r = yield async_requests.get(
+            app.url
+            + f"/collection?course_id={collected_data['course_id']}&path={collected_data['path']}&assignment_id={collected_data['assignment_id']}"
+        )
+    assert r.status_code == 200
+    assert r.headers["Content-Type"] == "application/gzip"
+    assert int(r.headers["Content-Length"]) > 0

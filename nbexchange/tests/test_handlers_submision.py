@@ -9,7 +9,7 @@ from nbexchange.app import NbExchange
 from nbexchange.base import BaseHandler
 from nbexchange.tests.utils import (
     async_requests,
-    tar_source,
+    get_files_dict,
     user_kiz_instructor,
     user_brobbere_instructor,
     user_kiz_student,
@@ -18,6 +18,9 @@ from nbexchange.tests.utils import (
 
 logger = logging.getLogger(__file__)
 logger.setLevel(logging.ERROR)
+
+# set up the file to be uploaded as part of the testing later
+files = get_files_dict(sys.argv[0])  # ourself :)
 
 ##### GET /submission ######
 # No method available (501, because we've hard-coded it)
@@ -108,68 +111,134 @@ def test_post_submision4(app):
     assert response_data["note"] == "User not fetched assignment assign_c"
 
 
-# # Student can submit
-# @pytest.mark.gen_test
-# def test_post_submision4(app):
-#     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
-#             r = yield async_requests.post(
-#                 app.url + "/submission?course_id=course_2&assignment_id=assign_a",
-#                 files=files,
-#             )
-#     assert r.status_code == 200
-#     response_data = r.json()
-#     assert response_data["success"] == True
-#     assert response_data["note"] == "Submitted"
+# Student can submit
+# (needs to be fetched before it can be submitted )
+# (needs to be released before it can be fetched )
+@pytest.mark.gen_test
+def test_post_submision4(app):
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_kiz_instructor
+    ):
+        r = yield async_requests.post(
+            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
+            files=files,
+        )
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+        r = yield async_requests.get(
+            app.url + "/assignment?course_id=course_2&assignment_id=assign_a"
+        )
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+        r = yield async_requests.post(
+            app.url + "/submission?course_id=course_2&assignment_id=assign_a",
+            files=files,
+        )
+    assert r.status_code == 200
+    response_data = r.json()
+    assert response_data["success"] == True
+    assert response_data["note"] == "Submitted"
 
 
-# # instructor can submit
-# @pytest.mark.gen_test
-# def test_post_submision5(app):
-#     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
-# #             r = yield async_requests.post(
-#                 app.url + "/submission?course_id=course_2&assignment_id=assign_a",
-#                 files=files,
-#             )
-#     assert r.status_code == 200
-#     response_data = r.json()
-#     assert response_data["success"] == True
-#     assert response_data["note"] == "Submitted"
+# instructor can submit
+# (needs to be fetched before it can be submitted )
+# (needs to be released before it can be fetched )
+@pytest.mark.gen_test
+def test_post_submision5(app):
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_kiz_instructor
+    ):
+        r = yield async_requests.post(
+            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
+            files=files,
+        )
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+        r = yield async_requests.get(
+            app.url + "/assignment?course_id=course_2&assignment_id=assign_a"
+        )
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_kiz_instructor
+    ):
+        r = yield async_requests.post(
+            app.url + "/submission?course_id=course_2&assignment_id=assign_a",
+            files=files,
+        )
+    assert r.status_code == 200
+    response_data = r.json()
+    assert response_data["success"] == True
+    assert response_data["note"] == "Submitted"
 
 
-# # fails if no file is part of post request
-# @pytest.mark.gen_test
-# def test_post_submision4(app):
-#     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
-#             r = yield async_requests.post(
-#                 app.url + "/submission?course_id=course_2&assignment_id=assign_a"
-#             )
-#     assert r.status_code == 412
+# fails if no file is part of post request
+# (needs to be fetched before it can be submitted )
+# (needs to be released before it can be fetched )
+@pytest.mark.gen_test
+def test_post_submision4(app):
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_kiz_instructor
+    ):
+        r = yield async_requests.post(
+            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
+            files=files,
+        )
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+        r = yield async_requests.get(
+            app.url + "/assignment?course_id=course_2&assignment_id=assign_a"
+        )
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+        r = yield async_requests.post(
+            app.url + "/submission?course_id=course_2&assignment_id=assign_a"
+        )
+    assert r.status_code == 412
 
 
-# # Picks up the first attribute if more than 1 (wrong course)
-# @pytest.mark.gen_test
-# def test_post_submision4(app):
-#     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
-#             r = yield async_requests.post(
-#                 app.url
-#                 + "/submission?course_id=course_1&course_2&assignment_id=assign_a",
-#                 files=files,
-#             )
-#     assert r.status_code == 200
-#     response_data = r.json()
-#     assert response_data["success"] == False
-#     assert response_data["note"] == "Submitted"
+# Picks up the first attribute if more than 1 (wrong course)
+# (needs to be fetched before it can be submitted )
+# (needs to be released before it can be fetched )
+@pytest.mark.gen_test
+def test_post_submision4(app):
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_kiz_instructor
+    ):
+        r = yield async_requests.post(
+            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
+            files=files,
+        )
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+        r = yield async_requests.get(
+            app.url + "/assignment?course_id=course_2&assignment_id=assign_a"
+        )
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+        r = yield async_requests.post(
+            app.url + "/submission?course_id=course_1&course_2&assignment_id=assign_a",
+            files=files,
+        )
+    assert r.status_code == 200
+    response_data = r.json()
+    assert response_data["success"] == False
+    assert response_data["note"] == "Submitted"
 
 
-# # Picks up the first attribute if more than 1 (right course)
-# @pytest.mark.gen_test
-# def test_post_submision4(app):
-#     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
-#             r = yield async_requests.post(
-#                 app.url + "/submission?course_id=course_2&assignment_id=assign_a",
-#                 files=files,
-#             )
-#     assert r.status_code == 200
-#     response_data = r.json()
-#     assert response_data["success"] == True
-#     assert response_data["note"] == "Submitted"
+# Picks up the first attribute if more than 1 (right course)
+# (needs to be fetched before it can be submitted )
+# (needs to be released before it can be fetched )
+@pytest.mark.gen_test
+def test_post_submision4(app):
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_kiz_instructor
+    ):
+        r = yield async_requests.post(
+            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
+            files=files,
+        )
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+        r = yield async_requests.get(
+            app.url + "/assignment?course_id=course_2&assignment_id=assign_a"
+        )
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+        r = yield async_requests.post(
+            app.url + "/submission?course_id=course_2&assignment_id=assign_a",
+            files=files,
+        )
+    assert r.status_code == 200
+    response_data = r.json()
+    assert response_data["success"] == True
+    assert response_data["note"] == "Submitted"

@@ -9,7 +9,7 @@ from nbexchange.app import NbExchange
 from nbexchange.base import BaseHandler
 from nbexchange.tests.utils import (
     async_requests,
-    tar_source,
+    get_files_dict,
     user_kiz_instructor,
     user_brobbere_instructor,
     user_kiz_student,
@@ -18,6 +18,9 @@ from nbexchange.tests.utils import (
 
 logger = logging.getLogger(__file__)
 logger.setLevel(logging.ERROR)
+
+# set up the file to be uploaded as part of the testing later
+files = get_files_dict(sys.argv[0])  # ourself :)
 
 ##### POST /collections #####
 # No method available (501, because we've hard-coded it)
@@ -111,7 +114,6 @@ def test_collections4(app):
 # both params, correct course, assignment does not exist
 # returns true, but empty
 @pytest.mark.gen_test
-@pytest.mark.skip
 def test_collections5(app):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
@@ -127,9 +129,16 @@ def test_collections5(app):
 
 
 # both params, correct details
+# (needs to be released before it can be seen )
 @pytest.mark.gen_test
-@pytest.mark.skip
 def test_collections6(app):
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_kiz_instructor
+    ):
+        r = yield async_requests.post(
+            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
+            files=files,
+        )
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):
@@ -146,9 +155,17 @@ def test_collections6(app):
 # both params, correct course, assignment does not exist - differnet user, same role
 # Passes, because instructor on course
 @pytest.mark.gen_test
-@pytest.mark.skip
 def test_collections7(app):
-    with patch.object(BaseHandler, "get_current_user", return_value=user_bert):
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_kiz_instructor
+    ):
+        r = yield async_requests.post(
+            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
+            files=files,
+        )
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_brobbere_instructor
+    ):
         r = yield async_requests.get(
             app.url + "/collections?course_id=course_2&assignment_id=assign_a"
         )
@@ -190,6 +207,13 @@ def test_collections9(app):
 # Picks up the first attribute if more than 1 (right course)
 @pytest.mark.gen_test
 def test_collections10(app):
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_kiz_instructor
+    ):
+        r = yield async_requests.post(
+            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
+            files=files,
+        )
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_brobbere_instructor
     ):

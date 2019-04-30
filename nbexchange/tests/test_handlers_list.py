@@ -29,7 +29,7 @@ class TestHandlersFetch(BaseTestHandlers):
     @pytest.mark.gen_test
     def test_assignments0(self, app):
         r = yield async_requests.get(app.url + "/assignments")
-        assert r.status_code == 404
+        assert r.status_code == 403
 
     # Requires a course_id param
     @pytest.mark.gen_test

@@ -23,7 +23,8 @@ logger.setLevel(logging.ERROR)
 # No method available (501, because we've hard-coded it)
 @pytest.mark.gen_test
 def test_assignments0(app):
-    r = yield async_requests.post(app.url + "/submissions")
+    with patch.object(BaseHandler, "get_current_user", return_value={}):
+        r = yield async_requests.post(app.url + "/submissions")
     assert r.status_code == 501
 
 

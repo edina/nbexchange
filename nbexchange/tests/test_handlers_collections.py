@@ -39,12 +39,11 @@ def test_post_assignments1(app):
 
 ##### GET /collections (list available assignments for collection) #####
 
-# require authenticated user (404 because the bounce to login fails)
+# require authenticated user
 @pytest.mark.gen_test
 def test_collections0(app):
     r = yield async_requests.get(app.url + "/collections")
-    assert r.status_code == 404
-    # require authenticated user (404 because the bounce to login fails)
+    assert r.status_code == 403
 
 
 # Requires both params (none)

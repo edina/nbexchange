@@ -42,7 +42,8 @@ def test_post_submission1(app):
 # require authenticated user (404 because the bounce to login fails)
 @pytest.mark.gen_test
 def test_post_assignments0(app):
-    r = yield async_requests.post(app.url + "/submission")
+    with patch.object(BaseHandler, "get_current_user", return_value={}):
+        r = yield async_requests.post(app.url + "/submission")
     assert r.status_code == 403
 
 

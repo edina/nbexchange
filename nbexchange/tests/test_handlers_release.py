@@ -25,7 +25,10 @@ logger.setLevel(logging.ERROR)
 # require authenticated user (404 because the bounce to login fails)
 @pytest.mark.gen_test
 def test_post_assignment0(app):
-    r = yield async_requests.post(app.url + "/assignment")
+    with patch.object(
+        BaseHandler, "get_current_user", return_value={}
+    ):
+        r = yield async_requests.post(app.url + "/assignment")
     assert r.status_code == 403  # why not 404???
 
 

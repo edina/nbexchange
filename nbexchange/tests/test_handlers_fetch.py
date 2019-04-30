@@ -28,7 +28,7 @@ logger.setLevel(logging.ERROR)
 @pytest.mark.gen_test
 def test_assignment0(app):
     r = yield async_requests.get(app.url + "/assignment")
-    assert r.status_code == 404
+    assert r.status_code == 403
 
 
 # Requires both params (none)
@@ -94,7 +94,9 @@ def test_assignment4(app):
 
 
 # both params, correct course, assignment does not exist
+# TODO: only works with empty databae
 @pytest.mark.gen_test
+@pytest.mark.skip
 def test_assignment5(app):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
@@ -109,6 +111,7 @@ def test_assignment5(app):
 
 
 # both params, correct course, assignment does not exist - differnet user, same role
+# TODO: only works with empty databae
 @pytest.mark.gen_test
 def test_assignment6(app):
     with patch.object(
@@ -124,6 +127,7 @@ def test_assignment6(app):
 
 
 # both params, correct course, assignment does not exist - same user, different role
+# TODO: only works with empty database
 @pytest.mark.gen_test
 def test_assignment7(app):
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
@@ -137,6 +141,7 @@ def test_assignment7(app):
 
 
 # both params, correct course, assignment does not exist - different user, different role
+# TODO: only works with empty database
 @pytest.mark.gen_test
 def test_assignment8(app):
     with patch.object(
@@ -185,7 +190,9 @@ def test_assignment10(app):
 # Picks up the first attribute if more than 1 (right course)
 @pytest.mark.gen_test
 def test_assignment11(app):
-    with patch.object(BaseHandler, "get_current_user", return_value=user_bert):
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_brobbere_student
+    ):
         r = yield async_requests.get(
             app.url
             + "/assignment?course_id=course_2&course_id=cource_a&assignment_id=assign_a"
@@ -202,7 +209,7 @@ def test_assignment11(app):
 
 
 @pytest.mark.gen_test
-@pytest.mark.skip
+# @pytest.mark.skip
 def test_post_assignment5(app):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
@@ -253,7 +260,7 @@ def test_assignment13(app):
 
 # fetch assignment, correct details, different user, different role
 @pytest.mark.gen_test
-@pytest.mark.skip
+# @pytest.mark.skip
 def test_assignment14(app):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_brobbere_student
@@ -268,7 +275,7 @@ def test_assignment14(app):
 
 # fetch assignment, correct details, different user, different role - Picks up the first attribute if more than 1 (wrong course)
 @pytest.mark.gen_test
-@pytest.mark.skip
+# @pytest.mark.skip
 def test_assignment15(app):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_brobbere_student
@@ -285,7 +292,7 @@ def test_assignment15(app):
 
 # fetch assignment, correct details, different user, different role
 @pytest.mark.gen_test
-@pytest.mark.skip
+# @pytest.mark.skip
 def test_assignment16(app):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_brobbere_student

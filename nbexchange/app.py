@@ -91,6 +91,7 @@ class NbExchange(Application):
     hub_api_token = os.environ.get("JUPYTERHUB_API_TOKEN", "")
     hub_base_url = os.environ.get("JUPYTERHUB_BASE_URL", "http://127.0.0.1:8000/")
     naas_url = os.environ.get("NAAS_URL", "https://127.0.0.1:8080")
+    debug = bool(int(os.environ.get("DEBUG", 0)))
 
     ip = Unicode("0.0.0.0").tag(config=True)
 
@@ -104,6 +105,8 @@ class NbExchange(Application):
 
     @default("log_level")
     def _log_level_default(self):
+        if self.debug:
+            return logging.DEBUG
         return logging.INFO
 
     @default("log_datefmt")
@@ -190,6 +193,7 @@ class NbExchange(Application):
                 reset=self.reset_db,
                 echo=self.debug_db,
                 log=self.log,
+                expire_on_commit=True,
                 **self.db_kwargs,
             )
             self.db = self.session_factory()
@@ -235,7 +239,7 @@ class NbExchange(Application):
             static_url_prefix=url_path_join(self.base_url, "static/"),
             version_hash=version_hash,
             xsrf_cookies=False,
-            debug=True,
+            debug=self.debug,
             # Replace the default [jupyterhub] database connection with our own **for our tornado app only**
             db=self.db,
         )

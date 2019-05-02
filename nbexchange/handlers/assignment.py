@@ -71,7 +71,6 @@ class Assignments(BaseHandler):
         for assignment in assignments:
             self.log.debug(f"==========")
             self.log.debug(f"Assignment: {assignment}")
-            self.log.debug(f"Assignment Actions: {assignment.actions}")
             for action in assignment.actions:
                 # For every action that is not "released" checked if the user id matches
                 if (
@@ -177,7 +176,7 @@ class Assignment(BaseHandler):
 
         # We will get 0-n release actions for this assignment, we just want the last one
         # Using a reversed for loop as there may be 0 elements :)
-        for action in assignment.actions:
+        for action in reversed(assignment.actions):
             release_file = action.location
             break
 
@@ -335,7 +334,7 @@ class Assignment(BaseHandler):
         # Record the action.
         # Note we record the path to the files.
         self.log.info(
-            f"!!!!!!!!!!!!!! assignment details for upload:{assignment.id}|{assignment.course_id}"
+            f"Adding action {orm.AssignmentActions.released.value} for user {this_user['ormUser'].id} against assignment {assignment.id}"
         )
         action = orm.Action(
             user_id=this_user["ormUser"].id,

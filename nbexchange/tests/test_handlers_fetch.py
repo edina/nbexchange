@@ -258,3 +258,65 @@ def test_assignment15(app):
     response_data = r.json()
     assert response_data["success"] == False
     assert response_data["note"] == "User not subscribed to course course_1"
+
+
+# Confirm that a fetch always matches the last release
+@pytest.mark.gen_test
+def test_post_assignment9(app):
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_kiz_instructor
+    ):
+        r = yield async_requests.post(
+            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
+            files=files,
+        )
+        r = yield async_requests.post(
+            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
+            files=files,
+        )
+        r = yield async_requests.post(
+            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
+            files=files,
+        )
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_brobbere_student
+    ):
+        r = yield async_requests.get(
+            app.url + "/assignment?&course_id=course_2&assignment_id=assign_a"
+        )
+        r = yield async_requests.get(app.url + "/assignments?course_id=course_2")
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_kiz_instructor
+    ):
+        r = yield async_requests.post(
+            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
+            files=files,
+        )
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_brobbere_student
+    ):
+        r = yield async_requests.get(
+            app.url + "/assignment?&course_id=course_2&assignment_id=assign_a"
+        )
+        r = yield async_requests.get(app.url + "/assignments?course_id=course_2")
+    assert r.status_code == 200
+    response_data = r.json()
+    assert response_data["success"] == True
+    assert "note" not in response_data  # just that it's missing
+    paths = list(map(lambda assignment: assignment["path"], response_data["value"]))
+    actions = list(map(lambda assignment: assignment["status"], response_data["value"]))
+    print(f"returned assignments list: {response_data['value']}")
+    print(f"fetch paths: {paths}")
+    print(f"fetch actions: {actions}")
+    assert len(paths) == 6
+    assert actions == [
+        "released",
+        "released",
+        "released",
+        "fetched",
+        "released",
+        "fetched",
+    ]
+    assert paths[2] == paths[3]  # First fetch = third release
+    assert paths[4] == paths[5]  # Second fetch = fourth release
+    assert paths[3] != paths[5]  # First fetch is not the same as the second fetch

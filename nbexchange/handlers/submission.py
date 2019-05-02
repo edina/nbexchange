@@ -128,7 +128,7 @@ POST: (with file) submits an assignment
         # Record the action.
         # Note we record the path to the files.
         self.log.info(
-            f"!!!!!!!!!!!!!! submission details for upload:{assignment.id}|{assignment.course_id}"
+            f"Adding action {orm.AssignmentActions.submitted.value} for user {this_user['ormUser'].id} against assignment {assignment.id}"
         )
         action = orm.Action(
             user_id=this_user["ormUser"].id,

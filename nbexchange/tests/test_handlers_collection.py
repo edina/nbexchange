@@ -301,3 +301,110 @@ def test_collection7(app):
     assert r.status_code == 200
     assert r.headers["Content-Type"] == "application/gzip"
     assert int(r.headers["Content-Length"]) > 0
+
+
+# Confirm that multiple submissions are listed
+@pytest.mark.gen_test
+def test_post_assignment9(app):
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_kiz_instructor
+    ):
+        r = yield async_requests.post(  # release
+            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
+            files=files,
+        )
+        r = yield async_requests.get(  # fetch
+            app.url + "/assignment?&course_id=course_2&assignment_id=assign_a"
+        )
+        r = yield async_requests.post(  # submit
+            app.url + "/submission?course_id=course_2&assignment_id=assign_a",
+            files=files,
+        )
+        r = yield async_requests.post(  # submit
+            app.url + "/submission?course_id=course_2&assignment_id=assign_a",
+            files=files,
+        )
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_brobbere_student
+    ):
+        r = yield async_requests.get(
+            app.url + "/assignment?&course_id=course_2&assignment_id=assign_a"
+        )  # fetch as another user
+        r = yield async_requests.post(
+            app.url + "/submission?course_id=course_2&assignment_id=assign_a",
+            files=files,
+        )  # submit as that user
+        r = yield async_requests.post(
+            app.url + "/submission?course_id=course_2&assignment_id=assign_a",
+            files=files,
+        )  # submit as that user again
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_kiz_instructor
+    ):
+        r = yield async_requests.get(
+            app.url + "/collections?course_id=course_2&assignment_id=assign_a"
+        )
+        # The 'collections' call returns only submissions, but all for that assignment
+        assert r.status_code == 200
+        response_data = r.json()
+        assert response_data["success"] == True
+        assert "note" not in response_data  # just that it's missing
+        paths = list(map(lambda assignment: assignment["path"], response_data["value"]))
+        print(f"returned assignments list: {response_data['value']}")
+        print(f"list after submission paths: {paths}")
+        assert len(paths) == 4  # the collections call only returns submitted items
+        # path in submission contains org + course + assignment + user
+        assert re.search("1/submitted/course_2/assign_a/1_kiz", paths[0])
+        assert re.search("1/submitted/course_2/assign_a/1_kiz", paths[1])
+        assert re.search("1/submitted/course_2/assign_a/1_brobbere", paths[2])
+        assert re.search("1/submitted/course_2/assign_a/1_brobbere", paths[3])
+
+        collected_items = response_data["value"]
+        for collected_data in collected_items:
+            r = yield async_requests.get(  # collect submission
+                app.url
+                + f"/collection?course_id={collected_data['course_id']}&path={collected_data['path']}&assignment_id={collected_data['assignment_id']}"
+            )
+
+        r = yield async_requests.get(app.url + "/assignments?course_id=course_2")
+
+        # The 'assignments' call returns only the actions for the specific user
+        # So this instructor has submitted twice, but collected 4 times
+        assert r.status_code == 200
+        response_data = r.json()
+        assert response_data["success"] == True
+        assert "note" not in response_data  # just that it's missing
+        paths = list(map(lambda assignment: assignment["path"], response_data["value"]))
+        actions = list(
+            map(lambda assignment: assignment["status"], response_data["value"])
+        )
+        print(f"returned assignments list: {response_data['value']}")
+        print(f"fetch paths: {paths}")
+        print(f"fetch actions: {actions}")
+        assert len(paths) == 8
+        assert actions == [
+            "released",
+            "fetched",
+            "submitted",
+            "submitted",
+            "collected",
+            "collected",
+            "collected",
+            "collected",
+        ]
+        assert paths[2] == paths[4]  # 1st submit = 1st collect
+        assert paths[3] == paths[5]  # 2nd submit = 2nd collect
+
+    # As a different user, we get a different return
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_brobbere_student
+    ):
+        r = yield async_requests.get(app.url + "/assignments?course_id=course_2")
+        response_data = r.json()
+        actions = list(
+            map(lambda assignment: assignment["status"], response_data["value"])
+        )
+        print(f"returned assignments list: {response_data['value']}")
+        print(f"fetch actions: {actions}")
+        assert len(actions) == 4
+        assert actions == ["released", "fetched", "submitted", "submitted"]

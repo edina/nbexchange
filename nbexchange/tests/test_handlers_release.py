@@ -168,3 +168,38 @@ def test_post_assignment9(app):
     response_data = r.json()
     assert response_data["success"] == True
     assert response_data["note"] == "Released"
+
+
+# Confirm 3 releases lists 3 actions, with 3 different locations
+@pytest.mark.gen_test
+def test_post_assignment9(app):
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_kiz_instructor
+    ):
+        r = yield async_requests.post(
+            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
+            files=files,
+        )
+        r = yield async_requests.post(
+            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
+            files=files,
+        )
+        r = yield async_requests.post(
+            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
+            files=files,
+        )
+        r = yield async_requests.get(app.url + "/assignments?course_id=course_2")
+    assert r.status_code == 200
+    response_data = r.json()
+    assert response_data["success"] == True
+    assert "note" not in response_data  # just that it's missing
+    paths = list(map(lambda assignment: assignment["path"], response_data["value"]))
+    actions = list(map(lambda assignment: assignment["status"], response_data["value"]))
+    assert len(paths) == 3
+    print(f"returned assignments list: {response_data['value']}")
+    print(f"release paths: {paths}")
+    print(f"release actions: {actions}")
+    assert paths[0] != paths[1]  # 1st relase is not the same path as the 2nd release
+    assert paths[1] != paths[2]  # 2nd not the same as 3rd
+    assert paths[0] != paths[2]  # 1st not the same as third
+    assert actions == ["released", "released", "released"]

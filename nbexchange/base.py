@@ -52,7 +52,9 @@ class BaseHandler(SentryMixin, web.RequestHandler):
     urls = []
 
     # Root location for data to be written to
-    base_storage_location = os.environ.get("NBEX_BASE_STORE", "/tmp/courses")
+    @property
+    def base_storage_location(self):
+        return self.settings["base_storage_location"]
 
     @property
     def naas_url(self):

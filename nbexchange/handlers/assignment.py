@@ -176,9 +176,12 @@ class Assignment(BaseHandler):
 
         # We will get 0-n release actions for this assignment, we just want the last one
         # Using a reversed for loop as there may be 0 elements :)
-        for action in reversed(assignment.actions):
-            release_file = action.location
-            break
+        action = (
+            orm.Action.query.filter_by(assignment_id=assignment.id)
+            .order_by(desc(Action.id))
+            .first()
+        )
+        release_file = action.location
 
         if release_file:
             try:

@@ -10,6 +10,7 @@ from nbexchange.base import BaseHandler, authenticated
 from tornado import web, httputil
 from urllib.parse import quote_plus, unquote, unquote_plus
 from urllib.request import urlopen
+from sqlalchemy import desc
 
 """
 All URLs relative to /services/nbexchange

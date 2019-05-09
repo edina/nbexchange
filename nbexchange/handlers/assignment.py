@@ -180,7 +180,8 @@ class Assignment(BaseHandler):
         action = (
             self.db.query(orm.Action)
             .filter_by(assignment_id=assignment.id)
-            .order_by(desc(Action.id))
+            .filter_by(action=orm.AssignmentActions.released)
+            .order_by(desc(orm.Action.id))
             .first()
         )
         release_file = action.location

@@ -175,8 +175,7 @@ class Assignment(BaseHandler):
 
         release_file = None
 
-        # We will get 0-n release actions for this assignment, we just want the last one
-        # Using a reversed for loop as there may be 0 elements :)
+        # Find the most recent released action for this assignment
         action = (
             self.db.query(orm.Action)
             .filter_by(assignment_id=assignment.id)

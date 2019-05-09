@@ -10,6 +10,7 @@ from nbexchange.base import BaseHandler, authenticated
 from tornado import web, httputil
 from urllib.parse import quote_plus, unquote, unquote_plus
 from urllib.request import urlopen
+from sqlalchemy import desc
 
 """
 All URLs relative to /services/nbexchange
@@ -174,11 +175,15 @@ class Assignment(BaseHandler):
 
         release_file = None
 
-        # We will get 0-n release actions for this assignment, we just want the last one
-        # Using a reversed for loop as there may be 0 elements :)
-        for action in reversed(assignment.actions):
-            release_file = action.location
-            break
+        # Find the most recent released action for this assignment
+        action = (
+            self.db.query(orm.Action)
+            .filter_by(assignment_id=assignment.id)
+            .filter_by(action=orm.AssignmentActions.released)
+            .order_by(desc(orm.Action.id))
+            .first()
+        )
+        release_file = action.location
 
         if release_file:
             try:

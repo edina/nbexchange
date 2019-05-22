@@ -40,7 +40,7 @@ class Assignments(BaseHandler):
         if not course_code:
             note = f"Assigment call requires a course id"
             self.log.info(note)
-            self.write({"success": False, "value": models, "note": note})
+            self.finish({"success": False, "note": note})
             return
 
         # Who is my user?
@@ -52,7 +52,7 @@ class Assignments(BaseHandler):
         if course_code not in this_user["courses"]:
             note = f"User not subscribed to course {course_code}"
             self.log.info(note)
-            self.finish({"success": False, "value": models, "note": note})
+            self.finish({"success": False, "note": note})
             return
 
         # Find the course being referred to
@@ -62,7 +62,7 @@ class Assignments(BaseHandler):
         if not course:
             note = f"Course {course_code} does not exist"
             self.log.info(note)
-            self.finish({"success": False, "value": models, "note": note})
+            self.finish({"success": False, "note": note})
             return
 
         assignments = orm.Assignment.find_for_course(
@@ -97,7 +97,7 @@ class Assignments(BaseHandler):
                 )
 
         self.log.debug(f"Assignments: {models}")
-        self.write({"success": True, "value": models})
+        self.finish({"success": True, "value": models})
 
     # This has no authentiction wrapper, so false implication os service
     def post(self):
@@ -125,7 +125,7 @@ class Assignment(BaseHandler):
         if not (course_code and assignment_code):
             note = "Assigment call requires both a course code and an assignment code!!"
             self.log.info(note)
-            self.write({"success": False, "note": note})
+            self.finish({"success": False, "note": note})
             return
 
         this_user = self.nbex_user
@@ -133,7 +133,7 @@ class Assignment(BaseHandler):
         if not course_code in this_user["courses"]:
             note = f"User not subscribed to course {course_code}"
             self.log.info(note)
-            self.write({"success": False, "note": note})
+            self.finish({"success": False, "note": note})
             return
 
         # Find the course being referred to
@@ -143,7 +143,7 @@ class Assignment(BaseHandler):
         if course is None:
             note = f"Course {course_code} does not exist"
             self.log.info(note)
-            self.write({"success": False, "note": note})
+            self.finish({"success": False, "note": note})
             return  # needs a proper 'fail' here
 
         note = ""
@@ -161,7 +161,7 @@ class Assignment(BaseHandler):
         if assignment is None:
             note = f"Assignment {assignment_code} does not exist"
             self.log.info(note)
-            self.write({"success": False, "note": note})
+            self.finish({"success": False, "note": note})
             return  # needs a proper 'fail' here
 
         self._headers = httputil.HTTPHeaders(
@@ -209,7 +209,7 @@ class Assignment(BaseHandler):
             self.db.add(action)
             self.db.commit()
             self.log.info("record of fetch action committed")
-            self.write(data)
+            self.finish(data)  ####
         else:
             self.log.info("no release file found")
             raise Exception
@@ -232,7 +232,7 @@ class Assignment(BaseHandler):
         if not course_code in this_user["courses"]:
             note = f"User not subscribed to course {course_code}"
             self.log.info(note)
-            self.write({"success": False, "note": note})
+            self.finish({"success": False, "note": note})
             return
 
         if (
@@ -240,7 +240,7 @@ class Assignment(BaseHandler):
         ):  # we may need to revisit this
             note = f"User not an instructor to course {course_code}"
             self.log.info(note)
-            self.write({"success": False, "note": note})
+            self.finish({"success": False, "note": note})
             return
 
         # The course will exist: the user object creates it if it doesn't exist
@@ -349,7 +349,7 @@ class Assignment(BaseHandler):
         )
         self.db.add(action)
         self.db.commit()
-        self.write({"success": True, "note": "Released"})
+        self.finish({"success": True, "note": "Released"})
 
     # This is unreleasing an assignment
     @authenticated
@@ -371,12 +371,12 @@ class Assignment(BaseHandler):
         if not course_code in this_user["courses"]:
             note = f"User not subscribed to course {course_code}"
             self.log.info(note)
-            self.write({"success": False, "note": note})
+            self.finish({"success": False, "note": note})
             return
         if not "instructor" in map(str.casefold, this_user["courses"][course_code]):
             note = f"User not an instructor to course {course_code}"
             self.log.info(note)
-            self.write({"success": False, "note": note})
+            self.finish({"success": False, "note": note})
             return
 
         course = orm.Course.find_by_code(
@@ -395,4 +395,4 @@ class Assignment(BaseHandler):
 
         self.db.commit()
 
-        self.write({"success": True, "note": "Assignment deleted"})
+        self.finish({"success": True, "note": "Assignment deleted"})

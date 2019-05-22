@@ -52,7 +52,7 @@ POST: (with file) submits an assignment
         if not course_code in this_user["courses"]:
             note = f"User not subscribed to course {course_code}"
             self.log.info(note)
-            self.write({"success": False, "note": note})
+            self.finish({"success": False, "note": note})
             return
 
         # The course will exist: the user object creates it if it doesn't exist
@@ -68,7 +68,7 @@ POST: (with file) submits an assignment
         if assignment is None:
             note = f"User not fetched assignment {assignment_code}"
             self.log.info(note)
-            self.write({"success": False, "note": note})
+            self.finish({"success": False, "note": note})
             return
 
         # storage is dynamically in $path/submitted/$course_code/$assignment_code/$username/<timestamp>/
@@ -138,7 +138,7 @@ POST: (with file) submits an assignment
         )
         self.db.add(action)
         self.db.commit()
-        self.write({"success": True, "note": "Submitted"})
+        self.finish({"success": True, "note": "Submitted"})
 
 
 class Submissions(BaseHandler):

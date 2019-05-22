@@ -40,7 +40,7 @@ class Collections(BaseHandler):
         if not (course_code and assignment_code):
             note = "Collections call requires both a course code and an assignment code"
             self.log.info(note)
-            self.write({"success": False, "note": note})
+            self.finish({"success": False, "note": note})
             return
 
         # Who is my user?
@@ -52,14 +52,14 @@ class Collections(BaseHandler):
         if course_code not in this_user["courses"]:
             note = f"User not subscribed to course {course_code}"
             self.log.info(note)
-            self.write({"success": False, "value": models, "note": note})
+            self.finish({"success": False, "note": note})
             return
         if (
             not "instructor" == this_user["current_role"].casefold()
         ):  # we may need to revisit this
             note = f"User not an instructor to course {course_code}"
             self.log.info(note)
-            self.write({"success": False, "note": note})
+            self.finish({"success": False, "note": note})
             return
 
         # Find the course being referred to
@@ -69,7 +69,7 @@ class Collections(BaseHandler):
         if not course:
             note = f"Course {course_code} does not exist"
             self.log.info(note)
-            self.write({"success": False, "value": models, "note": note})
+            self.finish({"success": False, "note": note})
             return
 
         assignments = orm.Assignment.find_for_course(
@@ -98,7 +98,7 @@ class Collections(BaseHandler):
                     )
 
         self.log.debug(f"Assignments: {models}")
-        self.write({"success": True, "value": models})
+        self.finish({"success": True, "value": models})
 
     # This has no authentiction wrapper, so false implication os service
     def post(self):
@@ -132,7 +132,7 @@ class Collection(BaseHandler):
                 "Collection call requires a course code, an assignment code, and a path"
             )
             self.log.info(note)
-            self.write({"success": False, "note": note})
+            self.finish({"success": False, "note": note})
             return
 
         # Who is my user?
@@ -144,7 +144,7 @@ class Collection(BaseHandler):
         if course_code not in this_user["courses"]:
             note = f"User not subscribed to course {course_code}"
             self.log.info(note)
-            self.write({"success": False, "note": note})
+            self.finish({"success": False, "note": note})
             return
         self.log.info(f"user: {this_user}")
 
@@ -153,7 +153,7 @@ class Collection(BaseHandler):
         ):  # we may need to revisit this
             note = f"User not an instructor to course {course_code}"
             self.log.info(note)
-            self.write({"success": False, "note": note})
+            self.finish({"success": False, "note": note})
             return
 
         # Find the course being referred to
@@ -163,7 +163,7 @@ class Collection(BaseHandler):
         if not course:
             note = f"Course {course_code} does not exist"
             self.log.info(note)
-            self.write({"success": False, "note": note})
+            self.finish({"success": False, "note": note})
             return
 
         # We need to key off the assignment, but we're actually looking
@@ -222,7 +222,7 @@ class Collection(BaseHandler):
                 self.db.add(action)
                 self.db.commit()
                 self.log.info("record of fetch action committed")
-                self.write(data)
+                self.finish(data)
 
     # This has no authentiction wrapper, so false implication os service
     def post(self):

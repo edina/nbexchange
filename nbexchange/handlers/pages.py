@@ -7,7 +7,7 @@ class EnvHandler(BaseHandler):
     urls = ["/env"]
 
     def get(self):
-        self.write(f"NB Exchange environment: {os.environ}")
+        self.finish(f"NB Exchange environment: {os.environ}")
 
 
 class HomeHandler(BaseHandler):
@@ -15,4 +15,4 @@ class HomeHandler(BaseHandler):
 
     def get(self):
         self.log.info(f"NbExchange {__version__}")
-        self.write(f"NbExchange {__version__}")
+        self.finish(f"NbExchange {__version__}")

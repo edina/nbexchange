@@ -11,6 +11,7 @@ from tornado import web, httputil
 from urllib.parse import quote_plus, unquote, unquote_plus
 from urllib.request import urlopen
 from sqlalchemy import desc
+from nbexchange.database import scoped_session
 
 """
 All URLs relative to /services/nbexchange
@@ -56,18 +57,20 @@ class Assignments(BaseHandler):
             return
 
         # Find the course being referred to
-        course = orm.Course.find_by_code(
-            db=self.db, code=course_code, org_id=this_user["org_id"], log=self.log
-        )
+        with scoped_session() as session:
+            course = orm.Course.find_by_code(
+                db=session, code=course_code, org_id=this_user["org_id"], log=self.log
+            )
         if not course:
             note = f"Course {course_code} does not exist"
             self.log.info(note)
             self.finish({"success": False, "note": note})
             return
-
-        assignments = orm.Assignment.find_for_course(
-            db=self.db, course_id=course.id, log=self.log
-        )
+        
+        with scoped_session() as session:
+            assignments = orm.Assignment.find_for_course(
+                db=session, course_id=course.id, log=self.log
+            )
 
         for assignment in assignments:
             self.log.debug(f"==========")
@@ -137,9 +140,10 @@ class Assignment(BaseHandler):
             return
 
         # Find the course being referred to
-        course = orm.Course.find_by_code(
-            db=self.db, code=course_code, org_id=this_user["org_id"], log=self.log
-        )
+        with scoped_session() as session:
+            course = orm.Course.find_by_code(
+                db=session, code=course_code, org_id=this_user["org_id"], log=self.log
+            )
         if course is None:
             note = f"Course {course_code} does not exist"
             self.log.info(note)
@@ -151,12 +155,13 @@ class Assignment(BaseHandler):
 
         # The location for the data-object is actually held in the 'released' action for the given assignment
         # We want the last one...
-        assignment = orm.Assignment.find_by_code(
-            db=self.db,
-            code=assignment_code,
-            course_id=course.id,
-            action=orm.AssignmentActions.released.value,
-        )
+        with scoped_session() as session:
+            assignment = orm.Assignment.find_by_code(
+                db=session,
+                code=assignment_code,
+                course_id=course.id,
+                action=orm.AssignmentActions.released.value,
+            )
 
         if assignment is None:
             note = f"Assignment {assignment_code} does not exist"
@@ -176,13 +181,14 @@ class Assignment(BaseHandler):
         release_file = None
 
         # Find the most recent released action for this assignment
-        action = (
-            self.db.query(orm.Action)
-            .filter_by(assignment_id=assignment.id)
-            .filter_by(action=orm.AssignmentActions.released)
-            .order_by(desc(orm.Action.id))
-            .first()
-        )
+        with scoped_session() as session:
+            action = (
+                session.query(orm.Action)
+                .filter_by(assignment_id=assignment.id)
+                .filter_by(action=orm.AssignmentActions.released)
+                .order_by(desc(orm.Action.id))
+                .first()
+            )
         release_file = action.location
 
         if release_file:
@@ -206,8 +212,8 @@ class Assignment(BaseHandler):
                 action=orm.AssignmentActions.fetched,
                 location=release_file,
             )
-            self.db.add(action)
-            self.db.commit()
+            with scoped_session() as session:
+                session.add(action)
             self.log.info("record of fetch action committed")
             self.finish(data)  ####
         else:
@@ -245,33 +251,35 @@ class Assignment(BaseHandler):
 
         # The course will exist: the user object creates it if it doesn't exist
         #  - and we know the user is subscribed to the course as an instructor (above)
-        course = orm.Course.find_by_code(
-            db=self.db, code=course_code, org_id=this_user["org_id"], log=self.log
-        )
-
-        # We need to find this assignment, or make a new one.
-        assignment = orm.Assignment.find_by_code(
-            db=self.db, code=assignment_code, course_id=course.id
-        )
-
-        if assignment is None:
-            # Look for inactive assignments
-            assignment = orm.Assignment.find_by_code(
-                db=self.db, code=assignment_code, course_id=course.id, active=False
+        with scoped_session() as session:
+            course = orm.Course.find_by_code(
+                db=session, code=course_code, org_id=this_user["org_id"], log=self.log
             )
+
+            # We need to find this assignment, or make a new one.
+            assignment = orm.Assignment.find_by_code(
+                db=session, code=assignment_code, course_id=course.id
+            )
+
+            if assignment is None:
+                # Look for inactive assignments
+                assignment = orm.Assignment.find_by_code(
+                    db=session, code=assignment_code, course_id=course.id, active=False
+                )
 
         self.log.warn(f"The value of assignment here is : {assignment}")
 
-        if assignment is None:
-            self.log.info(
-                f"New Assignment details: assignment_code:{assignment_code}, course_id:{course.id}"
-            )
-            # defaults active
-            assignment = orm.Assignment(
-                assignment_code=assignment_code, course_id=course.id
-            )
-            self.db.add(assignment)
-            # deliberately no commit: we need to be able to roll-back if there's no data!
+        with scoped_session() as session:
+            if assignment is None:
+                self.log.info(
+                    f"New Assignment details: assignment_code:{assignment_code}, course_id:{course.id}"
+                )
+                # defaults active
+                assignment = orm.Assignment(
+                    assignment_code=assignment_code, course_id=course.id
+                )
+                session.add(assignment)
+                # deliberately no commit: we need to be able to roll-back if there's no data!
 
         # Set assignment to active
         assignment.active = True
@@ -293,7 +301,6 @@ class Assignment(BaseHandler):
             self.log.warning(
                 f"Error: No file supplies in upload"
             )  # TODO: improve error message
-            self.db.rollback()
             raise web.HTTPError(412)  # precondition failed
 
         try:
@@ -319,15 +326,14 @@ class Assignment(BaseHandler):
             self.log.warning(f"Error: {e}")  # TODO: improve error message
 
             self.log.info(f"Upload failed")
-            self.db.rollback()
             # error 500??
             raise Exception
 
         # now commit the assignment, and get it back to find the id
-        self.db.commit()
-        assignment = orm.Assignment.find_by_code(
-            db=self.db, code=assignment_code, course_id=course.id
-        )
+        with scoped_session() as session:
+            assignment = orm.Assignment.find_by_code(
+                db=session, code=assignment_code, course_id=course.id
+            )
 
         # Record the notebooks associated with this assignment
         notebooks = self.get_arguments("notebooks")
@@ -347,8 +353,8 @@ class Assignment(BaseHandler):
             action=orm.AssignmentActions.released,
             location=release_file,
         )
-        self.db.add(action)
-        self.db.commit()
+        with scoped_session() as session:
+            session.add(action)
         self.finish({"success": True, "note": "Released"})
 
     # This is unreleasing an assignment
@@ -379,20 +385,19 @@ class Assignment(BaseHandler):
             self.finish({"success": False, "note": note})
             return
 
-        course = orm.Course.find_by_code(
-            db=self.db, code=course_code, org_id=this_user["org_id"], log=self.log
-        )
+        with scoped_session() as session:
+            course = orm.Course.find_by_code(
+                db=session, code=course_code, org_id=this_user["org_id"], log=self.log
+            )
 
-        assignment = orm.Assignment.find_by_code(
-            db=self.db, code=assignment_code, course_id=course.id
-        )
+            assignment = orm.Assignment.find_by_code(
+                db=session, code=assignment_code, course_id=course.id
+            )
 
-        # Set assignment to inactive
-        assignment.active = False
-        # Delete the associated notebook
-        for notebook in assignment.notebooks:
-            self.db.delete(notebook)
-
-        self.db.commit()
+            # Set assignment to inactive
+            assignment.active = False
+            # Delete the associated notebook
+            for notebook in assignment.notebooks:
+                session.delete(notebook)
 
         self.finish({"success": True, "note": "Assignment deleted"})

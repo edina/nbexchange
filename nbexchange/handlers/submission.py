@@ -10,6 +10,7 @@ from nbexchange.base import BaseHandler, authenticated
 from tornado import web
 from urllib.parse import quote_plus, unquote, unquote_plus
 from urllib.request import urlopen
+from nbexchange.database import scoped_session
 
 """
 All URLs relative to /services/nbexchange
@@ -57,14 +58,15 @@ POST: (with file) submits an assignment
 
         # The course will exist: the user object creates it if it doesn't exist
         #  - and we know the user is subscribed to the course as an instructor (above)
-        course = orm.Course.find_by_code(
-            db=self.db, code=course_code, org_id=this_user["org_id"], log=self.log
-        )
+        with scoped_session() as session:
+            course = orm.Course.find_by_code(
+                db=session, code=course_code, org_id=this_user["org_id"], log=self.log
+            )
 
-        # We need to find this assignment, or make a new one.
-        assignment = orm.Assignment.find_by_code(
-            db=self.db, code=assignment_code, course_id=course.id
-        )
+            # We need to find this assignment, or make a new one.
+            assignment = orm.Assignment.find_by_code(
+                db=session, code=assignment_code, course_id=course.id
+            )
         if assignment is None:
             note = f"User not fetched assignment {assignment_code}"
             self.log.info(note)
@@ -89,7 +91,6 @@ POST: (with file) submits an assignment
             self.log.warning(
                 f"Error: No file supplies in upload"
             )  # TODO: improve error message
-            self.db.rollback()
             raise web.HTTPError(412)  # precondition failed
 
         try:
@@ -115,15 +116,14 @@ POST: (with file) submits an assignment
             self.log.warning(f"Error: {e}")  # TODO: improve error message
 
             self.log.info(f"Upload failed")
-            self.db.rollback()
             # error 500??
             raise web.HTTPError(418)
 
         # now commit the assignment, and get it back to find the id
-        self.db.commit()
-        assignment = orm.Assignment.find_by_code(
-            db=self.db, code=assignment_code, course_id=course.id
-        )
+        with scoped_session() as session:
+            assignment = orm.Assignment.find_by_code(
+                db=session, code=assignment_code, course_id=course.id
+            )
 
         # Record the action.
         # Note we record the path to the files.
@@ -136,8 +136,8 @@ POST: (with file) submits an assignment
             action=orm.AssignmentActions.submitted,
             location=release_file,
         )
-        self.db.add(action)
-        self.db.commit()
+        with scoped_session() as session:
+            session.add(action)
         self.finish({"success": True, "note": "Submitted"})
 
 

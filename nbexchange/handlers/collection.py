@@ -10,6 +10,7 @@ from nbexchange.base import BaseHandler, authenticated
 from tornado import web, httputil
 from urllib.parse import quote_plus
 from urllib.request import urlopen
+from nbexchange.database import scoped_session
 
 """
 All URLs relative to /services/nbexchange
@@ -63,18 +64,20 @@ class Collections(BaseHandler):
             return
 
         # Find the course being referred to
-        course = orm.Course.find_by_code(
-            db=self.db, code=course_code, org_id=this_user["org_id"], log=self.log
-        )
+        with scoped_session() as session:
+            course = orm.Course.find_by_code(
+                db=session, code=course_code, org_id=this_user["org_id"], log=self.log
+            )
         if not course:
             note = f"Course {course_code} does not exist"
             self.log.info(note)
             self.finish({"success": False, "note": note})
             return
 
-        assignments = orm.Assignment.find_for_course(
-            db=self.db, course_id=course.id, log=self.log
-        )
+        with scoped_session() as session:
+            assignments = orm.Assignment.find_for_course(
+                db=session, course_id=course.id, log=self.log
+            )
 
         for assignment in assignments:
             self.log.debug(f"Assignment: {assignment}")
@@ -157,9 +160,10 @@ class Collection(BaseHandler):
             return
 
         # Find the course being referred to
-        course = orm.Course.find_by_code(
-            db=self.db, code=course_code, org_id=this_user["org_id"], log=self.log
-        )
+        with scoped_session() as session:
+            course = orm.Course.find_by_code(
+                db=session, code=course_code, org_id=this_user["org_id"], log=self.log
+            )
         if not course:
             note = f"Course {course_code} does not exist"
             self.log.info(note)
@@ -168,13 +172,14 @@ class Collection(BaseHandler):
 
         # We need to key off the assignment, but we're actually looking
         # for the action with a action and a specific path
-        assignments = orm.Assignment.find_for_course(
-            db=self.db,
-            course_id=course.id,
-            log=self.log,
-            action=orm.AssignmentActions.submitted.value,
-            path=path,
-        )
+        with scoped_session() as session:
+            assignments = orm.Assignment.find_for_course(
+                db=session,
+                course_id=course.id,
+                log=self.log,
+                action=orm.AssignmentActions.submitted.value,
+                path=path,
+            )
 
         data = b""
         self._headers = httputil.HTTPHeaders(
@@ -219,8 +224,8 @@ class Collection(BaseHandler):
                     action=orm.AssignmentActions.collected,
                     location=path,
                 )
-                self.db.add(action)
-                self.db.commit()
+                with scoped_session() as session:
+                    session.add(action)
                 self.log.info("record of fetch action committed")
                 self.finish(data)
 

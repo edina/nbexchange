@@ -66,7 +66,7 @@ class Assignments(BaseHandler):
             self.log.info(note)
             self.finish({"success": False, "note": note})
             return
-        
+
         with scoped_session() as session:
             assignments = orm.Assignment.find_for_course(
                 db=session, course_id=course.id, log=self.log

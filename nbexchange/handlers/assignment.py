@@ -61,43 +61,42 @@ class Assignments(BaseHandler):
             course = orm.Course.find_by_code(
                 db=session, code=course_code, org_id=this_user["org_id"], log=self.log
             )
-        if not course:
-            note = f"Course {course_code} does not exist"
-            self.log.info(note)
-            self.finish({"success": False, "note": note})
-            return
+            if not course:
+                note = f"Course {course_code} does not exist"
+                self.log.info(note)
+                self.finish({"success": False, "note": note})
+                return
 
-        with scoped_session() as session:
             assignments = orm.Assignment.find_for_course(
                 db=session, course_id=course.id, log=self.log
             )
 
-        for assignment in assignments:
-            self.log.debug(f"==========")
-            self.log.debug(f"Assignment: {assignment}")
-            for action in assignment.actions:
-                # For every action that is not "released" checked if the user id matches
-                if (
-                    action.action != orm.AssignmentActions.released
-                    and this_user.get("ormUser").id != action.user_id
-                ):
-                    self.log.debug(
-                        f"ormuser: {this_user.get('ormUser').id} - actionUser {action.user_id}"
+            for assignment in assignments:
+                self.log.debug(f"==========")
+                self.log.debug(f"Assignment: {assignment}")
+                for action in assignment.actions:
+                    # For every action that is not "released" checked if the user id matches
+                    if (
+                        action.action != orm.AssignmentActions.released
+                        and this_user.get("ormUser").id != action.user_id
+                    ):
+                        self.log.debug(
+                            f"ormuser: {this_user.get('ormUser').id} - actionUser {action.user_id}"
+                        )
+                        self.log.debug("Action does not belong to user, skip action")
+                        continue
+                    models.append(
+                        {
+                            "assignment_id": assignment.assignment_code,
+                            "course_id": assignment.course.course_code,
+                            "status": action.action.value,  # currently called 'action' in our db
+                            "path": action.location,
+                            "notebooks": [{"name": x.name} for x in assignment.notebooks],
+                            "timestamp": action.timestamp.strftime(
+                                "%Y-%m-%d %H:%M:%S.%f %Z"
+                            ),
+                        }
                     )
-                    self.log.debug("Action does not belong to user, skip action")
-                    continue
-                models.append(
-                    {
-                        "assignment_id": assignment.assignment_code,
-                        "course_id": assignment.course.course_code,
-                        "status": action.action.value,  # currently called 'action' in our db
-                        "path": action.location,
-                        "notebooks": [{"name": x.name} for x in assignment.notebooks],
-                        "timestamp": action.timestamp.strftime(
-                            "%Y-%m-%d %H:%M:%S.%f %Z"
-                        ),
-                    }
-                )
 
         self.log.debug(f"Assignments: {models}")
         self.finish({"success": True, "value": models})
@@ -144,18 +143,17 @@ class Assignment(BaseHandler):
             course = orm.Course.find_by_code(
                 db=session, code=course_code, org_id=this_user["org_id"], log=self.log
             )
-        if course is None:
-            note = f"Course {course_code} does not exist"
-            self.log.info(note)
-            self.finish({"success": False, "note": note})
-            return  # needs a proper 'fail' here
+            if course is None:
+                note = f"Course {course_code} does not exist"
+                self.log.info(note)
+                self.finish({"success": False, "note": note})
+                return  # needs a proper 'fail' here
 
-        note = ""
-        self.log.debug(f"Course:{course_code} assignment:{assignment_code}")
+            note = ""
+            self.log.debug(f"Course:{course_code} assignment:{assignment_code}")
 
-        # The location for the data-object is actually held in the 'released' action for the given assignment
-        # We want the last one...
-        with scoped_session() as session:
+            # The location for the data-object is actually held in the 'released' action for the given assignment
+            # We want the last one...
             assignment = orm.Assignment.find_by_code(
                 db=session,
                 code=assignment_code,
@@ -163,25 +161,24 @@ class Assignment(BaseHandler):
                 action=orm.AssignmentActions.released.value,
             )
 
-        if assignment is None:
-            note = f"Assignment {assignment_code} does not exist"
-            self.log.info(note)
-            self.finish({"success": False, "note": note})
-            return  # needs a proper 'fail' here
+            if assignment is None:
+                note = f"Assignment {assignment_code} does not exist"
+                self.log.info(note)
+                self.finish({"success": False, "note": note})
+                return  # needs a proper 'fail' here
 
-        self._headers = httputil.HTTPHeaders(
-            {
-                "Content-Type": "application/gzip",
-                "Date": httputil.format_timestamp(time.time()),
-            }
-        )
+            self._headers = httputil.HTTPHeaders(
+                {
+                    "Content-Type": "application/gzip",
+                    "Date": httputil.format_timestamp(time.time()),
+                }
+            )
 
-        data = b""
+            data = b""
 
-        release_file = None
+            release_file = None
 
-        # Find the most recent released action for this assignment
-        with scoped_session() as session:
+            # Find the most recent released action for this assignment
             action = (
                 session.query(orm.Action)
                 .filter_by(assignment_id=assignment.id)
@@ -189,36 +186,35 @@ class Assignment(BaseHandler):
                 .order_by(desc(orm.Action.id))
                 .first()
             )
-        release_file = action.location
+            release_file = action.location
 
-        if release_file:
-            try:
-                handle = open(release_file, "r+b")
-                data = handle.read()
-                handle.close
-            except Exception as e:  # TODO: exception handling
-                self.log.warning(f"Error: {e}")  # TODO: improve error message
-                self.log.info(f"Unable to oprn file")
+            if release_file:
+                try:
+                    handle = open(release_file, "r+b")
+                    data = handle.read()
+                    handle.close
+                except Exception as e:  # TODO: exception handling
+                    self.log.warning(f"Error: {e}")  # TODO: improve error message
+                    self.log.info(f"Unable to oprn file")
 
-                # error 500??
-                raise Exception
+                    # error 500??
+                    raise Exception
 
-            self.log.info(
-                f"Adding action {orm.AssignmentActions.fetched.value} for user {this_user['ormUser'].id} against assignment {assignment.id}"
-            )
-            action = orm.Action(
-                user_id=this_user["ormUser"].id,
-                assignment_id=assignment.id,
-                action=orm.AssignmentActions.fetched,
-                location=release_file,
-            )
-            with scoped_session() as session:
+                self.log.info(
+                    f"Adding action {orm.AssignmentActions.fetched.value} for user {this_user['ormUser'].id} against assignment {assignment.id}"
+                )
+                action = orm.Action(
+                    user_id=this_user["ormUser"].id,
+                    assignment_id=assignment.id,
+                    action=orm.AssignmentActions.fetched,
+                    location=release_file,
+                )
                 session.add(action)
-            self.log.info("record of fetch action committed")
-            self.finish(data)  ####
-        else:
-            self.log.info("no release file found")
-            raise Exception
+                self.log.info("record of fetch action committed")
+                self.finish(data)  ####
+            else:
+                self.log.info("no release file found")
+                raise Exception
 
     # This is releasing an **assignment**, not a student submission
     @authenticated
@@ -267,9 +263,8 @@ class Assignment(BaseHandler):
                     db=session, code=assignment_code, course_id=course.id, active=False
                 )
 
-        self.log.warn(f"The value of assignment here is : {assignment}")
+            self.log.warn(f"The value of assignment here is : {assignment}")
 
-        with scoped_session() as session:
             if assignment is None:
                 self.log.info(
                     f"New Assignment details: assignment_code:{assignment_code}, course_id:{course.id}"
@@ -281,79 +276,77 @@ class Assignment(BaseHandler):
                 session.add(assignment)
                 # deliberately no commit: we need to be able to roll-back if there's no data!
 
-        # Set assignment to active
-        assignment.active = True
+            # Set assignment to active
+            assignment.active = True
 
-        # storage is dynamically in $path/release/$course_code/$assignment_code/<timestamp>/
-        # Note - this means we can have multiple versions of the same release on the system
-        release_file = "/".join(
-            [
-                self.base_storage_location,
-                str(this_user["org_id"]),
-                orm.AssignmentActions.released.value,
-                course_code,
-                assignment_code,
-                str(int(time.time())),
-            ]
-        )
+            # storage is dynamically in $path/release/$course_code/$assignment_code/<timestamp>/
+            # Note - this means we can have multiple versions of the same release on the system
+            release_file = "/".join(
+                [
+                    self.base_storage_location,
+                    str(this_user["org_id"]),
+                    orm.AssignmentActions.released.value,
+                    course_code,
+                    assignment_code,
+                    str(int(time.time())),
+                ]
+            )
 
-        if not self.request.files:
-            self.log.warning(
-                f"Error: No file supplies in upload"
-            )  # TODO: improve error message
-            raise web.HTTPError(412)  # precondition failed
+            if not self.request.files:
+                self.log.warning(
+                    f"Error: No file supplies in upload"
+                )  # TODO: improve error message
+                raise web.HTTPError(412)  # precondition failed
 
-        try:
-            # Write the uploaded file to the desired location
-            file_info = self.request.files["assignment"][0]
+            try:
+                # Write the uploaded file to the desired location
+                file_info = self.request.files["assignment"][0]
 
-            filename, content_type = file_info["filename"], file_info["content_type"]
-            note = f"Received file {filename}, of type {content_type}"
-            self.log.info(note)
-            extn = os.path.splitext(filename)[1]
-            cname = str(uuid.uuid4()) + extn
+                filename, content_type = file_info["filename"], file_info["content_type"]
+                note = f"Received file {filename}, of type {content_type}"
+                self.log.info(note)
+                extn = os.path.splitext(filename)[1]
+                cname = str(uuid.uuid4()) + extn
 
-            # store to disk.
-            # This should be abstracted, so it can be overloaded to store in other manners (eg AWS)
-            release_file = release_file + "/" + cname
-            # Ensure the directory exists
-            os.makedirs(os.path.dirname(release_file), exist_ok=True)
-            handle = open(release_file, "w+b")
-            handle.write(file_info["body"])
-            handle.close
+                # store to disk.
+                # This should be abstracted, so it can be overloaded to store in other manners (eg AWS)
+                release_file = release_file + "/" + cname
+                # Ensure the directory exists
+                os.makedirs(os.path.dirname(release_file), exist_ok=True)
+                handle = open(release_file, "w+b")
+                handle.write(file_info["body"])
+                handle.close
 
-        except Exception as e:  # TODO: exception handling
-            self.log.warning(f"Error: {e}")  # TODO: improve error message
+            except Exception as e:  # TODO: exception handling
+                self.log.warning(f"Error: {e}")  # TODO: improve error message
 
-            self.log.info(f"Upload failed")
-            # error 500??
-            raise Exception
+                self.log.info(f"Upload failed")
+                # error 500??
+                raise Exception
 
-        # now commit the assignment, and get it back to find the id
-        with scoped_session() as session:
+            # now commit the assignment, and get it back to find the id
             assignment = orm.Assignment.find_by_code(
                 db=session, code=assignment_code, course_id=course.id
             )
 
-        # Record the notebooks associated with this assignment
-        notebooks = self.get_arguments("notebooks")
+            # Record the notebooks associated with this assignment
+            notebooks = self.get_arguments("notebooks")
 
-        for notebook in notebooks:
-            new_notebook = orm.Notebook(name=notebook)
-            assignment.notebooks.append(new_notebook)
+            for notebook in notebooks:
+                new_notebook = orm.Notebook(name=notebook)
+                assignment.notebooks.append(new_notebook)
 
-        # Record the action.
-        # Note we record the path to the files.
-        self.log.info(
-            f"Adding action {orm.AssignmentActions.released.value} for user {this_user['ormUser'].id} against assignment {assignment.id}"
-        )
-        action = orm.Action(
-            user_id=this_user["ormUser"].id,
-            assignment_id=assignment.id,
-            action=orm.AssignmentActions.released,
-            location=release_file,
-        )
-        with scoped_session() as session:
+            # Record the action.
+            # Note we record the path to the files.
+            self.log.info(
+                f"Adding action {orm.AssignmentActions.released.value} for user {this_user['ormUser'].id} against assignment {assignment.id}"
+            )
+            action = orm.Action(
+                user_id=this_user["ormUser"].id,
+                assignment_id=assignment.id,
+                action=orm.AssignmentActions.released,
+                location=release_file,
+            )
             session.add(action)
         self.finish({"success": True, "note": "Released"})
 

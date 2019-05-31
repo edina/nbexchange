@@ -67,76 +67,77 @@ POST: (with file) submits an assignment
             assignment = orm.Assignment.find_by_code(
                 db=session, code=assignment_code, course_id=course.id
             )
-        if assignment is None:
-            note = f"User not fetched assignment {assignment_code}"
-            self.log.info(note)
-            self.finish({"success": False, "note": note})
-            return
+            if assignment is None:
+                note = f"User not fetched assignment {assignment_code}"
+                self.log.info(note)
+                self.finish({"success": False, "note": note})
+                return
 
-        # storage is dynamically in $path/submitted/$course_code/$assignment_code/$username/<timestamp>/
-        # Note - this means that a user can submit multiple times, and we have all copies
-        release_file = "/".join(
-            [
-                self.base_storage_location,
-                str(this_user["org_id"]),
-                orm.AssignmentActions.submitted.value,
-                course_code,
-                assignment_code,
-                this_user["name"],
-                str(int(time.time())),
-            ]
-        )
+            # storage is dynamically in $path/submitted/$course_code/$assignment_code/$username/<timestamp>/
+            # Note - this means that a user can submit multiple times, and we have all copies
+            release_file = "/".join(
+                [
+                    self.base_storage_location,
+                    str(this_user["org_id"]),
+                    orm.AssignmentActions.submitted.value,
+                    course_code,
+                    assignment_code,
+                    this_user["name"],
+                    str(int(time.time())),
+                ]
+            )
 
-        if not self.request.files:
-            self.log.warning(
-                f"Error: No file supplies in upload"
-            )  # TODO: improve error message
-            raise web.HTTPError(412)  # precondition failed
+            if not self.request.files:
+                self.log.warning(
+                    f"Error: No file supplies in upload"
+                )  # TODO: improve error message
+                raise web.HTTPError(412)  # precondition failed
 
-        try:
-            # Write the uploaded file to the desired location
-            file_info = self.request.files["assignment"][0]
+            try:
+                # Write the uploaded file to the desired location
+                file_info = self.request.files["assignment"][0]
 
-            filename, content_type = file_info["filename"], file_info["content_type"]
-            note = f"Received file {filename}, of type {content_type}"
-            self.log.info(note)
-            extn = os.path.splitext(filename)[1]
-            cname = str(uuid.uuid4()) + extn
+                filename, content_type = (
+                    file_info["filename"],
+                    file_info["content_type"],
+                )
+                note = f"Received file {filename}, of type {content_type}"
+                self.log.info(note)
+                extn = os.path.splitext(filename)[1]
+                cname = str(uuid.uuid4()) + extn
 
-            # store to disk.
-            # This should be abstracted, so it can be overloaded to store in other manners (eg AWS)
-            release_file = release_file + "/" + cname
-            # Ensure the directory exists
-            os.makedirs(os.path.dirname(release_file), exist_ok=True)
-            handle = open(release_file, "w+b")
-            handle.write(file_info["body"])
-            handle.close
+                # store to disk.
+                # This should be abstracted, so it can be overloaded to store in other manners (eg AWS)
+                release_file = release_file + "/" + cname
+                # Ensure the directory exists
+                os.makedirs(os.path.dirname(release_file), exist_ok=True)
+                handle = open(release_file, "w+b")
+                handle.write(file_info["body"])
+                handle.close
 
-        except Exception as e:  # TODO: exception handling
-            self.log.warning(f"Error: {e}")  # TODO: improve error message
+            except Exception as e:  # TODO: exception handling
+                self.log.warning(f"Error: {e}")  # TODO: improve error message
 
-            self.log.info(f"Upload failed")
-            # error 500??
-            raise web.HTTPError(418)
+                self.log.info(f"Upload failed")
+                # error 500??
+                raise web.HTTPError(418)
 
-        # now commit the assignment, and get it back to find the id
-        with scoped_session() as session:
+            # now commit the assignment, and get it back to find the id
             assignment = orm.Assignment.find_by_code(
                 db=session, code=assignment_code, course_id=course.id
             )
 
-        # Record the action.
-        # Note we record the path to the files.
-        self.log.info(
-            f"Adding action {orm.AssignmentActions.submitted.value} for user {this_user['ormUser'].id} against assignment {assignment.id}"
-        )
-        action = orm.Action(
-            user_id=this_user["ormUser"].id,
-            assignment_id=assignment.id,
-            action=orm.AssignmentActions.submitted,
-            location=release_file,
-        )
-        with scoped_session() as session:
+            # Record the action.
+            # Note we record the path to the files.
+            self.log.info(
+                f"Adding action {orm.AssignmentActions.submitted.value} for user {this_user['ormUser'].id} against assignment {assignment.id}"
+            )
+            action = orm.Action(
+                user_id=this_user["ormUser"].id,
+                assignment_id=assignment.id,
+                action=orm.AssignmentActions.submitted,
+                location=release_file,
+            )
             session.add(action)
         self.finish({"success": True, "note": "Submitted"})
 

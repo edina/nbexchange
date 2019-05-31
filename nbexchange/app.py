@@ -242,8 +242,6 @@ class NbExchange(Application):
             version_hash=version_hash,
             xsrf_cookies=False,
             debug=self.debug,
-            # Replace the default [jupyterhub] database connection with our own **for our tornado app only**
-            db=self.db,
         )
         # allow configured settings to have priority
         settings.update(self.tornado_settings)

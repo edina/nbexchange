@@ -9,6 +9,8 @@ from tornado import gen, web
 from tornado.log import app_log
 from raven.contrib.tornado import SentryMixin
 from urllib.parse import quote_plus, unquote, unquote_plus
+from nbexchange.database import scoped_session
+
 from typing import (
     Dict,
     Any,
@@ -114,77 +116,67 @@ class BaseHandler(SentryMixin, web.RequestHandler):
 
         self.org_id = org_id
 
-        user = orm.User.find_by_name(db=self.db, name=hub_username, log=self.log)
-        if user is None:
-            self.log.debug(f"New user details: name:{hub_username}, org_id:{org_id}")
-            user = orm.User(name=hub_username, org_id=org_id)
-            self.db.add(user)
+        with scoped_session() as session:
+            user = orm.User.find_by_name(db=session, name=hub_username, log=self.log)
+            if user is None:
+                self.log.debug(
+                    f"New user details: name:{hub_username}, org_id:{org_id}"
+                )
+                user = orm.User(name=hub_username, org_id=org_id)
+                session.add(user)
 
-        course = orm.Course.find_by_code(
-            db=self.db, code=current_course, org_id=org_id, log=self.log
-        )
-        if course is None:
+            course = orm.Course.find_by_code(
+                db=session, code=current_course, org_id=org_id, log=self.log
+            )
+            if course is None:
+                self.log.debug(
+                    f"New course details: code:{current_course}, org_id:{org_id}"
+                )
+                course = orm.Course(org_id=org_id, course_code=current_course)
+                if course_title:
+                    self.log.debug(f"Adding title {course_title}")
+                    course.course_title = course_title
+                session.add(course)
+
+            # Check to see if we have a subscription (for this course)
             self.log.debug(
-                f"New course details: code:{current_course}, org_id:{org_id}"
+                f"Looking for subscription for: user:{user.id}, course:{course.id}, role:{current_role}"
             )
-            course = orm.Course(org_id=org_id, course_code=current_course)
-            if course_title:
-                self.log.debug(f"Adding title {course_title}")
-                course.course_title = course_title
-            self.db.add(course)
 
-        # Check to see if we have a subscription (for this course)
-        self.log.debug(
-            f"Looking for subscription for: user:{user.id}, course:{course.id}, role:{current_role}"
-        )
-
-        subscription = orm.Subscription.find_by_set(
-            db=self.db, user_id=user.id, course_id=course.id, role=current_role
-        )
-        if subscription is None:
-            self.log.debug(
-                f"New subscription details: user:{user.id}, course:{course.id}, role:{current_role}"
+            subscription = orm.Subscription.find_by_set(
+                db=session, user_id=user.id, course_id=course.id, role=current_role
             )
-            subscription = orm.Subscription(
-                user_id=user.id, course_id=course.id, role=current_role
-            )
-            self.db.add(subscription)
+            if subscription is None:
+                self.log.debug(
+                    f"New subscription details: user:{user.id}, course:{course.id}, role:{current_role}"
+                )
+                subscription = orm.Subscription(
+                    user_id=user.id, course_id=course.id, role=current_role
+                )
+                session.add(subscription)
 
-        self.db.commit()
+            courses = {}
 
-        courses = {}
+            for subscription in user.courses:
+                if not subscription.course.course_code in courses:
+                    courses[subscription.course.course_code] = {}
+                courses[subscription.course.course_code][subscription.role] = 1
 
-        for subscription in user.courses:
-            if not subscription.course.course_code in courses:
-                courses[subscription.course.course_code] = {}
-            courses[subscription.course.course_code][subscription.role] = 1
-
-        model = {
-            "kind": "user",
-            "ormUser": user,
-            "name": user.name,
-            "org_id": user.org_id,
-            "current_course": current_course,
-            "current_role": current_role,
-            "courses": courses,
-        }
+            model = {
+                "kind": "user",
+                "ormUser": user,
+                "name": user.name,
+                "org_id": user.org_id,
+                "current_course": current_course,
+                "current_role": current_role,
+                "courses": courses,
+            }
         return model
-
-    @property
-    def db(self):
-        return self.settings["db"]
 
     @property
     def log(self):
         """I can't seem to avoid typing self.log"""
         return self.settings.get("log", app_log)
-
-    def finish(self, *args, **kwargs):
-        """Roll back any uncommitted transactions from the handler."""
-        if self.db.dirty:
-            self.log.warning("Rolling back dirty objects %s", self.db.dirty)
-            self.db.rollback()
-        super().finish(*args, **kwargs)
 
     def param_decode(self, value):
         unquote(value) if re.search("%20", value) else unquote_plus(value)

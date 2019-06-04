@@ -1,15 +1,12 @@
-import datetime
 import os
-import re
 import time
 import uuid
 
-from dateutil.tz import gettz
-from nbexchange import orm
+import nbexchange.models.actions
+import nbexchange.models.assignments
+import nbexchange.models.courses
 from nbexchange.base import BaseHandler, authenticated
 from tornado import web
-from urllib.parse import quote_plus, unquote, unquote_plus
-from urllib.request import urlopen
 from nbexchange.database import scoped_session
 
 """
@@ -59,12 +56,12 @@ POST: (with file) submits an assignment
         # The course will exist: the user object creates it if it doesn't exist
         #  - and we know the user is subscribed to the course as an instructor (above)
         with scoped_session() as session:
-            course = orm.Course.find_by_code(
+            course = nbexchange.models.courses.Course.find_by_code(
                 db=session, code=course_code, org_id=this_user["org_id"], log=self.log
             )
 
             # We need to find this assignment, or make a new one.
-            assignment = orm.Assignment.find_by_code(
+            assignment = nbexchange.models.assignments.Assignment.find_by_code(
                 db=session, code=assignment_code, course_id=course.id
             )
             if assignment is None:
@@ -79,7 +76,7 @@ POST: (with file) submits an assignment
                 [
                     self.base_storage_location,
                     str(this_user["org_id"]),
-                    orm.AssignmentActions.submitted.value,
+                    nbexchange.models.actions.AssignmentActions.submitted.value,
                     course_code,
                     assignment_code,
                     this_user["name"],
@@ -123,19 +120,19 @@ POST: (with file) submits an assignment
                 raise web.HTTPError(418)
 
             # now commit the assignment, and get it back to find the id
-            assignment = orm.Assignment.find_by_code(
+            assignment = nbexchange.models.assignments.Assignment.find_by_code(
                 db=session, code=assignment_code, course_id=course.id
             )
 
             # Record the action.
             # Note we record the path to the files.
             self.log.info(
-                f"Adding action {orm.AssignmentActions.submitted.value} for user {this_user['id']} against assignment {assignment.id}"
+                f"Adding action {nbexchange.models.actions.AssignmentActions.submitted.value} for user {this_user['id']} against assignment {assignment.id}"
             )
-            action = orm.Action(
+            action = nbexchange.models.actions.Action(
                 user_id=this_user["id"],
                 assignment_id=assignment.id,
-                action=orm.AssignmentActions.submitted,
+                action=nbexchange.models.actions.AssignmentActions.submitted,
                 location=release_file,
             )
             session.add(action)

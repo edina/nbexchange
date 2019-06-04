@@ -1,6 +1,5 @@
 import logging
 import os
-import psycopg2
 import sys
 
 from datetime import datetime
@@ -9,20 +8,17 @@ from jupyterhub.log import CoroutineLogFormatter, log_request
 
 # from jupyterhub.services.auth import HubAuth
 from jupyterhub.utils import url_path_join
-from nbexchange import orm, dbutil, base, handlers
-from nbexchange.handlers import assignment, submission
-from sqlalchemy.exc import OperationalError, SQLAlchemyError
+
+import nbexchange.dbutil
+from nbexchange import dbutil, base, handlers
+from sqlalchemy.exc import OperationalError
 from traitlets.config import Application, catch_config_error
 from traitlets import (
     Bool,
     Dict,
     Integer,
-    List,
     Unicode,
     default,
-    TraitType,
-    TraitError,
-    class_of,
 )
 from tornado import web
 from tornado.httpserver import HTTPServer
@@ -189,7 +185,7 @@ class NbExchange(Application):
             dbutil.upgrade_if_needed(self.db_url, log=self.log)
 
         try:
-            orm.setup_db(
+            nbexchange.dbutil.setup_db(
                 self.db_url,
                 reset=self.reset_db,
                 echo=self.debug_db,
@@ -211,7 +207,7 @@ class NbExchange(Application):
                 )
             )
             self.exit(1)
-        except orm.DatabaseSchemaMismatch as e:
+        except nbexchange.dbutil.DatabaseSchemaMismatch as e:
             self.exit(e)
 
     def init_tornado_settings(self):

@@ -1,15 +1,13 @@
-import datetime
 import os
-import re
 import time
 import uuid
 
-from dateutil.tz import gettz
-from nbexchange import orm
+import nbexchange.models.actions
+import nbexchange.models.assignments
+import nbexchange.models.courses
+import nbexchange.models.notebooks
 from nbexchange.base import BaseHandler, authenticated
 from tornado import web, httputil
-from urllib.parse import quote_plus, unquote, unquote_plus
-from urllib.request import urlopen
 from sqlalchemy import desc
 from nbexchange.database import scoped_session
 
@@ -58,7 +56,7 @@ class Assignments(BaseHandler):
 
         # Find the course being referred to
         with scoped_session() as session:
-            course = orm.Course.find_by_code(
+            course = nbexchange.models.courses.Course.find_by_code(
                 db=session, code=course_code, org_id=this_user["org_id"], log=self.log
             )
             if not course:
@@ -67,7 +65,7 @@ class Assignments(BaseHandler):
                 self.finish({"success": False, "note": note})
                 return
 
-            assignments = orm.Assignment.find_for_course(
+            assignments = nbexchange.models.assignments.Assignment.find_for_course(
                 db=session, course_id=course.id, log=self.log
             )
 
@@ -77,7 +75,8 @@ class Assignments(BaseHandler):
                 for action in assignment.actions:
                     # For every action that is not "released" checked if the user id matches
                     if (
-                        action.action != orm.AssignmentActions.released
+                        action.action
+                        != nbexchange.models.actions.AssignmentActions.released
                         and this_user.get("id") != action.user_id
                     ):
                         self.log.debug(
@@ -142,7 +141,7 @@ class Assignment(BaseHandler):
 
         # Find the course being referred to
         with scoped_session() as session:
-            course = orm.Course.find_by_code(
+            course = nbexchange.models.courses.Course.find_by_code(
                 db=session, code=course_code, org_id=this_user["org_id"], log=self.log
             )
             if course is None:
@@ -156,11 +155,11 @@ class Assignment(BaseHandler):
 
             # The location for the data-object is actually held in the 'released' action for the given assignment
             # We want the last one...
-            assignment = orm.Assignment.find_by_code(
+            assignment = nbexchange.models.assignments.Assignment.find_by_code(
                 db=session,
                 code=assignment_code,
                 course_id=course.id,
-                action=orm.AssignmentActions.released.value,
+                action=nbexchange.models.actions.AssignmentActions.released.value,
             )
 
             if assignment is None:
@@ -182,10 +181,10 @@ class Assignment(BaseHandler):
 
             # Find the most recent released action for this assignment
             action = (
-                session.query(orm.Action)
+                session.query(nbexchange.models.actions.Action)
                 .filter_by(assignment_id=assignment.id)
-                .filter_by(action=orm.AssignmentActions.released)
-                .order_by(desc(orm.Action.id))
+                .filter_by(action=nbexchange.models.actions.AssignmentActions.released)
+                .order_by(desc(nbexchange.models.actions.Action.id))
                 .first()
             )
             release_file = action.location
@@ -203,12 +202,12 @@ class Assignment(BaseHandler):
                     raise Exception
 
                 self.log.info(
-                    f"Adding action {orm.AssignmentActions.fetched.value} for user {this_user['id']} against assignment {assignment.id}"
+                    f"Adding action {nbexchange.models.actions.AssignmentActions.fetched.value} for user {this_user['id']} against assignment {assignment.id}"
                 )
-                action = orm.Action(
+                action = nbexchange.models.actions.Action(
                     user_id=this_user["id"],
                     assignment_id=assignment.id,
-                    action=orm.AssignmentActions.fetched,
+                    action=nbexchange.models.actions.AssignmentActions.fetched,
                     location=release_file,
                 )
                 session.add(action)
@@ -250,18 +249,18 @@ class Assignment(BaseHandler):
         # The course will exist: the user object creates it if it doesn't exist
         #  - and we know the user is subscribed to the course as an instructor (above)
         with scoped_session() as session:
-            course = orm.Course.find_by_code(
+            course = nbexchange.models.courses.Course.find_by_code(
                 db=session, code=course_code, org_id=this_user["org_id"], log=self.log
             )
 
             # We need to find this assignment, or make a new one.
-            assignment = orm.Assignment.find_by_code(
+            assignment = nbexchange.models.assignments.Assignment.find_by_code(
                 db=session, code=assignment_code, course_id=course.id
             )
 
             if assignment is None:
                 # Look for inactive assignments
-                assignment = orm.Assignment.find_by_code(
+                assignment = nbexchange.models.assignments.Assignment.find_by_code(
                     db=session, code=assignment_code, course_id=course.id, active=False
                 )
 
@@ -272,7 +271,7 @@ class Assignment(BaseHandler):
                     f"New Assignment details: assignment_code:{assignment_code}, course_id:{course.id}"
                 )
                 # defaults active
-                assignment = orm.Assignment(
+                assignment = nbexchange.models.assignments.Assignment(
                     assignment_code=assignment_code, course_id=course.id
                 )
                 session.add(assignment)
@@ -287,7 +286,7 @@ class Assignment(BaseHandler):
                 [
                     self.base_storage_location,
                     str(this_user["org_id"]),
-                    orm.AssignmentActions.released.value,
+                    nbexchange.models.actions.AssignmentActions.released.value,
                     course_code,
                     assignment_code,
                     str(int(time.time())),
@@ -330,7 +329,7 @@ class Assignment(BaseHandler):
                 raise Exception
 
             # now commit the assignment, and get it back to find the id
-            assignment = orm.Assignment.find_by_code(
+            assignment = nbexchange.models.assignments.Assignment.find_by_code(
                 db=session, code=assignment_code, course_id=course.id
             )
 
@@ -338,18 +337,18 @@ class Assignment(BaseHandler):
             notebooks = self.get_arguments("notebooks")
 
             for notebook in notebooks:
-                new_notebook = orm.Notebook(name=notebook)
+                new_notebook = nbexchange.models.notebooks.Notebook(name=notebook)
                 assignment.notebooks.append(new_notebook)
 
             # Record the action.
             # Note we record the path to the files.
             self.log.info(
-                f"Adding action {orm.AssignmentActions.released.value} for user {this_user['id']} against assignment {assignment.id}"
+                f"Adding action {nbexchange.models.actions.AssignmentActions.released.value} for user {this_user['id']} against assignment {assignment.id}"
             )
-            action = orm.Action(
+            action = nbexchange.models.actions.Action(
                 user_id=this_user["id"],
                 assignment_id=assignment.id,
-                action=orm.AssignmentActions.released,
+                action=nbexchange.models.actions.AssignmentActions.released,
                 location=release_file,
             )
             session.add(action)
@@ -384,11 +383,11 @@ class Assignment(BaseHandler):
             return
 
         with scoped_session() as session:
-            course = orm.Course.find_by_code(
+            course = nbexchange.models.courses.Course.find_by_code(
                 db=session, code=course_code, org_id=this_user["org_id"], log=self.log
             )
 
-            assignment = orm.Assignment.find_by_code(
+            assignment = nbexchange.models.assignments.Assignment.find_by_code(
                 db=session, code=assignment_code, course_id=course.id
             )
 

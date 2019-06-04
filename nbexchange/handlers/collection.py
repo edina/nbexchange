@@ -1,15 +1,10 @@
-import datetime
-import os
-import re
 import time
-import uuid
 
-from dateutil.tz import gettz
-from nbexchange import orm
+import nbexchange.models.actions
+import nbexchange.models.assignments
+import nbexchange.models.courses
 from nbexchange.base import BaseHandler, authenticated
 from tornado import web, httputil
-from urllib.parse import quote_plus
-from urllib.request import urlopen
 from nbexchange.database import scoped_session
 
 """
@@ -65,7 +60,7 @@ class Collections(BaseHandler):
 
         # Find the course being referred to
         with scoped_session() as session:
-            course = orm.Course.find_by_code(
+            course = nbexchange.models.courses.Course.find_by_code(
                 db=session, code=course_code, org_id=this_user["org_id"], log=self.log
             )
             if not course:
@@ -74,7 +69,7 @@ class Collections(BaseHandler):
                 self.finish({"success": False, "note": note})
                 return
 
-            assignments = orm.Assignment.find_for_course(
+            assignments = nbexchange.models.assignments.Assignment.find_for_course(
                 db=session, course_id=course.id, log=self.log
             )
 
@@ -83,7 +78,7 @@ class Collections(BaseHandler):
                 self.log.debug(f"Assignment Actions: {assignment.actions}")
                 for action in assignment.actions:
                     # For every action that is not "released" checked if the user id matches
-                    if action.action == orm.AssignmentActions.submitted:
+                    if action.action == nbexchange.models.actions.AssignmentActions.submitted:
                         models.append(
                             {
                                 "assignment_id": assignment.assignment_code,
@@ -160,7 +155,7 @@ class Collection(BaseHandler):
 
         # Find the course being referred to
         with scoped_session() as session:
-            course = orm.Course.find_by_code(
+            course = nbexchange.models.courses.Course.find_by_code(
                 db=session, code=course_code, org_id=this_user["org_id"], log=self.log
             )
             if not course:
@@ -171,11 +166,11 @@ class Collection(BaseHandler):
 
             # We need to key off the assignment, but we're actually looking
             # for the action with a action and a specific path
-            assignments = orm.Assignment.find_for_course(
+            assignments = nbexchange.models.assignments.Assignment.find_for_course(
                 db=session,
                 course_id=course.id,
                 log=self.log,
-                action=orm.AssignmentActions.submitted.value,
+                action=nbexchange.models.actions.AssignmentActions.submitted.value,
                 path=path,
             )
 
@@ -214,12 +209,12 @@ class Collection(BaseHandler):
                         raise Exception
 
                     self.log.info(
-                        f"Adding action {orm.AssignmentActions.collected.value} for user {this_user['id']} against assignment {assignment.id}"
+                        f"Adding action {nbexchange.models.actions.AssignmentActions.collected.value} for user {this_user['id']} against assignment {assignment.id}"
                     )
-                    action = orm.Action(
+                    action = nbexchange.models.actions.Action(
                         user_id=this_user["id"],
                         assignment_id=assignment.id,
-                        action=orm.AssignmentActions.collected,
+                        action=nbexchange.models.actions.AssignmentActions.collected,
                         location=path,
                     )
                     session.add(action)

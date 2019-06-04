@@ -1,31 +1,17 @@
 import re
-import os
 import requests
 import functools
 
-from jupyterhub.utils import url_path_join
-from nbexchange import orm
-from tornado import gen, web
+import nbexchange.models.courses
+import nbexchange.models.subscriptions
+import nbexchange.models.users
+from tornado import web
 from tornado.log import app_log
 from raven.contrib.tornado import SentryMixin
-from urllib.parse import quote_plus, unquote, unquote_plus
+from urllib.parse import unquote, unquote_plus
 from nbexchange.database import scoped_session
 
-from typing import (
-    Dict,
-    Any,
-    Union,
-    Optional,
-    Awaitable,
-    Tuple,
-    List,
-    Callable,
-    Iterable,
-    Generator,
-    Type,
-    cast,
-    overload,
-)
+from typing import Optional, Awaitable, Callable
 
 
 def authenticated(
@@ -117,22 +103,26 @@ class BaseHandler(SentryMixin, web.RequestHandler):
         self.org_id = org_id
 
         with scoped_session() as session:
-            user = orm.User.find_by_name(db=session, name=hub_username, log=self.log)
+            user = nbexchange.models.users.User.find_by_name(
+                db=session, name=hub_username, log=self.log
+            )
             if user is None:
                 self.log.debug(
                     f"New user details: name:{hub_username}, org_id:{org_id}"
                 )
-                user = orm.User(name=hub_username, org_id=org_id)
+                user = nbexchange.models.users.User(name=hub_username, org_id=org_id)
                 session.add(user)
 
-            course = orm.Course.find_by_code(
+            course = nbexchange.models.courses.Course.find_by_code(
                 db=session, code=current_course, org_id=org_id, log=self.log
             )
             if course is None:
                 self.log.debug(
                     f"New course details: code:{current_course}, org_id:{org_id}"
                 )
-                course = orm.Course(org_id=org_id, course_code=current_course)
+                course = nbexchange.models.courses.Course(
+                    org_id=org_id, course_code=current_course
+                )
                 if course_title:
                     self.log.debug(f"Adding title {course_title}")
                     course.course_title = course_title
@@ -143,14 +133,14 @@ class BaseHandler(SentryMixin, web.RequestHandler):
                 f"Looking for subscription for: user:{user.id}, course:{course.id}, role:{current_role}"
             )
 
-            subscription = orm.Subscription.find_by_set(
+            subscription = nbexchange.models.subscriptions.Subscription.find_by_set(
                 db=session, user_id=user.id, course_id=course.id, role=current_role
             )
             if subscription is None:
                 self.log.debug(
                     f"New subscription details: user:{user.id}, course:{course.id}, role:{current_role}"
                 )
-                subscription = orm.Subscription(
+                subscription = nbexchange.models.subscriptions.Subscription(
                     user_id=user.id, course_id=course.id, role=current_role
                 )
                 session.add(subscription)

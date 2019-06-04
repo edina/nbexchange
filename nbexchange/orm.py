@@ -369,7 +369,7 @@ class Assignment(Base):
         """Find an assignment by code.
 
         assignment = orm.Assignment.find_by_code(
-            db=self.db, code=assignment_code, course_id=course.id
+            db=session, code=assignment_code, course_id=course.id
         )
 
         optional params:
@@ -403,7 +403,7 @@ class Assignment(Base):
         """Find the list of assignments for a course.
 
         assignments = orm.Assignment.find_for_course(
-            db=self.db, course_id=course.id, log=self.log
+            db=session, course_id=course.id, log=self.log
         )
 
         optional params:
@@ -625,10 +625,9 @@ def add_row_format(base):
         t.dialect_kwargs["mysql_ROW_FORMAT"] = "DYNAMIC"
 
 
-def new_session_factory(
-    url="sqlite:///:memory:", reset=False, expire_on_commit=False, log=None, **kwargs
-):
-    """Create a new session at url"""
+def setup_db(url="sqlite:///:memory:", reset=False, log=None, **kwargs):
+    """Check database revision and create all models"""
+
     log.info(f"orm.new_session_factory: db_url:{url}, reset:{reset}")
     if url.startswith("sqlite"):
         kwargs.setdefault("connect_args", {"check_same_thread": False})
@@ -644,7 +643,6 @@ def new_session_factory(
         kwargs.setdefault("poolclass", StaticPool)
 
     engine = create_engine(url, **kwargs)
-    log.info(f"orm.new_session_factory: engine:{engine}")
     # enable pessimistic disconnect handling
     register_ping_connection(engine)
 
@@ -657,12 +655,3 @@ def new_session_factory(
     check_db_revision(engine, log)
 
     Base.metadata.create_all(engine)
-
-    # We set expire_on_commit=False, since we don't actually need
-    # SQLAlchemy to expire objects after committing - we don't expect
-    # concurrent runs of the hub talking to the same db. Turning
-    # this off gives us a major performance boost
-    session_factory = sessionmaker(
-        bind=engine, expire_on_commit=expire_on_commit, autoflush=True
-    )
-    return session_factory

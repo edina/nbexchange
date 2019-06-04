@@ -189,15 +189,13 @@ class NbExchange(Application):
             dbutil.upgrade_if_needed(self.db_url, log=self.log)
 
         try:
-            self.session_factory = orm.new_session_factory(
+            orm.setup_db(
                 self.db_url,
                 reset=self.reset_db,
                 echo=self.debug_db,
                 log=self.log,
-                expire_on_commit=True,
                 **self.db_kwargs,
             )
-            self.db = self.session_factory()
         except OperationalError as e:
             self.log.error(f"Failed to connect to db: {self.db_url}")
             self.log.debug(f"Database error was:", exc_info=True)

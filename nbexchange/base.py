@@ -164,7 +164,7 @@ class BaseHandler(SentryMixin, web.RequestHandler):
 
             model = {
                 "kind": "user",
-                "ormUser": user,
+                "id": user.id,
                 "name": user.name,
                 "org_id": user.org_id,
                 "current_course": current_course,

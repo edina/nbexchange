@@ -78,10 +78,10 @@ class Assignments(BaseHandler):
                     # For every action that is not "released" checked if the user id matches
                     if (
                         action.action != orm.AssignmentActions.released
-                        and this_user.get("ormUser").id != action.user_id
+                        and this_user.get("id") != action.user_id
                     ):
                         self.log.debug(
-                            f"ormuser: {this_user.get('ormUser').id} - actionUser {action.user_id}"
+                            f"ormuser: {this_user.get('id')} - actionUser {action.user_id}"
                         )
                         self.log.debug("Action does not belong to user, skip action")
                         continue
@@ -91,7 +91,9 @@ class Assignments(BaseHandler):
                             "course_id": assignment.course.course_code,
                             "status": action.action.value,  # currently called 'action' in our db
                             "path": action.location,
-                            "notebooks": [{"name": x.name} for x in assignment.notebooks],
+                            "notebooks": [
+                                {"name": x.name} for x in assignment.notebooks
+                            ],
                             "timestamp": action.timestamp.strftime(
                                 "%Y-%m-%d %H:%M:%S.%f %Z"
                             ),
@@ -201,10 +203,10 @@ class Assignment(BaseHandler):
                     raise Exception
 
                 self.log.info(
-                    f"Adding action {orm.AssignmentActions.fetched.value} for user {this_user['ormUser'].id} against assignment {assignment.id}"
+                    f"Adding action {orm.AssignmentActions.fetched.value} for user {this_user['id']} against assignment {assignment.id}"
                 )
                 action = orm.Action(
-                    user_id=this_user["ormUser"].id,
+                    user_id=this_user["id"],
                     assignment_id=assignment.id,
                     action=orm.AssignmentActions.fetched,
                     location=release_file,
@@ -302,7 +304,10 @@ class Assignment(BaseHandler):
                 # Write the uploaded file to the desired location
                 file_info = self.request.files["assignment"][0]
 
-                filename, content_type = file_info["filename"], file_info["content_type"]
+                filename, content_type = (
+                    file_info["filename"],
+                    file_info["content_type"],
+                )
                 note = f"Received file {filename}, of type {content_type}"
                 self.log.info(note)
                 extn = os.path.splitext(filename)[1]
@@ -339,10 +344,10 @@ class Assignment(BaseHandler):
             # Record the action.
             # Note we record the path to the files.
             self.log.info(
-                f"Adding action {orm.AssignmentActions.released.value} for user {this_user['ormUser'].id} against assignment {assignment.id}"
+                f"Adding action {orm.AssignmentActions.released.value} for user {this_user['id']} against assignment {assignment.id}"
             )
             action = orm.Action(
-                user_id=this_user["ormUser"].id,
+                user_id=this_user["id"],
                 assignment_id=assignment.id,
                 action=orm.AssignmentActions.released,
                 location=release_file,

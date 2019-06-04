@@ -214,10 +214,10 @@ class Collection(BaseHandler):
                         raise Exception
 
                     self.log.info(
-                        f"Adding action {orm.AssignmentActions.collected.value} for user {this_user['ormUser'].id} against assignment {assignment.id}"
+                        f"Adding action {orm.AssignmentActions.collected.value} for user {this_user['id']} against assignment {assignment.id}"
                     )
                     action = orm.Action(
-                        user_id=this_user["ormUser"].id,
+                        user_id=this_user["id"],
                         assignment_id=assignment.id,
                         action=orm.AssignmentActions.collected,
                         location=path,

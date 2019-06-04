@@ -1,6 +1,6 @@
 from nbexchange.handlers.assignment import Assignment, Assignments
 from nbexchange.handlers.collection import Collection, Collections
-from nbexchange.handlers.pages import EnvHandler, HomeHandler
+from nbexchange.handlers.pages import HomeHandler
 from nbexchange.handlers.submission import Submission, Submissions
 
 default_handlers = [
@@ -10,6 +10,5 @@ default_handlers = [
     Collections,
     Submission,
     Submissions,
-    # EnvHandler,
     HomeHandler,
 ]

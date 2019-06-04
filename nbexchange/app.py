@@ -224,8 +224,6 @@ class NbExchange(Application):
             hub_base_url=self.hub_base_url,
             hub_api_url=self.hub_api_url,
             hub_api_token=self.hub_api_token,
-            static_path=STATIC_FILES_DIR,
-            static_url_prefix=url_path_join(self.base_url, "static/"),
             version_hash=version_hash,
             xsrf_cookies=False,
             debug=self.debug,
@@ -245,7 +243,7 @@ class NbExchange(Application):
                 self.handlers.append((url_path_join(self.base_url, url), handler))
 
         self.handlers.append((r".*", base.Template404))
-        self.log.info("##### ALL HANDLERS" + str(self.handlers))
+        self.log.debug("##### ALL HANDLERS" + str(self.handlers))
 
     def init_tornado_application(self):
         self.tornado_application = web.Application(

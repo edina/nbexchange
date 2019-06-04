@@ -4,10 +4,7 @@ import pytest
 from mock import patch
 from nbexchange.handlers.base import BaseHandler
 from nbexchange.tests.test_handlers_base import BaseTestHandlers
-from nbexchange.tests.utils import (
-    async_requests,
-    user_kiz_instructor,
-)
+from nbexchange.tests.utils import async_requests, user_kiz_instructor
 
 logger = logging.getLogger(__file__)
 logger.setLevel(logging.ERROR)

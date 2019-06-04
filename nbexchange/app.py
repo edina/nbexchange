@@ -1,31 +1,23 @@
 import logging
 import os
 import sys
-
 from datetime import datetime
 from getpass import getuser
+
 from jupyterhub.log import CoroutineLogFormatter, log_request
-
-# from jupyterhub.services.auth import HubAuth
 from jupyterhub.utils import url_path_join
-
-import nbexchange.dbutil
-from nbexchange import dbutil, handlers
-from nbexchange.handlers import base
+from raven.contrib.tornado import AsyncSentryClient
 from sqlalchemy.exc import OperationalError
-from traitlets.config import Application, catch_config_error
-from traitlets import (
-    Bool,
-    Dict,
-    Integer,
-    Unicode,
-    default,
-)
 from tornado import web
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from tornado.log import app_log, access_log, gen_log
-from raven.contrib.tornado import AsyncSentryClient
+from traitlets import Bool, Dict, Integer, Unicode, default
+from traitlets.config import Application, catch_config_error
+
+import nbexchange.dbutil
+from nbexchange import dbutil, handlers
+from nbexchange.handlers import base
 
 ROOT = os.path.dirname(__file__)
 STATIC_FILES_DIR = os.path.join(ROOT, "static")

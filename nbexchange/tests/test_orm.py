@@ -19,7 +19,9 @@ from nbexchange.models.actions import AssignmentActions
 
 @pytest.fixture
 def course_quirk(db):
-    orm_thing = nbexchange.models.courses.Course.find_by_code(db, code="quirk", org_id=2)
+    orm_thing = nbexchange.models.courses.Course.find_by_code(
+        db, code="quirk", org_id=2
+    )
     if not orm_thing:
         orm_thing = nbexchange.models.courses.Course(
             org_id=2, course_code="quirk", course_title="Spirit of the Age"
@@ -31,7 +33,9 @@ def course_quirk(db):
 
 @pytest.fixture
 def course_strange(db):
-    orm_thing = nbexchange.models.courses.Course.find_by_code(db, code="Strange", org_id=1)
+    orm_thing = nbexchange.models.courses.Course.find_by_code(
+        db, code="Strange", org_id=1
+    )
     if not orm_thing:
         orm_thing = nbexchange.models.courses.Course(
             org_id=1, course_code="Strange", course_title="Damnation Alley"
@@ -43,7 +47,9 @@ def course_strange(db):
 
 @pytest.fixture
 def course_charm(db):
-    orm_thing = nbexchange.models.courses.Course.find_by_code(db, code="WEIRD", org_id=1)
+    orm_thing = nbexchange.models.courses.Course.find_by_code(
+        db, code="WEIRD", org_id=1
+    )
     if not orm_thing:
         orm_thing = nbexchange.models.courses.Course(
             org_id=1, course_code="WEIRD", course_title="Fable of a Failed Race"
@@ -97,7 +103,9 @@ def assignment_tree(db):
 def assignment_false(db):
     orm_thing = nbexchange.models.assignments.Assignment.find_by_code(db, "not used")
     if not orm_thing:
-        orm_thing = nbexchange.models.assignments.Assignment(assignment_code="not used", active=False)
+        orm_thing = nbexchange.models.assignments.Assignment(
+            assignment_code="not used", active=False
+        )
         db.add(orm_thing)
         db.commit()
     return orm_thing
@@ -155,11 +163,17 @@ def test_user_params(db, user_kaylee):
 
     # test for unbexpected param
     with pytest.raises(TypeError):
-        found_by_pk = nbexchange.models.users.User.find_by_pk(primary_key=user_kaylee.id, db=db)
+        found_by_pk = nbexchange.models.users.User.find_by_pk(
+            primary_key=user_kaylee.id, db=db
+        )
     with pytest.raises(TypeError):
-        found_by_name = nbexchange.models.users.User.find_by_name(username=user_kaylee.name, db=db)
+        found_by_name = nbexchange.models.users.User.find_by_name(
+            username=user_kaylee.name, db=db
+        )
     with pytest.raises(TypeError):
-        found_by_id = nbexchange.models.users.User.find_by_org(id=user_kaylee.org_id, db=db)
+        found_by_id = nbexchange.models.users.User.find_by_org(
+            id=user_kaylee.org_id, db=db
+        )
 
 
 def test_course(db, course_strange):
@@ -173,16 +187,24 @@ def test_course(db, course_strange):
 
     found_by_pk = nbexchange.models.courses.Course.find_by_pk(db, course_strange.id)
     assert found_by_pk.id == course_strange.id
-    found_by_pk = nbexchange.models.courses.Course.find_by_pk(db, course_strange.id + 10)
+    found_by_pk = nbexchange.models.courses.Course.find_by_pk(
+        db, course_strange.id + 10
+    )
     assert found_by_pk is None
 
     with pytest.raises(TypeError):
-        found_by_code = nbexchange.models.courses.Course.find_by_code(db, course_strange.course_code)
+        found_by_code = nbexchange.models.courses.Course.find_by_code(
+            db, course_strange.course_code
+        )
 
     with pytest.raises(ValueError):
-        found_by_code = nbexchange.models.courses.Course.find_by_code(db, None, course_strange.org_id)
+        found_by_code = nbexchange.models.courses.Course.find_by_code(
+            db, None, course_strange.org_id
+        )
     with pytest.raises(ValueError):
-        found_by_code = nbexchange.models.courses.Course.find_by_code(db, course_strange.course_code, None)
+        found_by_code = nbexchange.models.courses.Course.find_by_code(
+            db, course_strange.course_code, None
+        )
 
     found_by_code = nbexchange.models.courses.Course.find_by_code(
         db, course_strange.course_code, course_strange.org_id
@@ -190,10 +212,14 @@ def test_course(db, course_strange):
     assert found_by_code.course_code == course_strange.course_code
 
     # in real code, org_id is probably a string, so lets confirm that works
-    found_by_code = nbexchange.models.courses.Course.find_by_code(db, course_strange.course_code, "1")
+    found_by_code = nbexchange.models.courses.Course.find_by_code(
+        db, course_strange.course_code, "1"
+    )
     assert found_by_code.course_code == course_strange.course_code
 
-    found_by_code = nbexchange.models.courses.Course.find_by_code(db, "SANE", course_strange.org_id)
+    found_by_code = nbexchange.models.courses.Course.find_by_code(
+        db, "SANE", course_strange.org_id
+    )
     assert found_by_code is None
     found_by_code = nbexchange.models.courses.Course.find_by_code(
         db, course_strange.course_code, course_strange.org_id + 10
@@ -216,7 +242,9 @@ def test_course_params(db, course_strange):
 
     # test for unbexpected param
     with pytest.raises(TypeError):
-        found_by_pk = nbexchange.models.courses.Course.find_by_pk(primary_key=course_strange.id, db=db)
+        found_by_pk = nbexchange.models.courses.Course.find_by_pk(
+            primary_key=course_strange.id, db=db
+        )
     with pytest.raises(TypeError):
         found_by_code = nbexchange.models.courses.Course.find_by_code(
             course_code=course_strange.course_code, org_id=course_strange.org_id, db=db
@@ -226,7 +254,9 @@ def test_course_params(db, course_strange):
             code=course_strange.course_code, id=course_strange.org_id, db=db
         )
     with pytest.raises(TypeError):
-        found_by_org = nbexchange.models.courses.Course.find_by_org(id=course_strange.org_id, db=db)
+        found_by_org = nbexchange.models.courses.Course.find_by_org(
+            id=course_strange.org_id, db=db
+        )
 
 
 def test_multiple_courses(db, course_quirk, course_strange, course_charm):
@@ -247,9 +277,13 @@ def test_assignment(db, assignment_tree):
     with pytest.raises(TypeError):
         found_by_pk = nbexchange.models.assignments.Assignment.find_by_pk(db, "abc")
 
-    found_by_pk = nbexchange.models.assignments.Assignment.find_by_pk(db, assignment_tree.id)
+    found_by_pk = nbexchange.models.assignments.Assignment.find_by_pk(
+        db, assignment_tree.id
+    )
     assert found_by_pk.id == assignment_tree.id
-    found_by_pk = nbexchange.models.assignments.Assignment.find_by_pk(db, assignment_tree.id + 10)
+    found_by_pk = nbexchange.models.assignments.Assignment.find_by_pk(
+        db, assignment_tree.id + 10
+    )
     assert found_by_pk is None
 
     with pytest.raises(TypeError):
@@ -257,7 +291,9 @@ def test_assignment(db, assignment_tree):
             db, assignment_tree.assignment_code, "abc"
         )
 
-    found_by_code = nbexchange.models.assignments.Assignment.find_by_code(db, assignment_tree.assignment_code)
+    found_by_code = nbexchange.models.assignments.Assignment.find_by_code(
+        db, assignment_tree.assignment_code
+    )
     assert found_by_code.assignment_code == assignment_tree.assignment_code
     found_by_code = nbexchange.models.assignments.Assignment.find_by_code(db, "SANE")
     assert found_by_code is None
@@ -288,9 +324,13 @@ def test_subscription(db, course_strange, user_johaannes):
     with pytest.raises(TypeError):
         found_by_pk = nbexchange.models.subscriptions.Subscription.find_by_pk(db, "abc")
 
-    found_by_pk = nbexchange.models.subscriptions.Subscription.find_by_pk(db, orm_subscription.id)
+    found_by_pk = nbexchange.models.subscriptions.Subscription.find_by_pk(
+        db, orm_subscription.id
+    )
     assert found_by_pk.id == orm_subscription.id
-    found_by_pk = nbexchange.models.subscriptions.Subscription.find_by_pk(db, orm_subscription.id + 10)
+    found_by_pk = nbexchange.models.subscriptions.Subscription.find_by_pk(
+        db, orm_subscription.id + 10
+    )
     assert found_by_pk is None
 
     assert orm_subscription.course.course_title == "Damnation Alley"

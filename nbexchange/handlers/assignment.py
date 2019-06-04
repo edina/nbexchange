@@ -2,14 +2,15 @@ import os
 import time
 import uuid
 
+from sqlalchemy import desc
+from tornado import web, httputil
+
 import nbexchange.models.actions
 import nbexchange.models.assignments
 import nbexchange.models.courses
 import nbexchange.models.notebooks
-from nbexchange.handlers.base import BaseHandler, authenticated
-from tornado import web, httputil
-from sqlalchemy import desc
 from nbexchange.database import scoped_session
+from nbexchange.handlers.base import BaseHandler, authenticated
 
 """
 All URLs relative to /services/nbexchange

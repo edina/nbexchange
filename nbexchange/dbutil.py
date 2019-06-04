@@ -3,21 +3,20 @@
 import os
 import shutil
 import sys
-
 from contextlib import contextmanager
 from datetime import datetime
+from subprocess import check_call
+from tempfile import TemporaryDirectory
 
 import alembic.command
 import alembic.config
 from alembic.script import ScriptDirectory
+from sqlalchemy import create_engine, inspect, event, select, exc
 from sqlalchemy.interfaces import PoolListener
 from sqlalchemy.orm import object_session, interfaces, Session
 from sqlalchemy.pool import StaticPool
 
 from nbexchange.models import Base
-from sqlalchemy import create_engine, inspect, event, select, exc
-from subprocess import check_call
-from tempfile import TemporaryDirectory
 
 _here = os.path.abspath(os.path.dirname(__file__))
 

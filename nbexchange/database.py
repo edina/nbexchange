@@ -11,6 +11,7 @@ from contextlib import contextmanager
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+
 from nbexchange.models import Base
 
 engine = create_engine(os.environ.get("NBEX_DB_URL", "sqlite:///:memory:"))

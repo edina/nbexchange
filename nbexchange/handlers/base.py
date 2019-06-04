@@ -1,17 +1,17 @@
-import re
-import requests
 import functools
+import re
+from typing import Optional, Awaitable, Callable
+from urllib.parse import unquote, unquote_plus
+
+import requests
+from raven.contrib.tornado import SentryMixin
+from tornado import web
+from tornado.log import app_log
 
 import nbexchange.models.courses
 import nbexchange.models.subscriptions
 import nbexchange.models.users
-from tornado import web
-from tornado.log import app_log
-from raven.contrib.tornado import SentryMixin
-from urllib.parse import unquote, unquote_plus
 from nbexchange.database import scoped_session
-
-from typing import Optional, Awaitable, Callable
 
 
 def authenticated(

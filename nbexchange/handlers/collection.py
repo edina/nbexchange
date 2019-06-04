@@ -1,11 +1,12 @@
 import time
 
+from tornado import web, httputil
+
 import nbexchange.models.actions
 import nbexchange.models.assignments
 import nbexchange.models.courses
-from nbexchange.handlers.base import BaseHandler, authenticated
-from tornado import web, httputil
 from nbexchange.database import scoped_session
+from nbexchange.handlers.base import BaseHandler, authenticated
 
 """
 All URLs relative to /services/nbexchange
@@ -78,7 +79,10 @@ class Collections(BaseHandler):
                 self.log.debug(f"Assignment Actions: {assignment.actions}")
                 for action in assignment.actions:
                     # For every action that is not "released" checked if the user id matches
-                    if action.action == nbexchange.models.actions.AssignmentActions.submitted:
+                    if (
+                        action.action
+                        == nbexchange.models.actions.AssignmentActions.submitted
+                    ):
                         models.append(
                             {
                                 "assignment_id": assignment.assignment_code,

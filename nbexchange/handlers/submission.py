@@ -5,7 +5,7 @@ import uuid
 import nbexchange.models.actions
 import nbexchange.models.assignments
 import nbexchange.models.courses
-from nbexchange.base import BaseHandler, authenticated
+from nbexchange.handlers.base import BaseHandler, authenticated
 from tornado import web
 from nbexchange.database import scoped_session
 

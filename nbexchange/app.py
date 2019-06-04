@@ -10,7 +10,8 @@ from jupyterhub.log import CoroutineLogFormatter, log_request
 from jupyterhub.utils import url_path_join
 
 import nbexchange.dbutil
-from nbexchange import dbutil, base, handlers
+from nbexchange import dbutil, handlers
+from nbexchange.handlers import base
 from sqlalchemy.exc import OperationalError
 from traitlets.config import Application, catch_config_error
 from traitlets import (

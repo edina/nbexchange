@@ -1,17 +1,14 @@
-import json
 import logging
 import pytest
 import re
 import sys
 
 from mock import patch
-from nbexchange.app import NbExchange
-from nbexchange.base import BaseHandler
+from nbexchange.handlers.base import BaseHandler
 from nbexchange.tests.utils import (
     async_requests,
     get_files_dict,
     user_kiz_instructor,
-    user_brobbere_instructor,
     user_kiz_student,
     user_brobbere_student,
 )

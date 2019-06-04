@@ -6,7 +6,7 @@ import nbexchange.models.actions
 import nbexchange.models.assignments
 import nbexchange.models.courses
 import nbexchange.models.notebooks
-from nbexchange.base import BaseHandler, authenticated
+from nbexchange.handlers.base import BaseHandler, authenticated
 from tornado import web, httputil
 from sqlalchemy import desc
 from nbexchange.database import scoped_session

@@ -54,7 +54,7 @@ class Course(Base):
         Returns None if not found.
         """
         if log:
-            log.info(f"Course.find_by_code - code:{code} (org_id:{org_id})")
+            log.debug(f"Course.find_by_code - code:{code} (org_id:{org_id})")
         if code is None:
             raise ValueError(f"code needs to be defined")
         org_id = int(float(org_id)) if org_id else None

@@ -302,22 +302,22 @@ def test_collection7(app):
 
 # Confirm that multiple submissions are listed
 @pytest.mark.gen_test
-def test_post_assignment9(app):
+async def test_post_assignment9(app):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):
-        r = yield async_requests.post(  # release
+        r = await async_requests.post(  # release
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
             files=files,
         )
-        r = yield async_requests.get(  # fetch
+        r = await async_requests.get(  # fetch
             app.url + "/assignment?&course_id=course_2&assignment_id=assign_a"
         )
-        r = yield async_requests.post(  # submit
+        r = await async_requests.post(  # submit
             app.url + "/submission?course_id=course_2&assignment_id=assign_a",
             files=files,
         )
-        r = yield async_requests.post(  # submit
+        r = await async_requests.post(  # submit
             app.url + "/submission?course_id=course_2&assignment_id=assign_a",
             files=files,
         )

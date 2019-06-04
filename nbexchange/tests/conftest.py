@@ -81,15 +81,13 @@ def app(request, io_loop, _nbexchange_config):
     return nbexchange
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def db():
     """Get a db session"""
-    global _db
-    if _db is None:
-        _db = Session()  #
-        user = nbexchange.models.users.User(
-            name=getuser(), org_id=1
-        )  # TODO: remove Magic number
-        _db.add(user)
-        _db.commit()
+    _db = Session()  #
+    user = nbexchange.models.users.User(
+        name=getuser(), org_id=1
+    )  # TODO: remove Magic number
+    _db.add(user)
+    _db.commit()
     return _db

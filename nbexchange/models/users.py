@@ -53,7 +53,7 @@ class User(Base):
         Returns None if not found.
         """
         if log:
-            log.info(f"User.find_by_name - name:{name}")
+            log.debug(f"User.find_by_name - name:{name}")
         if name is None:
             raise ValueError(f"Name needs to be defined")
         return db.query(cls).filter(cls.name == name).first()

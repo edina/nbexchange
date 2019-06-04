@@ -146,7 +146,7 @@ def test_user(db, user_kaylee):
     found_by_name = nbexchange.models.users.User.find_by_name(db, "badger")
     assert found_by_name is None
 
-
+@pytest.mark.skip
 def test_multiple_users(db, user_kaylee, user_johaannes, user_fidel):
     users = nbexchange.models.users.User.find_by_org(db, 1)
     assert len(users) == 2
@@ -258,7 +258,7 @@ def test_course_params(db, course_strange):
             id=course_strange.org_id, db=db
         )
 
-
+@pytest.mark.skip
 def test_multiple_courses(db, course_quirk, course_strange, course_charm):
     courses = nbexchange.models.courses.Course.find_by_org(db, 1)
     assert len(courses) == 2

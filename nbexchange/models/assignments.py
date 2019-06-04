@@ -106,7 +106,7 @@ class Assignment(Base):
         Returns None if not found.
         """
         if log:
-            log.info(
+            log.debug(
                 f"Assignment.find_for_course - course_id:{course_id}, active:{active}, action:{action}"
             )
 

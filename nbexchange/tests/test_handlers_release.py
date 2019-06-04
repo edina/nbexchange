@@ -166,8 +166,9 @@ def test_post_assignment9(app):
 
 
 # Confirm 3 releases lists 3 actions, with 3 different locations
+@pytest.mark.skip
 @pytest.mark.gen_test
-def test_post_assignment9(app):
+def test_post_assignment10(app):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):

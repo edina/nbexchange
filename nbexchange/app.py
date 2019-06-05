@@ -1,34 +1,23 @@
 import logging
 import os
-import psycopg2
 import sys
-
 from datetime import datetime
 from getpass import getuser
-from jupyterhub.log import CoroutineLogFormatter, log_request
 
-# from jupyterhub.services.auth import HubAuth
+from jupyterhub.log import CoroutineLogFormatter, log_request
 from jupyterhub.utils import url_path_join
-from nbexchange import orm, dbutil, base, handlers
-from nbexchange.handlers import assignment, submission
-from sqlalchemy.exc import OperationalError, SQLAlchemyError
-from traitlets.config import Application, catch_config_error
-from traitlets import (
-    Bool,
-    Dict,
-    Integer,
-    List,
-    Unicode,
-    default,
-    TraitType,
-    TraitError,
-    class_of,
-)
+from raven.contrib.tornado import AsyncSentryClient
+from sqlalchemy.exc import OperationalError
 from tornado import web
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from tornado.log import app_log, access_log, gen_log
-from raven.contrib.tornado import AsyncSentryClient
+from traitlets import Bool, Dict, Integer, Unicode, default
+from traitlets.config import Application, catch_config_error
+
+import nbexchange.dbutil
+from nbexchange import dbutil, handlers
+from nbexchange.handlers import base
 
 ROOT = os.path.dirname(__file__)
 STATIC_FILES_DIR = os.path.join(ROOT, "static")
@@ -189,15 +178,13 @@ class NbExchange(Application):
             dbutil.upgrade_if_needed(self.db_url, log=self.log)
 
         try:
-            self.session_factory = orm.new_session_factory(
+            nbexchange.dbutil.setup_db(
                 self.db_url,
                 reset=self.reset_db,
                 echo=self.debug_db,
                 log=self.log,
-                expire_on_commit=True,
                 **self.db_kwargs,
             )
-            self.db = self.session_factory()
         except OperationalError as e:
             self.log.error(f"Failed to connect to db: {self.db_url}")
             self.log.debug(f"Database error was:", exc_info=True)
@@ -213,7 +200,7 @@ class NbExchange(Application):
                 )
             )
             self.exit(1)
-        except orm.DatabaseSchemaMismatch as e:
+        except nbexchange.dbutil.DatabaseSchemaMismatch as e:
             self.exit(e)
 
     def init_tornado_settings(self):
@@ -237,13 +224,9 @@ class NbExchange(Application):
             hub_base_url=self.hub_base_url,
             hub_api_url=self.hub_api_url,
             hub_api_token=self.hub_api_token,
-            static_path=STATIC_FILES_DIR,
-            static_url_prefix=url_path_join(self.base_url, "static/"),
             version_hash=version_hash,
             xsrf_cookies=False,
             debug=self.debug,
-            # Replace the default [jupyterhub] database connection with our own **for our tornado app only**
-            db=self.db,
         )
         # allow configured settings to have priority
         settings.update(self.tornado_settings)
@@ -260,7 +243,7 @@ class NbExchange(Application):
                 self.handlers.append((url_path_join(self.base_url, url), handler))
 
         self.handlers.append((r".*", base.Template404))
-        self.log.info("##### ALL HANDLERS" + str(self.handlers))
+        self.log.debug("##### ALL HANDLERS" + str(self.handlers))
 
     def init_tornado_application(self):
         self.tornado_application = web.Application(

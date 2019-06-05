@@ -3,13 +3,20 @@
 import os
 import shutil
 import sys
-
 from contextlib import contextmanager
 from datetime import datetime
-from nbexchange import orm
-from sqlalchemy import create_engine
 from subprocess import check_call
 from tempfile import TemporaryDirectory
+
+import alembic.command
+import alembic.config
+from alembic.script import ScriptDirectory
+from sqlalchemy import create_engine, inspect, event, select, exc
+from sqlalchemy.interfaces import PoolListener
+from sqlalchemy.orm import object_session, interfaces, Session
+from sqlalchemy.pool import StaticPool
+
+from nbexchange.models import Base
 
 _here = os.path.abspath(os.path.dirname(__file__))
 
@@ -109,8 +116,8 @@ def upgrade_if_needed(db_url, backup=True, log=None):
     engine = create_engine(db_url)
 
     try:
-        orm.check_db_revision(engine, log)
-    except orm.DatabaseSchemaMismatch:
+        check_db_revision(engine, log)
+    except DatabaseSchemaMismatch:
         # ignore mismatch error because that's what we are here for!
         pass
     else:
@@ -152,3 +159,199 @@ def main(args=None):
 
 if __name__ == "__main__":
     sys.exit(main())
+
+
+class DatabaseSchemaMismatch(Exception):
+    """Exception raised when the database schema version does not match
+
+    the current version of NbExchange.
+    """
+
+
+class ForeignKeysListener(PoolListener):
+    """Enable foreign keys on sqlite"""
+
+    def connect(self, dbapi_con, con_record):
+        dbapi_con.execute("pragma foreign_keys=ON")
+
+
+def _expire_relationship(target, relationship_prop):
+    """Expire relationship backrefs
+
+    used when an object with relationships is deleted
+    """
+
+    session = object_session(target)
+    # get peer objects to be expired
+    peers = getattr(target, relationship_prop.key)
+    if peers is None:
+        # no peer to clear
+        return
+    # many-to-many and one-to-many have a list of peers
+    # many-to-one has only one
+    if relationship_prop.direction is interfaces.MANYTOONE:
+        peers = [peers]
+    for obj in peers:
+        if inspect(obj).persistent:
+            session.expire(obj, [relationship_prop.back_populates])
+
+
+@event.listens_for(Session, "persistent_to_deleted")
+def _notify_deleted_relationships(session, obj):
+    """Expire relationships when an object becomes deleted
+
+    Needed to keep relationships up to date.
+    """
+    mapper = inspect(obj).mapper
+    for prop in mapper.relationships:
+        if prop.back_populates:
+            _expire_relationship(obj, prop)
+
+
+def register_ping_connection(engine):
+    """Check connections before using them.
+
+    Avoids database errors when using stale connections.nbexchange.sqlite
+
+    From SQLAlchemy docs on pessimistic disconnect handling:
+
+    https://docs.sqlalchemy.org/en/rel_1_1/core/pooling.html#disconnect-handling-pessimistic
+    """
+
+    @event.listens_for(engine, "engine_connect")
+    def ping_connection(connection, branch):
+        if branch:
+            # "branch" refers to a sub-connection of a connection,
+            # we don't want to bother pinging on these.
+            return
+
+        # turn off "close with result".  This flag is only used with
+        # "connectionless" execution, otherwise will be False in any case
+        save_should_close_with_result = connection.should_close_with_result
+        connection.should_close_with_result = False
+
+        try:
+            # run a SELECT 1.   use a core select() so that
+            # the SELECT of a scalar value without a table is
+            # appropriately formatted for the backend
+            connection.scalar(select([1]))
+        except exc.DBAPIError as err:
+            # catch SQLAlchemy's DBAPIError, which is a wrapper
+            # for the DBAPI's exception.  It includes a .connection_invalidated
+            # attribute which specifies if this connection is a "disconnect"
+            # condition, which is based on inspection of the original exception
+            # by the dialect in use.
+            if err.connection_invalidated:
+                # app_log.error("Database connection error, attempting to reconnect: %s", err)
+                # run the same SELECT again - the connection will re-validate
+                # itself and establish a new connection.  The disconnect detection
+                # here also causes the whole connection pool to be invalidated
+                # so that all stale connections are discarded.
+                connection.scalar(select([1]))
+            else:
+                raise
+        finally:
+            # restore "close with result"
+            connection.should_close_with_result = save_should_close_with_result
+
+
+def check_db_revision(engine, log=None):
+    """Check the NbExchange database revision
+
+    After calling this function, an alembic tag is guaranteed to be stored in the db.
+
+    - Checks the alembic tag and raises a ValueError if it's not the current revision
+    - If no tag is stored (Bug in Hub prior to 0.8),
+      guess revision based on db contents and tag the revision.
+    - Empty databases are tagged with the current revision
+    """
+
+    # Check database schema version
+    current_table_names = set(engine.table_names())
+    my_table_names = set(Base.metadata.tables.keys())
+
+    from nbexchange.dbutil import _temp_alembic_ini
+
+    with _temp_alembic_ini(engine.url) as ini:
+        cfg = alembic.config.Config(ini)
+        scripts = ScriptDirectory.from_config(cfg)
+        head = scripts.get_heads()[0]
+        base = scripts.get_base()
+
+        if not my_table_names.intersection(current_table_names):
+            # no tables have been created, stamp with current revision
+            log.info(f"Stamping empty database with alembic revision {head}")
+            alembic.command.stamp(cfg, head)
+            return
+
+    # check database schema version
+    # it should always be defined at this point
+    alembic_revision = engine.execute(
+        "SELECT version_num FROM alembic_version"
+    ).first()[0]
+    if alembic_revision == head:
+        log.debug(f"database schema version found: {alembic_revision}")
+        pass
+    else:
+        raise DatabaseSchemaMismatch(
+            f"Found database schema version {alembic_revision} != {head}. "
+            "Backup your database and run `jupyterhub upgrade-db`"
+            " to upgrade to the latest schema."
+        )
+
+
+def mysql_large_prefix_check(engine):
+    """Check mysql has innodb_large_prefix set"""
+    if not str(engine.url).startswith("mysql"):
+        return False
+    variables = dict(
+        engine.execute(
+            "show variables where variable_name like "
+            '"innodb_large_prefix" or '
+            'variable_name like "innodb_file_format";'
+        ).fetchall()
+    )
+    if (
+        variables["innodb_file_format"] == "Barracuda"
+        and variables["innodb_large_prefix"] == "ON"
+    ):
+        return True
+    else:
+        return False
+
+
+def add_row_format(base):
+    for t in base.metadata.tables.values():
+        t.dialect_kwargs["mysql_ROW_FORMAT"] = "DYNAMIC"
+
+
+def setup_db(url="sqlite:///:memory:", reset=False, log=None, **kwargs):
+    """Check database revision and create all models"""
+
+    log.info(f"dbutil.setup_db: db_url:{url}, reset:{reset}")
+    if url.startswith("sqlite"):
+        kwargs.setdefault("connect_args", {"check_same_thread": False})
+        listeners = kwargs.setdefault("listeners", [])
+        listeners.append(ForeignKeysListener())
+
+    elif url.startswith("mysql"):
+        kwargs.setdefault("pool_recycle", 60)
+
+    if url.endswith(":memory:"):
+        # If we're using an in-memory database, ensure that only one connection
+        # is ever created.
+        kwargs.setdefault("poolclass", StaticPool)
+
+    engine = create_engine(url, **kwargs)
+    # enable pessimistic disconnect handling
+    register_ping_connection(engine)
+
+    if reset:
+        Base.metadata.drop_all(engine)
+
+    if mysql_large_prefix_check(engine):  # if mysql is allows large indexes
+        add_row_format(Base)  # set format on the tables
+    # check the db revision (will raise, pointing to `upgrade-db` if version doesn't match)
+    check_db_revision(engine, log)
+
+    Base.metadata.create_all(engine)

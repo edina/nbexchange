@@ -1,15 +1,12 @@
-import datetime
-import os
-import re
 import time
-import uuid
 
-from dateutil.tz import gettz
-from nbexchange import orm
-from nbexchange.base import BaseHandler, authenticated
 from tornado import web, httputil
-from urllib.parse import quote_plus
-from urllib.request import urlopen
+
+import nbexchange.models.actions
+import nbexchange.models.assignments
+import nbexchange.models.courses
+from nbexchange.database import scoped_session
+from nbexchange.handlers.base import BaseHandler, authenticated
 
 """
 All URLs relative to /services/nbexchange
@@ -63,41 +60,45 @@ class Collections(BaseHandler):
             return
 
         # Find the course being referred to
-        course = orm.Course.find_by_code(
-            db=self.db, code=course_code, org_id=this_user["org_id"], log=self.log
-        )
-        if not course:
-            note = f"Course {course_code} does not exist"
-            self.log.info(note)
-            self.finish({"success": False, "note": note})
-            return
+        with scoped_session() as session:
+            course = nbexchange.models.courses.Course.find_by_code(
+                db=session, code=course_code, org_id=this_user["org_id"], log=self.log
+            )
+            if not course:
+                note = f"Course {course_code} does not exist"
+                self.log.info(note)
+                self.finish({"success": False, "note": note})
+                return
 
-        assignments = orm.Assignment.find_for_course(
-            db=self.db, course_id=course.id, log=self.log
-        )
+            assignments = nbexchange.models.assignments.Assignment.find_for_course(
+                db=session, course_id=course.id, log=self.log
+            )
 
-        for assignment in assignments:
-            self.log.debug(f"Assignment: {assignment}")
-            self.log.debug(f"Assignment Actions: {assignment.actions}")
-            for action in assignment.actions:
-                # For every action that is not "released" checked if the user id matches
-                if action.action == orm.AssignmentActions.submitted:
-                    models.append(
-                        {
-                            "assignment_id": assignment.assignment_code,
-                            "course_id": assignment.course.course_code,
-                            "status": action.action.value,  # currently called 'action' in our db
-                            "path": action.location,
-                            "notebooks": [
-                                {"name": x.name} for x in assignment.notebooks
-                            ],
-                            "timestamp": action.timestamp.strftime(
-                                "%Y-%m-%d %H:%M:%S.%f %Z"
-                            ),
-                        }
-                    )
+            for assignment in assignments:
+                self.log.debug(f"Assignment: {assignment}")
+                self.log.debug(f"Assignment Actions: {assignment.actions}")
+                for action in assignment.actions:
+                    # For every action that is not "released" checked if the user id matches
+                    if (
+                        action.action
+                        == nbexchange.models.actions.AssignmentActions.submitted
+                    ):
+                        models.append(
+                            {
+                                "assignment_id": assignment.assignment_code,
+                                "course_id": assignment.course.course_code,
+                                "status": action.action.value,  # currently called 'action' in our db
+                                "path": action.location,
+                                "notebooks": [
+                                    {"name": x.name} for x in assignment.notebooks
+                                ],
+                                "timestamp": action.timestamp.strftime(
+                                    "%Y-%m-%d %H:%M:%S.%f %Z"
+                                ),
+                            }
+                        )
 
-        self.log.debug(f"Assignments: {models}")
+            self.log.debug(f"Assignments: {models}")
         self.finish({"success": True, "value": models})
 
     # This has no authentiction wrapper, so false implication os service
@@ -157,72 +158,73 @@ class Collection(BaseHandler):
             return
 
         # Find the course being referred to
-        course = orm.Course.find_by_code(
-            db=self.db, code=course_code, org_id=this_user["org_id"], log=self.log
-        )
-        if not course:
-            note = f"Course {course_code} does not exist"
-            self.log.info(note)
-            self.finish({"success": False, "note": note})
-            return
+        with scoped_session() as session:
+            course = nbexchange.models.courses.Course.find_by_code(
+                db=session, code=course_code, org_id=this_user["org_id"], log=self.log
+            )
+            if not course:
+                note = f"Course {course_code} does not exist"
+                self.log.info(note)
+                self.finish({"success": False, "note": note})
+                return
 
-        # We need to key off the assignment, but we're actually looking
-        # for the action with a action and a specific path
-        assignments = orm.Assignment.find_for_course(
-            db=self.db,
-            course_id=course.id,
-            log=self.log,
-            action=orm.AssignmentActions.submitted.value,
-            path=path,
-        )
+            # We need to key off the assignment, but we're actually looking
+            # for the action with a action and a specific path
+            assignments = nbexchange.models.assignments.Assignment.find_for_course(
+                db=session,
+                course_id=course.id,
+                log=self.log,
+                action=nbexchange.models.actions.AssignmentActions.submitted.value,
+                path=path,
+            )
 
-        data = b""
-        self._headers = httputil.HTTPHeaders(
-            {
-                "Content-Type": "application/gzip",
-                "Date": httputil.format_timestamp(time.time()),
-            }
-        )
+            data = b""
+            self._headers = httputil.HTTPHeaders(
+                {
+                    "Content-Type": "application/gzip",
+                    "Date": httputil.format_timestamp(time.time()),
+                }
+            )
 
-        # I do not want to assume there will just be one.
-        for assignment in assignments:
-            self.log.debug(f"Assignment: {assignment}")
-            self.log.debug(f"Assignment Actions: {assignment.actions}")
+            # I do not want to assume there will just be one.
+            for assignment in assignments:
+                self.log.debug(f"Assignment: {assignment}")
+                self.log.debug(f"Assignment Actions: {assignment.actions}")
 
-            release_file = None
+                release_file = None
 
-            # We will get 0-n submit actions for this path (where n should be 1),
-            # we just want the last one
-            # Using a reversed for loop as there may be 0 elements :)
-            for action in assignment.actions:
-                release_file = action.location
-                break
+                # We will get 0-n submit actions for this path (where n should be 1),
+                # we just want the last one
+                # Using a reversed for loop as there may be 0 elements :)
+                for action in assignment.actions:
+                    release_file = action.location
+                    break
 
-            if release_file:
-                try:
-                    handle = open(path, "r+b")
-                    data = handle.read()
-                    handle.close
-                except Exception as e:  # TODO: exception handling
-                    self.log.warning(f"Error: {e}")  # TODO: improve error message
-                    self.log.info("Recovery failed")
+                if release_file:
+                    try:
+                        handle = open(path, "r+b")
+                        data = handle.read()
+                        handle.close
+                    except Exception as e:  # TODO: exception handling
+                        self.log.warning(f"Error: {e}")  # TODO: improve error message
+                        self.log.info("Recovery failed")
 
-                    # error 500??
-                    raise Exception
+                        # error 500??
+                        raise Exception
 
-                self.log.info(
-                    f"Adding action {orm.AssignmentActions.collected.value} for user {this_user['ormUser'].id} against assignment {assignment.id}"
-                )
-                action = orm.Action(
-                    user_id=this_user["ormUser"].id,
-                    assignment_id=assignment.id,
-                    action=orm.AssignmentActions.collected,
-                    location=path,
-                )
-                self.db.add(action)
-                self.db.commit()
-                self.log.info("record of fetch action committed")
-                self.finish(data)
+                    self.log.info(
+                        f"Adding action {nbexchange.models.actions.AssignmentActions.collected.value} for user {this_user['id']} against assignment {assignment.id}"
+                    )
+                    action = nbexchange.models.actions.Action(
+                        user_id=this_user["id"],
+                        assignment_id=assignment.id,
+                        action=nbexchange.models.actions.AssignmentActions.collected,
+                        location=path,
+                    )
+                    session.add(action)
+
+                    self.log.info("record of fetch action committed")
+                    self.finish(data)
 
     # This has no authentiction wrapper, so false implication os service
     def post(self):

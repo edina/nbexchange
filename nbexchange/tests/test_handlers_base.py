@@ -1,14 +1,7 @@
-import json
 import logging
-import os
 import pytest
 import re
-import sys
-from importlib import reload
-from mock import patch
-from nbexchange.app import NbExchange
-from nbexchange.base import BaseHandler
-from nbexchange.tests.utils import async_requests, tar_source
+from nbexchange.tests.utils import async_requests
 
 logger = logging.getLogger(__file__)
 logger.setLevel(logging.ERROR)

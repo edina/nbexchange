@@ -5,10 +5,10 @@ import requests
 import logging
 from getpass import getuser
 from tornado import ioloop
-from tornado.httpclient import AsyncHTTPClient
 from traitlets.config.loader import PyFileConfigLoader
 
-from nbexchange import orm
+import nbexchange.models.users
+from nbexchange.database import Session
 from nbexchange.app import NbExchange
 
 here = os.path.abspath(os.path.dirname(__file__))
@@ -81,13 +81,13 @@ def app(request, io_loop, _nbexchange_config):
     return nbexchange
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def db():
     """Get a db session"""
-    global _db
-    if _db is None:
-        _db = orm.new_session_factory("sqlite:///:memory:", log=logger)()
-        user = orm.User(name=getuser(), org_id=1)  # TODO: remove Magic number
-        _db.add(user)
-        _db.commit()
+    _db = Session()  #
+    user = nbexchange.models.users.User(
+        name=getuser(), org_id=1
+    )  # TODO: remove Magic number
+    _db.add(user)
+    _db.commit()
     return _db

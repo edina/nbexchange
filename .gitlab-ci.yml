@@ -33,7 +33,7 @@ build-container:
   image: docker:latest
   script:
     - docker pull $IMAGE_NAME:latest || true
-    - docker build --cache-from $IMAGE_NAME:latest --tag $IMAGE_NAME:$CI_PIPELINE_ID-$CI_COMMIT_REF_SLUG --tag $IMAGE_NAME:latest .
+    - docker build --build-arg=COMMIT=$(git rev-parse --short HEAD) --cache-from $IMAGE_NAME:latest --tag $IMAGE_NAME:$CI_PIPELINE_ID-$CI_COMMIT_REF_SLUG --tag $IMAGE_NAME:latest .
 
 release-branch:
   extends: .release-branch-template

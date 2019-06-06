@@ -23,10 +23,11 @@ VERSION = None
 # What packages are required for this module to be executed?
 REQUIRED = [
     "alembic",
+    "aiocontextvars==0.2.2",
     "tornado==6.0.2",
     "psycopg2",
     "jupyterhub==0.9.6",
-    "raven",
+    "sentry-sdk==0.9.0",
     "sqlalchemy==1.2.18",
 ]
 

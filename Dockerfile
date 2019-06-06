@@ -1,5 +1,8 @@
 FROM python:3.7
 
+ARG COMMIT=""
+LABEL commit=${COMMIT}
+
 WORKDIR /usr/src/app
 
 # Supervisord
@@ -13,6 +16,9 @@ COPY scripts /usr/src/app/scripts
 COPY nbexchange /usr/src/app/nbexchange
 # Install dependencies
 RUN pip install -r requirements.txt
+
+# Set commit sha as an environment variable
+ENV COMMIT_SHA=${COMMIT}
 
 EXPOSE 9000
 

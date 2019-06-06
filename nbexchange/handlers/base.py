@@ -4,7 +4,6 @@ from typing import Optional, Awaitable, Callable
 from urllib.parse import unquote, unquote_plus
 
 import requests
-from raven.contrib.tornado import SentryMixin
 from tornado import web
 from tornado.log import app_log
 
@@ -33,7 +32,7 @@ def authenticated(
     return wrapper
 
 
-class BaseHandler(SentryMixin, web.RequestHandler):
+class BaseHandler(web.RequestHandler):
     """An nbexchange base handler"""
 
     # register URL patterns

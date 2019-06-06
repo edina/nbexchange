@@ -6,7 +6,6 @@ from getpass import getuser
 
 from jupyterhub.log import CoroutineLogFormatter, log_request
 from jupyterhub.utils import url_path_join
-from raven.contrib.tornado import AsyncSentryClient
 from sqlalchemy.exc import OperationalError
 from tornado import web
 from tornado.httpserver import HTTPServer
@@ -14,6 +13,7 @@ from tornado.ioloop import IOLoop
 from tornado.log import app_log, access_log, gen_log
 from traitlets import Bool, Dict, Integer, Unicode, default
 from traitlets.config import Application, catch_config_error
+from sentry_sdk.integrations.tornado import TornadoIntegration
 
 import nbexchange.dbutil
 from nbexchange import dbutil, handlers
@@ -249,7 +249,12 @@ class NbExchange(Application):
         self.tornado_application = web.Application(
             self.handlers, **self.tornado_settings
         )
-        self.tornado_application.sentry_client = AsyncSentryClient(self.sentry_dsn)
+        if self.sentry_dsn:
+            sentry_sdk.init(
+                dsn=self.sentry_dsn,
+                integrations=[TornadoIntegration()],
+                release="nbexchange@" + os.environ.get("COMMIT_SHA", "untagged"),
+            )
 
     @catch_config_error
     def initialize(self, *args, **kwargs):

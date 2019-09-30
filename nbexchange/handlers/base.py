@@ -90,7 +90,7 @@ class BaseHandler(web.RequestHandler):
             return
 
         # TODO: this puts a hard restriction on the usernames having an underscore in them, which we do not want
-        # THe solution is to get the organisation id from the user state stored in jupyterhub instead of deriving it
+        # THe solution is to get the organisation id from the user state stored in django instead of deriving it
         # from the username
         try:
             org_id, name = hub_user.get("name").split(

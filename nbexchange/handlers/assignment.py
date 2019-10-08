@@ -40,7 +40,7 @@ class Assignments(BaseHandler):
         if not course_code:
             note = f"Assigment call requires a course id"
             self.log.info(note)
-            self.finish({"success": False, "note": note})
+            self.finish({"success": False, "note": note, "value": []})
             return
 
         # Who is my user?
@@ -52,7 +52,7 @@ class Assignments(BaseHandler):
         if course_code not in this_user["courses"]:
             note = f"User not subscribed to course {course_code}"
             self.log.info(note)
-            self.finish({"success": False, "note": note})
+            self.finish({"success": False, "note": note, "value": []})
             return
 
         # Find the course being referred to
@@ -63,7 +63,7 @@ class Assignments(BaseHandler):
             if not course:
                 note = f"Course {course_code} does not exist"
                 self.log.info(note)
-                self.finish({"success": False, "note": note})
+                self.finish({"success": False, "note": note, "value": []})
                 return
 
             assignments = nbexchange.models.assignments.Assignment.find_for_course(

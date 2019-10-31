@@ -284,8 +284,8 @@ def check_db_revision(engine, log=None):
             alembic.command.stamp(cfg, head)
             return
 
-        if 'alembic_version' not in current_table_names:
-            if 'action' in current_table_names:
+        if "alembic_version" not in current_table_names:
+            if "action" in current_table_names:
                 rev = head
             else:
                 rev = base

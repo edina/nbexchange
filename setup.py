@@ -25,7 +25,7 @@ REQUIRED = [
     "alembic",
     "aiocontextvars==0.2.2",
     "tornado==6.0.2",
-    "psycopg2",
+    "psycopg2-binary",
     "jupyterhub==0.9.6",
     "sentry-sdk==0.9.0",
     "sqlalchemy==1.2.18",

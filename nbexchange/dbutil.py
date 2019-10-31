@@ -284,6 +284,14 @@ def check_db_revision(engine, log=None):
             alembic.command.stamp(cfg, head)
             return
 
+        if 'alembic_version' not in current_table_names:
+            if 'action' in current_table_names:
+                rev = head
+            else:
+                rev = base
+            log.debug("Stamping database schema version %s", rev)
+            alembic.command.stamp(cfg, rev)
+
     # check database schema version
     # it should always be defined at this point
     alembic_revision = engine.execute(

@@ -22,4 +22,4 @@ class Notebook(Base):
     assignment_id = Column(Integer(), ForeignKey("assignment.id"))
 
     def __repr__(self):
-        return f"Notebook<{self.assignment.name}/{self.name}>"
+        return f"Notebook<{self.assignment.assignment_code}/{self.name}>"

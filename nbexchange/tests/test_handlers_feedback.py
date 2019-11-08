@@ -22,14 +22,12 @@ def test_feedback_authenticated_no_params(app):
         r = yield async_requests.get(app.url + "/feedback")
     response_data = r.json()
     assert response_data["success"] == False
-    assert (
-        response_data["note"]
-        == "Feedback call requires a notebook id."
-    )
+    assert response_data["note"] == "Feedback call requires a notebook id."
+
 
 @pytest.mark.gen_test
 def test_feedback_authenticated_with_params(app):
-    notebook_id = 'my_notebook'
+    notebook_id = "my_notebook"
 
     url = f"/feedback?notebook_id={notebook_id}"
 
@@ -39,6 +37,3 @@ def test_feedback_authenticated_with_params(app):
         r = yield async_requests.get(app.url + url)
 
     assert r.status_code == 404
-
-
-

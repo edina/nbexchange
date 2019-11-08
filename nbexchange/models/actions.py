@@ -15,6 +15,7 @@ class AssignmentActions(enum.Enum):
     removed = "removed"
     collected = "collected"
 
+
 class Action(Base):
     """ Table to map multiple users to a single assignment
 

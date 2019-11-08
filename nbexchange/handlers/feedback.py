@@ -52,8 +52,11 @@ class FeedbackHandler(BaseHandler):
         this_user = self.nbex_user
 
         with scoped_session() as session:
-            notebook = session.query(nbexchange.models.notebooks.Notebook).\
-                filter_by(id=notebook_id).first()
+            notebook = (
+                session.query(nbexchange.models.notebooks.Notebook)
+                .filter_by(id=notebook_id)
+                .first()
+            )
             self.log.info(notebook)
             self.log.debug(this_user)
 
@@ -61,8 +64,11 @@ class FeedbackHandler(BaseHandler):
                 raise web.HTTPError(404, "Could not find requested resource")
 
             # Find feedback for this notebook
-            res = session.query(nbexchange.models.feedback.Feedback).\
-                filter_by(notebook_id=notebook_id).first()
+            res = (
+                session.query(nbexchange.models.feedback.Feedback)
+                .filter_by(notebook_id=notebook_id)
+                .first()
+            )
 
             self.finish({"success": True, "feedback": str(res)})
 
@@ -77,7 +83,8 @@ class FeedbackHandler(BaseHandler):
         """
 
         [notebook_id, student_id, timestamp, checksum] = self.get_params(
-            ["notebook_id", "student_id", "timestamp", "checksum"])
+            ["notebook_id", "student_id", "timestamp", "checksum"]
+        )
 
         if not (notebook_id and student_id and timestamp and checksum):
             note = "Feedback call requires a notebook id, student id, checksum and timestamp."
@@ -88,8 +95,11 @@ class FeedbackHandler(BaseHandler):
         this_user = self.nbex_user
 
         with scoped_session() as session:
-            notebook = session.query(nbexchange.models.notebooks.Notebook).\
-                filter_by(id=notebook_id).first()
+            notebook = (
+                session.query(nbexchange.models.notebooks.Notebook)
+                .filter_by(id=notebook_id)
+                .first()
+            )
             # raise Exception(f"{res}")
             self.log.info(notebook)
             self.log.info(this_user)
@@ -97,8 +107,11 @@ class FeedbackHandler(BaseHandler):
             if not notebook:
                 raise web.HTTPError(404, "Could not find requested resource")
 
-            student = session.query(nbexchange.models.users.User).\
-                filter_by(id=student_id).first()
+            student = (
+                session.query(nbexchange.models.users.User)
+                .filter_by(id=student_id)
+                .first()
+            )
 
             if not student:
                 raise web.HTTPError(404, "Could not find requested resource")
@@ -116,9 +129,9 @@ class FeedbackHandler(BaseHandler):
                 # Grab the file
                 file_info = self.request.files["feedback"][0]
                 filename, content_type = (
-                        file_info["filename"],
-                        file_info["content_type"],
-                    )
+                    file_info["filename"],
+                    file_info["content_type"],
+                )
                 note = f"Received file {filename}, of type {content_type}"
                 self.log.info(note)
                 nbfile = tempfile.NamedTemporaryFile()
@@ -135,7 +148,8 @@ class FeedbackHandler(BaseHandler):
                 str(notebook.assignment.id),
                 notebook_id,
                 student_id,
-                timestamp)
+                timestamp,
+            )
 
             calc_checksum = notebook_hash(nbfile.name, unique_key)
             if calc_checksum != checksum:

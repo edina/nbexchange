@@ -89,23 +89,30 @@ class Assignments(BaseHandler):
 
                     for notebook in assignment.notebooks:
 
-                        if action.action == nbexchange.models.actions.AssignmentActions.submitted:
+                        if (
+                            action.action
+                            == nbexchange.models.actions.AssignmentActions.submitted
+                        ):
 
                             feedback_available = bool(
-                                session.query(
-                                    nbexchange.models.feedback.Feedback).filter_by(
-                                        notebook_id=notebook.id,
-                                        student_id=this_user.get("id")).first()
+                                session.query(nbexchange.models.feedback.Feedback)
+                                .filter_by(
+                                    notebook_id=notebook.id,
+                                    student_id=this_user.get("id"),
+                                )
+                                .first()
                             )
 
                         else:
                             feedback_available = False
 
-                        notebooks.append({
-                            "name": notebook.name,
-                            "has_exchange_feedback": feedback_available,
-                            "feedback_updated": False, # TODO: needs a real value
-                        })
+                        notebooks.append(
+                            {
+                                "name": notebook.name,
+                                "has_exchange_feedback": feedback_available,
+                                "feedback_updated": False,  # TODO: needs a real value
+                            }
+                        )
                     models.append(
                         {
                             "assignment_id": assignment.assignment_code,

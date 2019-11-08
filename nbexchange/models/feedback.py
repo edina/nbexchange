@@ -13,10 +13,14 @@ class Feedback(Base):
 
     notebook = None
     #: Unique id of :attr:`~nbexchange.orm.Notebook.assignment`
-    notebook_id = Column(Integer(), ForeignKey("notebook.id", ondelete="CASCADE"), index=True)
+    notebook_id = Column(
+        Integer(), ForeignKey("notebook.id", ondelete="CASCADE"), index=True
+    )
 
     instructor = None
-    instructor_id = Column(Integer, ForeignKey("user.id", ondelete="CASCADE"), index=True)
+    instructor_id = Column(
+        Integer, ForeignKey("user.id", ondelete="CASCADE"), index=True
+    )
 
     student = None
     student_id = Column(Integer, ForeignKey("user.id", ondelete="CASCADE"), index=True)
@@ -24,9 +28,7 @@ class Feedback(Base):
     location = Column(
         Unicode(200), nullable=True
     )  # Location for the file of this action
-    checksum = Column(
-        Unicode(200), nullable=True
-    )  # Checksum for the feedback file
+    checksum = Column(Unicode(200), nullable=True)  # Checksum for the feedback file
     timestamp = Column(Unicode(12), nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
 

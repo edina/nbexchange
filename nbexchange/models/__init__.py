@@ -15,3 +15,4 @@ from nbexchange.models.courses import Course
 from nbexchange.models.notebooks import Notebook
 from nbexchange.models.subscriptions import Subscription
 from nbexchange.models.users import User
+from nbexchange.models.feedback import Feedback

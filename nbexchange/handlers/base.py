@@ -38,6 +38,10 @@ class BaseHandler(web.RequestHandler):
     # register URL patterns
     urls = []
 
+    def __init__(self, application, request, **kwargs):
+        super(BaseHandler, self).__init__(application, request, **kwargs)
+        self.set_header("Content-type", "application/json")
+
     # Root location for data to be written to
     @property
     def base_storage_location(self):

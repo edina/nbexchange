@@ -27,8 +27,9 @@ REQUIRED = [
     "tornado",
     "psycopg2-binary",
     "jupyterhub",
-    "sentry-sdk",
-    "sqlalchemy",
+    "sentry-sdk==0.9.0",
+    "sqlalchemy==1.2.18",
+    "nbgrader==0.6.1"
 ]
 
 # What packages are required for testing?

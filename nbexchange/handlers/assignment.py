@@ -85,6 +85,27 @@ class Assignments(BaseHandler):
                         )
                         self.log.debug("Action does not belong to user, skip action")
                         continue
+                    notebooks = []
+
+                    for notebook in assignment.notebooks:
+
+                        if action.action == nbexchange.models.actions.AssignmentActions.submitted:
+
+                            feedback_available = bool(
+                                session.query(
+                                    nbexchange.models.feedback.Feedback).filter_by(
+                                        notebook_id=notebook.id,
+                                        student_id=this_user.get("id")).first()
+                            )
+
+                        else:
+                            feedback_available = False
+
+                        notebooks.append({
+                            "name": notebook.name,
+                            "has_exchange_feedback": feedback_available,
+                            "feedback_updated": False, # TODO: needs a real value
+                        })
                     models.append(
                         {
                             "assignment_id": assignment.assignment_code,
@@ -92,9 +113,7 @@ class Assignments(BaseHandler):
                             "course_id": assignment.course.course_code,
                             "status": action.action.value,  # currently called 'action' in our db
                             "path": action.location,
-                            "notebooks": [
-                                {"name": x.name} for x in assignment.notebooks
-                            ],
+                            "notebooks": notebooks,
                             "timestamp": action.timestamp.strftime(
                                 "%Y-%m-%d %H:%M:%S.%f %Z"
                             ),
@@ -321,7 +340,7 @@ class Assignment(BaseHandler):
                 os.makedirs(os.path.dirname(release_file), exist_ok=True)
                 handle = open(release_file, "w+b")
                 handle.write(file_info["body"])
-                handle.close
+                handle.close()
 
             except Exception as e:  # TODO: exception handling
                 self.log.warning(f"Error: {e}")  # TODO: improve error message

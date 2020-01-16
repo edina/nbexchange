@@ -1,36 +1,42 @@
+include:
+  - project: 'naas/Group-issues'
+    file: '/common-templates.yml'
+
 variables:
-#  TWINE_USERNAME: SECURE
-#  TWINE_PASSWORD: SECURE
-#  TWINE_REPOSITORY_URL: https://test.pypi.org/legacy/
+  IMAGE_NAME: $CI_REGISTRY_IMAGE  # Needs to match production.yml
 
 stages:
   - lint
   - test
-# - deploy
+  - build
+  - release-branch
+  - release-master
 
-#deploy:
-#  image: python:3.6
-#  stage: deploy
-#  script:
-#    - pip install -U twine setuptools
-#    - pip list
-#    - python setup.py sdist bdist_wheel
-#    - twine upload dist/*.tar.gz
-#    - twine upload dist/*.whl
-#  only:
-#    - /^v\d+\.\d+\.\d+([abc]\d*)?$/  # PEP-440 compliant version (tags)]
 lint:
-  image: python:3.6
+  image: python:3.7
   stage: lint
   script:
     - pip install black
     - black --check nbexchange
 
 test:
-  image: python:3.6
+  image: python:3.7
   stage: test
   script:
     - python setup.py test
   artifacts:
     reports:
       junit: pytest-results.xml
+
+build-container:
+  stage: build
+  image: docker:latest
+  script:
+    - docker pull $IMAGE_NAME:latest || true
+    - docker build --build-arg=COMMIT=$(git rev-parse --short HEAD) --cache-from $IMAGE_NAME:latest --tag $IMAGE_NAME:$CI_PIPELINE_ID-$CI_COMMIT_REF_SLUG --tag $IMAGE_NAME:latest .
+
+release-branch:
+  extends: .release-branch-template
+
+release-master:
+  extends: .release-master-template

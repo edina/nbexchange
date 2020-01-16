@@ -1,15 +1,12 @@
-import datetime
-import os
-import re
 import time
-import uuid
 
-from dateutil.tz import gettz
-from nbexchange import orm
-from nbexchange.base import BaseHandler
 from tornado import web, httputil
-from urllib.parse import quote_plus
-from urllib.request import urlopen
+
+import nbexchange.models.actions
+import nbexchange.models.assignments
+import nbexchange.models.courses
+from nbexchange.database import scoped_session
+from nbexchange.handlers.base import BaseHandler, authenticated
 
 """
 All URLs relative to /services/nbexchange
@@ -30,21 +27,18 @@ class Collections(BaseHandler):
 
     urls = ["collections"]
 
-    @web.authenticated
+    @authenticated
     def get(self):
 
         models = []
 
         [course_code, assignment_code] = self.get_params(["course_id", "assignment_id"])
 
-        if not course_code:
-            note = "collections call requires a course id"
+        if not (course_code and assignment_code):
+            note = "Collections call requires both a course code and an assignment code"
             self.log.info(note)
-            self.write({"success": False, "value": models, "note": note})
-        if not assignment_code:
-            note = "collections call requires an assignment id"
-            self.log.info(note)
-            self.write({"success": False, "value": models, "note": note})
+            self.finish({"success": False, "note": note})
+            return
 
         # Who is my user?
         this_user = self.nbex_user
@@ -53,53 +47,63 @@ class Collections(BaseHandler):
         self.log.debug(f"Course: {course_code}")
         # Is our user subscribed to this course?
         if course_code not in this_user["courses"]:
-            note = (
-                f"User {this_user.get('name')} not subscribed to course {course_code}"
-            )
+            note = f"User not subscribed to course {course_code}"
             self.log.info(note)
-            self.write({"success": False, "value": models, "note": note})
-        if not "instructor" in map(str.casefold, this_user["courses"][course_code]):
-            # if not "instructor" in this_user["courses"][course_code]:
+            self.finish({"success": False, "note": note})
+            return
+        if (
+            not "instructor" == this_user["current_role"].casefold()
+        ):  # we may need to revisit this
             note = f"User not an instructor to course {course_code}"
             self.log.info(note)
-            self.write({"success": False, "note": note})
+            self.finish({"success": False, "note": note})
+            return
 
         # Find the course being referred to
-        course = orm.Course.find_by_code(
-            db=self.db, code=course_code, org_id=this_user["org_id"], log=self.log
-        )
-        if not course:
-            note = f"Course {course_code} does not exist"
-            self.log.info(note)
-            self.write({"success": False, "value": models, "note": note})
+        with scoped_session() as session:
+            course = nbexchange.models.courses.Course.find_by_code(
+                db=session, code=course_code, org_id=this_user["org_id"], log=self.log
+            )
+            if not course:
+                note = f"Course {course_code} does not exist"
+                self.log.info(note)
+                self.finish({"success": False, "note": note})
+                return
 
-        assignments = orm.Assignment.find_for_course(
-            db=self.db, course_id=course.id, log=self.log
-        )
+            assignments = nbexchange.models.assignments.Assignment.find_for_course(
+                db=session, course_id=course.id, log=self.log
+            )
 
-        for assignment in assignments:
-            self.log.debug(f"Assignment: {assignment}")
-            self.log.debug(f"Assignment Actions: {assignment.actions}")
-            for action in assignment.actions:
-                # For every action that is not "released" checked if the user id matches
-                if action.action == orm.AssignmentActions.submitted:
-                    models.append(
-                        {
-                            "assignment_id": assignment.assignment_code,
-                            "course_id": assignment.course.course_code,
-                            "status": action.action.value,  # currently called 'action' in our db
-                            "path": action.location,
-                            "notebooks": [
-                                {"name": x.name} for x in assignment.notebooks
-                            ],
-                            "timestamp": action.timestamp.strftime(
-                                "%Y-%m-%d %H:%M:%S.%f %Z"
-                            ),
-                        }
-                    )
+            for assignment in assignments:
+                self.log.debug(f"Assignment: {assignment}")
+                self.log.debug(f"Assignment Actions: {assignment.actions}")
+                for action in assignment.actions:
+                    # For every action that is not "released" checked if the user id matches
+                    if (
+                        action.action
+                        == nbexchange.models.actions.AssignmentActions.submitted
+                    ):
+                        models.append(
+                            {
+                                "assignment_id": assignment.assignment_code,
+                                "course_id": assignment.course.course_code,
+                                "status": action.action.value,  # currently called 'action' in our db
+                                "path": action.location,
+                                "notebooks": [
+                                    {"name": x.name} for x in assignment.notebooks
+                                ],
+                                "timestamp": action.timestamp.strftime(
+                                    "%Y-%m-%d %H:%M:%S.%f %Z"
+                                ),
+                            }
+                        )
 
-        self.log.debug(f"Assignments: {models}")
-        self.write({"success": True, "value": models})
+            self.log.debug(f"Assignments: {models}")
+        self.finish({"success": True, "value": models})
+
+    # This has no authentiction wrapper, so false implication os service
+    def post(self):
+        raise web.HTTPError(501)
 
 
 class Collection(BaseHandler):
@@ -115,7 +119,7 @@ class Collection(BaseHandler):
 
     urls = ["collection"]
 
-    @web.authenticated
+    @authenticated
     def get(self):
 
         models = []
@@ -124,18 +128,13 @@ class Collection(BaseHandler):
             ["course_id", "assignment_id", "path"]
         )
 
-        if not course_code:
-            note = f"collection call requires a course id"
+        if not (course_code and assignment_code and path):
+            note = (
+                "Collection call requires a course code, an assignment code, and a path"
+            )
             self.log.info(note)
-            self.write({"success": False, "value": models, "note": note})
-        if not assignment_code:
-            note = f"collection call requires an assignment id"
-            self.log.info(note)
-            self.write({"success": False, "value": models, "note": note})
-        if not path:
-            note = f"collection call requires a path"
-            self.log.info(note)
-            self.write({"success": False, "value": models, "note": note})
+            self.finish({"success": False, "note": note})
+            return
 
         # Who is my user?
         this_user = self.nbex_user
@@ -144,41 +143,64 @@ class Collection(BaseHandler):
         self.log.debug(f"Course: {course_code}")
         # Is our user subscribed to this course?
         if course_code not in this_user["courses"]:
-            note = (
-                f"User {this_user.get('name')} not subscribed to course {course_code}"
-            )
+            note = f"User not subscribed to course {course_code}"
             self.log.info(note)
-            self.write({"success": False, "value": models, "note": note})
-        if not "instructor" in map(str.casefold, this_user["courses"][course_code]):
-            # if not "instructor" in this_user["courses"][course_code]:
+            self.finish({"success": False, "note": note})
+            return
+        self.log.info(f"user: {this_user}")
+
+        if (
+            not "instructor" == this_user["current_role"].casefold()
+        ):  # we may need to revisit this
             note = f"User not an instructor to course {course_code}"
             self.log.info(note)
-            self.write({"success": False, "note": note})
+            self.finish({"success": False, "note": note})
+            return
 
         # Find the course being referred to
-        course = orm.Course.find_by_code(
-            db=self.db, code=course_code, org_id=this_user["org_id"], log=self.log
-        )
-        if not course:
-            note = f"Course {course_code} does not exist"
-            self.log.info(note)
-            self.write({"success": False, "value": models, "note": note})
+        with scoped_session() as session:
+            course = nbexchange.models.courses.Course.find_by_code(
+                db=session, code=course_code, org_id=this_user["org_id"], log=self.log
+            )
+            if not course:
+                note = f"Course {course_code} does not exist"
+                self.log.info(note)
+                self.finish({"success": False, "note": note})
+                return
 
-        assignments = orm.Assignment.find_for_course(
-            db=self.db, course_id=course.id, log=self.log
-        )
+            # We need to key off the assignment, but we're actually looking
+            # for the action with a action and a specific path
+            assignments = nbexchange.models.assignments.Assignment.find_for_course(
+                db=session,
+                course_id=course.id,
+                log=self.log,
+                action=nbexchange.models.actions.AssignmentActions.submitted.value,
+                path=path,
+            )
 
-        data = b""
-        for assignment in assignments:
-            self.log.debug(f"Assignment: {assignment}")
-            self.log.debug(f"Assignment Actions: {assignment.actions}")
-            for action in assignment.actions:
-                # the path should be unique, but lets just double-check its "submitted" too
-                if (
-                    action.action == orm.AssignmentActions.submitted
-                    and action.location == path
-                ):
+            data = b""
+            self._headers = httputil.HTTPHeaders(
+                {
+                    "Content-Type": "application/gzip",
+                    "Date": httputil.format_timestamp(time.time()),
+                }
+            )
 
+            # I do not want to assume there will just be one.
+            for assignment in assignments:
+                self.log.debug(f"Assignment: {assignment}")
+                self.log.debug(f"Assignment Actions: {assignment.actions}")
+
+                release_file = None
+
+                # We will get 0-n submit actions for this path (where n should be 1),
+                # we just want the last one
+                # Using a reversed for loop as there may be 0 elements :)
+                for action in assignment.actions:
+                    release_file = action.location
+                    break
+
+                if release_file:
                     try:
                         handle = open(path, "r+b")
                         data = handle.read()
@@ -189,4 +211,21 @@ class Collection(BaseHandler):
 
                         # error 500??
                         raise Exception
-        self.write(data)
+
+                    self.log.info(
+                        f"Adding action {nbexchange.models.actions.AssignmentActions.collected.value} for user {this_user['id']} against assignment {assignment.id}"
+                    )
+                    action = nbexchange.models.actions.Action(
+                        user_id=this_user["id"],
+                        assignment_id=assignment.id,
+                        action=nbexchange.models.actions.AssignmentActions.collected,
+                        location=path,
+                    )
+                    session.add(action)
+
+                    self.log.info("record of fetch action committed")
+                    self.finish(data)
+
+    # This has no authentiction wrapper, so false implication os service
+    def post(self):
+        raise web.HTTPError(501)

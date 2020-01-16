@@ -1,8 +1,86 @@
 # async-request utility from jupyterhub.tests.utils v0.8.1
 # used under BSD license
+import glob
+import io
+import json
+import requests
+import sys
 
 from concurrent.futures import ThreadPoolExecutor
-import requests
+from functools import partial
+from urllib.parse import urljoin
+
+user_kiz = {"name": "1_kiz"}
+user_bert = {"name": "1_bert"}
+
+user_kiz_instructor = {
+    "name": "1_kiz",
+    "course_id": "course_2",
+    "course_role": "Instructor",
+    "course_title": "A title",
+}
+
+user_kiz_student = {
+    "name": "1_kiz",
+    "course_id": "course_2",
+    "course_role": "Student",
+    "course_title": "A title",
+}
+
+user_brobbere_instructor = {
+    "name": "1_brobbere",
+    "course_id": "course_2",
+    "course_role": "Instructor",
+    "course_title": "A title",
+}
+
+user_brobbere_student = {
+    "name": "1_brobbere",
+    "course_id": "course_2",
+    "course_role": "Student",
+}
+
+
+def tar_source(filename):
+
+    import tarfile
+
+    tar_file = io.BytesIO()
+
+    with tarfile.open(fileobj=tar_file, mode="w:gz") as tar_handle:
+        tar_handle.add(filename, arcname=".")
+    tar_file.seek(0)
+    return tar_file.read()
+
+
+def api_request(self, url, method="GET", *args, **kwargs):
+
+    headers = {}
+
+    if method == "GET":
+        get_req = partial(requests.get, url, headers=headers)
+        return get_req(*args, **kwargs)
+    elif method == "POST":
+        post_req = partial(requests.post, url, headers=headers)
+        return post_req(*args, **kwargs)
+    elif method == "DELETE":
+        delete_req = partial(requests.delete, url, headers=headers)
+        return delete_req(*args, **kwargs)
+    else:
+        raise NotImplementedError(f"HTTP Method {method} is not implemented")
+
+
+def get_files_dict(filename):
+    import tarfile
+
+    tar_file = io.BytesIO()
+
+    with tarfile.open(fileobj=tar_file, mode="w:gz") as tar_handle:
+        tar_handle.add(filename, arcname=".")
+    tar_file.seek(0)
+    tar_file = tar_file.read()
+    files = {"assignment": ("assignment.tar.gz", tar_file)}
+    return files
 
 
 class _AsyncRequests:

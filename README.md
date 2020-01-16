@@ -15,11 +15,11 @@ A Jupyterhub service that replaces the nbgrader Exchange.
         - [Collection](#collection)
     - [Configuration](#configuration)
     - [Deployment](#deployment)
-        - [Local building](#local-building)
 - [Local Testing](#local-testing)
-    - [Stage 1 - Have the code locally](#stage-1---have-the-code-locally)
-    - [Stage 2 - installing from GitLab](#stage-2---installing-from-gitlab)
-    - [Stage 3 - Is there a Notebook Client?](#stage-3---is-there-a-notebook-client)
+    - [Local database](#local-database)
+    - [Local building](#local-building)
+    - [The Simple Development Cycle](#the-simple-development-cycle)
+    - [The Notebook Client?](#the-notebook-client)
 - [Cluster testing](#cluster-testing)
 - [Accepting a Merge Request](#accepting-a-merge-request)
 
@@ -102,34 +102,27 @@ The configuration for the hub service is part of `<ENV>_config` in `kubenetes_de
 
 ## Deployment
 
-The code is built into `k8s-hub`.
-
-### Local building
-
-The code can be tested in `dummy-jupyterhub`
+NBExchange is a Jupyterhub _service_, so `k8s-hub` installs it, and therefore deployed via `kubernetes-deployment`
 
 # Local Testing
 
-In the first instance, use the [`dummy-jupyterhub`](https://gitlab.edina.ac.uk/naas/dummy-jupyterhub) and it's very default notebook.
+## Local database
 
-## Stage 1 - Have the code locally
+The default, if you don't change it, database for nbexchange is an in-memory sqlite database.
 
-Start with the code locally, then move it to it's own repo (as documetned in `dummy-jupyterhub`)
+This is almost certainly **NOT** what you actually want to use.
 
-## Stage 2 - installing from GitLab
+The the `NBEX_DB_URL` environment variable to set to something else (eg `NBEX_DB_URL = sqlite:///my_exchange_db.sqlite` or `NBEX_DB_URL = postgresql://user:pass@some_host:5432/my_db` )
 
-Once the main editing of the code is done, we need to add the code to GitLab.
+## Local building
 
-Confirm you can install the extension from gitlab:
+The code can be tested in `dummy-jupyterhub` - see the [Changing how plugins/extensions are installed](https://gitlab.edina.ac.uk/naas/dummy-jupyterhub/tree/configurable_nbexchange#changing-how-pluginsextensions-are-installed) section.
 
-    RUN pip install -e git+https://gitlab+<token-username>:<token-password>@gitlab.edina.ac.uk/naas/my_extension@my_branch#egg=nbgrader
+## The Simple Development Cycle
 
-This will require 
+Using [`dummy-jupyterhub`](https://gitlab.edina.ac.uk/naas/dummy-jupyterhub) and it's very default notebook, you can ensure the code installs & performs as expected.
 
-1. A `setup.py` file, possibly more
-1. A Deploy Token (GitLab: `Settings` -> `Repository` -> `Deploy Tokens`)
-
-## Stage 3 - Is there a Notebook Client?
+## The Notebook Client?
 
 Once the extension installs from gitlab, try installing the client part into the `standard-notebook` (this will test that there are no spurious interactions with existing features) - do not commit or deploy the notebook at this time
 

@@ -1,13 +1,6 @@
 import os
-from nbexchange.base import BaseHandler
+from nbexchange.handlers.base import BaseHandler
 from nbexchange.__version__ import __version__
-
-
-class EnvHandler(BaseHandler):
-    urls = ["/env"]
-
-    def get(self):
-        self.finish(self.render_template("env.html", env=os.environ))
 
 
 class HomeHandler(BaseHandler):
@@ -15,4 +8,4 @@ class HomeHandler(BaseHandler):
 
     def get(self):
         self.log.info(f"NbExchange {__version__}")
-        self.write(f"NbExchange {__version__}")
+        self.finish(f"NbExchange {__version__}")

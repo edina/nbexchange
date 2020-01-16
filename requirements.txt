@@ -1,3 +1,4 @@
+wheel
 alembic
 datetime
 jinja2
@@ -6,3 +7,8 @@ raven
 sqlalchemy
 tornado==5.1.1
 traitlets
+nbgrader
+notebook
+selenium
+gevent
+bs4

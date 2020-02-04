@@ -43,15 +43,6 @@ def _nbexchange_config():
     """
     cfg = PyFileConfigLoader(testing_config).load_config()
 
-    # check if Hub is running and ready
-    try:
-        requests.get(cfg.NbExchange.hub_base_url, timeout=5, allow_redirects=False)
-    except Exception as e:
-        print(f"JupyterHub not available at {cfg.NbExchange.hub_base_url}: {e}")
-        cfg.NbExchange.hub_url = ""
-    else:
-        print(f"JupyterHub available at {cfg.NbExchange.hub_base_url}")
-
     return cfg
 
 

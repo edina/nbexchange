@@ -77,9 +77,6 @@ class NbExchange(Application):
 
     base_url = os.environ.get("JUPYTERHUB_SERVICE_PREFIX", "/services/nbexchange/")
     base_storage_location = os.environ.get("NBEX_BASE_STORE", "/tmp/courses")
-    hub_api_url = os.environ.get("JUPYTERHUB_API_URL", "http://127.0.0.1:8081/hub/api/")
-    hub_api_token = os.environ.get("JUPYTERHUB_API_TOKEN", "")
-    hub_base_url = os.environ.get("JUPYTERHUB_BASE_URL", "http://127.0.0.1:8000/")
     naas_url = os.environ.get("NAAS_URL", "https://127.0.0.1:8080")
     debug = bool(int(os.environ.get("DEBUG", 0)))
 
@@ -221,16 +218,12 @@ class NbExchange(Application):
             base_url=self.base_url,
             base_storage_location=self.base_storage_location,
             naas_url=self.naas_url,
-            hub_base_url=self.hub_base_url,
-            hub_api_url=self.hub_api_url,
-            hub_api_token=self.hub_api_token,
             version_hash=version_hash,
             xsrf_cookies=False,
             debug=self.debug,
         )
         # allow configured settings to have priority
         settings.update(self.tornado_settings)
-        self.log.info(os.environ.get("JUPYTERHUB_API_URL"))
         self.log.info(settings)
         self.tornado_settings = settings
 

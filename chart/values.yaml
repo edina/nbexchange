@@ -11,9 +11,6 @@ image:
 
 environment:
   NBEX_DB_URL: ""
-  JUPYTERHUB_API_URL: http://hub:8081/hub/api/
-  JUPYTERHUB_API_TOKEN: "fake token"
-  JUPYTERHUB_BASE_URL: http://hub:8000/
   NAAS_URL: "https://noteable-dev.edina.ac.uk"
   SENTRY_DSN: ""
 

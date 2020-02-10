@@ -11,8 +11,8 @@ from urllib.parse import quote_plus
 
 import nbgrader.exchange.abc as abc
 
-class ExchangeFetchAssignment(abc.ExchangeFetchAssignment, Exchange):
 
+class ExchangeFetchAssignment(abc.ExchangeFetchAssignment, Exchange):
     path_includes_course = Bool(
         True, help="Whether assigments are 'fetched' into course-specific trees"
     ).tag(config=True)
@@ -23,11 +23,11 @@ class ExchangeFetchAssignment(abc.ExchangeFetchAssignment, Exchange):
                 "Use ExchangeFetchAssignment in config, not ExchangeFetch. Outdated config:\n%s",
                 '\n'.join(
                     'ExchangeFetch.{key} = {value!r}'.format(key=key, value=value)
-                    for key, value in cfg.ExchangeFetchAssignment.items()
+                    for key, value in cfg.ExchangeFetch.items()
                 )
             )
             cfg.ExchangeFetchAssignment.merge(cfg.ExchangeFetch)
-            del cfg.ExchangeFetchAssignment
+            del cfg.ExchangeFetch
 
         super(ExchangeFetchAssignment, self)._load_config(cfg, **kwargs)
 
@@ -56,7 +56,7 @@ class ExchangeFetchAssignment(abc.ExchangeFetchAssignment, Exchange):
             root = os.path.join(self.course_id, self.coursedir.assignment_id)
         else:
             root = self.coursedir.assignment_id
-        self.dest_path = os.path.abspath(os.path.join(".", root))
+        self.dest_path = os.path.abspath(os.path.join("", root))
         if os.path.isdir(self.dest_path) and not self.replace_missing_files:
             self.fail(
                 f"You already have a copy of the assignment in this directory: {root}"

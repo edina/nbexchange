@@ -8,10 +8,13 @@ from .exchange import Exchange
 from traitlets import Bool, Unicode
 from urllib.parse import quote_plus
 
+
 # "outbound" is files released by instructors (.... but there may be local copies!)
 # "inbound" is files submitted by students (on external service)
 # "cached" is files submitted by students & collected by instructors (so on local disk)
 class ExchangeList(abc.ExchangeList, Exchange):
+    def do_copy(self, src, dest):
+        pass
 
     fetched_root = Unicode('', help="Root location for files to be fetched into")
 
@@ -141,13 +144,13 @@ class ExchangeList(abc.ExchangeList, Exchange):
 
             # Only keep a fetched assignment directory is on disk.
             # Keep only one fetched per assignment_id - any will do
-            if ( assignment.get("status") == "fetched"
-                and
-                os.path.isdir(assignment_directory) ):
-                    held_assignments["fetched"][
-                        assignment.get("assignment_id")
-                    ] = assignment
-                    continue
+            if (assignment.get("status") == "fetched"
+                    and
+                    os.path.isdir(assignment_directory)):
+                held_assignments["fetched"][
+                    assignment.get("assignment_id")
+                ] = assignment
+                continue
 
             # filter out all the released items:
             if assignment.get("status") == "released":
@@ -155,9 +158,9 @@ class ExchangeList(abc.ExchangeList, Exchange):
                 #  - If the user has "fetched" the assignment, and the asignment directory is on disk
                 #    ... don't keep it
                 #  - otherwise keep the latest one
-                if ( assignment.get("assignment_id") in self.seen_assignments["fetched"]
-                    and
-                    os.path.isdir(assignment_directory) ):
+                if (assignment.get("assignment_id") in self.seen_assignments["fetched"]
+                        and
+                        os.path.isdir(assignment_directory)):
                     continue
                 else:
                     latest = held_assignments["released"].get(
@@ -175,13 +178,13 @@ class ExchangeList(abc.ExchangeList, Exchange):
                 if assignment['notebooks']:
                     has_local_feedback = all(
                         [nb['has_local_feedback'] for nb in assignment['notebooks']]
-                        )
+                    )
                     has_exchange_feedback = all(
                         [nb['has_exchange_feedback'] for nb in assignment['notebooks']]
-                        )
+                    )
                     feedback_updated = any(
                         [nb['feedback_updated'] for nb in assignment['notebooks']]
-                        )
+                    )
                 else:
                     has_local_feedback = False
                     has_exchange_feedback = False
@@ -190,9 +193,9 @@ class ExchangeList(abc.ExchangeList, Exchange):
                 assignment['has_local_feedback'] = has_local_feedback
                 assignment['has_exchange_feedback'] = has_exchange_feedback
                 assignment['feedback_updated'] = feedback_updated
-                assignment['local_feedback_path'] = None                
+                assignment['local_feedback_path'] = None
 
-            # We keep everything we've not filtered out
+                # We keep everything we've not filtered out
             my_assignments.append(assignment)
 
         for assignment_type in ("released", "fetched"):
@@ -237,7 +240,7 @@ class ExchangeList(abc.ExchangeList, Exchange):
         self.log.debug(
             f"externalexchange.list.start - coursedir.submitted_directory = {self.coursedir.submitted_directory}"
         )
-        self.fetched_root = os.path.abspath(os.path.join(".", r))
+        self.fetched_root = os.path.abspath(os.path.join("", r))
         if self.remove:
             return self.remove_files()
         else:

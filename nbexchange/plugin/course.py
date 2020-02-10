@@ -8,6 +8,18 @@ from .exchange import Exchange
 
 class ExchangeCourse(Exchange):
 
+    def init_src(self):
+        pass
+
+    def init_dest(self):
+        pass
+
+    def copy_files(self):
+        pass
+
+    def do_copy(self, src, dest):
+        pass
+
     # the list of assignments the exchange knows about
     courses = []
 

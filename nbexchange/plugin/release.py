@@ -1,6 +1,7 @@
 import warnings
 from .release_assignment import ExchangeReleaseAssignment
 
+
 class ExchangeRelease(ExchangeReleaseAssignment):
 
     def __init__(self, *args, **kwargs):

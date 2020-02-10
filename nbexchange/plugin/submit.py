@@ -11,13 +11,16 @@ import nbgrader.exchange.abc as abc
 
 class ExchangeSubmit(abc.ExchangeSubmit, Exchange):
 
+    def do_copy(self, src, dest):
+        pass
+
     def init_src(self):
         root = ""
         if self.path_includes_course:
             root = os.path.join(self.course_id, self.coursedir.assignment_id)
         else:
             root = self.coursedir.assignment_id
-        self.src_path = os.path.abspath(os.path.join(".", root))
+        self.src_path = os.path.abspath(os.path.join("", root))
         if not os.path.isdir(self.src_path):
             self._assignment_not_found(self.src_path, root)
         self.log.debug(f"ExchangeSubmit.init_src ensuring {self.src_path} exists")

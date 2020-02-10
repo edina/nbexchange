@@ -11,6 +11,9 @@ import nbgrader.exchange.abc as abc
 
 class ExchangeReleaseAssignment(abc.ExchangeReleaseAssignment, Exchange):
 
+    def do_copy(self, src, dest):
+        pass
+
     src_path = None
     notebooks = None
 

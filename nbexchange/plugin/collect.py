@@ -11,6 +11,9 @@ from urllib.parse import quote_plus
 
 
 class ExchangeCollect(abc.ExchangeCollect, Exchange):
+    def do_copy(self, src, dest):
+        pass
+
     def init_src(self):
         pass
 

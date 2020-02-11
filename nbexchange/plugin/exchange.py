@@ -15,6 +15,15 @@ from nbgrader.exchange import ExchangeError
 
 
 class Exchange(abc.Exchange):
+    path_includes_course = Bool(
+        False,
+        help="""
+Whether the path for fetching/submitting  assignments should be
+prefixed with the course name. If this is `False`, then the path
+will be something like `./ps1`. If this is `True`, then the path
+will be something like `./course123/ps1`.
+"""
+    ).tag(config=True)
 
     base_service_url = Unicode(
         os.environ.get("NAAS_BASE_URL", "https://noteable.edina.ac.uk")

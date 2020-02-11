@@ -9,7 +9,7 @@ from urllib.parse import quote_plus
 import nbgrader.exchange.abc as abc
 
 
-class ExchangeReleaseFeedback(abc.ExchangeReleaseAssignment, Exchange):
+class ExchangeReleaseFeedback(abc.ExchangeReleaseFeedback, Exchange):
 
     src_path = None
     notebooks = None

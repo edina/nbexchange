@@ -12,7 +12,7 @@ from urllib.parse import quote_plus
 import nbgrader.exchange.abc as abc
 
 
-class ExchangeFetchFeedback(abc.ExchangeFetchAssignment, Exchange):
+class ExchangeFetchFeedback(abc.ExchangeFetchFeedback, Exchange):
 
     path_includes_course = Bool(
         True, help="Whether assigments are 'fetched' into course-specific trees"

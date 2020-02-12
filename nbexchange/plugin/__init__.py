@@ -29,5 +29,5 @@ __all__ = [
     "ExchangeRelease",
     "ExchangeReleaseAssignment",
     "ExchangeReleaseFeedback",
-    "ExchangeSubmit"
+    "ExchangeSubmit",
 ]

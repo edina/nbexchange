@@ -18,13 +18,13 @@ class ExchangeFetchAssignment(abc.ExchangeFetchAssignment, Exchange):
     ).tag(config=True)
 
     def _load_config(self, cfg, **kwargs):
-        if 'ExchangeFetch' in cfg:
+        if "ExchangeFetch" in cfg:
             self.log.warning(
                 "Use ExchangeFetchAssignment in config, not ExchangeFetch. Outdated config:\n%s",
-                '\n'.join(
-                    'ExchangeFetch.{key} = {value!r}'.format(key=key, value=value)
+                "\n".join(
+                    "ExchangeFetch.{key} = {value!r}".format(key=key, value=value)
                     for key, value in cfg.ExchangeFetch.items()
-                )
+                ),
             )
             cfg.ExchangeFetchAssignment.merge(cfg.ExchangeFetch)
             del cfg.ExchangeFetch

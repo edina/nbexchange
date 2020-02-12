@@ -22,7 +22,7 @@ Whether the path for fetching/submitting  assignments should be
 prefixed with the course name. If this is `False`, then the path
 will be something like `./ps1`. If this is `True`, then the path
 will be something like `./course123/ps1`.
-"""
+""",
     ).tag(config=True)
 
     base_service_url = Unicode(
@@ -56,7 +56,9 @@ will be something like `./course123/ps1`.
         cookies = dict(noteable_auth=jwt_token)
         url = self.service_url() + path
 
-        self.log.info(f"Exchange.api_request calling exchange with url {url}, and token {token}")
+        self.log.info(
+            f"Exchange.api_request calling exchange with url {url}, and token {token}"
+        )
 
         if method == "GET":
             get_req = partial(requests.get, url, headers=headers, cookies=cookies)

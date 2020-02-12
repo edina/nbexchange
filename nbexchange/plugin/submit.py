@@ -10,7 +10,6 @@ import nbgrader.exchange.abc as abc
 
 
 class ExchangeSubmit(abc.ExchangeSubmit, Exchange):
-
     def do_copy(self, src, dest):
         pass
 

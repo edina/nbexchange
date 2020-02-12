@@ -7,7 +7,6 @@ from .exchange import Exchange
 
 
 class ExchangeCourse(Exchange):
-
     def init_src(self):
         pass
 

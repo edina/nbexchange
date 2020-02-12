@@ -16,7 +16,7 @@ class ExchangeList(abc.ExchangeList, Exchange):
     def do_copy(self, src, dest):
         pass
 
-    fetched_root = Unicode('', help="Root location for files to be fetched into")
+    fetched_root = Unicode("", help="Root location for files to be fetched into")
 
     # the list of assignments the exchange knows about
     assignments = []
@@ -90,10 +90,14 @@ class ExchangeList(abc.ExchangeList, Exchange):
         # For fetched & collected items - we want to know what the user has on-disk
         # rather than what the exchange server things we have.
         if assignment.get("status") in ("fetched", "collected"):
-            assignment_directory = self.fetched_root + '/' + assignment.get("assignment_id")
+            assignment_directory = (
+                self.fetched_root + "/" + assignment.get("assignment_id")
+            )
             assignment["notebooks"] = []
             # Find the ipynb files
-            for notebook in sorted(glob.glob(os.path.join(assignment_directory, "*.ipynb"))):
+            for notebook in sorted(
+                glob.glob(os.path.join(assignment_directory, "*.ipynb"))
+            ):
                 notebook_id = os.path.splitext(os.path.split(notebook)[1])[0]
                 assignment["notebooks"].append(
                     {
@@ -126,7 +130,9 @@ class ExchangeList(abc.ExchangeList, Exchange):
         interim_assignments = []
         for assignment in self.assignments:
             interim_assignments.append(self.parse_assignment(assignment))
-            self.log.info(f"parse_assignment singular assignment returned: {assignment}")
+            self.log.info(
+                f"parse_assignment singular assignment returned: {assignment}"
+            )
 
         # now we build three sub-lists:
         # - one "fetched" per assignment_id
@@ -140,13 +146,15 @@ class ExchangeList(abc.ExchangeList, Exchange):
             if assignment is None:
                 continue
 
-            assignment_directory = self.fetched_root + '/' + assignment.get("assignment_id")
+            assignment_directory = (
+                self.fetched_root + "/" + assignment.get("assignment_id")
+            )
 
             # Only keep a fetched assignment directory is on disk.
             # Keep only one fetched per assignment_id - any will do
-            if (assignment.get("status") == "fetched"
-                    and
-                    os.path.isdir(assignment_directory)):
+            if assignment.get("status") == "fetched" and os.path.isdir(
+                assignment_directory
+            ):
                 held_assignments["fetched"][
                     assignment.get("assignment_id")
                 ] = assignment
@@ -158,9 +166,9 @@ class ExchangeList(abc.ExchangeList, Exchange):
                 #  - If the user has "fetched" the assignment, and the asignment directory is on disk
                 #    ... don't keep it
                 #  - otherwise keep the latest one
-                if (assignment.get("assignment_id") in self.seen_assignments["fetched"]
-                        and
-                        os.path.isdir(assignment_directory)):
+                if assignment.get("assignment_id") in self.seen_assignments[
+                    "fetched"
+                ] and os.path.isdir(assignment_directory):
                     continue
                 else:
                     latest = held_assignments["released"].get(
@@ -175,25 +183,25 @@ class ExchangeList(abc.ExchangeList, Exchange):
 
             # "Submitted" assignments [may] have feedback
             if assignment.get("status") == "released":
-                if assignment['notebooks']:
+                if assignment["notebooks"]:
                     has_local_feedback = all(
-                        [nb['has_local_feedback'] for nb in assignment['notebooks']]
+                        [nb["has_local_feedback"] for nb in assignment["notebooks"]]
                     )
                     has_exchange_feedback = all(
-                        [nb['has_exchange_feedback'] for nb in assignment['notebooks']]
+                        [nb["has_exchange_feedback"] for nb in assignment["notebooks"]]
                     )
                     feedback_updated = any(
-                        [nb['feedback_updated'] for nb in assignment['notebooks']]
+                        [nb["feedback_updated"] for nb in assignment["notebooks"]]
                     )
                 else:
                     has_local_feedback = False
                     has_exchange_feedback = False
                     feedback_updated = False
 
-                assignment['has_local_feedback'] = has_local_feedback
-                assignment['has_exchange_feedback'] = has_exchange_feedback
-                assignment['feedback_updated'] = feedback_updated
-                assignment['local_feedback_path'] = None
+                assignment["has_local_feedback"] = has_local_feedback
+                assignment["has_exchange_feedback"] = has_exchange_feedback
+                assignment["feedback_updated"] = feedback_updated
+                assignment["local_feedback_path"] = None
 
                 # We keep everything we've not filtered out
             my_assignments.append(assignment)
@@ -236,7 +244,7 @@ class ExchangeList(abc.ExchangeList, Exchange):
             r = self.course_id
         else:
             self.coursedir.submitted_directory = "collected"
-            r = '.'
+            r = "."
         self.log.debug(
             f"externalexchange.list.start - coursedir.submitted_directory = {self.coursedir.submitted_directory}"
         )

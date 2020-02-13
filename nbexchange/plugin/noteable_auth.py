@@ -4,6 +4,7 @@ from .exchange import Exchange
 from nbgrader.auth import BaseAuthPlugin
 from tornado import gen
 
+
 class NoteableEnvironmentError(Exception):
     pass
 
@@ -13,7 +14,6 @@ class NoteableApiError(Exception):
 
 
 class NoteableAuthPlugin(BaseAuthPlugin):
-
     def query_exchange(self):
         """List all courses"""
         r = Exchange.api_request(self, f"courses")  # use method in Exchange

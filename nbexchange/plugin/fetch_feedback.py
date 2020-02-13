@@ -18,7 +18,6 @@ class ExchangeFetchFeedback(abc.ExchangeFetchFeedback, Exchange):
         True, help="Whether assigments are 'fetched' into course-specific trees"
     ).tag(config=True)
 
-
     # where the downloaded files are placed
     def init_src(self):
         pass

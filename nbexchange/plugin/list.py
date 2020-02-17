@@ -82,11 +82,6 @@ class ExchangeList(abc.ExchangeList, Exchange):
     ### We need to add feedback into submitted items
     ### (this may not be the best place to process them)
     def parse_assignment(self, assignment):
-        if self.path_includes_course:
-            root = os.path.join(assignment["course_id"], assignment["assignment_id"])
-        else:
-            root = assignment["assignment_id"]
-
         # For fetched & collected items - we want to know what the user has on-disk
         # rather than what the exchange server things we have.
         if assignment.get("status") in ("fetched", "collected"):

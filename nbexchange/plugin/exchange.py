@@ -30,7 +30,7 @@ will be something like `./course123/ps1`.
         help="""
 Local path for storing student assignments.  Defaults to '.'
 which is normally Jupyter's notebook_dir.
-"""
+""",
     ).tag(config=True)
 
     base_service_url = Unicode(

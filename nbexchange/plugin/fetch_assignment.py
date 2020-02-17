@@ -13,10 +13,6 @@ import nbgrader.exchange.abc as abc
 
 
 class ExchangeFetchAssignment(abc.ExchangeFetchAssignment, Exchange):
-    path_includes_course = Bool(
-        True, help="Whether assigments are 'fetched' into course-specific trees"
-    ).tag(config=True)
-
     def _load_config(self, cfg, **kwargs):
         if "ExchangeFetch" in cfg:
             self.log.warning(

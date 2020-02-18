@@ -246,7 +246,9 @@ class ExchangeList(abc.ExchangeList, Exchange):
                 assignment_submissions.append(info)
             my_assignments = assignment_submissions
         else:
-            my_assignments = [x for x in my_assignments if x.get("status") != "submitted"]
+            my_assignments = [
+                x for x in my_assignments if x.get("status") != "submitted"
+            ]
         return my_assignments
 
     def list_files(self):

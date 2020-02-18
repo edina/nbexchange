@@ -88,6 +88,7 @@ class Assignments(BaseHandler):
                     models.append(
                         {
                             "assignment_id": assignment.assignment_code,
+                            "student_id": action.user_id,
                             "course_id": assignment.course.course_code,
                             "status": action.action.value,  # currently called 'action' in our db
                             "path": action.location,

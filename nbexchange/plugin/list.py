@@ -67,12 +67,10 @@ class ExchangeList(abc.ExchangeList, Exchange):
         # if "inbound", looking for inbound (submitted) records
         # elif 'cached', looking for already downloaded files
         # else, looking for outbound (released) files
-        if self.inbound:
+        if self.inbound or self.cached:
             for assignment in local_assignments:
                 if assignment.get("status") == "submitted":
                     self.assignments.append(assignment)
-        elif self.cached:
-            pass
         else:
             self.assignments = local_assignments
 

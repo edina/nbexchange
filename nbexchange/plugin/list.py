@@ -116,6 +116,18 @@ class ExchangeList(abc.ExchangeList, Exchange):
     ### (check what the 'exchange.parse_assignment(path)' puts into 'info[]')
     ### Needs 'notebook' ling moved to 'action'
     def parse_assignments(self):
+        local_assignments = self.query_exchange()
+        self.log.debug(f"ExternalExchange.list.init_dest collected {local_assignments}")
+
+        # if "inbound", looking for inbound (submitted) records
+        # elif 'cached', looking for already downloaded files
+        # else, looking for outbound (released) files
+        if self.inbound or self.cached:
+            for assignment in local_assignments:
+                if assignment.get("status") == "submitted":
+                    self.assignments.append(assignment)
+        else:
+            self.assignments = local_assignments
         # self.assignments = self.query_exchange()  # This should really set by init_dest
 
         # We want to check the local disk for "fetched" items, not what the external server

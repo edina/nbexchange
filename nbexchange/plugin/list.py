@@ -118,7 +118,7 @@ class ExchangeList(abc.ExchangeList, Exchange):
     ### (check what the 'exchange.parse_assignment(path)' puts into 'info[]')
     ### Needs 'notebook' ling moved to 'action'
     def parse_assignments(self):
-        self.assignments = self.query_exchange()  # This should really set by init_dest
+        # self.assignments = self.query_exchange()  # This should really set by init_dest
 
         # We want to check the local disk for "fetched" items, not what the external server
         # says we should have

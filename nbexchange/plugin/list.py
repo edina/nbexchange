@@ -240,8 +240,8 @@ class ExchangeList(abc.ExchangeList, Exchange):
         """List files"""
         self.log.info(f"ExchaneList.list_file starting")
         # TODO: this is a legacy option from ExchangeList and should be handled more elegantly
-        if self.cached:
-            return []
+        # if self.cached:
+        #     return []
 
         assignments = self.parse_assignments()
 

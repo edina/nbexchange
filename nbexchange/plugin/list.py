@@ -208,6 +208,34 @@ class ExchangeList(abc.ExchangeList, Exchange):
                         held_assignments[assignment_type][assignment_id]
                     )
 
+        if self.inbound or self.cached:
+            _get_key = lambda info: (
+                info["course_id"],
+                info["student_id"],
+                info["assignment_id"],
+            )
+            _match_key = lambda info, key: (
+                info["course_id"] == key[0]
+                and info["student_id"] == key[1]
+                and info["assignment_id"] == key[2]
+            )
+            assignment_keys = sorted(
+                list(set([_get_key(info) for info in my_assignments]))
+            )
+            assignment_submissions = []
+            for key in assignment_keys:
+                submissions = [x for x in my_assignments if _match_key(x, key)]
+                submissions = sorted(submissions, key=lambda x: x["timestamp"])
+                info = {
+                    "course_id": key[0],
+                    "student_id": key[1],
+                    "assignment_id": key[2],
+                    "status": submissions[0]["status"],
+                    "submissions": submissions,
+                }
+                assignment_submissions.append(info)
+            my_assignments = assignment_submissions
+
         return my_assignments
 
     def list_files(self):

@@ -116,11 +116,11 @@ class ExchangeList(abc.ExchangeList, Exchange):
     ### (check what the 'exchange.parse_assignment(path)' puts into 'info[]')
     ### Needs 'notebook' ling moved to 'action'
     def parse_assignments(self):
+        self.assignments = []
         local_assignments = self.query_exchange()
         self.log.debug(f"ExternalExchange.list.init_dest collected {local_assignments}")
 
-        # if "inbound", looking for inbound (submitted) records
-        # elif 'cached', looking for already downloaded files
+        # if "inbound" or "cached", looking for inbound (submitted) records
         # else, looking for outbound (released) files
         if self.inbound or self.cached:
             for assignment in local_assignments:

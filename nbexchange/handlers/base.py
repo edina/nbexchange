@@ -44,37 +44,11 @@ class BaseHandler(web.RequestHandler):
         return self.settings["base_storage_location"]
 
     @property
-    def naas_url(self):
-        return self.settings["naas_url"]
+    def user_plugin(self):
+        return self.settings["user_plugin"]
 
     def get_current_user(self):
-
-        # Call Django to Authenticate Our User
-        api_endpoint = f"{self.naas_url}/api/users/current/"
-
-        cookies = dict()
-        # Pass through cookies
-        for name in self.request.cookies:
-            cookies[name] = self.get_cookie(name)
-
-        try:
-            r = requests.get(api_endpoint, cookies=cookies)
-        except requests.exceptions.ConnectionError:
-            return None
-
-        result = r.json()
-
-        self.log.debug("CODE: {} \nRESULT: {}".format(r.status_code, result))
-
-        if r.status_code == 401:
-            return None
-
-        return {
-            "name": result["username"],
-            "course_id": result["course_code"],
-            "course_title": result["course_title"],
-            "course_role": result["role"],
-        }
+        return self.user_plugin.get_current_user(self)
 
     @property
     def nbex_user(self):
@@ -85,19 +59,10 @@ class BaseHandler(web.RequestHandler):
         current_course = hub_user.get("course_id")
         current_role = hub_user.get("course_role")
         course_title = hub_user.get("course_title", "no_title")
+        org_id = hub_user.get("org_id", 1)
 
         if not (current_course and current_role):
             return
-
-        # TODO: this puts a hard restriction on the usernames having an underscore in them, which we do not want
-        # THe solution is to get the organisation id from the user state stored in django instead of deriving it
-        # from the username
-        try:
-            org_id, name = hub_user.get("name").split(
-                "_", 1
-            )  # we only want the first part
-        except ValueError:
-            org_id = 1
 
         self.org_id = org_id
 

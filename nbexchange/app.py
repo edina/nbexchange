@@ -11,13 +11,15 @@ from tornado import web
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from tornado.log import app_log, access_log, gen_log
-from traitlets import Bool, Dict, Integer, Unicode, default
+from traitlets import Bool, Dict, Integer, Unicode, default, Type
 from traitlets.config import Application, catch_config_error
 from sentry_sdk.integrations.tornado import TornadoIntegration
 
 import nbexchange.dbutil
 from nbexchange import dbutil, handlers
 from nbexchange.handlers import base
+from nbexchange.handlers.abc.naas_user_handler import NaasUserHandler
+from nbexchange.handlers.abc.user_handler import UserHandler
 
 ROOT = os.path.dirname(__file__)
 STATIC_FILES_DIR = os.path.join(ROOT, "static")
@@ -77,7 +79,11 @@ class NbExchange(Application):
 
     base_url = os.environ.get("JUPYTERHUB_SERVICE_PREFIX", "/services/nbexchange/")
     base_storage_location = os.environ.get("NBEX_BASE_STORE", "/tmp/courses")
-    naas_url = os.environ.get("NAAS_URL", "https://127.0.0.1:8080")
+    # naas_url = os.environ.get("NAAS_URL", "https://127.0.0.1:8080")
+    user_plugin_class = Type(
+        NaasUserHandler, klass=UserHandler, help="The class to use for handling users"
+    ).tag(config=True)
+
     debug = bool(int(os.environ.get("DEBUG", 0)))
 
     ip = Unicode("0.0.0.0").tag(config=True)
@@ -217,7 +223,8 @@ class NbExchange(Application):
             log=self.log,
             base_url=self.base_url,
             base_storage_location=self.base_storage_location,
-            naas_url=self.naas_url,
+            # naas_url=self.naas_url,
+            user_plugin=self.user_plugin_class(),
             version_hash=version_hash,
             xsrf_cookies=False,
             debug=self.debug,

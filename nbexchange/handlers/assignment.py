@@ -214,7 +214,7 @@ class Assignment(BaseHandler):
                 )
                 session.add(action)
                 self.log.info("record of fetch action committed")
-                self.finish(data)  ####
+                self.finish(data)
             else:
                 self.log.info("no release file found")
                 raise Exception

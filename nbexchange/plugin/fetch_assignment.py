@@ -9,10 +9,10 @@ from .exchange import Exchange
 from traitlets import Bool
 from urllib.parse import quote_plus
 
-import nbgrader.exchange.abc as abc
+import nbgrader.exchange.auth as auth
 
 
-class ExchangeFetchAssignment(abc.ExchangeFetchAssignment, Exchange):
+class ExchangeFetchAssignment(auth.ExchangeFetchAssignment, Exchange):
     def _load_config(self, cfg, **kwargs):
         if "ExchangeFetch" in cfg:
             self.log.warning(

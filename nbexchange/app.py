@@ -18,8 +18,8 @@ from sentry_sdk.integrations.tornado import TornadoIntegration
 import nbexchange.dbutil
 from nbexchange import dbutil, handlers
 from nbexchange.handlers import base
-from nbexchange.handlers.abc.naas_user_handler import NaasUserHandler
-from nbexchange.handlers.abc.user_handler import UserHandler
+from nbexchange.handlers.auth.naas_user_handler import NaasUserHandler
+from nbexchange.handlers.auth.user_handler import UserHandler
 
 ROOT = os.path.dirname(__file__)
 STATIC_FILES_DIR = os.path.join(ROOT, "static")

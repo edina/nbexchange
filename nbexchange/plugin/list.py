@@ -3,7 +3,7 @@ import json
 import os
 import sys
 
-import nbgrader.exchange.abc as abc
+import nbgrader.exchange.auth as auth
 from .exchange import Exchange
 from traitlets import Bool, Unicode
 from urllib.parse import quote_plus
@@ -12,7 +12,7 @@ from urllib.parse import quote_plus
 # "outbound" is files released by instructors (.... but there may be local copies!)
 # "inbound" is files submitted by students (on external service)
 # "cached" is files submitted by students & collected by instructors (so on local disk)
-class ExchangeList(abc.ExchangeList, Exchange):
+class ExchangeList(auth.ExchangeList, Exchange):
     def do_copy(self, src, dest):
         pass
 

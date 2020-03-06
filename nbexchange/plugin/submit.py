@@ -6,10 +6,10 @@ from .exchange import Exchange
 from .list import ExchangeList
 from urllib.parse import quote_plus
 
-import nbgrader.exchange.abc as abc
+import nbgrader.exchange.auth as auth
 
 
-class ExchangeSubmit(abc.ExchangeSubmit, Exchange):
+class ExchangeSubmit(auth.ExchangeSubmit, Exchange):
     def do_copy(self, src, dest):
         pass
 

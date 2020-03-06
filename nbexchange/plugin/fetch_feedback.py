@@ -9,10 +9,10 @@ from .exchange import Exchange
 from traitlets import Bool
 from urllib.parse import quote_plus
 
-import nbgrader.exchange.abc as abc
+import nbgrader.exchange.auth as auth
 
 
-class ExchangeFetchFeedback(abc.ExchangeFetchFeedback, Exchange):
+class ExchangeFetchFeedback(auth.ExchangeFetchFeedback, Exchange):
 
     path_includes_course = Bool(
         True, help="Whether assigments are 'fetched' into course-specific trees"

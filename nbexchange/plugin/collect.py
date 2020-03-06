@@ -5,12 +5,12 @@ import re
 import shutil
 import tarfile
 
-import nbgrader.exchange.abc as abc
+import nbgrader.exchange.auth as auth
 from .exchange import Exchange
 from urllib.parse import quote_plus
 
 
-class ExchangeCollect(abc.ExchangeCollect, Exchange):
+class ExchangeCollect(auth.ExchangeCollect, Exchange):
     def do_copy(self, src, dest):
         pass
 

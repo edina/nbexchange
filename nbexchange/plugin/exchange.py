@@ -9,12 +9,12 @@ from dateutil.tz import gettz
 from functools import partial
 from traitlets import Unicode, Bool, Instance
 
-import nbgrader.exchange.abc as abc
+import nbgrader.exchange.auth as auth
 
 from nbgrader.exchange import ExchangeError
 
 
-class Exchange(abc.Exchange):
+class Exchange(auth.Exchange):
     path_includes_course = Bool(
         False,
         help="""

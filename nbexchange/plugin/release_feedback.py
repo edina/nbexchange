@@ -6,10 +6,10 @@ import os
 
 from .exchange import Exchange
 from urllib.parse import quote_plus
-import nbgrader.exchange.abc as abc
+import nbgrader.exchange.auth as auth
 
 
-class ExchangeReleaseFeedback(abc.ExchangeReleaseFeedback, Exchange):
+class ExchangeReleaseFeedback(auth.ExchangeReleaseFeedback, Exchange):
 
     src_path = None
     notebooks = None

@@ -1,8 +1,9 @@
-from auth import Authenticator, abstractmethod
+# 'abc' is 'Abstract base Class'
+from abc import ABC, abstractmethod
 from tornado import web
 
 
-class UserHandler(Authenticator):
+class BaseUserHandler(ABC):
     @abstractmethod
     def get_current_user(self, request: web.RequestHandler):
         """

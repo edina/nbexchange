@@ -2,10 +2,10 @@ import os
 
 import requests
 
-from nbexchange.handlers.auth.user_handler import UserHandler
+from nbexchange.handlers.auth.user_handler import BaseUserHandler
 
 
-class NaasUserHandler(UserHandler):
+class NaasUserHandler(BaseUserHandler):
     naas_url = os.environ.get("NAAS_URL", "https://127.0.0.1:8080")
 
     def get_current_user(self, request):

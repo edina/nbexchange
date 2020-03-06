@@ -19,7 +19,7 @@ import nbexchange.dbutil
 from nbexchange import dbutil, handlers
 from nbexchange.handlers import base
 from nbexchange.handlers.auth.naas_user_handler import NaasUserHandler
-from nbexchange.handlers.auth.user_handler import UserHandler
+from nbexchange.handlers.auth.user_handler import BaseUserHandler
 
 ROOT = os.path.dirname(__file__)
 STATIC_FILES_DIR = os.path.join(ROOT, "static")
@@ -81,7 +81,7 @@ class NbExchange(Application):
     base_storage_location = os.environ.get("NBEX_BASE_STORE", "/tmp/courses")
     # naas_url = os.environ.get("NAAS_URL", "https://127.0.0.1:8080")
     user_plugin_class = Type(
-        NaasUserHandler, klass=UserHandler, help="The class to use for handling users"
+        NaasUserHandler, klass=BaseUserHandler, help="The class to use for handling users"
     ).tag(config=True)
 
     debug = bool(int(os.environ.get("DEBUG", 0)))

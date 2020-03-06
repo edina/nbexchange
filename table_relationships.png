@@ -1,0 +1,706 @@
+Creator	"DbVis"
+Whatever	"Stuff"
+graph
+[
+	label	""
+	directed	1
+	node
+	[
+		id	0
+		graphics
+		[
+			x	475.0
+			y	350.0
+			w	294.0
+			h	99.6953125
+			customconfiguration	"DEFAULT"
+			fill	"#FFFFCC"
+			outline	"#808080"
+		]
+		LabelGraphics
+		[
+			text	"assignment"
+			fontSize	13
+			fontStyle	"bold"
+			fontName	"Dialog"
+			anchor	"t"
+		]
+		LabelGraphics
+		[
+		]
+		LabelGraphics
+		[
+			text	"id"
+			fontSize	10
+			fontStyle	"bold"
+			fontName	"Helvetica"
+			x	352.0
+			y	329.28515625
+		]
+		LabelGraphics
+		[
+			text	"SERIAL"
+			fontSize	10
+			fontName	"Helvetica"
+			x	456.0
+			y	329.28515625
+		]
+		LabelGraphics
+		[
+		]
+		LabelGraphics
+		[
+			text	"assignment_code"
+			fontSize	10
+			fontStyle	"bold"
+			fontName	"Helvetica"
+			x	352.0
+			y	346.92578125
+		]
+		LabelGraphics
+		[
+			text	"CHARACTER VARYING(50)"
+			fontSize	10
+			fontName	"Helvetica"
+			x	456.0
+			y	346.92578125
+		]
+		LabelGraphics
+		[
+		]
+		LabelGraphics
+		[
+			text	"active"
+			fontSize	10
+			fontStyle	"bold"
+			fontName	"Helvetica"
+			x	352.0
+			y	364.56640625
+		]
+		LabelGraphics
+		[
+			text	"BOOLEAN"
+			fontSize	10
+			fontName	"Helvetica"
+			x	456.0
+			y	364.56640625
+		]
+		LabelGraphics
+		[
+		]
+		LabelGraphics
+		[
+			text	"course_id"
+			fontSize	10
+			fontName	"Helvetica"
+			x	352.0
+			y	382.20703125
+		]
+		LabelGraphics
+		[
+			text	"INTEGER"
+			fontSize	10
+			fontName	"Helvetica"
+			x	456.0
+			y	382.20703125
+		]
+	]
+	node
+	[
+		id	1
+		graphics
+		[
+			x	475.0
+			y	50.0
+			w	312.0
+			h	134.9765625
+			customconfiguration	"DEFAULT"
+			fill	"#FFFFCC"
+			outline	"#808080"
+		]
+		LabelGraphics
+		[
+			text	"action"
+			fontSize	13
+			fontStyle	"bold"
+			fontName	"Dialog"
+			anchor	"t"
+		]
+		LabelGraphics
+		[
+		]
+		LabelGraphics
+		[
+			text	"id"
+			fontSize	10
+			fontStyle	"bold"
+			fontName	"Helvetica"
+			x	343.0
+			y	11.64453125
+		]
+		LabelGraphics
+		[
+			text	"SERIAL"
+			fontSize	10
+			fontName	"Helvetica"
+			x	418.0
+			y	11.64453125
+		]
+		LabelGraphics
+		[
+		]
+		LabelGraphics
+		[
+			text	"user_id"
+			fontSize	10
+			fontName	"Helvetica"
+			x	343.0
+			y	29.28515625
+		]
+		LabelGraphics
+		[
+			text	"INTEGER"
+			fontSize	10
+			fontName	"Helvetica"
+			x	418.0
+			y	29.28515625
+		]
+		LabelGraphics
+		[
+		]
+		LabelGraphics
+		[
+			text	"assignment_id"
+			fontSize	10
+			fontName	"Helvetica"
+			x	343.0
+			y	46.92578125
+		]
+		LabelGraphics
+		[
+			text	"INTEGER"
+			fontSize	10
+			fontName	"Helvetica"
+			x	418.0
+			y	46.92578125
+		]
+		LabelGraphics
+		[
+		]
+		LabelGraphics
+		[
+			text	"action"
+			fontSize	10
+			fontStyle	"bold"
+			fontName	"Helvetica"
+			x	343.0
+			y	64.56640625
+		]
+		LabelGraphics
+		[
+			text	"assignmentactions"
+			fontSize	10
+			fontName	"Helvetica"
+			x	418.0
+			y	64.56640625
+		]
+		LabelGraphics
+		[
+		]
+		LabelGraphics
+		[
+			text	"location"
+			fontSize	10
+			fontName	"Helvetica"
+			x	343.0
+			y	82.20703125
+		]
+		LabelGraphics
+		[
+			text	"CHARACTER VARYING(200)"
+			fontSize	10
+			fontName	"Helvetica"
+			x	418.0
+			y	82.20703125
+		]
+		LabelGraphics
+		[
+		]
+		LabelGraphics
+		[
+			text	"timestamp"
+			fontSize	10
+			fontName	"Helvetica"
+			x	343.0
+			y	99.84765625
+		]
+		LabelGraphics
+		[
+			text	"TIMESTAMP(6) WITHOUT TIME ZONE"
+			fontSize	10
+			fontName	"Helvetica"
+			x	418.0
+			y	99.84765625
+		]
+	]
+	node
+	[
+		id	2
+		graphics
+		[
+			x	125.0
+			y	50.0
+			w	220.0
+			h	82.0546875
+			customconfiguration	"DEFAULT"
+			fill	"#FFFFCC"
+			outline	"#808080"
+		]
+		LabelGraphics
+		[
+			text	"user"
+			fontSize	13
+			fontStyle	"bold"
+			fontName	"Dialog"
+			anchor	"t"
+		]
+		LabelGraphics
+		[
+		]
+		LabelGraphics
+		[
+			text	"id"
+			fontSize	10
+			fontStyle	"bold"
+			fontName	"Helvetica"
+			x	39.0
+			y	38.10546875
+		]
+		LabelGraphics
+		[
+			text	"SERIAL"
+			fontSize	10
+			fontName	"Helvetica"
+			x	79.0
+			y	38.10546875
+		]
+		LabelGraphics
+		[
+		]
+		LabelGraphics
+		[
+			text	"name"
+			fontSize	10
+			fontStyle	"bold"
+			fontName	"Helvetica"
+			x	39.0
+			y	55.74609375
+		]
+		LabelGraphics
+		[
+			text	"CHARACTER VARYING(200)"
+			fontSize	10
+			fontName	"Helvetica"
+			x	79.0
+			y	55.74609375
+		]
+		LabelGraphics
+		[
+		]
+		LabelGraphics
+		[
+			text	"org_id"
+			fontSize	10
+			fontStyle	"bold"
+			fontName	"Helvetica"
+			x	39.0
+			y	73.38671875
+		]
+		LabelGraphics
+		[
+			text	"INTEGER"
+			fontSize	10
+			fontName	"Helvetica"
+			x	79.0
+			y	73.38671875
+		]
+	]
+	node
+	[
+		id	3
+		graphics
+		[
+			x	125.0
+			y	350.0
+			w	256.0
+			h	99.6953125
+			customconfiguration	"DEFAULT"
+			fill	"#FFFFCC"
+			outline	"#808080"
+		]
+		LabelGraphics
+		[
+			text	"course"
+			fontSize	13
+			fontStyle	"bold"
+			fontName	"Dialog"
+			anchor	"t"
+		]
+		LabelGraphics
+		[
+		]
+		LabelGraphics
+		[
+			text	"id"
+			fontSize	10
+			fontStyle	"bold"
+			fontName	"Helvetica"
+			x	21.0
+			y	329.28515625
+		]
+		LabelGraphics
+		[
+			text	"SERIAL"
+			fontSize	10
+			fontName	"Helvetica"
+			x	97.0
+			y	329.28515625
+		]
+		LabelGraphics
+		[
+		]
+		LabelGraphics
+		[
+			text	"org_id"
+			fontSize	10
+			fontStyle	"bold"
+			fontName	"Helvetica"
+			x	21.0
+			y	346.92578125
+		]
+		LabelGraphics
+		[
+			text	"INTEGER"
+			fontSize	10
+			fontName	"Helvetica"
+			x	97.0
+			y	346.92578125
+		]
+		LabelGraphics
+		[
+		]
+		LabelGraphics
+		[
+			text	"course_code"
+			fontSize	10
+			fontStyle	"bold"
+			fontName	"Helvetica"
+			x	21.0
+			y	364.56640625
+		]
+		LabelGraphics
+		[
+			text	"CHARACTER VARYING(200)"
+			fontSize	10
+			fontName	"Helvetica"
+			x	97.0
+			y	364.56640625
+		]
+		LabelGraphics
+		[
+		]
+		LabelGraphics
+		[
+			text	"course_title"
+			fontSize	10
+			fontName	"Helvetica"
+			x	21.0
+			y	382.20703125
+		]
+		LabelGraphics
+		[
+			text	"CHARACTER VARYING(200)"
+			fontSize	10
+			fontName	"Helvetica"
+			x	97.0
+			y	382.20703125
+		]
+	]
+	node
+	[
+		id	4
+		graphics
+		[
+			x	475.0
+			y	500.0
+			w	271.0
+			h	82.0546875
+			customconfiguration	"DEFAULT"
+			fill	"#FFFFCC"
+			outline	"#808080"
+		]
+		LabelGraphics
+		[
+			text	"notebook"
+			fontSize	13
+			fontStyle	"bold"
+			fontName	"Dialog"
+			anchor	"t"
+		]
+		LabelGraphics
+		[
+		]
+		LabelGraphics
+		[
+			text	"id"
+			fontSize	10
+			fontStyle	"bold"
+			fontName	"Helvetica"
+			x	363.5
+			y	488.10546875
+		]
+		LabelGraphics
+		[
+			text	"SERIAL"
+			fontSize	10
+			fontName	"Helvetica"
+			x	438.5
+			y	488.10546875
+		]
+		LabelGraphics
+		[
+		]
+		LabelGraphics
+		[
+			text	"name"
+			fontSize	10
+			fontStyle	"bold"
+			fontName	"Helvetica"
+			x	363.5
+			y	505.74609375
+		]
+		LabelGraphics
+		[
+			text	"CHARACTER VARYING(128)"
+			fontSize	10
+			fontName	"Helvetica"
+			x	438.5
+			y	505.74609375
+		]
+		LabelGraphics
+		[
+		]
+		LabelGraphics
+		[
+			text	"assignment_id"
+			fontSize	10
+			fontName	"Helvetica"
+			x	363.5
+			y	523.38671875
+		]
+		LabelGraphics
+		[
+			text	"INTEGER"
+			fontSize	10
+			fontName	"Helvetica"
+			x	438.5
+			y	523.38671875
+		]
+	]
+	node
+	[
+		id	5
+		graphics
+		[
+			x	125.0
+			y	200.0
+			w	241.0
+			h	99.6953125
+			customconfiguration	"DEFAULT"
+			fill	"#FFFFCC"
+			outline	"#808080"
+		]
+		LabelGraphics
+		[
+			text	"subscription"
+			fontSize	13
+			fontStyle	"bold"
+			fontName	"Dialog"
+			anchor	"t"
+		]
+		LabelGraphics
+		[
+		]
+		LabelGraphics
+		[
+			text	"id"
+			fontSize	10
+			fontStyle	"bold"
+			fontName	"Helvetica"
+			x	28.5
+			y	179.28515625
+		]
+		LabelGraphics
+		[
+			text	"SERIAL"
+			fontSize	10
+			fontName	"Helvetica"
+			x	79.5
+			y	179.28515625
+		]
+		LabelGraphics
+		[
+		]
+		LabelGraphics
+		[
+			text	"user_id"
+			fontSize	10
+			fontName	"Helvetica"
+			x	28.5
+			y	196.92578125
+		]
+		LabelGraphics
+		[
+			text	"INTEGER"
+			fontSize	10
+			fontName	"Helvetica"
+			x	79.5
+			y	196.92578125
+		]
+		LabelGraphics
+		[
+		]
+		LabelGraphics
+		[
+			text	"course_id"
+			fontSize	10
+			fontName	"Helvetica"
+			x	28.5
+			y	214.56640625
+		]
+		LabelGraphics
+		[
+			text	"INTEGER"
+			fontSize	10
+			fontName	"Helvetica"
+			x	79.5
+			y	214.56640625
+		]
+		LabelGraphics
+		[
+		]
+		LabelGraphics
+		[
+			text	"role"
+			fontSize	10
+			fontStyle	"bold"
+			fontName	"Helvetica"
+			x	28.5
+			y	232.20703125
+		]
+		LabelGraphics
+		[
+			text	"CHARACTER VARYING(50)"
+			fontSize	10
+			fontName	"Helvetica"
+			x	79.5
+			y	232.20703125
+		]
+	]
+	edge
+	[
+		source	1
+		target	0
+		label	"action_assignment_id_fkey"
+		graphics
+		[
+			fill	"#808080"
+			targetArrow	"standard"
+		]
+		edgeAnchor
+		[
+			ySource	1.0
+			yTarget	-1.0
+		]
+	]
+	edge
+	[
+		source	1
+		target	2
+		label	"action_user_id_fkey"
+		graphics
+		[
+			fill	"#808080"
+			targetArrow	"standard"
+		]
+		edgeAnchor
+		[
+			xSource	-1.0
+			xTarget	1.0
+		]
+	]
+	edge
+	[
+		source	0
+		target	3
+		label	"assignment_course_id_fkey"
+		graphics
+		[
+			fill	"#808080"
+			targetArrow	"standard"
+		]
+		edgeAnchor
+		[
+			xSource	-1.0
+			xTarget	1.0
+		]
+	]
+	edge
+	[
+		source	4
+		target	0
+		label	"notebook_assignment_id_fkey"
+		graphics
+		[
+			fill	"#808080"
+			targetArrow	"standard"
+		]
+		edgeAnchor
+		[
+			ySource	-1.0
+			yTarget	1.0
+		]
+	]
+	edge
+	[
+		source	5
+		target	3
+		label	"subscription_course_id_fkey"
+		graphics
+		[
+			fill	"#808080"
+			targetArrow	"standard"
+		]
+		edgeAnchor
+		[
+			ySource	1.0
+			yTarget	-1.0
+		]
+	]
+	edge
+	[
+		source	5
+		target	2
+		label	"subscription_user_id_fkey"
+		graphics
+		[
+			fill	"#808080"
+			targetArrow	"standard"
+		]
+		edgeAnchor
+		[
+			ySource	-1.0
+			yTarget	1.0
+		]
+	]
+]

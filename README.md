@@ -4,6 +4,7 @@ A Jupyterhub service that replaces the nbgrader Exchange.
 
 - [Highlights of nbexchange](#highlights-of-nbexchange)
 - [Documentation](#documentation)
+    - [Database relationships](#database-relationships)
 - [Installing](#installing)
 - [Contributing](#contributing)
 - [Configuration](#configuration)
@@ -45,6 +46,10 @@ There are the following assumptions:
 All code should have `docstrings`
 
 Documentation currently in [docs/](docs/) - should be in readthedocs
+
+## Database relationships
+
+![Diagram of table relationships](table_relationships.png)
 
 # Installing
 

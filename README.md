@@ -32,6 +32,7 @@ Following the lead of other Jupyter services, it is a `tornado` application.
 This exchange has some fundamental design decisions driven by the environment which drove its creation.
 
 There are the following assumptions:
+* You have an  
 * usernames will be unique across the whole system
 * There will always be a course_code
     * There may be multiple assignments under one course
@@ -118,7 +119,7 @@ c.ExchangeFactory.submit = 'nbexchange.plugin.ExchangeSubmit'
 * ~~Get the initial code up~~
 * Get a master-branch established
 * Get proper install method for `nbgrader` external-exchange plugin
-* Get a `handlers/abc/user_handler` to get details from jupyterhub (users, courses, and assignments should all be in the config file)
+* Get a `handlers/auth/user_handler` to get details from jupyterhub (users, courses, and assignments should all be in the config file)
 * Get travis? CI integration working
 * Get an external sanity-check for the code
 * Get docs to ReadTheDocs

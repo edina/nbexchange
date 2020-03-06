@@ -37,14 +37,14 @@ Assignment
 
 **GET**: downloads assignment
 
-Returns binary data or raises Exception (which is returned as a `503` error
+Returns binary data or raises Exception (which is returned as a `503` error)
      
 **POST**: (role=instructor, with file): Add ("release") an assignment
 returns
 
     {"success": True, "note": "Released"}
 
-or raises Exception (which is returned as a `503` error
+or raises Exception (which is returned as a `503` error)
 
 Submission
 ----------
@@ -56,7 +56,7 @@ returns
 
     {"success": True, "note": "Released"}
 
-or raises Exception (which is returned as a `503` error
+or raises Exception (which is returned as a `503` error)
 
 Collections
 -----------
@@ -64,7 +64,7 @@ Collections
     .../collections?course_id=$course_code&assignment_id=$assignment_code
 
 **GET**: gets a list of submitted items
-Return: same as [Assignments](#assignments)
+Return: same as `Assignments <#assignments>`
 
 Collection
 ----------
@@ -72,4 +72,4 @@ Collection
     .../collections?course_id=$course_code&assignment_id=$assignment_code&path=$url_encoded_path
 
 **GET**: downloads submitted assignment
-Return: same as [Assignment](#assignment)
+Return: same as `Assignment <#assignment>`

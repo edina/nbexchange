@@ -107,15 +107,15 @@ Fetches [all] submissions for a specified assignment from the exchange and puts 
 
 The exchange is called thus::
 
-        self.coursedir.assignment_id = assignment_id
-        collect = ExchangeCollect(
-            coursedir=self.coursedir,
-            authenticator=self.authenticator,
-            parent=self)
-        try:
-            collect.start()
-        except ExchangeError:
-            self.fail("nbgrader collect failed")
+    self.coursedir.assignment_id = assignment_id
+    collect = ExchangeCollect(
+        coursedir=self.coursedir,
+        authenticator=self.authenticator,
+        parent=self)
+    try:
+        collect.start()
+    except ExchangeError:
+        self.fail("nbgrader collect failed")
 
 returns.... *nothing*
 

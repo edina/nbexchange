@@ -5,9 +5,6 @@ name: Python application
 
 on:
   push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
 
 jobs:
   build:
@@ -36,4 +33,4 @@ jobs:
     - name: Test with pytest
       run: |
         pip install pytest
-        pytest --cov
+        pytest

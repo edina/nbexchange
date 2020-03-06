@@ -49,7 +49,7 @@ Documentation currently in [docs/](docs/) - should be in readthedocs
 
 ## Database relationships
 
-![Diagram of table relationships](./table_relationships.png)
+![Diagram of table relationships](https://github.com/edina/nbexchange/blob/prepare_for_public_release/table_relationships.png)
 
 # Installing
 

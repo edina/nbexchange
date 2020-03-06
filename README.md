@@ -1,26 +1,19 @@
-[![coverage report]()]()
-
-# nbexchange
-
 A Jupyterhub service that replaces the nbgrader Exchange.
 
 <!-- TOC -->
 
-- [nbexchange](#nbexchange)
-    - [Highlights of nbexchange](#highlights-of-nbexchange)
-    - [Documentation](#documentation)
-    - [Installing](#installing)
-    - [Contributing](#contributing)
-    - [Configuration](#configuration)
-        - [Configuring `nbexchange`](#configuring-nbexchange)
-            - [`base_url`](#base_url)
-            - [`base_storage_location`](#base_storage_location)
-            - [`db_url`](#db_url)
-        - [Configuring `nbgrader`](#configuring-nbgrader)
+- [Highlights of nbexchange](#highlights-of-nbexchange)
+- [Documentation](#documentation)
+- [Installing](#installing)
+- [Contributing](#contributing)
+- [Configuration](#configuration)
+    - [Configuring `nbexchange`](#configuring-nbexchange)
+    - [Configuring `nbgrader`](#configuring-nbgrader)
+- [Know To-Do stuff](#know-to-do-stuff)
 
 <!-- /TOC -->
 
-## Highlights of nbexchange
+# Highlights of nbexchange
 
 From `nbgrader`: `Assignments` are `created`, `generated`, `released`, `fetched`, `submitted`, `collected`, `graded`. Then `feedback` can be `generated`, `released`, and `fetched`.
 
@@ -34,56 +27,70 @@ It's provides an external store for released & submitted assignments, and [soon]
 
 Following the lead of other Jupyter services, it is a `tornado` application.
 
-## Documentation
+# Documentation
 
-Documentation currently in [docs/] - should be in readthedocs
+This exchange has some fundamental design decisions driven by the environment which drove its creation.
 
-## Installing
+There are the following assumptions:
+* usernames will be unique across the whole system
+* There will always be a course_code
+    * There may be multiple assignments under one course
+    * assignment_codes will be unique to a course
+    * assignment_codes may be repeated in different `organisation_id`
+* There will always be an `organisation_id`
+    * course_codes must bhe uniqie within an `organisation_id`,
+    * course_codes may be repeated in different `organisation_id`
+
+All code should have `docstrings`
+
+Documentation currently in [docs/](docs/) - should be in readthedocs
+
+# Installing
 
 The exchange is designed to be deployed as a docker instance - either directly on a server, or in a K8 cluster (which is where it was originally developed for)
 
 It requires a plugin for `nbgrader` (code included)
 
-## Contributing
+# Contributing
 
-See [Contributing.md]
+See [Contributing.md](Contributing.md)
 
-## Configuration
+# Configuration
 
 There are two parts to configuring `nbexchange`:
 
 * Configure `nbexchange` itself
 * Configure `nbgrader` to use `nbexchange`
 
-### Configuring `nbexchange`
+## Configuring `nbexchange`
 
 The exchange uses `nbexchange_config.py` for configuration.
 
 There are only 3 important things to configure:
 
-#### `base_url`
+* **`base_url`**
 
 This is the _service_ url for jupyterhub, and defaults to `/services/nbexchange/`
 
 Can also be defined in the environment variable `JUPYTERHUB_SERVICE_PREFIX`
 
-#### `base_storage_location`
+* **`base_storage_location`**
 
 This is where the exchange will store the files uploaded, and defaults to `/tmp/courses`
 
 Can also be defined in the environment variable `NBEX_BASE_STORE`
 
-#### `db_url`
+* **`db_url`**
 
 This is the database connector, and defaults to an in-memory SQLite (`sqlite:///:memory:`)
 
 Can also be defined in the environment variable `NBEX_DB_URL`
 
-### Configuring `nbgrader`
+## Configuring `nbgrader`
 
 The primary reference for this should be the `nbgrader` documentation - but in short:
 
-1. Use the `nbgrader` code that supports the external exchange
+1. Use the `nbgrader` code-base that supports the external exchange
 2. Install the code from `nbexchange/plugin` into `nbgrader`
 3. Include the following in your `nbgrader_config.py` file:
 
@@ -105,3 +112,13 @@ c.ExchangeFactory.release_feedback = 'nbexchange.plugin.ExchangeReleaseFeedback'
 ## A plugin for submitting assignments.
 c.ExchangeFactory.submit = 'nbexchange.plugin.ExchangeSubmit'
 ```
+
+# Know To-Do stuff
+
+* ~~Get the initial code up~~
+* Get a master-branch established
+* Get proper install method for `nbgrader` external-exchange plugin
+* Get a `handlers/abc/user_handler` to get details from jupyterhub (users, courses, and assignments should all be in the config file)
+* Get travis? CI integration working
+* Get an external sanity-check for the code
+* Get docs to ReadTheDocs

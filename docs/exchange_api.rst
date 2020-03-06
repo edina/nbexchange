@@ -1,6 +1,8 @@
 Exchange API
 ============
 
+This is an overview of how `nbgrader` interacts with it's exchange service... *HOW* that exchenage service works internally is a seperate question
+
 A simplistic overview
 ---------------------
 

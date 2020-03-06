@@ -36,13 +36,13 @@ def test_post_assignments1(app):
     assert r.status_code == 501
 
 
-# ##### GET /collections (list available assignments for collection) #####
+##### GET /collections (list available assignments for collection) #####
 
-# # require authenticated user
-# @pytest.mark.gen_test
-# def test_collections0(app):
-#     r = yield async_requests.get(app.url + "/collections")
-#     assert r.status_code == 403
+# require authenticated user
+@pytest.mark.gen_test
+def test_collections0(app):
+    r = yield async_requests.get(app.url + "/collections")
+    assert r.status_code == 403
 
 
 # Requires both params (none)

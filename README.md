@@ -33,7 +33,7 @@ Following the lead of other Jupyter services, it is a `tornado` application.
 This exchange has some fundamental design decisions driven by the environment which drove its creation.
 
 There are the following assumptions:
-* You have an  
+* You have an API for authenticating users who connect to the exchange (probably Jupyterhub, but not always)
 * usernames will be unique across the whole system
 * There will always be a course_code
     * There may be multiple assignments under one course
@@ -72,7 +72,27 @@ There are two parts to configuring `nbexchange`:
 
 The exchange uses `nbexchange_config.py` for configuration.
 
-There are only 3 important things to configure:
+```python
+from nbexchange.handlers.auth.user_handler import BaseUserHandler
+
+class MyUserHandler(BaseUserHandler):
+    
+    def get_current_user(self, request):
+        return {
+          "name": "myname",
+          "course_id": "cool_course_id",
+          "course_title": "cool course",
+          "course_role": "Student",
+          "org_id": 1,
+    }
+
+
+c.NbExchange.user_plugin_class = MyUserHandler
+
+c.NbExchange.base_url = /services/exchange
+c.NbExchange.base_storage_location = /var/data/exchange/storage
+c.NbExchange.db_url = mysql://username:password@my.msql.server.host:3306/db_name
+```
 
 * **`base_url`**
 
@@ -91,6 +111,18 @@ Can also be defined in the environment variable `NBEX_BASE_STORE`
 This is the database connector, and defaults to an in-memory SQLite (`sqlite:///:memory:`)
 
 Can also be defined in the environment variable `NBEX_DB_URL`
+
+* **`user_plugin_class`**
+
+This is a class that defines how `get_current_user` works.
+
+For the exchange to work, it needs some details about the user connecting to it - specifically, it needs 5 pieces of information:
+
+* `name`: The username of the person (eg `perllaghu`),
+* `course_id`: The course code as used in nbgrader (eg `cool_course`),
+* `course_title`: A long name for the course (eg `A course of understanding thermondynamics in bulk refrigerant transport"),
+* `course_role`: The role of the user, normally `Student` or `Instructor`. (currently only `Instructor` get privilaged actions),
+* `org_id`: As mentioned above, nbexchange divides courses and users across organisations. This is an id (numeric) for the org_id for the user.
 
 ## Configuring `nbgrader`
 

@@ -1,1 +1,7 @@
-.
+alembic
+aiocontextvars
+tornado
+psycopg2-binary
+jupyterhub
+sentry-sdk
+sqlalchemy

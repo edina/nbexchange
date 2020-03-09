@@ -71,7 +71,7 @@ The exchange is designed to be deployed as a docker instance - either directly o
 
 # Contributing
 
-See [Contributing.md](Contributing.md)
+See [Contributing.md](CONTRIBUTING.md)
 
 # Configuration
 

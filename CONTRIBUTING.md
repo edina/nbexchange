@@ -31,7 +31,7 @@ Travis does a pretty good job testing nbexchange and Pull Requests, but it may m
 
 Tests should be run locally before final commit & Pull Request is made.
 
-Tests include checking that files are _linted_ to our preferred style: black(https://github.com/psf/black)
+Tests include checking that files are _linted_ to our preferred style: [black](https://github.com/psf/black)
 
 Tests should check that error cases are handled, and that [where applicable] both singular & multiple actions are handled correctly.
 

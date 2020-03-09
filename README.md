@@ -18,7 +18,7 @@ A Jupyterhub service that replaces the nbgrader Exchange.
 # Highlights of nbexchange
 
 ![Linted](https://github.com/edina/nbexchange/workflows/Linted/badge.svg?branch=prepare_for_public_release)
-![Coverage](https://github.com/edina/nbexchange/workflows/Coverage/badge.svg?branch=prepare_for_public_release)
+[![codecov](https://codecov.io/gh/edina/nbexchange/branch/prepare_for_public_release/graph/badge.svg)](https://codecov.io/gh/edina/nbexchange)
 
 
 From [nbgrader](https://github.com/jupyter/nbgrader): _Assignments_ are `created`, `generated`, `released`, `fetched`, `submitted`, `collected`, `graded`. Then `feedback` can be `generated`, `released`, and `fetched`.

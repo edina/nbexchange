@@ -16,6 +16,9 @@ A Jupyterhub service that replaces the nbgrader Exchange.
 
 # Highlights of nbexchange
 
+![](https://github.com/actions/edina/nbexchnage/Test%20with%20pytest/badge.svg?branch=prepare_for_public_release)
+
+
 From [nbgrader](https://github.com/jupyter/nbgrader): _Assignments_ are `created`, `generated`, `released`, `fetched`, `submitted`, `collected`, `graded`. Then `feedback` can be `generated`, `released`, and `fetched`.
 
 The exchange is responsible for recieving *released* assignments, allowing those assignments to be *fetched*, accepting *submissions*, and allowing those submissions to be *collected*. It also allows *feedback* to be transferred.

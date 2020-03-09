@@ -3,6 +3,7 @@ A Jupyterhub service that replaces the nbgrader Exchange.
 <!-- TOC -->
 
 - [Highlights of nbexchange](#highlights-of-nbexchange)
+    - [Compatibility](#compatibility)
 - [Documentation](#documentation)
     - [Database relationships](#database-relationships)
 - [Installing](#installing)
@@ -16,20 +17,25 @@ A Jupyterhub service that replaces the nbgrader Exchange.
 
 # Highlights of nbexchange
 
-![](https://github.com/actions/edina/nbexchnage/Test%20with%20pytest/badge.svg?branch=prepare_for_public_release)
+![Linted](https://github.com/edina/nbexchange/workflows/Linted/badge.svg?branch=prepare_for_public_release)
+![Coverage](https://github.com/edina/nbexchange/workflows/Coverage/badge.svg?branch=prepare_for_public_release)
 
 
 From [nbgrader](https://github.com/jupyter/nbgrader): _Assignments_ are `created`, `generated`, `released`, `fetched`, `submitted`, `collected`, `graded`. Then `feedback` can be `generated`, `released`, and `fetched`.
 
-The exchange is responsible for recieving *released* assignments, allowing those assignments to be *fetched*, accepting *submissions*, and allowing those submissions to be *collected*. It also allows *feedback* to be transferred.
+The exchange is responsible for recieving *release*/*fetch* path, and *submit*/*collect* cycle. It also allows *feedback* to be transferred from instructor to student.
 
 In doing this, the exchange is the authoritative place to get a list of what's what.
 
 `nbexchange` is an external exchange plugin, designed to be run as a docker instance (probably inside a K8 cluster)
 
-It's provides an external store for released & submitted assignments, and [soon] the feeback cycle
+It's provides an external store for released & submitted assignments, and [soon] the feeback cycle.
 
 Following the lead of other Jupyter services, it is a `tornado` application.
+
+## Compatibility
+
+This version is compatible with `nbgrader` 0.5
 
 # Documentation
 
@@ -37,28 +43,31 @@ This exchange has some fundamental design decisions driven by the environment wh
 
 There are the following assumptions:
 * You have an API for authenticating users who connect to the exchange (probably Jupyterhub, but not always)
-* usernames will be unique across the whole system
+* Usernames will be unique across the whole system
+* Internal storage is in two parts:
+    * An sql database for metadata, and
+    * A filesystem for, well, files.
 * There will always be a course_code
-    * There may be multiple assignments under one course
-    * assignment_codes will be unique to a course
-    * assignment_codes may be repeated in different `organisation_id`
+    * There may be multiple assignments under one course,
+    * `assignment_code`s will be unique to a course
+    * `assignment_code`s may be repeated in different `organisation_id`
 * There will always be an `organisation_id`
-    * course_codes must bhe uniqie within an `organisation_id`,
-    * course_codes may be repeated in different `organisation_id`
+    * `course_code`s must be uniqie within an `organisation_id`,
+    * `course_code`s may be repeated in different `organisation_id`
 
-All code should have `docstrings`
+All code should have `docstrings`.
 
 Documentation currently in [docs/](docs/) - should be in readthedocs
 
 ## Database relationships
 
-![Diagram of table relationships](https://github.com/edina/nbexchange/blob/prepare_for_public_release/table_relationships.png)
+![Diagram of table relationships](table_relationships.png)
 
 # Installing
 
 The exchange is designed to be deployed as a docker instance - either directly on a server, or in a K8 cluster (which is where it was originally developed for)
 
-It requires a plugin for `nbgrader` (code included)
+`nbgrader` requires a plugin (code included) for the 
 
 # Contributing
 
@@ -160,6 +169,6 @@ c.ExchangeFactory.submit = 'nbexchange.plugin.ExchangeSubmit'
 * Get a master-branch established
 * Get proper install method for `nbgrader` external-exchange plugin
 * Get a `handlers/auth/user_handler` to get details from jupyterhub (users, courses, and assignments should all be in the config file)
-* Get travis? CI integration working
+* ~Get travis? CI integration working~
 * Get an external sanity-check for the code
 * Get docs to ReadTheDocs

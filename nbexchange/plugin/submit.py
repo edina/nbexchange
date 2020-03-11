@@ -1,15 +1,15 @@
 import io
+import nbgrader.exchange.abc as abc
 import os
 
 from nbgrader.utils import find_all_notebooks
-from .exchange import Exchange
-from .list import ExchangeList
 from urllib.parse import quote_plus
 
-import nbgrader.exchange.auth as auth
+from .exchange import Exchange
+from .list import ExchangeList
 
 
-class ExchangeSubmit(auth.ExchangeSubmit, Exchange):
+class ExchangeSubmit(abc.ExchangeSubmit, Exchange):
     def do_copy(self, src, dest):
         pass
 

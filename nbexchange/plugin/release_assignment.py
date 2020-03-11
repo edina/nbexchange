@@ -1,15 +1,15 @@
 import glob
 import io
 import json
-
+import nbgrader.exchange.abc as abc
 import os
 
-from .exchange import Exchange
 from urllib.parse import quote_plus
-import nbgrader.exchange.auth as auth
+
+from .exchange import Exchange
 
 
-class ExchangeReleaseAssignment(auth.ExchangeReleaseAssignment, Exchange):
+class ExchangeReleaseAssignment(abc.ExchangeReleaseAssignment, Exchange):
     def do_copy(self, src, dest):
         pass
 

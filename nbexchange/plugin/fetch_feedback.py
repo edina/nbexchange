@@ -1,18 +1,18 @@
 import io
+import nbgrader.exchange.abc as abc
 import os
 import shutil
 import tarfile
 import tempfile
 
 from nbgrader.api import new_uuid
-from .exchange import Exchange
 from traitlets import Bool
 from urllib.parse import quote_plus
 
-import nbgrader.exchange.auth as auth
+from .exchange import Exchange
 
 
-class ExchangeFetchFeedback(auth.ExchangeFetchFeedback, Exchange):
+class ExchangeFetchFeedback(abc.ExchangeFetchFeedback, Exchange):
 
     path_includes_course = Bool(
         True, help="Whether assigments are 'fetched' into course-specific trees"

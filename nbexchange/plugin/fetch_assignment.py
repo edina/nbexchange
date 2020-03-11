@@ -1,18 +1,18 @@
 import io
+import nbgrader.exchange.abc as abc
 import os
 import shutil
 import tarfile
 import tempfile
 
 from nbgrader.api import new_uuid
-from .exchange import Exchange
 from traitlets import Bool
 from urllib.parse import quote_plus
 
-import nbgrader.exchange.auth as auth
+from .exchange import Exchange
 
 
-class ExchangeFetchAssignment(auth.ExchangeFetchAssignment, Exchange):
+class ExchangeFetchAssignment(abc.ExchangeFetchAssignment, Exchange):
     def _load_config(self, cfg, **kwargs):
         if "ExchangeFetch" in cfg:
             self.log.warning(

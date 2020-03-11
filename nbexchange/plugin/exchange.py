@@ -1,20 +1,17 @@
 import datetime
 import glob
+import nbgrader.exchange.abc as abc
 import os
 import requests
-from urllib.parse import urljoin
 
 from dateutil.tz import gettz
-
 from functools import partial
-from traitlets import Unicode, Bool, Instance
-
-import nbgrader.exchange.auth as auth
-
 from nbgrader.exchange import ExchangeError
+from traitlets import Unicode, Bool, Instance
+from urllib.parse import urljoin
 
 
-class Exchange(auth.Exchange):
+class Exchange(abc.Exchange):
     path_includes_course = Bool(
         False,
         help="""
@@ -22,6 +19,14 @@ Whether the path for fetching/submitting  assignments should be
 prefixed with the course name. If this is `False`, then the path
 will be something like `./ps1`. If this is `True`, then the path
 will be something like `./course123/ps1`.
+""",
+    ).tag(config=True)
+
+    assignment_dir = Unicode(
+        ".",
+        help="""
+Local path for storing student assignments.  Defaults to '.'
+which is normally Jupyter's notebook_dir.
 """,
     ).tag(config=True)
 

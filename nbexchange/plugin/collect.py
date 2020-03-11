@@ -1,16 +1,17 @@
 import io
 import json
+import nbgrader.exchange.abc as abc
 import os
 import re
 import shutil
 import tarfile
 
-import nbgrader.exchange.auth as auth
-from .exchange import Exchange
 from urllib.parse import quote_plus
 
+from .exchange import Exchange
 
-class ExchangeCollect(auth.ExchangeCollect, Exchange):
+
+class ExchangeCollect(abc.ExchangeCollect, Exchange):
     def do_copy(self, src, dest):
         pass
 

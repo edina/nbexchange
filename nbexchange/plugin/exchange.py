@@ -30,14 +30,6 @@ which is normally Jupyter's notebook_dir.
 """,
     ).tag(config=True)
 
-    assignment_dir = Unicode(
-        ".",
-        help="""
-Local path for storing student assignments.  Defaults to '.'
-which is normally Jupyter's notebook_dir.
-"""
-    ).tag(config=True)
-
     base_service_url = Unicode(
         os.environ.get("NAAS_BASE_URL", "https://noteable.edina.ac.uk")
     ).tag(config=True)

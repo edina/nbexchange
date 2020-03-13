@@ -26,5 +26,3 @@ jobs:
         pip install black
         # stop the build if it's not linted as per black
         black --check --diff nbexchange/
-    - name: Microsoft Teams (Generic)
-      uses: aliencube/microsoft-teams-actions@v0.8.0

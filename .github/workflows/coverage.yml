@@ -28,3 +28,6 @@ jobs:
         file: ./coverage.xml
         name: edina=nbexchange
         fail_ci_if_error: true
+        steps:
+    - name: Microsoft Teams (Generic)
+      uses: aliencube/microsoft-teams-actions@v0.8.0

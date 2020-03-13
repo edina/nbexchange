@@ -21,8 +21,10 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt -r requirements-dev.txt
-    - name: Lint with black & flake8
+    - name: Lint with black
       run: |
-        pip install black flake8
+        pip install black
         # stop the build if it's not linted as per black
         black --check --diff nbexchange/
+    - name: Microsoft Teams (Generic)
+      uses: aliencube/microsoft-teams-actions@v0.8.0

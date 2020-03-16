@@ -82,12 +82,12 @@ class FeedbackHandler(BaseHandler):
         The endpoint return {'success': true} for all successful feedback releases.
         """
 
-        [notebook_id, student_id, timestamp, checksum] = self.get_params(
-            ["notebook_id", "student_id", "timestamp", "checksum"]
+        [course_id, assignment_id, notebook, student, timestamp, checksum] = self.get_params(
+            ["course_id", "assignment_id", "notebook", "student", "timestamp", "checksum"]
         )
 
-        if not (notebook_id and student_id and timestamp and checksum):
-            note = "Feedback call requires a notebook id, student id, checksum and timestamp."
+        if not (course_id and assignment_id and notebook and student and timestamp and checksum):
+            note = "Feedback call requires a course id, assignment id, notebook name, student id, checksum and timestamp."
             self.log.debug(note)
             self.finish({"success": False, "note": note})
             return
@@ -95,26 +95,50 @@ class FeedbackHandler(BaseHandler):
         this_user = self.nbex_user
 
         with scoped_session() as session:
-            notebook = (
-                session.query(nbexchange.models.notebooks.Notebook)
-                .filter_by(id=notebook_id)
+
+            course = nbexchange.models.courses.Course.find_by_code(
+                db=session, code=course_id, org_id=this_user["org_id"], log=self.log
+            )
+
+            if not course:
+                raise web.HTTPError(404, "Could not find requested resource")
+
+            assignment = (
+                session.query(nbexchange.models.assignments.Assignment)
+                .filter_by(assignment_code=assignment_id, course_id=course.id)
                 .first()
             )
-            # raise Exception(f"{res}")
-            self.log.info(notebook)
-            self.log.info(this_user)
+
+            if not assignment:
+                raise web.HTTPError(404, "Could not find requested resource")
+
+            notebook = (
+                session.query(nbexchange.models.notebooks.Notebook)
+                .filter_by(name=notebook, assignment_id=assignment.id)
+                .first()
+            )
 
             if not notebook:
                 raise web.HTTPError(404, "Could not find requested resource")
 
             student = (
                 session.query(nbexchange.models.users.User)
-                .filter_by(id=student_id)
+                .filter_by(name=student)
                 .first()
             )
 
             if not student:
                 raise web.HTTPError(404, "Could not find requested resource")
+
+            # raise Exception(f"{res}")
+            self.log.info("Notebook", notebook)
+            self.log.info("Student", student)
+            self.log.info("Instructor", this_user)
+
+            import pdb
+            pdb.set_trace()
+
+
 
             # TODO: check access. Is the user an instructor on the course to which the notebook belongs
 
@@ -146,8 +170,8 @@ class FeedbackHandler(BaseHandler):
             unique_key = make_unique_key(
                 str(notebook.assignment.course.id),
                 str(notebook.assignment.id),
-                notebook_id,
-                student_id,
+                notebook.id,
+                student.id,
                 timestamp,
             )
 

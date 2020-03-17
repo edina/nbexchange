@@ -96,6 +96,17 @@ class FeedbackHandler(BaseHandler):
 
         with scoped_session() as session:
 
+            # Start building feedback object
+
+            # TODO: Recalculate checksum and check
+            # unique_key = make_unique_key(
+            #     course_id,
+            #     assignment_id,
+            #     notebook,
+            #     student,
+            #     str(timestamp).strip(),
+            # )
+
             course = nbexchange.models.courses.Course.find_by_code(
                 db=session, code=course_id, org_id=this_user["org_id"], log=self.log
             )
@@ -135,11 +146,6 @@ class FeedbackHandler(BaseHandler):
             self.log.info("Student", student)
             self.log.info("Instructor", this_user)
 
-            import pdb
-            pdb.set_trace()
-
-
-
             # TODO: check access. Is the user an instructor on the course to which the notebook belongs
 
             # Check whether there is an HTML file attached to the request
@@ -158,27 +164,21 @@ class FeedbackHandler(BaseHandler):
                 )
                 note = f"Received file {filename}, of type {content_type}"
                 self.log.info(note)
-                nbfile = tempfile.NamedTemporaryFile()
-                nbfile.write(file_info["body"])
-                nbfile.seek(0)
+                fbfile = tempfile.NamedTemporaryFile()
+                fbfile.write(file_info["body"])
+                fbfile.seek(0)
             except Exception:
                 # Could not grab the feedback file
                 raise web.HTTPError(412)
 
-            # Start building feedback object
-            # Recalculate checksum and check
-            unique_key = make_unique_key(
-                str(notebook.assignment.course.id),
-                str(notebook.assignment.id),
-                notebook.id,
-                student.id,
-                timestamp,
-            )
 
-            calc_checksum = notebook_hash(nbfile.name, unique_key)
-            if calc_checksum != checksum:
-                self.log.info(f"Mismatched checksums {calc_checksum} and {checksum}.")
-                raise web.HTTPError(412)
+            # TODO: What is file of the original notebook we are getting the feedback for?
+            # assignment_dir = "collected/student_id/assignment_name"
+            # nbfile = os.path.join(assignment_dir, "{}.ipynb".format(notebook.name))
+            # calc_checksum = notebook_hash(nbfile.name, unique_key)
+            # if calc_checksum != checksum:
+            #     self.log.info(f"Mismatched checksums {calc_checksum} and {checksum}.")
+            #     raise web.HTTPError(412)
 
             location = "/".join(
                 [

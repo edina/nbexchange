@@ -78,7 +78,7 @@ class ExchangeReleaseFeedback(abc.ExchangeReleaseFeedback, Exchange):
             timestamp = open(os.path.join(feedback_dir, 'timestamp.txt')).read()
             nbfile = os.path.join(submission_dir, "{}.ipynb".format(notebook_id))
             unique_key = make_unique_key(
-                self.coursedir.course_id,
+                self.course_id,
                 self.coursedir.assignment_id,
                 notebook_id,
                 student_id,
@@ -92,10 +92,10 @@ class ExchangeReleaseFeedback(abc.ExchangeReleaseFeedback, Exchange):
 
             self.upload(html_file, self.coursedir.assignment_id, student_id, notebook_id, timestamp, checksum)
 
-
     def upload(self, html_file, assignment_id, student, notebook, timestamp, checksum):
 
-        files = {"feedback": ("feedback.html", html_file)}
+        with open(html_file) as feedback_file:
+            files = {"feedback": ("feedback.html", feedback_file.read())}
 
         url = f"feedback?course_id={quote_plus(self.course_id)}" \
               f"&assignment_id={quote_plus(assignment_id)}" \

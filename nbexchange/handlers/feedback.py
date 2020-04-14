@@ -1,3 +1,4 @@
+import base64
 import os
 import tempfile
 import time
@@ -40,37 +41,48 @@ class FeedbackHandler(BaseHandler):
     @authenticated
     def get(self):
 
-        [notebook_id] = self.get_params(["notebook_id"])
+        [assignment_id] = self.get_params(["assignment_id"])
 
-        if not notebook_id:
-            note = "Feedback call requires a notebook id."
-            self.log.debug(note)
+        if not assignment_id:
+            note = "Feedback call requires a assignment id."
+            self.log.info(note)
             self.finish({"success": False, "note": note})
             return
 
-        self.log.debug(f"Notebook ID: {notebook_id}")
+        self.log.info(f"Assignment ID: {assignment_id}")
         this_user = self.nbex_user
 
         with scoped_session() as session:
-            notebook = (
-                session.query(nbexchange.models.notebooks.Notebook)
-                .filter_by(id=notebook_id)
+            assignment = (
+                session.query(nbexchange.models.Assignment)
+                .filter_by(assignment_code=assignment_id)
                 .first()
             )
-            self.log.info(notebook)
-            self.log.debug(this_user)
+            self.log.info(assignment)
+            self.log.info(this_user)
 
-            if not notebook:
+            if not assignment:
                 raise web.HTTPError(404, "Could not find requested resource")
 
             # Find feedback for this notebook
             res = (
                 session.query(nbexchange.models.feedback.Feedback)
-                .filter_by(notebook_id=notebook_id)
-                .first()
+                .join(nbexchange.models.notebooks.Notebook)
+                .filter_by(assignment=assignment)
+                .all()
             )
+            feedbacks = []
+            for r in res:
+                f = {}
+                with open(r.location, "r+b") as fp:
+                    f["content"] = base64.b64encode(fp.read()).decode("utf-8")
+                f["filename"] = os.path.basename(r.location)
+                f["timestamp"] = r.timestamp
+                f["checksum"] = r.checksum
+                feedbacks.append(f)
 
-            self.finish({"success": True, "feedback": str(res)})
+            self.log.info(res)
+            self.finish({"success": True, "feedback": feedbacks})
 
     @authenticated
     def post(self):
@@ -142,9 +154,9 @@ class FeedbackHandler(BaseHandler):
                 raise web.HTTPError(404, "Could not find requested resource")
 
             # raise Exception(f"{res}")
-            self.log.info("Notebook", notebook)
-            self.log.info("Student", student)
-            self.log.info("Instructor", this_user)
+            self.log.info(f"Notebook: {notebook}")
+            self.log.info(f"Student: {student}")
+            self.log.info(f"Instructor: {this_user}")
 
             # TODO: check access. Is the user an instructor on the course to which the notebook belongs
 

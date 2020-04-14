@@ -21,6 +21,7 @@ from nbexchange.handlers import base
 from nbexchange.handlers.auth.naas_user_handler import NaasUserHandler
 from nbexchange.handlers.auth.user_handler import BaseUserHandler
 
+
 ROOT = os.path.dirname(__file__)
 STATIC_FILES_DIR = os.path.join(ROOT, "static")
 

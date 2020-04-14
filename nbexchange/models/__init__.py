@@ -9,10 +9,10 @@ from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
 
-from nbexchange.models.actions import Action
-from nbexchange.models.assignments import Assignment
-from nbexchange.models.courses import Course
-from nbexchange.models.notebooks import Notebook
-from nbexchange.models.subscriptions import Subscription
-from nbexchange.models.users import User
-from nbexchange.models.feedback import Feedback
+from .actions import Action
+from .assignments import Assignment
+from .courses import Course
+from .notebooks import Notebook
+from .subscriptions import Subscription
+from .users import User
+from .feedback import Feedback

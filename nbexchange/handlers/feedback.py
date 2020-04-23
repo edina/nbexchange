@@ -44,7 +44,7 @@ class FeedbackHandler(BaseHandler):
         [assignment_id] = self.get_params(["assignment_id"])
 
         if not assignment_id:
-            note = "Feedback call requires a assignment id."
+            note = "Feedback call requires an assignment id."
             self.log.info(note)
             self.finish({"success": False, "note": note})
             return
@@ -94,11 +94,11 @@ class FeedbackHandler(BaseHandler):
         The endpoint return {'success': true} for all successful feedback releases.
         """
 
-        [course_id, assignment_id, notebook, student, timestamp, checksum] = self.get_params(
+        [course_id, assignment_id, notebook_id, student_id, timestamp, checksum] = self.get_params(
             ["course_id", "assignment_id", "notebook", "student", "timestamp", "checksum"]
         )
 
-        if not (course_id and assignment_id and notebook and student and timestamp and checksum):
+        if not (course_id and assignment_id and notebook_id and student_id and timestamp and checksum):
             note = "Feedback call requires a course id, assignment id, notebook name, student id, checksum and timestamp."
             self.log.debug(note)
             self.finish({"success": False, "note": note})
@@ -124,7 +124,7 @@ class FeedbackHandler(BaseHandler):
             )
 
             if not course:
-                raise web.HTTPError(404, "Could not find requested resource")
+                raise web.HTTPError(404, f"Could not find requested resource course {course_id}")
 
             assignment = (
                 session.query(nbexchange.models.assignments.Assignment)
@@ -133,25 +133,25 @@ class FeedbackHandler(BaseHandler):
             )
 
             if not assignment:
-                raise web.HTTPError(404, "Could not find requested resource")
+                raise web.HTTPError(404, f"Could not find requested resource assignment {assignment_id}")
 
             notebook = (
                 session.query(nbexchange.models.notebooks.Notebook)
-                .filter_by(name=notebook, assignment_id=assignment.id)
+                .filter_by(name=notebook_id, assignment_id=assignment.id)
                 .first()
             )
 
             if not notebook:
-                raise web.HTTPError(404, "Could not find requested resource")
+                raise web.HTTPError(404, f"Could not find requested resource notebook {notebook_id}")
 
             student = (
                 session.query(nbexchange.models.users.User)
-                .filter_by(name=student)
+                .filter_by(name=student_id)
                 .first()
             )
 
             if not student:
-                raise web.HTTPError(404, "Could not find requested resource")
+                raise web.HTTPError(404, f"Could not find requested resource student {student_id}")
 
             # raise Exception(f"{res}")
             self.log.info(f"Notebook: {notebook}")
@@ -163,7 +163,7 @@ class FeedbackHandler(BaseHandler):
             # Check whether there is an HTML file attached to the request
             if not self.request.files:
                 self.log.warning(
-                    f"Error: No file supplies in upload"
+                    f"Error: No file supplied in upload"
                 )  # TODO: improve error message
                 raise web.HTTPError(412)  # precondition failed
 

@@ -83,6 +83,12 @@ def get_files_dict(filename):
     return files
 
 
+def get_feedback_dict(filename):
+    with open(filename) as feedback_file:
+        files = {"feedback": ("feedback.html", feedback_file.read())}
+    return files
+
+
 class _AsyncRequests:
     """Wrapper around requests to return a Future from request methods
     A single thread is allocated to avoid blocking the IOLoop thread.

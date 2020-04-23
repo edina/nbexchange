@@ -221,10 +221,10 @@ class Assignment(BaseHandler):
                 try:
                     handle = open(release_file, "r+b")
                     data = handle.read()
-                    handle.close
+                    handle.close()
                 except Exception as e:  # TODO: exception handling
                     self.log.warning(f"Error: {e}")  # TODO: improve error message
-                    self.log.info(f"Unable to oprn file")
+                    self.log.info(f"Unable to open file")
 
                     # error 500??
                     raise Exception
@@ -365,6 +365,7 @@ class Assignment(BaseHandler):
             notebooks = self.get_arguments("notebooks")
 
             for notebook in notebooks:
+                self.log.error(f"Adding notebook {notebook}")
                 new_notebook = nbexchange.models.notebooks.Notebook(name=notebook)
                 assignment.notebooks.append(new_notebook)
 

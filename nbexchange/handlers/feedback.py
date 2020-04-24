@@ -64,9 +64,16 @@ class FeedbackHandler(BaseHandler):
             if not assignment:
                 raise web.HTTPError(404, "Could not find requested resource")
 
+            student = (
+                session.query(nbexchange.models.users.User)
+                .filter_by(name=this_user["name"])
+                .first()
+            )
+
             # Find feedback for this notebook
             res = (
                 session.query(nbexchange.models.feedback.Feedback)
+                .filter_by(student=student)
                 .join(nbexchange.models.notebooks.Notebook)
                 .filter_by(assignment=assignment)
                 .all()
@@ -94,37 +101,65 @@ class FeedbackHandler(BaseHandler):
         The endpoint return {'success': true} for all successful feedback releases.
         """
 
-        [course_id, assignment_id, notebook_id, student_id, timestamp, checksum] = self.get_params(
-            ["course_id", "assignment_id", "notebook", "student", "timestamp", "checksum"]
+        [
+            course_id,
+            assignment_id,
+            notebook_id,
+            student_id,
+            timestamp,
+            checksum,
+        ] = self.get_params(
+            [
+                "course_id",
+                "assignment_id",
+                "notebook",
+                "student",
+                "timestamp",
+                "checksum",
+            ]
         )
 
-        if not (course_id and assignment_id and notebook_id and student_id and timestamp and checksum):
+        if not (
+            course_id
+            and assignment_id
+            and notebook_id
+            and student_id
+            and timestamp
+            and checksum
+        ):
             note = "Feedback call requires a course id, assignment id, notebook name, student id, checksum and timestamp."
             self.log.debug(note)
             self.finish({"success": False, "note": note})
             return
 
         this_user = self.nbex_user
+        if course_id not in this_user["courses"]:
+            note = f"User not subscribed to course {course_id}"
+            self.log.info(note)
+            self.finish({"success": False, "note": note})
+            return
+
+        if (
+            "instructor" != this_user["current_role"].casefold()
+        ):  # we may need to revisit this
+            note = f"User not an instructor to course {course_id}"
+            self.log.info(note)
+            self.finish({"success": False, "note": note})
+            return
 
         with scoped_session() as session:
 
             # Start building feedback object
-
-            # TODO: Recalculate checksum and check
-            # unique_key = make_unique_key(
-            #     course_id,
-            #     assignment_id,
-            #     notebook,
-            #     student,
-            #     str(timestamp).strip(),
-            # )
 
             course = nbexchange.models.courses.Course.find_by_code(
                 db=session, code=course_id, org_id=this_user["org_id"], log=self.log
             )
 
             if not course:
-                raise web.HTTPError(404, f"Could not find requested resource course {course_id}")
+                self.log.info(f"Could not find requested resource course {course_id}")
+                raise web.HTTPError(
+                    404, f"Could not find requested resource course {course_id}"
+                )
 
             assignment = (
                 session.query(nbexchange.models.assignments.Assignment)
@@ -133,7 +168,12 @@ class FeedbackHandler(BaseHandler):
             )
 
             if not assignment:
-                raise web.HTTPError(404, f"Could not find requested resource assignment {assignment_id}")
+                self.log.info(
+                    f"Could not find requested resource assignment {assignment_id}"
+                )
+                raise web.HTTPError(
+                    404, f"Could not find requested resource assignment {assignment_id}"
+                )
 
             notebook = (
                 session.query(nbexchange.models.notebooks.Notebook)
@@ -142,7 +182,12 @@ class FeedbackHandler(BaseHandler):
             )
 
             if not notebook:
-                raise web.HTTPError(404, f"Could not find requested resource notebook {notebook_id}")
+                self.log.info(
+                    f"Could not find requested resource notebook {notebook_id}"
+                )
+                raise web.HTTPError(
+                    404, f"Could not find requested resource notebook {notebook_id}"
+                )
 
             student = (
                 session.query(nbexchange.models.users.User)
@@ -151,7 +196,10 @@ class FeedbackHandler(BaseHandler):
             )
 
             if not student:
-                raise web.HTTPError(404, f"Could not find requested resource student {student_id}")
+                self.log.info(f"Could not find requested resource student {student_id}")
+                raise web.HTTPError(
+                    404, f"Could not find requested resource student {student_id}"
+                )
 
             # raise Exception(f"{res}")
             self.log.info(f"Notebook: {notebook}")
@@ -179,10 +227,24 @@ class FeedbackHandler(BaseHandler):
                 fbfile = tempfile.NamedTemporaryFile()
                 fbfile.write(file_info["body"])
                 fbfile.seek(0)
-            except Exception:
-                # Could not grab the feedback file
-                raise web.HTTPError(412)
 
+            except Exception as e:
+                # Could not grab the feedback file
+                self.log.error(f"Error: {e}")
+                raise web.HTTPError(412)
+            # TODO: should we check the checksum?
+            # unique_key = make_unique_key(
+            #     course_id,
+            #     assignment_id,
+            #     notebook_id,
+            #     student_id,
+            #     str(timestamp).strip(),
+            # )
+            # check_checksum = notebook_hash(fbfile.name, unique_key)
+            #
+            # if check_checksum != checksum:
+            #     self.log.info(f"Checksum {checksum} does not match {check_checksum}")
+            #     raise web.HTTPError(403, f"Checksum {checksum} does not match {check_checksum}")
 
             # TODO: What is file of the original notebook we are getting the feedback for?
             # assignment_dir = "collected/student_id/assignment_name"

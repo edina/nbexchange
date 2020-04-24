@@ -40,6 +40,19 @@ user_brobbere_student = {
     "course_role": "Student",
 }
 
+user_lkihlman_instructor = {
+    "name": "1_lkihlman",
+    "course_id": "course_1",
+    "course_role": "Instructor",
+    "course_title": "A title",
+}
+
+user_lkihlman_student = {
+    "name": "1_lkihlman",
+    "course_id": "course_1",
+    "course_role": "Student",
+}
+
 
 def tar_source(filename):
 

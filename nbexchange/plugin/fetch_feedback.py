@@ -44,12 +44,16 @@ class ExchangeFetchFeedback(abc.ExchangeFetchFeedback, Exchange):
             root = os.path.join(self.coursedir.course_id, self.coursedir.assignment_id)
         else:
             root = self.coursedir.assignment_id
-        self.dest_path = os.path.abspath(os.path.join(self.assignment_dir, root, 'feedback'))
+        self.dest_path = os.path.abspath(
+            os.path.join(self.assignment_dir, root, "feedback")
+        )
         os.makedirs(self.dest_path + "/", exist_ok=True)
         self.log.debug(f"ExchangeFetchFeedback.init_dest ensuring {self.dest_path}")
 
     def download(self):
-        self.log.info(f"Download {quote_plus(self.coursedir.notebook_id)} from {self.service_url}")
+        self.log.info(
+            f"Download {quote_plus(self.coursedir.notebook_id)} from {self.service_url}"
+        )
         r = self.api_request(
             f"feedback?assignment_id={quote_plus(self.coursedir.assignment_id)}"
         )
@@ -60,7 +64,9 @@ class ExchangeFetchFeedback(abc.ExchangeFetchFeedback, Exchange):
         if "feedback" in content:
             for f in content["feedback"]:
                 try:
-                    with open(os.path.join(self.dest_path, f["filename"]), "wb") as handle:
+                    with open(
+                        os.path.join(self.dest_path, f["filename"]), "wb"
+                    ) as handle:
                         handle.write(base64.b64decode(f["content"]))
                 except Exception as e:  # TODO: exception handling
                     self.fail(str(e))

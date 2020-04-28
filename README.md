@@ -6,24 +6,23 @@ A Jupyterhub service that replaces the nbgrader Exchange.
 <!-- TOC -->
 
 - [Highlights of nbexchange](#highlights-of-nbexchange)
-    - [Compatibility](#compatibility)
+  - [Compatibility](#compatibility)
 - [Documentation](#documentation)
-    - [Database relationships](#database-relationships)
+  - [Database relationships](#database-relationships)
 - [Installing](#installing)
 - [Contributing](#contributing)
 - [Configuration](#configuration)
-    - [Configuring `nbexchange`](#configuring-nbexchange)
-    - [Configuring `nbgrader`](#configuring-nbgrader)
+  - [Configuring `nbexchange`](#configuring-nbexchange)
+  - [Configuring `nbgrader`](#configuring-nbgrader)
 - [Know To-Do stuff](#know-to-do-stuff)
 
 <!-- /TOC -->
 
 # Highlights of nbexchange
 
-
 From [nbgrader](https://github.com/jupyter/nbgrader): _Assignments_ are `created`, `generated`, `released`, `fetched`, `submitted`, `collected`, `graded`. Then `feedback` can be `generated`, `released`, and `fetched`.
 
-The exchange is responsible for recieving *release*/*fetch* path, and *submit*/*collect* cycle. It also allows *feedback* to be transferred from instructor to student.
+The exchange is responsible for recieving _release_/_fetch_ path, and _submit_/_collect_ cycle. It also allows _feedback_ to be transferred from instructor to student.
 
 In doing this, the exchange is the authoritative place to get a list of what's what.
 
@@ -42,18 +41,19 @@ This version is compatible with `nbgrader` 0.5
 This exchange has some fundamental design decisions driven by the environment which drove its creation.
 
 There are the following assumptions:
-* You have an API for authenticating users who connect to the exchange (probably Jupyterhub, but not always)
-* Usernames will be unique across the whole system
-* Internal storage is in two parts:
-    * An sql database for metadata, and
-    * A filesystem for, well, files.
-* There will always be a course_code
-    * There may be multiple assignments under one course,
-    * `assignment_code`s will be unique to a course
-    * `assignment_code`s may be repeated in different `organisation_id`
-* There will always be an `organisation_id`
-    * `course_code`s must be uniqie within an `organisation_id`,
-    * `course_code`s may be repeated in different `organisation_id`
+
+- You have an API for authenticating users who connect to the exchange (probably Jupyterhub, but not always)
+- Usernames will be unique across the whole system
+- Internal storage is in two parts:
+  - An sql database for metadata, and
+  - A filesystem for, well, files.
+- There will always be a course_code
+  - There may be multiple assignments under one course,
+  - `assignment_code`s will be unique to a course
+  - `assignment_code`s may be repeated in different `organisation_id`
+- There will always be an `organisation_id`
+  - `course_code`s must be uniqie within an `organisation_id`,
+  - `course_code`s may be repeated in different `organisation_id`
 
 All code should have `docstrings`.
 
@@ -65,9 +65,30 @@ Documentation currently in [docs/](docs/) - should be in readthedocs
 
 # Installing
 
-The exchange is designed to be deployed as a docker instance - either directly on a server, or in a K8 cluster (which is where it was originally developed for)
+Nbexchange can be installed as a Helm chart
 
-`nbgrader` requires a plugin (code included) for the 
+## Configuration
+
+| Parameter                                                     | Description                                                                                                                                                                  | Default                                                                                                   |
+| ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `replicaCount`                                            | Replica count                                                                                                                                                             | 1                                                                                |
+| `image.repository`                                            | Image repository                                                                                                                                                             | `registry.gitlab.edina.ac.uk:1875/naas/nbexchange`                                                                                |
+| `image.tag`                                                   | Image tag                                                                                                                                                                    | `latest`                                                                                                  |
+| `image.pullPolicy`                                            | Image pull policy                                                                                                                                                            | `IfNotPresent`                                                                                            |
+| `environment`                                              | Environment variables for the application                                                                                                                                          | `{}`                                                                                                      |
+| `service.type`                                                 | Type of Service                                                                                                                                     | `ClusterIP`                                                                                                    |
+| `service.port`                           | Port to expose service under                                                                                                | `9000`                                                                                                    |
+| `resources.requests.cpu`                             | CPU resource requests                      | `200m`                                                                                                        |
+| `resources.requests.memory`                             | Memory resource requests                      | `256Mi`                                                                                                        |
+| `tolerations`                                                 | Pod taint tolerations for deployment                                                                                                                                              | `[]`                                                                                                      |
+| `nodeSelector`                                                | Pod node selector for deployment                                                                                                                                               | `{}`                                                                                                      |
+
+
+## How to
+
+```
+helm install --name nbexchange --namespace default ./chart -f myconfiguration.yaml
+```
 
 # Contributing
 
@@ -77,8 +98,8 @@ See [Contributing.md](CONTRIBUTING.md)
 
 There are two parts to configuring `nbexchange`:
 
-* Configure `nbexchange` itself
-* Configure `nbgrader` to use `nbexchange`
+- Configure `nbexchange` itself
+- Configure `nbgrader` to use `nbexchange`
 
 ## Configuring `nbexchange`
 
@@ -88,7 +109,7 @@ The exchange uses `nbexchange_config.py` for configuration.
 from nbexchange.handlers.auth.user_handler import BaseUserHandler
 
 class MyUserHandler(BaseUserHandler):
-    
+
     def get_current_user(self, request):
         return {
           "name": "myname",
@@ -106,35 +127,35 @@ c.NbExchange.base_storage_location = /var/data/exchange/storage
 c.NbExchange.db_url = mysql://username:password@my.msql.server.host:3306/db_name
 ```
 
-* **`base_url`**
+- **`base_url`**
 
 This is the _service_ url for jupyterhub, and defaults to `/services/nbexchange/`
 
 Can also be defined in the environment variable `JUPYTERHUB_SERVICE_PREFIX`
 
-* **`base_storage_location`**
+- **`base_storage_location`**
 
 This is where the exchange will store the files uploaded, and defaults to `/tmp/courses`
 
 Can also be defined in the environment variable `NBEX_BASE_STORE`
 
-* **`db_url`**
+- **`db_url`**
 
 This is the database connector, and defaults to an in-memory SQLite (`sqlite:///:memory:`)
 
 Can also be defined in the environment variable `NBEX_DB_URL`
 
-* **`user_plugin_class`**
+- **`user_plugin_class`**
 
 This is a class that defines how `get_current_user` works.
 
 For the exchange to work, it needs some details about the user connecting to it - specifically, it needs 5 pieces of information:
 
-* `name`: The username of the person (eg `perllaghu`),
-* `course_id`: The course code as used in nbgrader (eg `cool_course`),
-* `course_title`: A long name for the course (eg `A course of understanding thermondynamics in bulk refrigerant transport"),
-* `course_role`: The role of the user, normally `Student` or `Instructor`. (currently only `Instructor` get privilaged actions),
-* `org_id`: As mentioned above, nbexchange divides courses and users across organisations. This is an id (numeric) for the org_id for the user.
+- `name`: The username of the person (eg `perllaghu`),
+- `course_id`: The course code as used in nbgrader (eg `cool_course`),
+- `course_title`: A long name for the course (eg `A course of understanding thermondynamics in bulk refrigerant transport"),
+- `course_role`: The role of the user, normally `Student` or `Instructor`. (currently only `Instructor` get privilaged actions),
+- `org_id`: As mentioned above, nbexchange divides courses and users across organisations. This is an id (numeric) for the org_id for the user.
 
 ## Configuring `nbgrader`
 
@@ -165,10 +186,10 @@ c.ExchangeFactory.submit = 'nbexchange.plugin.ExchangeSubmit'
 
 # Know To-Do stuff
 
-* ~~Get the initial code up~~
-* Get a master-branch established
-* Get proper install method for `nbgrader` external-exchange plugin
-* Get a `handlers/auth/user_handler` to get details from jupyterhub (users, courses, and assignments should all be in the config file)
-* ~Get travis? CI integration working~
-* Get an external sanity-check for the code
-* Get docs to ReadTheDocs
+- ~~Get the initial code up~~
+- Get a master-branch established
+- Get proper install method for `nbgrader` external-exchange plugin
+- Get a `handlers/auth/user_handler` to get details from jupyterhub (users, courses, and assignments should all be in the config file)
+- ~Get travis? CI integration working~
+- Get an external sanity-check for the code
+- Get docs to ReadTheDocs

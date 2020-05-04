@@ -84,13 +84,7 @@ def db():
     _db.commit()
     return _db
 
+
 # Docker images
-nbexchange_image = build(
-    path="."
-)
-container = container(
-    image='{nbexchange_image.id}',
-    ports={
-        '9000/tcp': None,
-    },
-)
+nbexchange_image = build(path=".")
+container = container(image="{nbexchange_image.id}", ports={"9000/tcp": None})

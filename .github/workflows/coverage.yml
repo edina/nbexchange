@@ -19,7 +19,6 @@ jobs:
       with:
         python-version: 3.7
     - name: Generate coverage report
-      uses: 'docker'
       run: |
         pip install .[test]
         pytest --cov=./ --cov-report=xml

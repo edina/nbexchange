@@ -36,6 +36,7 @@ TESTING = [
     "pytest",
     "pytest-cov",
     "pytest-tornado",
+    "pytest-docker-tools",
     "beautifulsoup4",
     "html5lib",
     "psycopg2-binary",

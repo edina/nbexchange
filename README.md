@@ -72,7 +72,7 @@ Nbexchange can be installed as a Helm chart
 | Parameter                                                     | Description                                                                                                                                                                  | Default                                                                                                   |
 | ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
 | `replicaCount`                                            | Replica count                                                                                                                                                             | 1                                                                                |
-| `image.repository`                                            | Image repository                                                                                                                                                             | `registry.gitlab.edina.ac.uk:1875/naas/nbexchange`                                                                                |
+| `image.repository`                                            | Image repository                                                                                                                                                             | `quay.io/noteable/nbexchange`                                                                                |
 | `image.tag`                                                   | Image tag                                                                                                                                                                    | `latest`                                                                                                  |
 | `image.pullPolicy`                                            | Image pull policy                                                                                                                                                            | `IfNotPresent`                                                                                            |
 | `environment`                                              | Environment variables for the application                                                                                                                                          | `{}`                                                                                                      |
@@ -188,8 +188,6 @@ c.ExchangeFactory.submit = 'nbexchange.plugin.ExchangeSubmit'
 
 - ~~Get the initial code up~~
 - Get a master-branch established
-- Get proper install method for `nbgrader` external-exchange plugin
 - Get a `handlers/auth/user_handler` to get details from jupyterhub (users, courses, and assignments should all be in the config file)
-- ~Get travis? CI integration working~
 - Get an external sanity-check for the code
 - Get docs to ReadTheDocs

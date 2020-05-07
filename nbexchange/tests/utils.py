@@ -125,9 +125,9 @@ class _AsyncRequests:
 # async_requests.get = requests.get returning a Future, etc.
 async_requests = _AsyncRequests()
 
+
 class AsyncSession(requests.Session):
     """requests.Session object that runs in the background thread"""
 
     def request(self, *args, **kwargs):
         return async_requests.executor.submit(super().request, *args, **kwargs)
-

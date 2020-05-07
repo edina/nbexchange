@@ -18,7 +18,6 @@ be mocking it when testing the other classes.
 """
 
 
-
 @pytest.mark.gen_test
 def test_exhange_api_request_post():
     plugin = Exchange()
@@ -64,6 +63,7 @@ def test_exhange_api_request_delete():
     else:
         del os.environ["NAAS_JWT"]
 
+
 @pytest.mark.gen_test
 def test_exhange_api_request_get():
     plugin = Exchange()
@@ -85,4 +85,3 @@ def test_exhange_api_request_get():
         os.environ["NAAS_JWT"] = naas_token
     else:
         del os.environ["NAAS_JWT"]
-

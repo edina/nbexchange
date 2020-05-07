@@ -14,11 +14,20 @@ logger.setLevel(logging.ERROR)
 
 
 def test_(plugin_config):
-    plugin = ExchangeFetchFeedback(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
+    plugin = ExchangeFetchFeedback(
+        coursedir=CourseDirectory(config=plugin_config), config=plugin_config
+    )
 
     def api_request(*args, **kwargs):
-        return type("Response", (object,), {"status_code": 202, "headers": {'content-type': 'text/json'}, "json": lambda: {'success': True, "feedback": ""}})
-
+        return type(
+            "Response",
+            (object,),
+            {
+                "status_code": 202,
+                "headers": {"content-type": "text/json"},
+                "json": lambda: {"success": True, "feedback": ""},
+            },
+        )
 
     with patch.object(Exchange, "api_request", side_effect=api_request):
         called = plugin.start()

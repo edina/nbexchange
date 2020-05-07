@@ -7,6 +7,7 @@ from mock import patch
 from nbexchange.handlers.base import BaseHandler
 from nbexchange.tests.utils import (
     async_requests,
+    AsyncSession,
     get_feedback_dict,
     get_files_dict,
     user_brobbere_student,

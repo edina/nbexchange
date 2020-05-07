@@ -15,6 +15,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 root = os.path.join(here, os.pardir, os.pardir)
 
 testing_config = os.path.join(here, "testing_config.py")
+testing_plugin_config = os.path.join(here, "testing_plugin_config.py")
 logger = logging.getLogger(__name__)
 
 # global db session object
@@ -42,6 +43,13 @@ def _nbexchange_config():
     so that it can have a different scope (only once per session).
     """
     cfg = PyFileConfigLoader(testing_config).load_config()
+
+    return cfg
+
+
+@pytest.fixture(scope="session")
+def plugin_config():
+    cfg = PyFileConfigLoader(testing_plugin_config).load_config()
 
     return cfg
 

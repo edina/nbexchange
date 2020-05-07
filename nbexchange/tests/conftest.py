@@ -6,6 +6,7 @@ import logging
 from getpass import getuser
 from tornado import ioloop
 from traitlets.config.loader import PyFileConfigLoader
+from pytest_docker_tools import build, container
 
 import nbexchange.models.users
 from nbexchange.database import Session
@@ -90,3 +91,8 @@ def db():
     _db.add(user)
     _db.commit()
     return _db
+
+
+# Docker images
+nbexchange_image = build(path=".")
+container = container(image="{nbexchange_image.id}", ports={"9000/tcp": None})

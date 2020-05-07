@@ -1,17 +1,2 @@
-alembic
-aiocontextvars
-bs4
-datetime
-gevent
-jinja2
-jupyterhub
-nbgrader
-notebook
-psycopg2-binary
-raven
-selenium
-sentry-sdk
-sqlalchemy
-tornado==5.1.1
-traitlets
-wheel
+# Requirments are in setup.py
+.

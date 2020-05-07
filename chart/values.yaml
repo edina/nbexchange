@@ -5,7 +5,7 @@
 replicaCount: 1
 
 image:
-  repository: registry.gitlab.edina.ac.uk:1875/naas/nbexchange
+  repository: quay.io/noteable/nbexchange
   tag: latest
   pullPolicy: IfNotPresent
 

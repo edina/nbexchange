@@ -15,7 +15,7 @@ COPY requirements.txt /usr/src/app
 COPY scripts /usr/src/app/scripts
 COPY nbexchange /usr/src/app/nbexchange
 # Install dependencies
-RUN pip install -r requirements.txt
+RUN python setup.py install
 
 # Set commit sha as an environment variable
 ENV COMMIT_SHA=${COMMIT}

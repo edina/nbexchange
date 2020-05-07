@@ -5,7 +5,7 @@
   "author": "Bert Robberechts, Ian Stuart",
   "license": "BSD-3-Clause",
   "bugs": {
-    "url": "https://gitlab.edina.ac.uk/naas"
+    "url": "https://github.com/edina/nbexchange"
   },
-  "homepage": "https://gitlab.edina.ac.uk/naas"
+  "homepage": "https://github.com/edina/nbexchange"
 }

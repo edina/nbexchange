@@ -29,7 +29,7 @@ REQUIRED = [
     "jupyterhub",
     "sentry-sdk==0.9.0",
     "sqlalchemy==1.2.18",
-    "nbgrader"
+    "nbgrader @ https://github.com/lzach/nbgrader/tarball/pluggable_exchange#egg=nbgrader-0.7.0.dev"
 ]
 
 # What packages are required for testing?

@@ -648,7 +648,7 @@ def test_feedback_get_authenticated_with_incorrect_student(app):
     assert response_data["success"] is True
     assert len(response_data["feedback"]) == 0
 
-@pytest.mark.focus
+
 @pytest.mark.gen_test
 def test_feedback_get_authenticated_with_correct_params(app):
     assignment_id = "assign_a"
@@ -705,4 +705,6 @@ def test_feedback_get_authenticated_with_correct_params(app):
     response_data = r.json()
     assert response_data["success"] is True
     assert len(response_data["feedback"]) >= 1
-    assert response_data["feedback"][0].get("content") == feedback_base64.decode("utf-8")
+    assert response_data["feedback"][0].get("content") == feedback_base64.decode(
+        "utf-8"
+    )

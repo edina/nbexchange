@@ -1,5 +1,6 @@
 import datetime
 import sys
+import base64
 
 import pytest
 from mock import patch
@@ -44,6 +45,7 @@ def submit_assignment(app, course, assignment, uploads, notebooks=None):
 # set up the file to be uploaded
 feedback_filename = sys.argv[0]  # ourself :)
 feedbacks = get_feedback_dict(feedback_filename)
+feedback_base64 = base64.b64encode(open(sys.argv[0]).read().encode("utf-8"))
 files = get_files_dict(sys.argv[0])  # ourself :)
 
 
@@ -646,7 +648,7 @@ def test_feedback_get_authenticated_with_incorrect_student(app):
     assert response_data["success"] is True
     assert len(response_data["feedback"]) == 0
 
-
+@pytest.mark.focus
 @pytest.mark.gen_test
 def test_feedback_get_authenticated_with_correct_params(app):
     assignment_id = "assign_a"
@@ -702,3 +704,5 @@ def test_feedback_get_authenticated_with_correct_params(app):
     assert r.status_code == 200
     response_data = r.json()
     assert response_data["success"] is True
+    assert len(response_data["feedback"]) >= 1
+    assert response_data["feedback"][0].get("content") == feedback_base64.decode("utf-8")

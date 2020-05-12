@@ -82,7 +82,6 @@ def test_feedback_authenticated_with_params(app):
 
 @pytest.mark.gen_test
 def test_feedback_post_unauthenticated(app):
-    async_requests.set_session()
     """
     Require authenticated user for posting
     """
@@ -92,7 +91,6 @@ def test_feedback_post_unauthenticated(app):
 
 @pytest.mark.gen_test
 def test_feedback_post_authenticated_no_params(app):
-    async_requests.set_session()
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):

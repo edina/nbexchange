@@ -1,5 +1,6 @@
 # async-request utility from jupyterhub.tests.utils v0.8.1
 # used under BSD license
+import base64
 import glob
 import io
 import json
@@ -100,6 +101,12 @@ def get_files_dict(filename):
 def get_feedback_dict(filename):
     with open(filename) as feedback_file:
         files = {"feedback": ("feedback.html", feedback_file.read())}
+    return files
+
+
+def get_feedback_file(filename):
+    with open(filename, "rb") as feedback_file:
+        files = base64.b64encode(feedback_file.read())
     return files
 
 

@@ -73,9 +73,9 @@ class FeedbackHandler(BaseHandler):
             # Find feedback for this notebook
             res = (
                 session.query(nbexchange.models.feedback.Feedback)
-                .filter_by(student=student)
+                .filter_by(student_id=student.id)
                 .join(nbexchange.models.notebooks.Notebook)
-                .filter_by(assignment=assignment)
+                .filter_by(assignment_id=assignment.id)
                 .all()
             )
             feedbacks = []

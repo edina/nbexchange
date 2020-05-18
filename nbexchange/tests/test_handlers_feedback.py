@@ -88,7 +88,7 @@ def test_feedback_post_unauthenticated(app):
     """
     Require authenticated user for posting
     """
-    r = yield session.post(app.url + "/feedback", files=feedbacks)
+    r = yield async_requests.post(app.url + "/feedback", files=feedbacks)
     assert r.status_code == 403
 
 
@@ -97,7 +97,7 @@ def test_feedback_post_authenticated_no_params(app):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):
-        r = yield session.post(app.url + "/feedback", files=feedbacks)
+        r = yield async_requests.post(app.url + "/feedback", files=feedbacks)
     response_data = r.json()
     assert response_data["success"] is False
     assert (

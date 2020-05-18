@@ -52,7 +52,7 @@ class ExchangeFetchFeedback(abc.ExchangeFetchFeedback, Exchange):
 
     def download(self):
         self.log.info(
-            f"Download {quote_plus(self.coursedir.notebook_id)} from {self.service_url}"
+            f"Download feedback for {quote_plus(self.coursedir.notebook_id)} from {self.service_url}"
         )
         r = self.api_request(
             f"feedback?assignment_id={quote_plus(self.coursedir.assignment_id)}"
@@ -64,9 +64,14 @@ class ExchangeFetchFeedback(abc.ExchangeFetchFeedback, Exchange):
         if "feedback" in content:
             for f in content["feedback"]:
                 try:
-                    os.makedirs(os.path.join(self.dest_path, str(f["timestamp"])), exist_ok=True)
+                    os.makedirs(
+                        os.path.join(self.dest_path, str(f["timestamp"])), exist_ok=True
+                    )
                     with open(
-                        os.path.join(self.dest_path, str(f["timestamp"]), f["filename"]), "wb"
+                        os.path.join(
+                            self.dest_path, str(f["timestamp"]), f["filename"]
+                        ),
+                        "wb",
                     ) as handle:
                         handle.write(base64.b64decode(f["content"]))
                 except Exception as e:  # TODO: exception handling

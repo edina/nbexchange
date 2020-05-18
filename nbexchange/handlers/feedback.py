@@ -43,6 +43,8 @@ class FeedbackHandler(BaseHandler):
 
         [assignment_id] = self.get_params(["assignment_id"])
 
+        self.log.info("checking for feedback for " + str(assignment_id))
+
         if not assignment_id:
             note = "Feedback call requires an assignment id."
             self.log.info(note)
@@ -81,14 +83,22 @@ class FeedbackHandler(BaseHandler):
             feedbacks = []
             for r in res:
                 f = {}
+                notebook = (
+                    session.query(nbexchange.models.notebooks.Notebook)
+                    .filter_by(id=r.notebook_id)
+                    .first()
+                )
+                if notebook is not None:
+                    feedback_name = "{0}.html".format(notebook.name)
+                else:
+                    feedback_name = os.path.basename(r.location)
                 with open(r.location, "r+b") as fp:
                     f["content"] = base64.b64encode(fp.read()).decode("utf-8")
-                f["filename"] = os.path.basename(r.location)
+                f["filename"] = feedback_name
                 f["timestamp"] = r.timestamp
                 f["checksum"] = r.checksum
                 feedbacks.append(f)
 
-            self.log.info(res)
             self.finish({"success": True, "feedback": feedbacks})
 
     @authenticated

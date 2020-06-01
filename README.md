@@ -1,5 +1,6 @@
 ![Linted](https://github.com/edina/nbexchange/workflows/Linted/badge.svg?branch=prepare_for_public_release)
 [![codecov](https://codecov.io/gh/edina/nbexchange/branch/prepare_for_public_release/graph/badge.svg)](https://codecov.io/gh/edina/nbexchange)
+[![Docker Repository](https://quay.io/repository/noteable/nbexchange/status "Docker Repository on Quay")](https://quay.io/repository/noteable/nbexchange)
 
 A Jupyterhub service that replaces the nbgrader Exchange.
 

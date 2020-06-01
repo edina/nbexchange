@@ -93,8 +93,7 @@ class Assignments(BaseHandler):
                             action.action
                             == nbexchange.models.actions.AssignmentActions.submitted
                         ):
-
-                            feedback_available = bool(
+                            feedback = (
                                 session.query(nbexchange.models.feedback.Feedback)
                                 .filter_by(
                                     notebook_id=notebook.id,
@@ -102,15 +101,21 @@ class Assignments(BaseHandler):
                                 )
                                 .first()
                             )
+                            feedback_available = bool(feedback)
+                            feedback_timestamp = (
+                                feedback.timestamp if feedback_available else None
+                            )
 
                         else:
                             feedback_available = False
+                            feedback_timestamp = None
 
                         notebooks.append(
                             {
                                 "name": notebook.name,
                                 "has_exchange_feedback": feedback_available,
                                 "feedback_updated": False,  # TODO: needs a real value
+                                "feedback_timestamp": feedback_timestamp,
                             }
                         )
                     models.append(

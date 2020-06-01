@@ -188,7 +188,22 @@ class ExchangeList(abc.ExchangeList, Exchange):
                     continue
 
             # "Submitted" assignments [may] have feedback
-            if assignment.get("status") == "released":
+            if assignment.get("status") in ["released", "submitted"]:
+                local_feedback_dir = None
+                for notebook in assignment["notebooks"]:
+                    feedback_timestamp = str(notebook["feedback_timestamp"])
+                    local_feedback_dir = os.path.relpath(
+                        os.path.join(
+                            assignment_directory, "feedback", feedback_timestamp
+                        )
+                    )
+                    local_feedback_path = os.path.join(
+                        local_feedback_dir, "{0}.html".format(notebook["name"])
+                    )
+                    has_local_feedback = os.path.isfile(local_feedback_path)
+                    notebook["has_local_feedback"] = has_local_feedback
+                    notebook["local_feedback_path"] = local_feedback_path
+
                 if assignment["notebooks"]:
                     has_local_feedback = all(
                         [nb["has_local_feedback"] for nb in assignment["notebooks"]]
@@ -207,8 +222,7 @@ class ExchangeList(abc.ExchangeList, Exchange):
                 assignment["has_local_feedback"] = has_local_feedback
                 assignment["has_exchange_feedback"] = has_exchange_feedback
                 assignment["feedback_updated"] = feedback_updated
-                assignment["local_feedback_path"] = None
-
+                assignment["local_feedback_path"] = local_feedback_dir
                 # We keep everything we've not filtered out
             my_assignments.append(assignment)
 

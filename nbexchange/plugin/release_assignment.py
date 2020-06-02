@@ -41,7 +41,7 @@ class ExchangeReleaseAssignment(abc.ExchangeReleaseAssignment, Exchange):
             if os.path.isdir(source):
                 # Looks like the instructor forgot to assign
                 self.fail(
-                    "Assignment found in '{source}' but not '{self.src_path}', run `nbgrader assign` first."
+                    f"Assignment found in '{source}' but not '{self.src_path}', run `nbgrader assign` first."
                 )
             else:
                 self._assignment_not_found(

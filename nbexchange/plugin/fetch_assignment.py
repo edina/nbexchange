@@ -33,14 +33,12 @@ class ExchangeFetchAssignment(abc.ExchangeFetchAssignment, Exchange):
             f"ExchangeFetch.init_src using {self.course_id} {self.coursedir.assignment_id}"
         )
 
-        location = "/".join(
-            [
+        location = os.path.join(
                 "/tmp/",
                 new_uuid(),
                 self.course_id,
                 self.coursedir.assignment_id,
                 "assignment.tar.gz",
-            ]
         )
         os.makedirs(os.path.dirname(location), exist_ok=True)
         self.src_path = location
@@ -76,7 +74,7 @@ class ExchangeFetchAssignment(abc.ExchangeFetchAssignment, Exchange):
             with tarfile.open(fileobj=tar_file) as handle:
                 handle.extractall(path=self.src_path)
         except Exception as e:  # TODO: exception handling
-            self.fail(e.message)
+            self.fail(str(e))
 
     def copy_if_missing(self, src, dest, ignore=None):
         filenames = sorted(os.listdir(src))

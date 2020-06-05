@@ -18,14 +18,22 @@ logger = logging.getLogger(__file__)
 logger.setLevel(logging.ERROR)
 
 
-feedback1_filename = os.path.join(os.path.dirname(__file__), "data", "assignment-0.6.html")
+feedback1_filename = os.path.join(
+    os.path.dirname(__file__), "data", "assignment-0.6.html"
+)
 feedback1_file = get_feedback_file(feedback1_filename)
-feedback2_filename = os.path.join(os.path.dirname(__file__), "data", "assignment-0.6-wrong.html")
+feedback2_filename = os.path.join(
+    os.path.dirname(__file__), "data", "assignment-0.6-wrong.html"
+)
 feedback12_file = get_feedback_file(feedback1_filename)
 
-notebook1_filename = os.path.join(os.path.dirname(__file__), "data", "assignment-0.6.ipynb")
+notebook1_filename = os.path.join(
+    os.path.dirname(__file__), "data", "assignment-0.6.ipynb"
+)
 notebook1_file = get_feedback_file(notebook1_filename)
-notebook2_filename = os.path.join(os.path.dirname(__file__), "data", "assignment-0.6-wrong.ipynb")
+notebook2_filename = os.path.join(
+    os.path.dirname(__file__), "data", "assignment-0.6-wrong.ipynb"
+)
 notebook2_file = get_feedback_file(notebook2_filename)
 
 
@@ -39,19 +47,57 @@ def test_release_feedback_fetch_normal(plugin_config, tmpdir):
         tmpdir.mkdir("submitted_test").realpath()
     )
     plugin_config.CourseDirectory.assignment_id = "assign_1"
-    os.makedirs(os.path.join(plugin_config.CourseDirectory.feedback_directory, "1", "assign_1"), exist_ok=True)
-    os.makedirs(os.path.join(plugin_config.CourseDirectory.submitted_directory, "1", "assign_1"), exist_ok=True)
+    os.makedirs(
+        os.path.join(plugin_config.CourseDirectory.feedback_directory, "1", "assign_1"),
+        exist_ok=True,
+    )
+    os.makedirs(
+        os.path.join(
+            plugin_config.CourseDirectory.submitted_directory, "1", "assign_1"
+        ),
+        exist_ok=True,
+    )
 
-    feedback_filename_uploaded = os.path.join(plugin_config.CourseDirectory.feedback_directory, "1", "assign_1", "feedback.html")
+    feedback_filename_uploaded = os.path.join(
+        plugin_config.CourseDirectory.feedback_directory,
+        "1",
+        "assign_1",
+        "feedback.html",
+    )
     copyfile(feedback1_filename, feedback_filename_uploaded)
 
-    copyfile(notebook1_filename,
-             os.path.join(plugin_config.CourseDirectory.submitted_directory, "1", "assign_1", "feedback.ipynb"))
-    with open(os.path.join(plugin_config.CourseDirectory.feedback_directory, "1", "assign_1", "timestamp.txt"), "w") as fp:
+    copyfile(
+        notebook1_filename,
+        os.path.join(
+            plugin_config.CourseDirectory.submitted_directory,
+            "1",
+            "assign_1",
+            "feedback.ipynb",
+        ),
+    )
+    with open(
+        os.path.join(
+            plugin_config.CourseDirectory.feedback_directory,
+            "1",
+            "assign_1",
+            "timestamp.txt",
+        ),
+        "w",
+    ) as fp:
         fp.write("2020-01-01 00:00.0 UTC")
 
-    unique_key = make_unique_key("no_course", "assign_1", "feedback", "1", "2020-01-01 00:00.0 UTC")
-    checksum = notebook_hash(os.path.join(plugin_config.CourseDirectory.submitted_directory, "1", "assign_1", "feedback.ipynb"), unique_key)
+    unique_key = make_unique_key(
+        "no_course", "assign_1", "feedback", "1", "2020-01-01 00:00.0 UTC"
+    )
+    checksum = notebook_hash(
+        os.path.join(
+            plugin_config.CourseDirectory.submitted_directory,
+            "1",
+            "assign_1",
+            "feedback.ipynb",
+        ),
+        unique_key,
+    )
 
     plugin = ExchangeReleaseFeedback(
         coursedir=CourseDirectory(config=plugin_config), config=plugin_config
@@ -68,8 +114,14 @@ def test_release_feedback_fetch_normal(plugin_config, tmpdir):
         )
         assert kwargs.get("method").lower() == "post"
         assert "feedback" in kwargs.get("files")
-        assert ("feedback.html", open(feedback_filename_uploaded).read()) == kwargs.get("files").get("feedback")
-        return type("Request", (object,), {"status_code": 200, "json": (lambda: {"success": True})})
+        assert ("feedback.html", open(feedback_filename_uploaded).read()) == kwargs.get(
+            "files"
+        ).get("feedback")
+        return type(
+            "Request",
+            (object,),
+            {"status_code": 200, "json": (lambda: {"success": True})},
+        )
 
     with patch.object(Exchange, "api_request", side_effect=api_request):
         called = plugin.start()
@@ -85,23 +137,84 @@ def test_release_feedback_fetch_several_normal(plugin_config, tmpdir):
         tmpdir.mkdir("submitted_test").realpath()
     )
     plugin_config.CourseDirectory.assignment_id = "assign_1"
-    os.makedirs(os.path.join(plugin_config.CourseDirectory.feedback_directory, "1", "assign_1"), exist_ok=True)
-    os.makedirs(os.path.join(plugin_config.CourseDirectory.submitted_directory, "1", "assign_1"), exist_ok=True)
-    feedback1_filename_uploaded = os.path.join(plugin_config.CourseDirectory.feedback_directory, "1", "assign_1", "feedback1.html")
+    os.makedirs(
+        os.path.join(plugin_config.CourseDirectory.feedback_directory, "1", "assign_1"),
+        exist_ok=True,
+    )
+    os.makedirs(
+        os.path.join(
+            plugin_config.CourseDirectory.submitted_directory, "1", "assign_1"
+        ),
+        exist_ok=True,
+    )
+    feedback1_filename_uploaded = os.path.join(
+        plugin_config.CourseDirectory.feedback_directory,
+        "1",
+        "assign_1",
+        "feedback1.html",
+    )
     copyfile(feedback1_filename, feedback1_filename_uploaded)
-    copyfile(notebook1_filename, os.path.join(plugin_config.CourseDirectory.submitted_directory, "1", "assign_1", "feedback1.ipynb"))
+    copyfile(
+        notebook1_filename,
+        os.path.join(
+            plugin_config.CourseDirectory.submitted_directory,
+            "1",
+            "assign_1",
+            "feedback1.ipynb",
+        ),
+    )
 
-    feedback2_filename_uploaded = os.path.join(plugin_config.CourseDirectory.feedback_directory, "1", "assign_1", "feedback2.html")
+    feedback2_filename_uploaded = os.path.join(
+        plugin_config.CourseDirectory.feedback_directory,
+        "1",
+        "assign_1",
+        "feedback2.html",
+    )
     copyfile(feedback2_filename, feedback2_filename_uploaded)
-    copyfile(notebook2_filename, os.path.join(plugin_config.CourseDirectory.submitted_directory, "1", "assign_1", "feedback2.ipynb"))
+    copyfile(
+        notebook2_filename,
+        os.path.join(
+            plugin_config.CourseDirectory.submitted_directory,
+            "1",
+            "assign_1",
+            "feedback2.ipynb",
+        ),
+    )
 
+    unique_key1 = make_unique_key(
+        "no_course", "assign_1", "feedback1", "1", "2020-01-01 01:00.0 UTC"
+    )
+    checksum1 = notebook_hash(
+        os.path.join(
+            plugin_config.CourseDirectory.submitted_directory,
+            "1",
+            "assign_1",
+            "feedback1.ipynb",
+        ),
+        unique_key1,
+    )
+    unique_key2 = make_unique_key(
+        "no_course", "assign_1", "feedback2", "1", "2020-01-01 01:00.0 UTC"
+    )
+    checksum2 = notebook_hash(
+        os.path.join(
+            plugin_config.CourseDirectory.submitted_directory,
+            "1",
+            "assign_1",
+            "feedback2.ipynb",
+        ),
+        unique_key2,
+    )
 
-    unique_key1 = make_unique_key("no_course", "assign_1", "feedback1", "1", "2020-01-01 01:00.0 UTC")
-    checksum1 = notebook_hash(os.path.join(plugin_config.CourseDirectory.submitted_directory, "1", "assign_1", "feedback1.ipynb"), unique_key1)
-    unique_key2 = make_unique_key("no_course", "assign_1", "feedback2", "1", "2020-01-01 01:00.0 UTC")
-    checksum2 = notebook_hash(os.path.join(plugin_config.CourseDirectory.submitted_directory, "1", "assign_1", "feedback2.ipynb"), unique_key2)
-
-    with open(os.path.join(plugin_config.CourseDirectory.feedback_directory, "1", "assign_1", "timestamp.txt"), "w") as fp:
+    with open(
+        os.path.join(
+            plugin_config.CourseDirectory.feedback_directory,
+            "1",
+            "assign_1",
+            "timestamp.txt",
+        ),
+        "w",
+    ) as fp:
         fp.write("2020-01-01 01:00.0 UTC")
 
     plugin = ExchangeReleaseFeedback(
@@ -125,7 +238,10 @@ def test_release_feedback_fetch_several_normal(plugin_config, tmpdir):
             )
             assert kwargs.get("method").lower() == "post"
             assert "feedback" in kwargs.get("files")
-            assert ("feedback.html", open(feedback1_filename_uploaded).read()) == kwargs.get("files").get("feedback")
+            assert (
+                "feedback.html",
+                open(feedback1_filename_uploaded).read(),
+            ) == kwargs.get("files").get("feedback")
 
         elif "feedback2" in args[0]:
             assert seen_feedback2 is False
@@ -140,11 +256,17 @@ def test_release_feedback_fetch_several_normal(plugin_config, tmpdir):
             )
             assert kwargs.get("method").lower() == "post"
             assert "feedback" in kwargs.get("files")
-            assert ("feedback.html", open(feedback2_filename_uploaded).read()) == kwargs.get("files").get(
-                "feedback")
+            assert (
+                "feedback.html",
+                open(feedback2_filename_uploaded).read(),
+            ) == kwargs.get("files").get("feedback")
         else:
             assert False
-        return type("Request", (object,), {"status_code": 200, "json": (lambda: {"success": True})})
+        return type(
+            "Request",
+            (object,),
+            {"status_code": 200, "json": (lambda: {"success": True})},
+        )
 
     with patch.object(Exchange, "api_request", side_effect=api_request):
         called = plugin.start()
@@ -161,15 +283,43 @@ def test_release_feedback_fetch_fail(plugin_config, tmpdir):
         tmpdir.mkdir("submitted_test").realpath()
     )
     plugin_config.CourseDirectory.assignment_id = "assign_1"
-    os.makedirs(os.path.join(plugin_config.CourseDirectory.feedback_directory, "1", "assign_1"), exist_ok=True)
-    os.makedirs(os.path.join(plugin_config.CourseDirectory.submitted_directory, "1", "assign_1"), exist_ok=True)
+    os.makedirs(
+        os.path.join(plugin_config.CourseDirectory.feedback_directory, "1", "assign_1"),
+        exist_ok=True,
+    )
+    os.makedirs(
+        os.path.join(
+            plugin_config.CourseDirectory.submitted_directory, "1", "assign_1"
+        ),
+        exist_ok=True,
+    )
 
-    feedback_filename_uploaded = os.path.join(plugin_config.CourseDirectory.feedback_directory, "1", "assign_1", "feedback.html")
+    feedback_filename_uploaded = os.path.join(
+        plugin_config.CourseDirectory.feedback_directory,
+        "1",
+        "assign_1",
+        "feedback.html",
+    )
     copyfile(feedback1_filename, feedback_filename_uploaded)
 
-    copyfile(notebook1_filename,
-             os.path.join(plugin_config.CourseDirectory.submitted_directory, "1", "assign_1", "feedback.ipynb"))
-    with open(os.path.join(plugin_config.CourseDirectory.feedback_directory, "1", "assign_1", "timestamp.txt"), "w") as fp:
+    copyfile(
+        notebook1_filename,
+        os.path.join(
+            plugin_config.CourseDirectory.submitted_directory,
+            "1",
+            "assign_1",
+            "feedback.ipynb",
+        ),
+    )
+    with open(
+        os.path.join(
+            plugin_config.CourseDirectory.feedback_directory,
+            "1",
+            "assign_1",
+            "timestamp.txt",
+        ),
+        "w",
+    ) as fp:
         fp.write("2020-01-01 00:00.0 UTC")
 
     plugin = ExchangeReleaseFeedback(
@@ -177,7 +327,14 @@ def test_release_feedback_fetch_fail(plugin_config, tmpdir):
     )
 
     def api_request(*args, **kwargs):
-        return type("Request", (object,), {"status_code": 200, "json": (lambda: {"success": False, "note": "failure note"})})
+        return type(
+            "Request",
+            (object,),
+            {
+                "status_code": 200,
+                "json": (lambda: {"success": False, "note": "failure note"}),
+            },
+        )
 
     with patch.object(Exchange, "api_request", side_effect=api_request):
         with pytest.raises(ExchangeError) as e_info:

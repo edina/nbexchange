@@ -34,11 +34,11 @@ class ExchangeFetchAssignment(abc.ExchangeFetchAssignment, Exchange):
         )
 
         location = os.path.join(
-                "/tmp/",
-                new_uuid(),
-                self.course_id,
-                self.coursedir.assignment_id,
-                "assignment.tar.gz",
+            "/tmp/",
+            new_uuid(),
+            self.course_id,
+            self.coursedir.assignment_id,
+            "assignment.tar.gz",
         )
         os.makedirs(os.path.dirname(location), exist_ok=True)
         self.src_path = location

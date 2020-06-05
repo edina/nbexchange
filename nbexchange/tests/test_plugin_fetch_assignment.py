@@ -18,9 +18,13 @@ logger = logging.getLogger(__file__)
 logger.setLevel(logging.ERROR)
 
 
-notebook1_filename = os.path.join(os.path.dirname(__file__), "data", "assignment-0.6.ipynb")
+notebook1_filename = os.path.join(
+    os.path.dirname(__file__), "data", "assignment-0.6.ipynb"
+)
 notebook1_file = get_feedback_file(notebook1_filename)
-notebook2_filename = os.path.join(os.path.dirname(__file__), "data", "assignment-0.6-wrong.ipynb")
+notebook2_filename = os.path.join(
+    os.path.dirname(__file__), "data", "assignment-0.6-wrong.ipynb"
+)
 notebook2_file = get_feedback_file(notebook2_filename)
 
 
@@ -34,11 +38,14 @@ def test_fetch_assignment_fetch_normal(plugin_config, tmpdir):
     )
 
     try:
+
         def api_request(*args, **kwargs):
             tar_file = io.BytesIO()
 
             with tarfile.open(fileobj=tar_file, mode="w:gz") as tar_handle:
-                tar_handle.add(notebook1_filename, arcname=os.path.basename(notebook1_filename))
+                tar_handle.add(
+                    notebook1_filename, arcname=os.path.basename(notebook1_filename)
+                )
             tar_file.seek(0)
 
             assert args[0] == (
@@ -58,9 +65,7 @@ def test_fetch_assignment_fetch_normal(plugin_config, tmpdir):
         with patch.object(Exchange, "api_request", side_effect=api_request):
             called = plugin.start()
             assert os.path.exists(
-                os.path.join(
-                    plugin.dest_path,  "assignment-0.6.ipynb"
-                )
+                os.path.join(plugin.dest_path, "assignment-0.6.ipynb")
             )
     finally:
         shutil.rmtree(plugin.dest_path)
@@ -80,8 +85,12 @@ def test_fetch_assignment_fetch_several_normal(plugin_config, tmpdir):
             tar_file = io.BytesIO()
 
             with tarfile.open(fileobj=tar_file, mode="w:gz") as tar_handle:
-                tar_handle.add(notebook1_filename, arcname=os.path.basename(notebook1_filename))
-                tar_handle.add(notebook2_filename, arcname=os.path.basename(notebook2_filename))
+                tar_handle.add(
+                    notebook1_filename, arcname=os.path.basename(notebook1_filename)
+                )
+                tar_handle.add(
+                    notebook2_filename, arcname=os.path.basename(notebook2_filename)
+                )
             tar_file.seek(0)
 
             assert args[0] == (
@@ -101,14 +110,10 @@ def test_fetch_assignment_fetch_several_normal(plugin_config, tmpdir):
         with patch.object(Exchange, "api_request", side_effect=api_request):
             called = plugin.start()
             assert os.path.exists(
-                os.path.join(
-                    plugin.dest_path,  "assignment-0.6.ipynb"
-                )
+                os.path.join(plugin.dest_path, "assignment-0.6.ipynb")
             )
             assert os.path.exists(
-                os.path.join(
-                    plugin.dest_path, "assignment-0.6-wrong.ipynb"
-                )
+                os.path.join(plugin.dest_path, "assignment-0.6-wrong.ipynb")
             )
     finally:
         shutil.rmtree(plugin.dest_path)

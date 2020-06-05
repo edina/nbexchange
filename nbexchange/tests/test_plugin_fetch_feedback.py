@@ -36,9 +36,7 @@ def test_fetch_feedback_dir_created(plugin_config, tmpdir):
     )
 
     def api_request(*args, **kwargs):
-        assert args[0] == (
-            f"feedback?assignment_id=assign_1"
-        )
+        assert args[0] == (f"feedback?assignment_id=assign_1")
         return type(
             "Response",
             (object,),
@@ -66,7 +64,9 @@ def test_fetch_feedback_dir_created_with_course_id(plugin_config, tmpdir):
     plugin_config.CourseDirectory.assignment_id = "assign_1"
 
     assert not os.path.isdir(
-        os.path.join(plugin_config.Exchange.assignment_dir, "no_course", "1", "feedback")
+        os.path.join(
+            plugin_config.Exchange.assignment_dir, "no_course", "1", "feedback"
+        )
     )
 
     plugin = ExchangeFetchFeedback(
@@ -74,9 +74,7 @@ def test_fetch_feedback_dir_created_with_course_id(plugin_config, tmpdir):
     )
 
     def api_request(*args, **kwargs):
-        assert args[0] == (
-            f"feedback?assignment_id=assign_1"
-        )
+        assert args[0] == (f"feedback?assignment_id=assign_1")
         return type(
             "Response",
             (object,),
@@ -90,7 +88,12 @@ def test_fetch_feedback_dir_created_with_course_id(plugin_config, tmpdir):
     with patch.object(Exchange, "api_request", side_effect=api_request):
         called = plugin.start()
         assert os.path.isdir(
-            os.path.join(plugin_config.Exchange.assignment_dir, "no_course", "assign_1", "feedback")
+            os.path.join(
+                plugin_config.Exchange.assignment_dir,
+                "no_course",
+                "assign_1",
+                "feedback",
+            )
         )
 
 
@@ -107,9 +110,7 @@ def test_fetch_feedback_fetch_normal(plugin_config, tmpdir):
     )
 
     def api_request(*args, **kwargs):
-        assert args[0] == (
-            f"feedback?assignment_id=assign_1"
-        )
+        assert args[0] == (f"feedback?assignment_id=assign_1")
         assert "method" not in kwargs or kwargs.get("method").lower() == "get"
         return type(
             "Response",
@@ -152,9 +153,7 @@ def test_fetch_feedback_fetch_several_normal(plugin_config, tmpdir):
     )
 
     def api_request(*args, **kwargs):
-        assert args[0] == (
-            f"feedback?assignment_id=assign_1"
-        )
+        assert args[0] == (f"feedback?assignment_id=assign_1")
         assert "method" not in kwargs or kwargs.get("method").lower() == "get"
         return type(
             "Response",

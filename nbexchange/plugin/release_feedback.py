@@ -52,11 +52,13 @@ class ExchangeReleaseFeedback(abc.ExchangeReleaseFeedback, Exchange):
         for html_file in html_files:
             regexp = re.escape(os.path.sep).join(
                 [
-                    self.coursedir.format_path(
-                        self.coursedir.feedback_directory,
-                        "(?P<student_id>.*)",
-                        self.coursedir.assignment_id,
-                        escape=True,
+                    os.path.normpath(
+                        self.coursedir.format_path(
+                            self.coursedir.feedback_directory,
+                            "(?P<student_id>.*)",
+                            self.coursedir.assignment_id,
+                            escape=True,
+                        )
                     ),
                     "(?P<notebook_id>.*).html",
                 ]

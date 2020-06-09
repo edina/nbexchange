@@ -48,7 +48,7 @@ def test_list_normal(plugin_config, tmpdir):
     )
 
     def api_request(*args, **kwargs):
-        assert args[0] == (f"assignments?course_id=no_course")
+        assert args[0] == ("assignments?course_id=no_course")
         assert "method" not in kwargs or kwargs.get("method").lower() == "get"
         return type(
             "Request",
@@ -112,7 +112,7 @@ def test_list_several_normal(plugin_config, tmpdir):
     )
 
     def api_request(*args, **kwargs):
-        assert args[0] == (f"assignments?course_id=no_course")
+        assert args[0] == ("assignments?course_id=no_course")
         assert "method" not in kwargs or kwargs.get("method").lower() == "get"
         return type(
             "Request",
@@ -214,7 +214,7 @@ def test_list_several_ignore_released(plugin_config, tmpdir):
         )
 
         def api_request(*args, **kwargs):
-            assert args[0] == (f"assignments?course_id=no_course")
+            assert args[0] == ("assignments?course_id=no_course")
             assert "method" not in kwargs or kwargs.get("method").lower() == "get"
             return type(
                 "Request",
@@ -336,7 +336,7 @@ def test_list_several_latest_only(plugin_config, tmpdir):
         )
 
         def api_request(*args, **kwargs):
-            assert args[0] == (f"assignments?course_id=no_course")
+            assert args[0] == ("assignments?course_id=no_course")
             assert "method" not in kwargs or kwargs.get("method").lower() == "get"
             return type(
                 "Request",
@@ -474,7 +474,7 @@ def test_list_several_normal_different(plugin_config, tmpdir):
         )
 
         def api_request(*args, **kwargs):
-            assert args[0] == (f"assignments?course_id=no_course")
+            assert args[0] == ("assignments?course_id=no_course")
             assert "method" not in kwargs or kwargs.get("method").lower() == "get"
             return type(
                 "Request",
@@ -608,7 +608,7 @@ def test_list_delete(plugin_config, tmpdir):
     )
 
     def api_request(*args, **kwargs):
-        assert args[0] == (f"assignment?course_id=no_course&assignment_id=assign_1_1")
+        assert args[0] == ("assignment?course_id=no_course&assignment_id=assign_1_1")
         assert "method" not in kwargs or kwargs.get("method").lower() == "delete"
         return type("Request", (object,), {"status_code": 200})
 
@@ -626,7 +626,7 @@ def test_list_inbound_one(plugin_config, tmpdir):
     )
 
     def api_request(*args, **kwargs):
-        assert args[0] == (f"assignments?course_id=no_course")
+        assert args[0] == ("assignments?course_id=no_course")
         assert "method" not in kwargs or kwargs.get("method").lower() == "get"
         return type(
             "Request",
@@ -705,7 +705,7 @@ def test_list_inbound_several_same(plugin_config, tmpdir):
     )
 
     def api_request(*args, **kwargs):
-        assert args[0] == (f"assignments?course_id=no_course")
+        assert args[0] == ("assignments?course_id=no_course")
         assert "method" not in kwargs or kwargs.get("method").lower() == "get"
         return type(
             "Request",
@@ -822,7 +822,7 @@ def test_list_inbound_several_students(plugin_config, tmpdir):
     )
 
     def api_request(*args, **kwargs):
-        assert args[0] == (f"assignments?course_id=no_course")
+        assert args[0] == ("assignments?course_id=no_course")
         assert "method" not in kwargs or kwargs.get("method").lower() == "get"
         return type(
             "Request",
@@ -985,7 +985,7 @@ def test_list_inbound_several_assignments(plugin_config, tmpdir):
     )
 
     def api_request(*args, **kwargs):
-        assert args[0] == (f"assignments?course_id=no_course")
+        assert args[0] == ("assignments?course_id=no_course")
         assert "method" not in kwargs or kwargs.get("method").lower() == "get"
         return type(
             "Request",
@@ -1194,7 +1194,7 @@ def test_list_inbound_ignore_outbound(plugin_config, tmpdir):
     )
 
     def api_request(*args, **kwargs):
-        assert args[0] == (f"assignments?course_id=no_course")
+        assert args[0] == ("assignments?course_id=no_course")
         assert "method" not in kwargs or kwargs.get("method").lower() == "get"
         return type(
             "Request",
@@ -1435,7 +1435,7 @@ def test_list_inbound_no_inbound(plugin_config, tmpdir):
     )
 
     def api_request(*args, **kwargs):
-        assert args[0] == (f"assignments?course_id=no_course")
+        assert args[0] == ("assignments?course_id=no_course")
         assert "method" not in kwargs or kwargs.get("method").lower() == "get"
         return type(
             "Request",

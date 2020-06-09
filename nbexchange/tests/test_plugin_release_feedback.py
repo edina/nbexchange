@@ -105,12 +105,12 @@ def test_release_feedback_fetch_normal(plugin_config, tmpdir):
 
     def api_request(*args, **kwargs):
         assert args[0] == (
-            f"feedback?course_id=no_course"
-            f"&assignment_id=assign_1"
-            f"&notebook=feedback"
-            f"&student=1"
-            f"&timestamp=2020-01-01+00%3A00.0+UTC"
-            f"&checksum={checksum}"
+            "feedback?course_id=no_course"
+            "&assignment_id=assign_1"
+            "&notebook=feedback"
+            "&student=1"
+            "&timestamp=2020-01-01+00%3A00.0+UTC"
+            "&checksum=" + checksum
         )
         assert kwargs.get("method").lower() == "post"
         assert "feedback" in kwargs.get("files")
@@ -229,12 +229,12 @@ def test_release_feedback_fetch_several_normal(plugin_config, tmpdir):
             assert seen_feedback1 is False
             seen_feedback1 = True
             assert args[0] == (
-                f"feedback?course_id=no_course"
-                f"&assignment_id=assign_1"
-                f"&notebook=feedback1"
-                f"&student=1"
-                f"&timestamp=2020-01-01+01%3A00.0+UTC"
-                f"&checksum={checksum1}"
+                "feedback?course_id=no_course"
+                "&assignment_id=assign_1"
+                "&notebook=feedback1"
+                "&student=1"
+                "&timestamp=2020-01-01+01%3A00.0+UTC"
+                "&checksum=" + checksum1
             )
             assert kwargs.get("method").lower() == "post"
             assert "feedback" in kwargs.get("files")
@@ -247,12 +247,12 @@ def test_release_feedback_fetch_several_normal(plugin_config, tmpdir):
             assert seen_feedback2 is False
             seen_feedback2 = True
             assert args[0] == (
-                f"feedback?course_id=no_course"
-                f"&assignment_id=assign_1"
-                f"&notebook=feedback2"
-                f"&student=1"
-                f"&timestamp=2020-01-01+01%3A00.0+UTC"
-                f"&checksum={checksum2}"
+                "feedback?course_id=no_course"
+                "&assignment_id=assign_1"
+                "&notebook=feedback2"
+                "&student=1"
+                "&timestamp=2020-01-01+01%3A00.0+UTC"
+                "&checksum=" + checksum2
             )
             assert kwargs.get("method").lower() == "post"
             assert "feedback" in kwargs.get("files")

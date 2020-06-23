@@ -98,9 +98,7 @@ def test_collect_normal(plugin_config, tmpdir):
         assert os.path.exists(
             os.path.join(
                 plugin.coursedir.format_path(
-                    plugin_config.CourseDirectory.submitted_directory,
-                    "1",
-                    "assign_1_3",
+                    plugin_config.CourseDirectory.submitted_directory, "1", "assign_1_3"
                 ),
                 os.path.basename(notebook1_filename),
             )
@@ -204,9 +202,7 @@ def test_collect_normal_update(plugin_config, tmpdir):
         assert not os.path.exists(
             os.path.join(
                 plugin.coursedir.format_path(
-                    plugin_config.CourseDirectory.submitted_directory,
-                    "1",
-                    "assign_1_2",
+                    plugin_config.CourseDirectory.submitted_directory, "1", "assign_1_2"
                 ),
                 os.path.basename(notebook1_filename),
             )
@@ -214,9 +210,7 @@ def test_collect_normal_update(plugin_config, tmpdir):
         assert os.path.exists(
             os.path.join(
                 plugin.coursedir.format_path(
-                    plugin_config.CourseDirectory.submitted_directory,
-                    "1",
-                    "assign_1_2",
+                    plugin_config.CourseDirectory.submitted_directory, "1", "assign_1_2"
                 ),
                 os.path.basename(notebook2_filename),
             )
@@ -320,9 +314,7 @@ def test_collect_normal_dont_update(plugin_config, tmpdir):
         assert os.path.exists(
             os.path.join(
                 plugin.coursedir.format_path(
-                    plugin_config.CourseDirectory.submitted_directory,
-                    "1",
-                    "assign_1_4",
+                    plugin_config.CourseDirectory.submitted_directory, "1", "assign_1_4"
                 ),
                 os.path.basename(notebook1_filename),
             )
@@ -330,9 +322,7 @@ def test_collect_normal_dont_update(plugin_config, tmpdir):
         assert not os.path.exists(
             os.path.join(
                 plugin.coursedir.format_path(
-                    plugin_config.CourseDirectory.submitted_directory,
-                    "1",
-                    "assign_1_4",
+                    plugin_config.CourseDirectory.submitted_directory, "1", "assign_1_4"
                 ),
                 os.path.basename(notebook2_filename),
             )
@@ -436,9 +426,7 @@ def test_collect_normal_dont_update_old(plugin_config, tmpdir):
         assert os.path.exists(
             os.path.join(
                 plugin.coursedir.format_path(
-                    plugin_config.CourseDirectory.submitted_directory,
-                    "1",
-                    "assign_1_5",
+                    plugin_config.CourseDirectory.submitted_directory, "1", "assign_1_5"
                 ),
                 os.path.basename(notebook1_filename),
             )
@@ -446,9 +434,7 @@ def test_collect_normal_dont_update_old(plugin_config, tmpdir):
         assert not os.path.exists(
             os.path.join(
                 plugin.coursedir.format_path(
-                    plugin_config.CourseDirectory.submitted_directory,
-                    "1",
-                    "assign_1_5",
+                    plugin_config.CourseDirectory.submitted_directory, "1", "assign_1_5"
                 ),
                 os.path.basename(notebook2_filename),
             )
@@ -527,9 +513,7 @@ def test_collect_normal_several(plugin_config, tmpdir):
         assert os.path.exists(
             os.path.join(
                 plugin.coursedir.format_path(
-                    plugin_config.CourseDirectory.submitted_directory,
-                    "1",
-                    "assign_1_1",
+                    plugin_config.CourseDirectory.submitted_directory, "1", "assign_1_1"
                 ),
                 os.path.basename(notebook1_filename),
             )
@@ -537,9 +521,7 @@ def test_collect_normal_several(plugin_config, tmpdir):
         assert os.path.exists(
             os.path.join(
                 plugin.coursedir.format_path(
-                    plugin_config.CourseDirectory.submitted_directory,
-                    "1",
-                    "assign_1_1",
+                    plugin_config.CourseDirectory.submitted_directory, "1", "assign_1_1"
                 ),
                 os.path.basename(notebook2_filename),
             )

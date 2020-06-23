@@ -310,7 +310,9 @@ def test_list_several_ignore_released(plugin_config, tmpdir):
                             "has_local_feedback": False,
                             "local_feedback_path": None,
                             "notebook_id": "assignment-0.6",
-                            "path": os.path.join(os.getcwd(), "assign_1_3/assignment-0.6.ipynb"),
+                            "path": os.path.join(
+                                os.getcwd(), "assign_1_3/assignment-0.6.ipynb"
+                            ),
                         }
                     ],
                     "path": "",
@@ -448,7 +450,9 @@ def test_list_several_latest_only(plugin_config, tmpdir):
                             "has_local_feedback": False,
                             "local_feedback_path": None,
                             "notebook_id": "assignment-0.6",
-                            "path": os.path.join(os.getcwd(), "assign_1_3/assignment-0.6.ipynb"),
+                            "path": os.path.join(
+                                os.getcwd(), "assign_1_3/assignment-0.6.ipynb"
+                            ),
                         }
                     ],
                     "path": "",
@@ -586,7 +590,9 @@ def test_list_several_normal_different(plugin_config, tmpdir):
                             "has_local_feedback": False,
                             "local_feedback_path": None,
                             "notebook_id": "assignment-0.6",
-                            "path": os.path.join(os.getcwd(), "assign_1_3/assignment-0.6.ipynb"),
+                            "path": os.path.join(
+                                os.getcwd(), "assign_1_3/assignment-0.6.ipynb"
+                            ),
                         }
                     ],
                     "path": "",

@@ -129,26 +129,24 @@ def test_release_feedback_fetch_normal(plugin_config, tmpdir):
 
 @pytest.mark.gen_test
 def test_release_feedback_fetch_several_normal(plugin_config, tmpdir):
+    feedback_directory = str(tmpdir.mkdir("feedback_test").realpath())
+    submitted_directory = str(tmpdir.mkdir("submitted_test").realpath())
     plugin_config.CourseDirectory.root = "/"
-    plugin_config.CourseDirectory.feedback_directory = str(
-        tmpdir.mkdir("feedback_test").realpath()
-    )
-    plugin_config.CourseDirectory.submitted_directory = str(
-        tmpdir.mkdir("submitted_test").realpath()
-    )
+    plugin_config.CourseDirectory.feedback_directory = feedback_directory
+    plugin_config.CourseDirectory.submitted_directory = submitted_directory
     plugin_config.CourseDirectory.assignment_id = "assign_1"
     os.makedirs(
-        os.path.join(plugin_config.CourseDirectory.feedback_directory, "1", "assign_1"),
+        os.path.join(feedback_directory, "1", "assign_1"),
         exist_ok=True,
     )
     os.makedirs(
         os.path.join(
-            plugin_config.CourseDirectory.submitted_directory, "1", "assign_1"
+            submitted_directory, "1", "assign_1"
         ),
         exist_ok=True,
     )
     feedback1_filename_uploaded = os.path.join(
-        plugin_config.CourseDirectory.feedback_directory,
+        feedback_directory,
         "1",
         "assign_1",
         "feedback1.html",
@@ -157,7 +155,7 @@ def test_release_feedback_fetch_several_normal(plugin_config, tmpdir):
     copyfile(
         notebook1_filename,
         os.path.join(
-            plugin_config.CourseDirectory.submitted_directory,
+            submitted_directory,
             "1",
             "assign_1",
             "feedback1.ipynb",
@@ -165,7 +163,7 @@ def test_release_feedback_fetch_several_normal(plugin_config, tmpdir):
     )
 
     feedback2_filename_uploaded = os.path.join(
-        plugin_config.CourseDirectory.feedback_directory,
+        feedback_directory,
         "1",
         "assign_1",
         "feedback2.html",
@@ -174,7 +172,7 @@ def test_release_feedback_fetch_several_normal(plugin_config, tmpdir):
     copyfile(
         notebook2_filename,
         os.path.join(
-            plugin_config.CourseDirectory.submitted_directory,
+            submitted_directory,
             "1",
             "assign_1",
             "feedback2.ipynb",
@@ -186,7 +184,7 @@ def test_release_feedback_fetch_several_normal(plugin_config, tmpdir):
     )
     checksum1 = notebook_hash(
         os.path.join(
-            plugin_config.CourseDirectory.submitted_directory,
+            submitted_directory,
             "1",
             "assign_1",
             "feedback1.ipynb",
@@ -198,7 +196,7 @@ def test_release_feedback_fetch_several_normal(plugin_config, tmpdir):
     )
     checksum2 = notebook_hash(
         os.path.join(
-            plugin_config.CourseDirectory.submitted_directory,
+            submitted_directory,
             "1",
             "assign_1",
             "feedback2.ipynb",
@@ -208,7 +206,7 @@ def test_release_feedback_fetch_several_normal(plugin_config, tmpdir):
 
     with open(
         os.path.join(
-            plugin_config.CourseDirectory.feedback_directory,
+            feedback_directory,
             "1",
             "assign_1",
             "timestamp.txt",

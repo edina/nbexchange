@@ -103,7 +103,9 @@ class Assignments(BaseHandler):
                             )
                             feedback_available = bool(feedback)
                             feedback_timestamp = (
-                                feedback.timestamp if feedback_available else None
+                                feedback.timestamp.strftime("%Y-%m-%d %H:%M:%S.%f %Z")
+                                if feedback_available
+                                else None
                             )
 
                         else:

@@ -379,7 +379,6 @@ def test_feedback_post_authenticated_with_incorrect_student_id(app):
 
 
 # Not yet implemented on exchange server...
-@pytest.mark.skip
 def test_feedback_post_authenticated_with_incorrect_checksum(app):
     assignment_id = "assign_a"
     course_id = "course_2"
@@ -435,7 +434,7 @@ def test_feedback_post_authenticated_with_correct_params(app):
     course_id = "course_2"
     notebook = "notebook"
     student = user_kiz_student
-    timestamp = datetime.datetime.utcnow().strftime("%Y/%m/%d %H:%M:%S")
+    timestamp = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
     checksum = notebook_hash(
         feedback_filename,
         make_unique_key(course_id, assignment_id, notebook, student["name"], timestamp),
@@ -653,7 +652,7 @@ def test_feedback_get_authenticated_with_correct_params(app):
     course_id = "course_2"
     notebook = "notebook"
     student = user_kiz_student
-    timestamp = datetime.datetime.utcnow().strftime("%Y/%m/%d %H:%M:%S")
+    timestamp = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
     checksum = notebook_hash(
         feedback_filename,
         make_unique_key(course_id, assignment_id, notebook, student["name"], timestamp),

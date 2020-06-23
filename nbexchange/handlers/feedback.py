@@ -6,6 +6,7 @@ import uuid
 
 from sqlalchemy import desc
 from tornado import web, httputil
+from datetime import datetime
 
 import nbexchange.models.actions
 import nbexchange.models.assignments
@@ -95,7 +96,7 @@ class FeedbackHandler(BaseHandler):
                 with open(r.location, "r+b") as fp:
                     f["content"] = base64.b64encode(fp.read()).decode("utf-8")
                 f["filename"] = feedback_name
-                f["timestamp"] = r.timestamp
+                f["timestamp"] = r.timestamp.strftime("%Y-%m-%d %H:%M:%S.%f %Z")
                 f["checksum"] = r.checksum
                 feedbacks.append(f)
 
@@ -294,7 +295,7 @@ class FeedbackHandler(BaseHandler):
                 location=feedback_file,
                 student_id=student.id,
                 instructor_id=this_user.get("id"),
-                timestamp=timestamp,
+                timestamp=datetime.fromisoformat(timestamp),
             )
 
             session.add(feedback)

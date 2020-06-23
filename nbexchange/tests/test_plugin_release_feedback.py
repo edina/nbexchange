@@ -135,83 +135,43 @@ def test_release_feedback_fetch_several_normal(plugin_config, tmpdir):
     plugin_config.CourseDirectory.feedback_directory = feedback_directory
     plugin_config.CourseDirectory.submitted_directory = submitted_directory
     plugin_config.CourseDirectory.assignment_id = "assign_1"
-    os.makedirs(
-        os.path.join(feedback_directory, "1", "assign_1"),
-        exist_ok=True,
-    )
-    os.makedirs(
-        os.path.join(
-            submitted_directory, "1", "assign_1"
-        ),
-        exist_ok=True,
-    )
+    os.makedirs(os.path.join(feedback_directory, "1", "assign_1"), exist_ok=True)
+    os.makedirs(os.path.join(submitted_directory, "1", "assign_1"), exist_ok=True)
     feedback1_filename_uploaded = os.path.join(
-        feedback_directory,
-        "1",
-        "assign_1",
-        "feedback1.html",
+        feedback_directory, "1", "assign_1", "feedback1.html"
     )
     copyfile(feedback1_filename, feedback1_filename_uploaded)
     copyfile(
         notebook1_filename,
-        os.path.join(
-            submitted_directory,
-            "1",
-            "assign_1",
-            "feedback1.ipynb",
-        ),
+        os.path.join(submitted_directory, "1", "assign_1", "feedback1.ipynb"),
     )
 
     feedback2_filename_uploaded = os.path.join(
-        feedback_directory,
-        "1",
-        "assign_1",
-        "feedback2.html",
+        feedback_directory, "1", "assign_1", "feedback2.html"
     )
     copyfile(feedback2_filename, feedback2_filename_uploaded)
     copyfile(
         notebook2_filename,
-        os.path.join(
-            submitted_directory,
-            "1",
-            "assign_1",
-            "feedback2.ipynb",
-        ),
+        os.path.join(submitted_directory, "1", "assign_1", "feedback2.ipynb"),
     )
 
     unique_key1 = make_unique_key(
         "no_course", "assign_1", "feedback1", "1", "2020-01-01 01:00.0 UTC"
     )
     checksum1 = notebook_hash(
-        os.path.join(
-            submitted_directory,
-            "1",
-            "assign_1",
-            "feedback1.ipynb",
-        ),
+        os.path.join(submitted_directory, "1", "assign_1", "feedback1.ipynb"),
         unique_key1,
     )
     unique_key2 = make_unique_key(
         "no_course", "assign_1", "feedback2", "1", "2020-01-01 01:00.0 UTC"
     )
     checksum2 = notebook_hash(
-        os.path.join(
-            submitted_directory,
-            "1",
-            "assign_1",
-            "feedback2.ipynb",
-        ),
+        os.path.join(submitted_directory, "1", "assign_1", "feedback2.ipynb"),
         unique_key2,
     )
 
     with open(
-        os.path.join(
-            feedback_directory,
-            "1",
-            "assign_1",
-            "timestamp.txt",
-        ),
-        "w",
+        os.path.join(feedback_directory, "1", "assign_1", "timestamp.txt"), "w"
     ) as fp:
         fp.write("2020-01-01 01:00.0 UTC")
 

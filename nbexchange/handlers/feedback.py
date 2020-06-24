@@ -1,4 +1,5 @@
 import base64
+import datetime
 import os
 import tempfile
 import time
@@ -95,7 +96,7 @@ class FeedbackHandler(BaseHandler):
                 with open(r.location, "r+b") as fp:
                     f["content"] = base64.b64encode(fp.read()).decode("utf-8")
                 f["filename"] = feedback_name
-                f["timestamp"] = r.timestamp
+                f["timestamp"] = r.timestamp.isoformat()
                 f["checksum"] = r.checksum
                 feedbacks.append(f)
 
@@ -294,7 +295,7 @@ class FeedbackHandler(BaseHandler):
                 location=feedback_file,
                 student_id=student.id,
                 instructor_id=this_user.get("id"),
-                timestamp=timestamp,
+                timestamp=datetime.datetime.fromisoformat(timestamp),
             )
 
             session.add(feedback)

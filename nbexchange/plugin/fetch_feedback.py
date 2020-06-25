@@ -1,4 +1,5 @@
 import base64
+import datetime
 import io
 import json
 
@@ -20,23 +21,6 @@ class ExchangeFetchFeedback(abc.ExchangeFetchFeedback, Exchange):
     # where the downloaded files are placed
     def init_src(self):
         self.src_path = ""
-        # self.log.debug(
-        #     f"ExchangeFetchFeedback.init_src using {self.course_id} {self.coursedir.assignment_id}"
-        # )
-        #
-        # location = "/".join(
-        #     [
-        #         "/tmp/",
-        #         new_uuid(),
-        #         self.course_id,
-        #         self.coursedir.assignment_id,
-        #         self.coursedir.notebook_id,
-        #         "feedback.html",
-        #     ]
-        # )
-        # os.makedirs(os.path.dirname(location), exist_ok=True)
-        # self.src_path = location
-        # self.log.debug(f"ExchangeFetchFeedback.init_src ensuring {self.src_path}")
 
     # where in the user tree
     def init_dest(self):
@@ -64,14 +48,14 @@ class ExchangeFetchFeedback(abc.ExchangeFetchFeedback, Exchange):
         if "feedback" in content:
             for f in content["feedback"]:
                 try:
-                    os.makedirs(
-                        os.path.join(self.dest_path, str(f["timestamp"])), exist_ok=True
+                    timestamp = (
+                        datetime.datetime.fromisoformat(str(f["timestamp"]))
+                        .strftime(self.timestamp_format)
+                        .strip()
                     )
+                    os.makedirs(os.path.join(self.dest_path, timestamp), exist_ok=True)
                     with open(
-                        os.path.join(
-                            self.dest_path, str(f["timestamp"]), f["filename"]
-                        ),
-                        "wb",
+                        os.path.join(self.dest_path, timestamp, f["filename"]), "wb"
                     ) as handle:
                         handle.write(base64.b64decode(f["content"]))
                 except Exception as e:  # TODO: exception handling

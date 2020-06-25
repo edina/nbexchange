@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.0.1
+
+Fix timestamps
 
 ## v1.0.0
 

@@ -79,6 +79,24 @@ which is normally Jupyter's notebook_dir.
         else:
             raise NotImplementedError(f"HTTP Method {method} is not implemented")
 
+    def get_local_assignments(self, user_id=None, course_id=None):
+        pass
+
+    def get_local_submission(self, user_id=None, course_id=None):
+        pass
+
+    def get_local_feedback(self, user_id=None, course_id=None, assignment_id=None):
+        pass
+
+    def save_local_assignments(self, user_id, course_id, assignment):
+        pass
+
+    def save_local_submission(self, user_id, course_id, submission):
+        pass
+
+    def save_local_feedback(self, user_id, course_id, assignment_id, feedback):
+        pass
+
     def init_src(self):
         """Compute and check the source paths for the transfer."""
         raise NotImplementedError

@@ -157,7 +157,7 @@ setup(
         "Programming Language :: Python :: Implementation :: CPython",
         "Programming Language :: Python :: Implementation :: PyPy",
     ],
-    dependency_links=["https://github.com/lzach/nbgrader/tarball/pluggable_exchange#egg=nbgrader-0.7.0.dev0"],
+    dependency_links=["https://github.com/jupyter/nbgrader#egg=nbgrader-0.7.0.dev0"],
     # $ setup.py publish support.
     cmdclass={"upload": UploadCommand},
 )

@@ -27,6 +27,23 @@ Some guidelines on contributing to nbexchange:
 
 Travis does a pretty good job testing nbexchange and Pull Requests, but it may make sense to manually perform tests.
 
+## Developing nbexchange
+
+To setup nbexchange for development, run:
+
+```bash
+pip install -r requirements.txt
+pip install -r requirements-dev.txt
+```
+
+Until nbgrader 0.7 is released, the master branch of nbgrader github repository needs to be used. The setup.py file
+is configured to pick this up, but unfortunately pip does not know how to work with this feature of setup.py. Thus
+it might be necessary to manually install nbgrader from github:
+
+```bash
+pip install -e git+https://github.com/jupyter/nbgrader#egg=nbgrader-0.7.0.dev0
+```
+
 ## Running Tests
 
 Tests should be run locally before final commit & Pull Request is made.
@@ -41,8 +58,23 @@ There is no such thing as _too many tests_
 
 This is how I test, using a virtual environment
 
+To set up a virtual environment:
+
 ```sh
+python3 -m venv venv
 source venv/bin/activate
+```
+
+Not that this might require the install of python3-venv (or equivalent package). On Ubuntu:
+
+```sh
+sudo apt-get install python3-venv
+```
+
+When the virtual environment is installed:
+
+```sh
 pip install -r requirements.txt
+pip install -r requirements-dev.txt
 pytest nbexchange
 ```

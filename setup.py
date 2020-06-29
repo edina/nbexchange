@@ -17,7 +17,7 @@ DESCRIPTION = "Jupyterhub extension that provides an exchange service for nbgrad
 URL = "https://github.com/edina/nbexchange"
 EMAIL = "Ian.Stuart@ed.ac.uk"
 AUTHOR = "Edina Development team"
-REQUIRES_PYTHON = ">=3.7.0"
+REQUIRES_PYTHON = ">=3.6.0"
 VERSION = None
 
 # What packages are required for this module to be executed?
@@ -153,11 +153,11 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: Implementation :: CPython",
         "Programming Language :: Python :: Implementation :: PyPy",
     ],
-    dependency_links=["https://github.com/jupyter/nbgrader#egg=nbgrader-0.7.0.dev0"],
+    dependency_links=["https://github.com/jupyter/nbgrader/tarball/master#egg=nbgrader-0.7.0.dev0"],
     # $ setup.py publish support.
     cmdclass={"upload": UploadCommand},
 )

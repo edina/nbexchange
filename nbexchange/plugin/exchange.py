@@ -7,8 +7,20 @@ import requests
 from dateutil.tz import gettz
 from functools import partial
 from nbgrader.exchange import ExchangeError
+from nbgrader.utils import full_split
 from traitlets import Unicode, Bool, Instance
 from urllib.parse import urljoin
+
+
+def contains_format(string, formats):
+    return any(f"{{{fmt}}}" in string for fmt in formats)
+
+
+def maybe_format(string, **values):
+    try:
+        return string.format(**values)
+    except KeyError:
+        return string
 
 
 class Exchange(abc.Exchange):
@@ -79,8 +91,30 @@ which is normally Jupyter's notebook_dir.
         else:
             raise NotImplementedError(f"HTTP Method {method} is not implemented")
 
+    def get_directory_structure(self, step, user_id=None, assignment_id=None):
+        structure = full_split(self.coursedir.directory_structure)
+        full_structure = []
+        fmtstrs = ["nbgrader_step", "user_id", "assignment_id"]
+        fmt = {"nbgrader_step": step}
+        if user_id is not None:
+            fmt["user_id"] = user_id
+        if assignment_id is not None:
+            fmt["assignment_id"] = assignment_id
+
+        for part in structure:
+            the_part = maybe_format(part, **fmt)
+            if (len(full_structure) > 0
+                and contains_format(the_part, fmtstrs)
+                and contains_format(full_structure[-1], fmtstrs)
+            ):
+                full_structure[-1] = os.path.join(full_structure[-1], the_part)
+            else:
+                full_structure.append(the_part)
+        return full_structure
+
     def get_local_assignments(self, user_id=None, course_id=None):
         pass
+
 
     def get_local_submission(self, user_id=None, course_id=None):
         pass

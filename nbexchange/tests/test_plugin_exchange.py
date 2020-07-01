@@ -7,9 +7,31 @@ import requests
 from mock import patch
 
 from nbexchange.plugin import Exchange
+from nbgrader.coursedir import CourseDirectory
 
 logger = logging.getLogger(__file__)
 logger.setLevel(logging.ERROR)
+
+
+def fake_listdir(dir_structure):
+    def inner(dir_name):
+        parts = os.path.split(dir_name)
+        struct = dir_structure
+        for part in parts:
+            struct = struct[part]
+        return list(struct)
+    return inner
+
+
+def fake_isdir(dir_structure):
+    def inner(dir_name):
+        parts = os.path.split(dir_name)
+        struct = dir_structure
+        for part in parts:
+            struct = struct[part]
+        return isinstance(struct, dict) or isinstance(struct, list)
+    return inner
+
 
 """
 In this module we check that various helper methods in the Exchange base class works as expected.
@@ -85,3 +107,22 @@ def test_exhange_api_request_get():
         os.environ["NAAS_JWT"] = naas_token
     else:
         del os.environ["NAAS_JWT"]
+
+
+@pytest.mark.gen_test
+def test_exhange_get_directory_structure(plugin_config):
+    # plugin_config.CourseDirectory.directory_structure = os.path.join("")
+    plugin = Exchange(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
+
+    dir_struct = {}
+
+    # with (patch("nbexchange.plugin.exchange.os.path.isdir", fake_isdir(dir_struct)),
+    #       patch("nbexchange.plugin.exchange.os.listdir", fake_listdir(dir_struct))):
+    structure = plugin.get_directory_structure("assignments")
+    assert structure == ["assignments", "{student_id}", "{assignment_id}"]
+    structure = plugin.get_directory_structure("assignments", user_id="1")
+    assert structure == [os.path.join("assignments", "1"), "{assignment_id}"]
+    structure = plugin.get_directory_structure("assignments", user_id="1", assignment_id="123")
+    assert structure == [os.path.join("assignments", "1", "123")]
+    structure = plugin.get_directory_structure("assignments", assignment_id="123")
+    assert structure == ["assignments", "{student_id}", "123"]

@@ -6,7 +6,7 @@ from nbexchange.models import Base
 
 class Feedback(Base):
 
-    __tablename__ = "feedback"
+    __tablename__ = "feedback_2"
 
     #: Unique id of the feedback (automatically incremented)
     id = Column(Integer(), primary_key=True, autoincrement=True)
@@ -30,7 +30,7 @@ class Feedback(Base):
     )  # Location for the file of this action
     checksum = Column(Unicode(200), nullable=True)  # Checksum for the feedback file
     timestamp = Column(DateTime(timezone=True), nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
 
     def __repr__(self):
         return f"Feedback<Notebook-{self.notebook_id}/Student-{self.student_id}/{self.checksum}>"

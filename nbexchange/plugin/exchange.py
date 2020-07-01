@@ -94,29 +94,48 @@ which is normally Jupyter's notebook_dir.
     def get_directory_structure(self, step, user_id=None, assignment_id=None):
         structure = full_split(self.coursedir.directory_structure)
         full_structure = []
-        fmtstrs = ["nbgrader_step", "user_id", "assignment_id"]
+        fmtstrs = ["nbgrader_step", "student_id", "assignment_id"]
         fmt = {"nbgrader_step": step}
         if user_id is not None:
-            fmt["user_id"] = user_id
+            fmt["student_id"] = user_id
         if assignment_id is not None:
             fmt["assignment_id"] = assignment_id
 
         for part in structure:
             the_part = maybe_format(part, **fmt)
             if (len(full_structure) > 0
-                and contains_format(the_part, fmtstrs)
-                and contains_format(full_structure[-1], fmtstrs)
+                and not contains_format(the_part, fmtstrs)
+                and not contains_format(full_structure[-1], fmtstrs)
             ):
                 full_structure[-1] = os.path.join(full_structure[-1], the_part)
             else:
                 full_structure.append(the_part)
         return full_structure
 
+    def get_files(self, root, structure, **kwargs):
+        fmtstrs = ["nbgrader_step", "user_id", "assignment_id"]
+
+        if len(structure) == 0:
+            files = os.listdir(root)
+            return {"files": files, "details": kwargs}
+
+        if not contains_format(structure[0], fmtstrs):
+            root = os.path.join(root, structure[0])
+            return self.get_files(root, structure[1:], **kwargs)
+        files = []
+        for filename in os.listdir(root):
+            new_root = os.path.join(root, filename)
+            detail_name = structure[0].strip("{}")
+            kwargs[detail_name] = filename
+            if os.path.isdir(new_root):
+                files.extend(self.get_files(new_root, structure[1:], **kwargs))
+        return files
+
     def get_local_assignments(self, user_id=None, course_id=None):
-        pass
+        structure = self.get_directory_structure("assignments", user_id)
+        files = self.get_files(structure[0], structure[1:])
 
-
-    def get_local_submission(self, user_id=None, course_id=None):
+    def get_local_submissions(self, user_id=None, course_id=None):
         pass
 
     def get_local_feedback(self, user_id=None, course_id=None, assignment_id=None):

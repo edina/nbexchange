@@ -96,9 +96,17 @@ class ExchangeReleaseFeedback(abc.ExchangeReleaseFeedback, Exchange):
             self.log.debug("Unique key is: {}".format(unique_key))
             checksum = notebook_hash(nbfile, unique_key)
 
-            timestamp = datetime.datetime.strptime(
-                timestamp, self.timestamp_format
-            ).isoformat()
+            try:
+                timestamp = datetime.datetime.strptime(
+                    timestamp, self.timestamp_format
+                ).isoformat()
+            except:
+                try:
+                    timestamp = datetime.datetime.strptime(
+                        timestamp, "%Y-%m-%d %H:%M:%S.%f"
+                    ).isoformat()
+                except:
+                    timestamp = datetime.datetime.fromisoformat(timestamp)
 
             self.log.info(
                 "Releasing feedback for student '{}' on assignment '{}/{}/{}' ({})".format(

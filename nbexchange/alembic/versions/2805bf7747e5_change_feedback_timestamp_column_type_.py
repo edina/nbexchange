@@ -21,8 +21,6 @@ from sqlalchemy import Column, Integer, Unicode, ForeignKey, DateTime
 from nbexchange.models import Base
 
 
-
-
 def try_convert(datestr, default):
     try:
         return datetime.fromisoformat(datestr)
@@ -30,7 +28,12 @@ def try_convert(datestr, default):
         try:
             return datetime.strptime(datestr, "%Y-%m-%d %H:%M:%S.%f %Z")
         except:
-            return default
+            try:
+                return datetime.datetime.strptime(
+                    datestr, "%Y-%m-%d %H:%M:%S.%f"
+                ).isoformat()
+            except:
+                return default
 
 
 def upgrade():

@@ -21,46 +21,6 @@ from sqlalchemy import Column, Integer, Unicode, ForeignKey, DateTime
 from nbexchange.models import Base
 
 
-class FeedbackNew(Base):
-    __tablename__ = "feedback_2"
-    id = Column(Integer(), primary_key=True, autoincrement=True)
-    notebook = None
-    notebook_id = Column(
-        Integer(), ForeignKey("notebook.id", ondelete="CASCADE"), index=True
-    )
-    instructor = None
-    instructor_id = Column(
-        Integer, ForeignKey("user.id", ondelete="CASCADE"), index=True
-    )
-    student = None
-    student_id = Column(Integer, ForeignKey("user.id", ondelete="CASCADE"), index=True)
-    location = Column(
-        Unicode(200), nullable=True
-    )
-    checksum = Column(Unicode(200), nullable=True)  # Checksum for the feedback file
-    timestamp = Column(DateTime(timezone=True), nullable=False)
-    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
-
-
-class FeedbackOld(Base):
-    __tablename__ = "feedback"
-    id = Column(Integer(), primary_key=True, autoincrement=True)
-    notebook = None
-    notebook_id = Column(
-        Integer(), ForeignKey("notebook.id", ondelete="CASCADE"), index=True
-    )
-    instructor = None
-    instructor_id = Column(
-        Integer, ForeignKey("user.id", ondelete="CASCADE"), index=True
-    )
-    student = None
-    student_id = Column(Integer, ForeignKey("user.id", ondelete="CASCADE"), index=True)
-    location = Column(
-        Unicode(200), nullable=True
-    )  # Location for the file of this action
-    checksum = Column(Unicode(200), nullable=True)  # Checksum for the feedback file
-    timestamp = Column(Unicode(12), nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
 
 
 def try_convert(datestr, default):
@@ -74,6 +34,27 @@ def try_convert(datestr, default):
 
 
 def upgrade():
+    from nbexchange.models import Feedback as FeedbackNew
+    class FeedbackOld(Base):
+        __tablename__ = "feedback"
+        id = Column(Integer(), primary_key=True, autoincrement=True)
+        notebook = None
+        notebook_id = Column(
+            Integer(), ForeignKey("notebook.id", ondelete="CASCADE"), index=True
+        )
+        instructor = None
+        instructor_id = Column(
+            Integer, ForeignKey("user.id", ondelete="CASCADE"), index=True
+        )
+        student = None
+        student_id = Column(Integer, ForeignKey("user.id", ondelete="CASCADE"), index=True)
+        location = Column(
+            Unicode(200), nullable=True
+        )  # Location for the file of this action
+        checksum = Column(Unicode(200), nullable=True)  # Checksum for the feedback file
+        timestamp = Column(Unicode(12), nullable=False)
+        created_at = Column(DateTime, default=datetime.utcnow)
+
     bind = op.get_bind()
     FeedbackNew.__table__.create(bind)
     session = orm.Session(bind=bind)
@@ -93,6 +74,26 @@ def upgrade():
 
 
 def downgrade():
+    from nbexchange.models import Feedback as FeedbackOld
+    class FeedbackNew(Base):
+        __tablename__ = "feedback_2"
+        id = Column(Integer(), primary_key=True, autoincrement=True)
+        notebook = None
+        notebook_id = Column(
+            Integer(), ForeignKey("notebook.id", ondelete="CASCADE"), index=True
+        )
+        instructor = None
+        instructor_id = Column(
+            Integer, ForeignKey("user.id", ondelete="CASCADE"), index=True
+        )
+        student = None
+        student_id = Column(Integer, ForeignKey("user.id", ondelete="CASCADE"), index=True)
+        location = Column(
+            Unicode(200), nullable=True
+        )
+        checksum = Column(Unicode(200), nullable=True)  # Checksum for the feedback file
+        timestamp = Column(DateTime(timezone=True), nullable=False)
+        created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
 
     bind = op.get_bind()
     session = orm.Session(bind=bind)

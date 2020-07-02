@@ -38,6 +38,7 @@ def try_convert(datestr, default):
 
 def upgrade():
     from nbexchange.models import Feedback as FeedbackNew
+
     class FeedbackOld(Base):
         __tablename__ = "feedback"
         id = Column(Integer(), primary_key=True, autoincrement=True)
@@ -50,7 +51,9 @@ def upgrade():
             Integer, ForeignKey("user.id", ondelete="CASCADE"), index=True
         )
         student = None
-        student_id = Column(Integer, ForeignKey("user.id", ondelete="CASCADE"), index=True)
+        student_id = Column(
+            Integer, ForeignKey("user.id", ondelete="CASCADE"), index=True
+        )
         location = Column(
             Unicode(200), nullable=True
         )  # Location for the file of this action
@@ -62,15 +65,18 @@ def upgrade():
     FeedbackNew.__table__.create(bind)
     session = orm.Session(bind=bind)
 
-    feedbacks = [FeedbackNew(
-                             notebook_id=feedback.notebook_id,
-                             instructor_id=feedback.instructor_id,
-                             student_id=feedback.student_id,
-                             location=feedback.location,
-                             checksum=feedback.checksum,
-                             timestamp=try_convert(feedback.timestamp, feedback.created_at),
-                             created_at=feedback.created_at
-                    ) for feedback in session.query(FeedbackOld)]
+    feedbacks = [
+        FeedbackNew(
+            notebook_id=feedback.notebook_id,
+            instructor_id=feedback.instructor_id,
+            student_id=feedback.student_id,
+            location=feedback.location,
+            checksum=feedback.checksum,
+            timestamp=try_convert(feedback.timestamp, feedback.created_at),
+            created_at=feedback.created_at,
+        )
+        for feedback in session.query(FeedbackOld)
+    ]
     session.add_all(feedbacks)
 
     session.commit()
@@ -78,6 +84,7 @@ def upgrade():
 
 def downgrade():
     from nbexchange.models import Feedback as FeedbackOld
+
     class FeedbackNew(Base):
         __tablename__ = "feedback_2"
         id = Column(Integer(), primary_key=True, autoincrement=True)
@@ -90,10 +97,10 @@ def downgrade():
             Integer, ForeignKey("user.id", ondelete="CASCADE"), index=True
         )
         student = None
-        student_id = Column(Integer, ForeignKey("user.id", ondelete="CASCADE"), index=True)
-        location = Column(
-            Unicode(200), nullable=True
+        student_id = Column(
+            Integer, ForeignKey("user.id", ondelete="CASCADE"), index=True
         )
+        location = Column(Unicode(200), nullable=True)
         checksum = Column(Unicode(200), nullable=True)  # Checksum for the feedback file
         timestamp = Column(DateTime(timezone=True), nullable=False)
         created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
@@ -101,15 +108,18 @@ def downgrade():
     bind = op.get_bind()
     session = orm.Session(bind=bind)
 
-    feedbacks = [FeedbackOld(
-                             notebook_id=feedback.notebook_id,
-                             instructor_id=feedback.instructor_id,
-                             student_id=feedback.student_id,
-                             location=feedback.location,
-                             checksum=feedback.checksum,
-                             timestamp=feedback.timestamp.isoformat(),
-                             created_at=feedback.created_at
-                    ) for feedback in session.query(FeedbackNew)]
+    feedbacks = [
+        FeedbackOld(
+            notebook_id=feedback.notebook_id,
+            instructor_id=feedback.instructor_id,
+            student_id=feedback.student_id,
+            location=feedback.location,
+            checksum=feedback.checksum,
+            timestamp=feedback.timestamp.isoformat(),
+            created_at=feedback.created_at,
+        )
+        for feedback in session.query(FeedbackNew)
+    ]
     session.add_all(feedbacks)
 
     session.commit()

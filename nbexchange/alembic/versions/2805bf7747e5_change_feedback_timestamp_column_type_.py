@@ -29,9 +29,7 @@ def try_convert(datestr, default):
             return datetime.strptime(datestr, "%Y-%m-%d %H:%M:%S.%f %Z")
         except:
             try:
-                return datetime.strptime(
-                    datestr, "%Y-%m-%d %H:%M:%S.%f"
-                ).isoformat()
+                return datetime.strptime(datestr, "%Y-%m-%d %H:%M:%S.%f").isoformat()
             except:
                 return default
 

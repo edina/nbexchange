@@ -1,5 +1,7 @@
 import datetime
 import glob
+from collections import Sequence
+
 import nbgrader.exchange.abc as abc
 import os
 import requests
@@ -112,12 +114,20 @@ which is normally Jupyter's notebook_dir.
                 full_structure.append(the_part)
         return full_structure
 
-    def get_files(self, root, structure, **kwargs):
-        fmtstrs = ["nbgrader_step", "user_id", "assignment_id"]
+    def get_files(self, root, structure=None, **kwargs):
+        fmtstrs = ["nbgrader_step", "student_id", "assignment_id"]
+        if structure is None:
+            structure = []
+
+        if isinstance(root, list):
+            return self.get_files(root[0], root[1:] + structure, **kwargs)
 
         if len(structure) == 0:
-            files = os.listdir(root)
-            return {"files": files, "details": kwargs}
+            if os.path.isdir(root):
+                files = os.listdir(root)
+                return [{"files": [os.path.join(root, f) for f in files], "details": kwargs}]
+            else:
+                return []
 
         if not contains_format(structure[0], fmtstrs):
             root = os.path.join(root, structure[0])

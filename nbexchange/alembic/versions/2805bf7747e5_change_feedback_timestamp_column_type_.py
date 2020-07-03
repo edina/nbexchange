@@ -62,11 +62,16 @@ def upgrade():
         created_at = Column(DateTime, default=datetime.utcnow)
 
     bind = op.get_bind()
-    FeedbackNew.__table__.create(bind)
-    session = orm.Session(bind=bind)
+
     inspector = Inspector.from_engine(bind)
 
     tables = inspector.get_table_names()
+
+    if "feedback_2" not in tables:
+        FeedbackNew.__table__.create(bind)
+
+    session = orm.Session(bind=bind)
+
     if "feedback" in tables:
         feedbacks = [
             FeedbackNew(
@@ -116,18 +121,19 @@ def downgrade():
     if "feedback" not in tables:
         FeedbackOld.__table__.create(bind)
 
-    feedbacks = [
-        FeedbackOld(
-            notebook_id=feedback.notebook_id,
-            instructor_id=feedback.instructor_id,
-            student_id=feedback.student_id,
-            location=feedback.location,
-            checksum=feedback.checksum,
-            timestamp=feedback.timestamp.isoformat(),
-            created_at=feedback.created_at,
-        )
-        for feedback in session.query(FeedbackNew)
-    ]
-    session.add_all(feedbacks)
+    if "feedback_2" in tables:
+        feedbacks = [
+            FeedbackOld(
+                notebook_id=feedback.notebook_id,
+                instructor_id=feedback.instructor_id,
+                student_id=feedback.student_id,
+                location=feedback.location,
+                checksum=feedback.checksum,
+                timestamp=feedback.timestamp.isoformat(),
+                created_at=feedback.created_at,
+            )
+            for feedback in session.query(FeedbackNew)
+        ]
+        session.add_all(feedbacks)
 
-    session.commit()
+        session.commit()

@@ -10,6 +10,8 @@ import sqlalchemy as sa
 from sqlalchemy import orm
 
 # revision identifiers, used by Alembic.
+from sqlalchemy.engine.reflection import Inspector
+
 revision = "2805bf7747e5"
 down_revision = "f26d6a79159d"
 branch_labels = None
@@ -62,22 +64,25 @@ def upgrade():
     bind = op.get_bind()
     FeedbackNew.__table__.create(bind)
     session = orm.Session(bind=bind)
+    inspector = Inspector.from_engine(bind)
 
-    feedbacks = [
-        FeedbackNew(
-            notebook_id=feedback.notebook_id,
-            instructor_id=feedback.instructor_id,
-            student_id=feedback.student_id,
-            location=feedback.location,
-            checksum=feedback.checksum,
-            timestamp=try_convert(feedback.timestamp, feedback.created_at),
-            created_at=feedback.created_at,
-        )
-        for feedback in session.query(FeedbackOld)
-    ]
-    session.add_all(feedbacks)
+    tables = inspector.get_table_names()
+    if "feedback" in tables:
+        feedbacks = [
+            FeedbackNew(
+                notebook_id=feedback.notebook_id,
+                instructor_id=feedback.instructor_id,
+                student_id=feedback.student_id,
+                location=feedback.location,
+                checksum=feedback.checksum,
+                timestamp=try_convert(feedback.timestamp, feedback.created_at),
+                created_at=feedback.created_at,
+            )
+            for feedback in session.query(FeedbackOld)
+        ]
+        session.add_all(feedbacks)
 
-    session.commit()
+        session.commit()
 
 
 def downgrade():
@@ -105,6 +110,11 @@ def downgrade():
 
     bind = op.get_bind()
     session = orm.Session(bind=bind)
+    inspector = Inspector.from_engine(bind)
+
+    tables = inspector.get_table_names()
+    if "feedback" not in tables:
+        FeedbackOld.__table__.create(bind)
 
     feedbacks = [
         FeedbackOld(

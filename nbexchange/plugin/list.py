@@ -80,12 +80,13 @@ class ExchangeList(abc.ExchangeList, Exchange):
 
     ### We need to add feedback into submitted items
     ### (this may not be the best place to process them)
-    def parse_assignment(self, assignment, local_assignments):
+    def parse_assignment(self, assignment, local_assignments=None):
         # For fetched & collected items - we want to know what the user has on-disk
         # rather than what the exchange server things we have.
-        local_assignment = local_assignments.get(assignment.get("assignment_id"))
-        if local_assignment is None and assignment.get("status") == "fetched":
-            assignment["status"] = "released"
+        if local_assignments is not None:
+            local_assignment = local_assignments.get(assignment.get("assignment_id"))
+            if local_assignment is None and assignment.get("status") == "fetched":
+                assignment["status"] = "released"
 
         if assignment.get("status") in ("fetched", "collected"):
             assignment_directory = (
@@ -134,14 +135,18 @@ class ExchangeList(abc.ExchangeList, Exchange):
         )
         self.assignments = []
         remote_assignments = self.query_exchange()
-        local_assignments = self.group_by(
-            "assignment_id",
-            self.get_local_assignments(
-                [x["assignment_id"] for x in remote_assignments],
-                course_id=course_id,
-                user_id=student_id,
-            ),
-        )
+        local_assignments = None
+        try:
+            local_assignments = self.group_by(
+                "assignment_id",
+                self.get_local_assignments(
+                    [x["assignment_id"] for x in remote_assignments],
+                    course_id=course_id,
+                    user_id=student_id,
+                ),
+            )
+        except:
+            pass
         self.log.debug(
             f"ExternalExchange.list.init_dest collected {remote_assignments}"
         )

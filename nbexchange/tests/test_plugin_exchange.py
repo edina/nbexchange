@@ -20,6 +20,7 @@ def fake_listdir(dir_structure):
         for part in parts:
             struct = struct[part]
         return list(struct)
+
     return inner
 
 
@@ -33,6 +34,20 @@ def fake_isdir(dir_structure):
                 break
             struct = struct[part]
         return isinstance(struct, dict) or isinstance(struct, list)
+
+    return inner
+
+
+def fake_exists(dir_structure):
+    def inner(dir_name):
+        parts = dir_name.split(os.path.sep)
+        struct = dir_structure
+        for part in parts:
+            if part not in struct:
+                return False
+            struct = struct[part]
+        return True
+
     return inner
 
 
@@ -114,157 +129,472 @@ def test_exhange_api_request_get():
 
 @pytest.mark.gen_test
 def test_exhange_get_directory_structure(plugin_config):
-    # plugin_config.CourseDirectory.directory_structure = os.path.join("")
-    plugin = Exchange(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
+    plugin_config.CourseDirectory.root = ""
+    plugin = Exchange(
+        coursedir=CourseDirectory(config=plugin_config), config=plugin_config
+    )
 
     structure = plugin.get_directory_structure("assignments")
     assert structure == ["assignments", "{student_id}", "{assignment_id}"]
     structure = plugin.get_directory_structure("assignments", user_id="1")
     assert structure == [os.path.join("assignments", "1"), "{assignment_id}"]
-    structure = plugin.get_directory_structure("assignments", user_id="1", assignment_id="123")
+    structure = plugin.get_directory_structure(
+        "assignments", user_id="1", assignment_id="123"
+    )
     assert structure == [os.path.join("assignments", "1", "123")]
     structure = plugin.get_directory_structure("assignments", assignment_id="123")
     assert structure == ["assignments", "{student_id}", "123"]
 
 
-
 @pytest.mark.gen_test
 def test_exhange_get_files(plugin_config):
     # plugin_config.CourseDirectory.directory_structure = os.path.join("")
-    plugin = Exchange(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
+    plugin = Exchange(
+        coursedir=CourseDirectory(config=plugin_config), config=plugin_config
+    )
 
     dir_struct = {
         "assignments": {
-            "user1": {
-                "assign1": ["file1", "file2"]
-            },
-            "user2": {
-                "assign1": ["file3", "file4"]
-            }
+            "user1": {"assign1": ["file1", "file2"]},
+            "user2": {"assign1": ["file3", "file4"]},
         }
     }
 
-    with patch("nbexchange.plugin.exchange.os.path.isdir", fake_isdir(dir_struct)), \
-         patch("nbexchange.plugin.exchange.os.listdir", fake_listdir(dir_struct)):
+    with patch(
+        "nbexchange.plugin.exchange.os.path.isdir", fake_isdir(dir_struct)
+    ), patch(
+        "nbexchange.plugin.exchange.os.path.exists", fake_exists(dir_struct)
+    ), patch(
+        "nbexchange.plugin.exchange.os.listdir", fake_listdir(dir_struct)
+    ):
         files = plugin.get_files(["assignments", "{student_id}", "{assignment_id}"])
-        assert files == [{"details": {"student_id": "user1", "assignment_id": "assign1"}, "files": ["assignments/user1/assign1/file1", "assignments/user1/assign1/file2"]},
-                         {"details": {"student_id": "user2", "assignment_id": "assign1"}, "files": ["assignments/user2/assign1/file3", "assignments/user2/assign1/file4"]}]
+        assert files == [
+            {
+                "details": {"student_id": "user1", "assignment_id": "assign1"},
+                "files": [
+                    "assignments/user1/assign1/file1",
+                    "assignments/user1/assign1/file2",
+                ],
+            },
+            {
+                "details": {"student_id": "user2", "assignment_id": "assign1"},
+                "files": [
+                    "assignments/user2/assign1/file3",
+                    "assignments/user2/assign1/file4",
+                ],
+            },
+        ]
+
 
 @pytest.mark.gen_test
 def test_exhange_get_files_more_stuff(plugin_config):
     # plugin_config.CourseDirectory.directory_structure = os.path.join("")
-    plugin = Exchange(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
+    plugin = Exchange(
+        coursedir=CourseDirectory(config=plugin_config), config=plugin_config
+    )
 
     dir_struct = {
         "assignments": {
-            "user1": {
-                "assign1": ["file1", "file2"],
-                "assign2": ["file5", "file6"],
-            },
-            "user2": {
-                "assign1": ["file3", "file4"],
-                "assign3": ["file7", "file8"]
-            },
-            "user3": {
-                "assign4": ["file9", "file10"],
-                "assign5": ["file11", "file12"]
-            }
+            "user1": {"assign1": ["file1", "file2"], "assign2": ["file5", "file6"]},
+            "user2": {"assign1": ["file3", "file4"], "assign3": ["file7", "file8"]},
+            "user3": {"assign4": ["file9", "file10"], "assign5": ["file11", "file12"]},
         }
     }
 
-    with patch("nbexchange.plugin.exchange.os.path.isdir", fake_isdir(dir_struct)), \
-         patch("nbexchange.plugin.exchange.os.listdir", fake_listdir(dir_struct)):
+    with patch(
+        "nbexchange.plugin.exchange.os.path.isdir", fake_isdir(dir_struct)
+    ), patch(
+        "nbexchange.plugin.exchange.os.path.exists", fake_exists(dir_struct)
+    ), patch(
+        "nbexchange.plugin.exchange.os.listdir", fake_listdir(dir_struct)
+    ):
         files = plugin.get_files(["assignments", "{student_id}", "{assignment_id}"])
-        assert files == [{"details": {"student_id": "user1", "assignment_id": "assign1"}, "files": ["assignments/user1/assign1/file1", "assignments/user1/assign1/file2"]},
-                         {"details": {"student_id": "user1", "assignment_id": "assign2"}, "files": ["assignments/user1/assign2/file5", "assignments/user1/assign2/file6"]},
-                         {"details": {"student_id": "user2", "assignment_id": "assign1"}, "files": ["assignments/user2/assign1/file3", "assignments/user2/assign1/file4"]},
-                         {"details": {"student_id": "user2", "assignment_id": "assign3"}, "files": ["assignments/user2/assign3/file7", "assignments/user2/assign3/file8"]},
-                         {"details": {"student_id": "user3", "assignment_id": "assign4"}, "files": ["assignments/user3/assign4/file9", "assignments/user3/assign4/file10"]},
-                         {"details": {"student_id": "user3", "assignment_id": "assign5"}, "files": ["assignments/user3/assign5/file11", "assignments/user3/assign5/file12"]}]
+        assert files == [
+            {
+                "details": {"student_id": "user1", "assignment_id": "assign1"},
+                "files": [
+                    "assignments/user1/assign1/file1",
+                    "assignments/user1/assign1/file2",
+                ],
+            },
+            {
+                "details": {"student_id": "user1", "assignment_id": "assign2"},
+                "files": [
+                    "assignments/user1/assign2/file5",
+                    "assignments/user1/assign2/file6",
+                ],
+            },
+            {
+                "details": {"student_id": "user2", "assignment_id": "assign1"},
+                "files": [
+                    "assignments/user2/assign1/file3",
+                    "assignments/user2/assign1/file4",
+                ],
+            },
+            {
+                "details": {"student_id": "user2", "assignment_id": "assign3"},
+                "files": [
+                    "assignments/user2/assign3/file7",
+                    "assignments/user2/assign3/file8",
+                ],
+            },
+            {
+                "details": {"student_id": "user3", "assignment_id": "assign4"},
+                "files": [
+                    "assignments/user3/assign4/file9",
+                    "assignments/user3/assign4/file10",
+                ],
+            },
+            {
+                "details": {"student_id": "user3", "assignment_id": "assign5"},
+                "files": [
+                    "assignments/user3/assign5/file11",
+                    "assignments/user3/assign5/file12",
+                ],
+            },
+        ]
 
 
 @pytest.mark.gen_test
 def test_exhange_get_files_specific_user(plugin_config):
     # plugin_config.CourseDirectory.directory_structure = os.path.join("")
-    plugin = Exchange(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
+    plugin = Exchange(
+        coursedir=CourseDirectory(config=plugin_config), config=plugin_config
+    )
 
     dir_struct = {
         "assignments": {
-            "user1": {
-                "assign1": ["file1", "file2"],
-                "assign2": ["file5", "file6"],
-            },
-            "user2": {
-                "assign1": ["file3", "file4"],
-                "assign3": ["file7", "file8"]
-            },
-            "user3": {
-                "assign4": ["file9", "file10"],
-                "assign5": ["file11", "file12"]
-            }
+            "user1": {"assign1": ["file1", "file2"], "assign2": ["file5", "file6"]},
+            "user2": {"assign1": ["file3", "file4"], "assign3": ["file7", "file8"]},
+            "user3": {"assign4": ["file9", "file10"], "assign5": ["file11", "file12"]},
         }
     }
 
-    with patch("nbexchange.plugin.exchange.os.path.isdir", fake_isdir(dir_struct)), \
-         patch("nbexchange.plugin.exchange.os.listdir", fake_listdir(dir_struct)):
+    with patch(
+        "nbexchange.plugin.exchange.os.path.isdir", fake_isdir(dir_struct)
+    ), patch(
+        "nbexchange.plugin.exchange.os.path.exists", fake_exists(dir_struct)
+    ), patch(
+        "nbexchange.plugin.exchange.os.listdir", fake_listdir(dir_struct)
+    ):
         files = plugin.get_files(["assignments", "user1", "{assignment_id}"])
-        assert files == [{"details": {"assignment_id": "assign1"}, "files": ["assignments/user1/assign1/file1", "assignments/user1/assign1/file2"]},
-                         {"details": {"assignment_id": "assign2"}, "files": ["assignments/user1/assign2/file5", "assignments/user1/assign2/file6"]},
-                        ]
+        assert files == [
+            {
+                "details": {"assignment_id": "assign1"},
+                "files": [
+                    "assignments/user1/assign1/file1",
+                    "assignments/user1/assign1/file2",
+                ],
+            },
+            {
+                "details": {"assignment_id": "assign2"},
+                "files": [
+                    "assignments/user1/assign2/file5",
+                    "assignments/user1/assign2/file6",
+                ],
+            },
+        ]
+
 
 @pytest.mark.gen_test
 def test_exhange_get_files_specific_assignment(plugin_config):
     # plugin_config.CourseDirectory.directory_structure = os.path.join("")
-    plugin = Exchange(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
+    plugin = Exchange(
+        coursedir=CourseDirectory(config=plugin_config), config=plugin_config
+    )
 
     dir_struct = {
         "assignments": {
-            "user1": {
-                "assign1": ["file1", "file2"],
-                "assign2": ["file5", "file6"],
-            },
-            "user2": {
-                "assign1": ["file3", "file4"],
-                "assign3": ["file7", "file8"]
-            },
-            "user3": {
-                "assign4": ["file9", "file10"],
-                "assign5": ["file11", "file12"]
-            }
+            "user1": {"assign1": ["file1", "file2"], "assign2": ["file5", "file6"]},
+            "user2": {"assign1": ["file3", "file4"], "assign3": ["file7", "file8"]},
+            "user3": {"assign4": ["file9", "file10"], "assign5": ["file11", "file12"]},
         }
     }
 
-    with patch("nbexchange.plugin.exchange.os.path.isdir", fake_isdir(dir_struct)), \
-         patch("nbexchange.plugin.exchange.os.listdir", fake_listdir(dir_struct)):
+    with patch(
+        "nbexchange.plugin.exchange.os.path.isdir", fake_isdir(dir_struct)
+    ), patch(
+        "nbexchange.plugin.exchange.os.path.exists", fake_exists(dir_struct)
+    ), patch(
+        "nbexchange.plugin.exchange.os.listdir", fake_listdir(dir_struct)
+    ):
         files = plugin.get_files(["assignments", "{student_id}", "assign1"])
-        assert files == [{"details": {"student_id": "user1"}, "files": ["assignments/user1/assign1/file1", "assignments/user1/assign1/file2"]},
-                         {"details": {"student_id": "user2"}, "files": ["assignments/user2/assign1/file3", "assignments/user2/assign1/file4"]},
-                        ]
+        assert files == [
+            {
+                "details": {"student_id": "user1"},
+                "files": [
+                    "assignments/user1/assign1/file1",
+                    "assignments/user1/assign1/file2",
+                ],
+            },
+            {
+                "details": {"student_id": "user2"},
+                "files": [
+                    "assignments/user2/assign1/file3",
+                    "assignments/user2/assign1/file4",
+                ],
+            },
+        ]
+
 
 @pytest.mark.gen_test
 def test_exhange_get_files_single_folder(plugin_config):
     # plugin_config.CourseDirectory.directory_structure = os.path.join("")
-    plugin = Exchange(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
+    plugin = Exchange(
+        coursedir=CourseDirectory(config=plugin_config), config=plugin_config
+    )
 
     dir_struct = {
         "assignments": {
-            "user1": {
-                "assign1": ["file1", "file2"],
-                "assign2": ["file5", "file6"],
-            },
-            "user2": {
-                "assign1": ["file3", "file4"],
-                "assign3": ["file7", "file8"]
-            },
-            "user3": {
-                "assign4": ["file9", "file10"],
-                "assign5": ["file11", "file12"]
-            }
+            "user1": {"assign1": ["file1", "file2"], "assign2": ["file5", "file6"]},
+            "user2": {"assign1": ["file3", "file4"], "assign3": ["file7", "file8"]},
+            "user3": {"assign4": ["file9", "file10"], "assign5": ["file11", "file12"]},
         }
     }
 
-    with patch("nbexchange.plugin.exchange.os.path.isdir", fake_isdir(dir_struct)), \
-         patch("nbexchange.plugin.exchange.os.listdir", fake_listdir(dir_struct)):
+    with patch(
+        "nbexchange.plugin.exchange.os.path.isdir", fake_isdir(dir_struct)
+    ), patch(
+        "nbexchange.plugin.exchange.os.path.exists", fake_exists(dir_struct)
+    ), patch(
+        "nbexchange.plugin.exchange.os.listdir", fake_listdir(dir_struct)
+    ):
         files = plugin.get_files(["assignments", "user1", "assign1"])
-        assert files == [{"details": {}, "files": ["assignments/user1/assign1/file1", "assignments/user1/assign1/file2"]},
-                        ]
+        assert files == [
+            {
+                "details": {},
+                "files": [
+                    "assignments/user1/assign1/file1",
+                    "assignments/user1/assign1/file2",
+                ],
+            }
+        ]
+
+
+@pytest.mark.gen_test
+def test_exhange_get_assignments(plugin_config):
+    plugin_config.Exchange.assignment_dir = "assignments"
+    plugin = Exchange(
+        coursedir=CourseDirectory(config=plugin_config), config=plugin_config
+    )
+
+    dir_struct = {
+        "assignments": {
+            "user1": {"assign1": ["file1", "file2"]},
+            "user2": {"assign1": ["file3", "file4"]},
+        }
+    }
+
+    with patch(
+        "nbexchange.plugin.exchange.os.path.isdir", fake_isdir(dir_struct)
+    ), patch(
+        "nbexchange.plugin.exchange.os.path.exists", fake_exists(dir_struct)
+    ), patch(
+        "nbexchange.plugin.exchange.os.listdir", fake_listdir(dir_struct)
+    ):
+        files = plugin.get_local_assignments(["assign1", "assign2"])
+        assert files == [
+            {
+                "details": {"student_id": "user1", "assignment_id": "assign1"},
+                "files": [
+                    "assignments/user1/assign1/file1",
+                    "assignments/user1/assign1/file2",
+                ],
+            },
+            {
+                "details": {"student_id": "user2", "assignment_id": "assign1"},
+                "files": [
+                    "assignments/user2/assign1/file3",
+                    "assignments/user2/assign1/file4",
+                ],
+            },
+        ]
+
+
+@pytest.mark.gen_test
+def test_exhange_get_assignments_more_stuff(plugin_config):
+    # plugin_config.CourseDirectory.directory_structure = os.path.join(["{nbgrader_step}", "{student_id}", "{assignment_id}"])
+    plugin = Exchange(
+        coursedir=CourseDirectory(config=plugin_config), config=plugin_config
+    )
+
+    dir_struct = {
+        "assignments": {
+            "user1": {"assign1": ["file1", "file2"], "assign2": ["file5", "file6"]},
+            "user2": {"assign1": ["file3", "file4"], "assign3": ["file7", "file8"]},
+            "user3": {"assign4": ["file9", "file10"], "assign5": ["file11", "file12"]},
+        }
+    }
+
+    with patch(
+        "nbexchange.plugin.exchange.os.path.isdir", fake_isdir(dir_struct)
+    ), patch(
+        "nbexchange.plugin.exchange.os.path.exists", fake_exists(dir_struct)
+    ), patch(
+        "nbexchange.plugin.exchange.os.listdir", fake_listdir(dir_struct)
+    ):
+        files = plugin.get_local_assignments(
+            ["assign1", "assign2", "assign3", "assign4", "assign5"]
+        )
+        assert files == [
+            {
+                "details": {"student_id": "user1", "assignment_id": "assign1"},
+                "files": [
+                    "assignments/user1/assign1/file1",
+                    "assignments/user1/assign1/file2",
+                ],
+            },
+            {
+                "details": {"student_id": "user2", "assignment_id": "assign1"},
+                "files": [
+                    "assignments/user2/assign1/file3",
+                    "assignments/user2/assign1/file4",
+                ],
+            },
+            {
+                "details": {"student_id": "user1", "assignment_id": "assign2"},
+                "files": [
+                    "assignments/user1/assign2/file5",
+                    "assignments/user1/assign2/file6",
+                ],
+            },
+            {
+                "details": {"student_id": "user2", "assignment_id": "assign3"},
+                "files": [
+                    "assignments/user2/assign3/file7",
+                    "assignments/user2/assign3/file8",
+                ],
+            },
+            {
+                "details": {"student_id": "user3", "assignment_id": "assign4"},
+                "files": [
+                    "assignments/user3/assign4/file9",
+                    "assignments/user3/assign4/file10",
+                ],
+            },
+            {
+                "details": {"student_id": "user3", "assignment_id": "assign5"},
+                "files": [
+                    "assignments/user3/assign5/file11",
+                    "assignments/user3/assign5/file12",
+                ],
+            },
+        ]
+
+
+@pytest.mark.gen_test
+def test_exhange_get_assignments_specific_user(plugin_config):
+    # plugin_config.CourseDirectory.directory_structure = os.path.join("")
+    plugin = Exchange(
+        coursedir=CourseDirectory(config=plugin_config), config=plugin_config
+    )
+
+    dir_struct = {
+        "assignments": {
+            "user1": {"assign1": ["file1", "file2"], "assign2": ["file5", "file6"]},
+            "user2": {"assign1": ["file3", "file4"], "assign3": ["file7", "file8"]},
+            "user3": {"assign4": ["file9", "file10"], "assign5": ["file11", "file12"]},
+        }
+    }
+
+    with patch(
+        "nbexchange.plugin.exchange.os.path.isdir", fake_isdir(dir_struct)
+    ), patch(
+        "nbexchange.plugin.exchange.os.path.exists", fake_exists(dir_struct)
+    ), patch(
+        "nbexchange.plugin.exchange.os.listdir", fake_listdir(dir_struct)
+    ):
+        files = plugin.get_local_assignments(
+            ["assign1", "assign2", "assign3", "assign4", "assign5"], user_id="user1"
+        )
+        assert files == [
+            {
+                "details": {"assignment_id": "assign1"},
+                "files": [
+                    "assignments/user1/assign1/file1",
+                    "assignments/user1/assign1/file2",
+                ],
+            },
+            {
+                "details": {"assignment_id": "assign2"},
+                "files": [
+                    "assignments/user1/assign2/file5",
+                    "assignments/user1/assign2/file6",
+                ],
+            },
+        ]
+
+
+@pytest.mark.gen_test
+def test_exhange_get_files_ignore_non_assignments(plugin_config):
+    # plugin_config.CourseDirectory.directory_structure = os.path.join("")
+    plugin = Exchange(
+        coursedir=CourseDirectory(config=plugin_config), config=plugin_config
+    )
+
+    dir_struct = {
+        "assignments": {
+            "user1": {"assign1": ["file1", "file2"], "assign2": ["file5", "file6"]},
+            "user2": {"assign1": ["file3", "file4"], "assign3": ["file7", "file8"]},
+            "user3": {"assign4": ["file9", "file10"], "assign5": ["file11", "file12"]},
+        }
+    }
+
+    with patch(
+        "nbexchange.plugin.exchange.os.path.isdir", fake_isdir(dir_struct)
+    ), patch(
+        "nbexchange.plugin.exchange.os.path.exists", fake_exists(dir_struct)
+    ), patch(
+        "nbexchange.plugin.exchange.os.listdir", fake_listdir(dir_struct)
+    ):
+        files = plugin.get_local_assignments(["assign1"])
+        assert files == [
+            {
+                "details": {"student_id": "user1", "assignment_id": "assign1"},
+                "files": [
+                    "assignments/user1/assign1/file1",
+                    "assignments/user1/assign1/file2",
+                ],
+            },
+            {
+                "details": {"student_id": "user2", "assignment_id": "assign1"},
+                "files": [
+                    "assignments/user2/assign1/file3",
+                    "assignments/user2/assign1/file4",
+                ],
+            },
+        ]
+
+
+@pytest.mark.gen_test
+def test_exhange_get_assignments_single_folder(plugin_config):
+    # plugin_config.CourseDirectory.directory_structure = os.path.join("")
+    plugin = Exchange(
+        coursedir=CourseDirectory(config=plugin_config), config=plugin_config
+    )
+
+    dir_struct = {
+        "assignments": {
+            "user1": {"assign1": ["file1", "file2"], "assign2": ["file5", "file6"]},
+            "user2": {"assign1": ["file3", "file4"], "assign3": ["file7", "file8"]},
+            "user3": {"assign4": ["file9", "file10"], "assign5": ["file11", "file12"]},
+        }
+    }
+
+    with patch(
+        "nbexchange.plugin.exchange.os.path.isdir", fake_isdir(dir_struct)
+    ), patch(
+        "nbexchange.plugin.exchange.os.path.exists", fake_exists(dir_struct)
+    ), patch(
+        "nbexchange.plugin.exchange.os.listdir", fake_listdir(dir_struct)
+    ):
+        files = plugin.get_local_assignments(["assign1"], user_id="user1")
+        assert files == [
+            {
+                "details": {"assignment_id": "assign1"},
+                "files": [
+                    "assignments/user1/assign1/file1",
+                    "assignments/user1/assign1/file2",
+                ],
+            }
+        ]

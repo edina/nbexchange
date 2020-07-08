@@ -50,7 +50,7 @@ class ExchangeFetchAssignment(abc.ExchangeFetchAssignment, Exchange):
             root = os.path.join(self.course_id, self.coursedir.assignment_id)
         else:
             root = self.coursedir.assignment_id
-        self.dest_path = os.path.abspath(os.path.join("", root))
+        self.dest_path = os.path.abspath(os.path.join(self.assignment_dir, root))
         if os.path.isdir(self.dest_path) and not self.replace_missing_files:
             self.fail(
                 f"You already have a copy of the assignment in this directory: {root}"

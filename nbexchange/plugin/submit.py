@@ -19,7 +19,7 @@ class ExchangeSubmit(abc.ExchangeSubmit, Exchange):
             root = os.path.join(self.course_id, self.coursedir.assignment_id)
         else:
             root = self.coursedir.assignment_id
-        self.src_path = os.path.abspath(os.path.join("", root))
+        self.src_path = os.path.abspath(os.path.join(self.assignment_dir, root))
         if not os.path.isdir(self.src_path):
             self._assignment_not_found(self.src_path, root)
         self.log.debug(f"ExchangeSubmit.init_src ensuring {self.src_path} exists")
@@ -65,6 +65,7 @@ class ExchangeSubmit(abc.ExchangeSubmit, Exchange):
     def check_filename_diff(self):
         # List of filenames, no paths
         released_notebooks = []
+        # TODO: This really needs to be fixed!
         assignments = ExchangeList.query_exchange(self)
         for assignment in assignments:
             # We want the last released version of this assignments

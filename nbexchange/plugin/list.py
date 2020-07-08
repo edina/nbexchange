@@ -80,9 +80,13 @@ class ExchangeList(abc.ExchangeList, Exchange):
 
     ### We need to add feedback into submitted items
     ### (this may not be the best place to process them)
-    def parse_assignment(self, assignment):
+    def parse_assignment(self, assignment, local_assignments):
         # For fetched & collected items - we want to know what the user has on-disk
         # rather than what the exchange server things we have.
+        local_assignment = local_assignments.get(assignment.get("assignment_id"))
+        if local_assignment is None and assignment.get("status") == "fetched":
+            assignment["status"] = "released"
+
         if assignment.get("status") in ("fetched", "collected"):
             assignment_directory = (
                 self.fetched_root + "/" + assignment.get("assignment_id")
@@ -117,25 +121,48 @@ class ExchangeList(abc.ExchangeList, Exchange):
     ### (check what the 'exchange.parse_assignment(path)' puts into 'info[]')
     ### Needs 'notebook' ling moved to 'action'
     def parse_assignments(self):
+        course_id = self.course_id if self.course_id and self.course_id != "*" else None
+        assignment_id = (
+            self.coursedir.assignment_id
+            if self.coursedir.assignment_id and self.coursedir.assignment_id != "*"
+            else None
+        )
+        student_id = (
+            self.coursedir.student_id
+            if self.coursedir.student_id and self.coursedir.student_id != "*"
+            else None
+        )
         self.assignments = []
-        local_assignments = self.query_exchange()
-        self.log.debug(f"ExternalExchange.list.init_dest collected {local_assignments}")
+        remote_assignments = self.query_exchange()
+        local_assignments = self.group_by(
+            "assignment_id",
+            self.get_local_assignments(
+                [x["assignment_id"] for x in remote_assignments],
+                course_id=course_id,
+                user_id=student_id,
+            ),
+        )
+        self.log.debug(
+            f"ExternalExchange.list.init_dest collected {remote_assignments}"
+        )
 
         # if "inbound" or "cached", looking for inbound (submitted) records
         # else, looking for outbound (released) files
         if self.inbound or self.cached:
-            for assignment in local_assignments:
+            for assignment in remote_assignments:
                 if assignment.get("status") == "submitted":
                     self.assignments.append(assignment)
         else:
-            self.assignments = local_assignments
+            self.assignments = remote_assignments
         # self.assignments = self.query_exchange()  # This should really set by init_dest
 
         # We want to check the local disk for "fetched" items, not what the external server
         # says we should have
         interim_assignments = []
         for assignment in self.assignments:
-            interim_assignments.append(self.parse_assignment(assignment))
+            interim_assignments.append(
+                self.parse_assignment(assignment, local_assignments)
+            )
             self.log.info(
                 f"parse_assignment singular assignment returned: {assignment}"
             )

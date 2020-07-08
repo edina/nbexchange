@@ -1,6 +1,6 @@
 import datetime
 import glob
-from collections import Sequence
+from collections import Sequence, defaultdict
 
 import nbgrader.exchange.abc as abc
 import os
@@ -93,8 +93,18 @@ which is normally Jupyter's notebook_dir.
         else:
             raise NotImplementedError(f"HTTP Method {method} is not implemented")
 
-    def get_directory_structure(self, step, user_id=None, assignment_id=None):
-        structure = full_split(self.coursedir.directory_structure)
+    def get_directory_structure(
+        self, step, course_id=None, user_id=None, assignment_id=None
+    ):
+        structure = [self.coursedir.root]
+        if self.path_includes_course:
+            if course_id is None:
+                self.log.info(
+                    "Trying to get directory structure that includes course id without specifying course id"
+                )
+                return []
+            structure.append(course_id)
+        structure.extend(full_split(self.coursedir.directory_structure))
         full_structure = []
         fmtstrs = ["nbgrader_step", "student_id", "assignment_id"]
         fmt = {"nbgrader_step": step}
@@ -105,7 +115,8 @@ which is normally Jupyter's notebook_dir.
 
         for part in structure:
             the_part = maybe_format(part, **fmt)
-            if (len(full_structure) > 0
+            if (
+                len(full_structure) > 0
                 and not contains_format(the_part, fmtstrs)
                 and not contains_format(full_structure[-1], fmtstrs)
             ):
@@ -113,6 +124,13 @@ which is normally Jupyter's notebook_dir.
             else:
                 full_structure.append(the_part)
         return full_structure
+
+    def group_by(self, key, files):
+        ordered = defaultdict(list)
+        for item in files:
+            if key in item.get("details", {}):
+                ordered[item["details"][key]] = item
+        return ordered
 
     def get_files(self, root, structure=None, **kwargs):
         fmtstrs = ["nbgrader_step", "student_id", "assignment_id"]
@@ -125,7 +143,9 @@ which is normally Jupyter's notebook_dir.
         if len(structure) == 0:
             if os.path.isdir(root):
                 files = os.listdir(root)
-                return [{"files": [os.path.join(root, f) for f in files], "details": kwargs}]
+                return [
+                    {"files": [os.path.join(root, f) for f in files], "details": kwargs}
+                ]
             else:
                 return []
 
@@ -133,23 +153,51 @@ which is normally Jupyter's notebook_dir.
             root = os.path.join(root, structure[0])
             return self.get_files(root, structure[1:], **kwargs)
         files = []
-        for filename in os.listdir(root):
-            new_root = os.path.join(root, filename)
-            detail_name = structure[0].strip("{}")
-            kwargs[detail_name] = filename
-            if os.path.isdir(new_root):
-                files.extend(self.get_files(new_root, structure[1:], **kwargs))
+        if os.path.exists(root):
+            for filename in os.listdir(root):
+                new_root = os.path.join(root, filename)
+                detail_name = structure[0].strip("{}")
+                kwargs[detail_name] = filename
+                if os.path.isdir(new_root):
+                    files.extend(self.get_files(new_root, structure[1:], **kwargs))
+        else:
+            return []
         return files
 
-    def get_local_assignments(self, user_id=None, course_id=None):
-        structure = self.get_directory_structure("assignments", user_id)
-        files = self.get_files(structure[0], structure[1:])
+    def get_local_assignments(self, assignments, user_id=None, course_id=None):
+        found_assignments = []
+        for assign in assignments:
+            found_assignments.extend(
+                [
+                    {
+                        "details": {"assignment_id": assign, **x["details"]},
+                        "files": x["files"],
+                    }
+                    for x in self.get_files(
+                        self.get_directory_structure(
+                            self.assignment_dir,
+                            course_id=course_id,
+                            user_id=user_id,
+                            assignment_id=assign,
+                        )
+                    )
+                ]
+            )
+        return found_assignments
 
     def get_local_submissions(self, user_id=None, course_id=None):
-        pass
+        return self.get_files(
+            self.get_directory_structure(
+                self.coursedir.submitted_directory, course_id=course_id, user_id=user_id
+            )
+        )
 
     def get_local_feedback(self, user_id=None, course_id=None, assignment_id=None):
-        pass
+        return self.get_files(
+            self.get_directory_structure(
+                self.coursedir.feedback_directory, course_id=course_id, user_id=user_id
+            )
+        )
 
     def save_local_assignments(self, user_id, course_id, assignment):
         pass

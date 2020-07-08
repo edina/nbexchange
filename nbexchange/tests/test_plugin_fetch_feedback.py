@@ -73,7 +73,7 @@ def test_fetch_feedback_fetch_normal(plugin_config, tmpdir):
                         {
                             "filename": "test_feedback.html",
                             "content": feedback_file,
-                            "timestamp": "2020-01-01 00:00:00.1",
+                            "timestamp": "2020-01-01T00:00:00.100",
                         }
                     ],
                 },
@@ -84,7 +84,7 @@ def test_fetch_feedback_fetch_normal(plugin_config, tmpdir):
         called = plugin.start()
         assert os.path.exists(
             os.path.join(
-                plugin.dest_path, "2020-01-01 00:00:00.1", "test_feedback.html"
+                plugin.dest_path, "2020-01-01 00:00:00.100000", "test_feedback.html"
             )
         )
 
@@ -111,12 +111,12 @@ def test_fetch_feedback_fetch_several_normal(plugin_config, tmpdir):
                         {
                             "filename": "test_feedback1.html",
                             "content": feedback_file,
-                            "timestamp": "2020-01-01 00:00:00.0",
+                            "timestamp": "2020-01-01T00:00:01",
                         },
                         {
                             "filename": "test_feedback2.html",
                             "content": feedback_file,
-                            "timestamp": "2020-01-01 00:00:00.0",
+                            "timestamp": "2020-01-01T00:00:00",
                         },
                     ],
                 },
@@ -125,13 +125,14 @@ def test_fetch_feedback_fetch_several_normal(plugin_config, tmpdir):
 
     with patch.object(Exchange, "api_request", side_effect=api_request):
         called = plugin.start()
+
         assert os.path.exists(
             os.path.join(
-                plugin.dest_path, "2020-01-01 00:00:00.0", "test_feedback1.html"
+                plugin.dest_path, "2020-01-01 00:00:01.000000", "test_feedback1.html"
             )
         )
         assert os.path.exists(
             os.path.join(
-                plugin.dest_path, "2020-01-01 00:00:00.0", "test_feedback2.html"
+                plugin.dest_path, "2020-01-01 00:00:00.000000", "test_feedback2.html"
             )
         )

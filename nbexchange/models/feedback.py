@@ -29,7 +29,7 @@ class Feedback(Base):
         Unicode(200), nullable=True
     )  # Location for the file of this action
     checksum = Column(Unicode(200), nullable=True)  # Checksum for the feedback file
-    timestamp = Column(Unicode(12), nullable=False)
+    timestamp = Column(DateTime(timezone=True), nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     def __repr__(self):

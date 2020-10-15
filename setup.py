@@ -30,7 +30,7 @@ REQUIRED = [
     "jupyterhub",
     "sentry-sdk==0.9.0",
     "sqlalchemy==1.2.18",
-    "nbgrader==0.7.0.dev0"
+    "nbgrader==0.7.0.dev0",
 ]
 
 # What packages are required for testing?
@@ -157,7 +157,9 @@ setup(
         "Programming Language :: Python :: Implementation :: CPython",
         "Programming Language :: Python :: Implementation :: PyPy",
     ],
-    dependency_links=["https://github.com/jupyter/nbgrader/tarball/master#egg=nbgrader-0.7.0.dev0"],
+    dependency_links=[
+        "https://github.com/jupyter/nbgrader/tarball/master#egg=nbgrader-0.7.0.dev0"
+    ],
     # $ setup.py publish support.
     cmdclass={"upload": UploadCommand},
 )

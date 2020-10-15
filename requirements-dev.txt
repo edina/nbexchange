@@ -5,5 +5,4 @@ beautifulsoup4
 html5lib
 psycopg2-binary
 mock
-pprint
 pytest_docker_tools

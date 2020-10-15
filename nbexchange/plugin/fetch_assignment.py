@@ -10,6 +10,7 @@ from traitlets import Bool
 from urllib.parse import quote_plus
 
 from .exchange import Exchange
+from .filestore import FileStore
 
 
 class ExchangeFetchAssignment(abc.ExchangeFetchAssignment, Exchange):
@@ -57,7 +58,7 @@ class ExchangeFetchAssignment(abc.ExchangeFetchAssignment, Exchange):
         )  # os.path.abspath(os.path.join(self.assignment_dir, root))
         if os.path.isdir(self.dest_path) and not self.replace_missing_files:
             self.fail(
-                f"You already have a copy of the assignment in this directory: {root}"
+                f"You already have a copy of the assignment in this directory: {self.dest_path}"
             )
         else:
             os.makedirs(os.path.dirname(self.dest_path + "/"), exist_ok=True)
@@ -115,6 +116,14 @@ class ExchangeFetchAssignment(abc.ExchangeFetchAssignment, Exchange):
             )
         # clear tmp having downloaded file
         shutil.rmtree(self.src_path)
+        FileStore.copy_files(
+            self.remote_store,
+            self.assignment_store,
+            item="assignment",
+            student_id=...,
+            course_id=...,
+            assignment_id=...,
+        )
 
     def copy_files(self):
         self.log.debug(f"Source: {self.src_path}")

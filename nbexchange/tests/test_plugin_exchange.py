@@ -136,10 +136,10 @@ def test_exhange_get_directory_structure(plugin_config):
 
     structure = plugin.get_directory_structure("assignments")
     assert structure == ["assignments", "{student_id}", "{assignment_id}"]
-    structure = plugin.get_directory_structure("assignments", user_id="1")
+    structure = plugin.get_directory_structure("assignments", student_id="1")
     assert structure == [os.path.join("assignments", "1"), "{assignment_id}"]
     structure = plugin.get_directory_structure(
-        "assignments", user_id="1", assignment_id="123"
+        "assignments", student_id="1", assignment_id="123"
     )
     assert structure == [os.path.join("assignments", "1", "123")]
     structure = plugin.get_directory_structure("assignments", assignment_id="123")
@@ -505,7 +505,7 @@ def test_exhange_get_assignments_specific_user(plugin_config):
         "nbexchange.plugin.exchange.os.listdir", fake_listdir(dir_struct)
     ):
         files = plugin.get_local_assignments(
-            ["assign1", "assign2", "assign3", "assign4", "assign5"], user_id="user1"
+            ["assign1", "assign2", "assign3", "assign4", "assign5"]
         )
         assert files == [
             {
@@ -588,7 +588,7 @@ def test_exhange_get_assignments_single_folder(plugin_config):
     ), patch(
         "nbexchange.plugin.exchange.os.listdir", fake_listdir(dir_struct)
     ):
-        files = plugin.get_local_assignments(["assign1"], user_id="user1")
+        files = plugin.get_local_assignments(["assign1"])
         assert files == [
             {
                 "details": {"assignment_id": "assign1"},

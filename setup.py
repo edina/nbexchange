@@ -42,7 +42,6 @@ TESTING = [
     "html5lib",
     "psycopg2-binary",
     "mock",
-    "pprint",
 ]
 
 # What packages are optional?

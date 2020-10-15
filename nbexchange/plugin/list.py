@@ -108,6 +108,16 @@ class ExchangeList(abc.ExchangeList, Exchange):
     ### Needs 'notebook' ling moved to 'action'
     def parse_assignments(self):
         course_id = self.course_id if self.course_id and self.course_id != "*" else None
+        assignment_id = (
+            self.coursedir.assignment_id
+            if self.coursedir.assignment_id and self.coursedir.assignment_id != "*"
+            else None
+        )
+        student_id = (
+            self.coursedir.student_id
+            if self.coursedir.student_id and self.coursedir.student_id != "*"
+            else None
+        )
         self.assignments = []
         remote_assignments = self.query_exchange()
         local_assignments = None
@@ -117,6 +127,7 @@ class ExchangeList(abc.ExchangeList, Exchange):
                 self.get_local_assignments(
                     [x["assignment_id"] for x in remote_assignments],
                     course_id=course_id,
+                    user_id=student_id,
                 ),
             )
         except:

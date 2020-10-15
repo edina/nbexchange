@@ -26,6 +26,7 @@ REQUIRED = [
     "aiocontextvars",
     "tornado",
     "psycopg2-binary",
+    "ipykernel==5.3.1",
     "jupyterhub",
     "sentry-sdk==0.9.0",
     "sqlalchemy==1.2.18",
@@ -157,7 +158,7 @@ setup(
         "Programming Language :: Python :: Implementation :: CPython",
         "Programming Language :: Python :: Implementation :: PyPy",
     ],
-    dependency_links=["https://github.com/lzach/nbgrader/tarball/pluggable_exchange#egg=nbgrader-0.7.0.dev0"],
+    dependency_links=["https://github.com/jupyter/nbgrader/tarball/master#egg=nbgrader-0.7.0.dev0"],
     # $ setup.py publish support.
     cmdclass={"upload": UploadCommand},
 )

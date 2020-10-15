@@ -303,7 +303,7 @@ def check_db_revision(engine, log=None):
     else:
         raise DatabaseSchemaMismatch(
             f"Found database schema version {alembic_revision} != {head}. "
-            "Backup your database and run `jupyterhub upgrade-db`"
+            "Backup your database and run `nbexchange --upgrade-db`"
             " to upgrade to the latest schema."
         )
 

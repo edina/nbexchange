@@ -162,7 +162,7 @@ For the exchange to work, it needs some details about the user connecting to it 
 
 The primary reference for this should be the `nbgrader` documentation - but in short:
 
-1. Use the `nbgrader` code-base that supports the external exchange
+1. Use the `nbgrader` code-base that supports the external exchange (nbgrader 0.7 and later)
 2. Install the code from `nbexchange/plugin` into `nbgrader`
 3. Include the following in your `nbgrader_config.py` file:
 

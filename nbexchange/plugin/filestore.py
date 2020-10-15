@@ -10,7 +10,7 @@ import requests
 from nbgrader.exchange import ExchangeError
 from traitlets.config import LoggingConfigurable, Unicode
 
-from nbexchange_code.nbexchange.plugin.util import get_files
+from nbexchange.plugin.util import get_files
 
 
 class FileStore:

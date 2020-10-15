@@ -48,7 +48,7 @@ def _nbexchange_config():
     return cfg
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def plugin_config():
     cfg = PyFileConfigLoader(testing_plugin_config).load_config()
 

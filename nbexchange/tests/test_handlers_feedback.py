@@ -66,7 +66,10 @@ def test_feedback_authenticated_no_params(app):
         r = yield async_requests.get(app.url + "/feedback")
     response_data = r.json()
     assert response_data["success"] == False
-    assert response_data["note"] == "Feedback call requires an assignment id and a course id"
+    assert (
+        response_data["note"]
+        == "Feedback call requires an assignment id and a course id"
+    )
 
 
 @pytest.mark.gen_test

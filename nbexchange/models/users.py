@@ -5,7 +5,7 @@ from nbexchange.models import Base
 
 
 class User(Base):
-    """ The user.
+    """The user.
 
     Note - we don't use the Jupyterhub user, as trying to integratte with the central DB is a pain
 

@@ -5,7 +5,7 @@ from nbexchange.models import Base
 
 
 class Subscription(Base):
-    """ Table to map multiple users to a single course
+    """Table to map multiple users to a single course
 
     # assume some main objects
     usr = User(hubuser_id = self.get_current_user().id

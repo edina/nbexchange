@@ -60,6 +60,8 @@ class FeedbackHandler(BaseHandler):
             assignment = (
                 session.query(nbexchange.models.Assignment)
                 .filter_by(assignment_code=assignment_id)
+                .filter_by(active=True)
+                .order_by(nbexchange.models.Assignment.id.desc())
                 .first()
             )
             self.log.info(assignment)

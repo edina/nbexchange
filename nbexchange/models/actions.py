@@ -17,7 +17,7 @@ class AssignmentActions(enum.Enum):
 
 
 class Action(Base):
-    """ Table to map multiple users to a single assignment
+    """Table to map multiple users to a single assignment
 
     # assume some main objects
     usr = User(hubuser_id = self.get_current_user().id

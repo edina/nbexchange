@@ -43,24 +43,26 @@ class FeedbackHandler(BaseHandler):
     @authenticated
     def get(self):
 
-        [assignment_id] = self.get_params(["assignment_id"])
+        [course_id, assignment_id] = self.get_params(["course_id", "assignment_id"])
 
-        self.log.info("checking for feedback for " + str(assignment_id))
-
-        if not assignment_id:
-            note = "Feedback call requires an assignment id."
+        if not assignment_id or not course_id:
+            note = "Feedback call requires an assignment id and a course id"
             self.log.info(note)
             self.finish({"success": False, "note": note})
             return
 
-        self.log.info(f"Assignment ID: {assignment_id}")
+        self.log.info(f"checking for feedback for {assignment_id} on {course_id}")
+
         this_user = self.nbex_user
 
         with scoped_session() as session:
+
             assignment = (
                 session.query(nbexchange.models.Assignment)
                 .filter_by(assignment_code=assignment_id)
                 .filter_by(active=True)
+                .join(nbexchange.models.courses.Course)
+                .filter_by(course_code=course_id)
                 .order_by(nbexchange.models.Assignment.id.desc())
                 .first()
             )

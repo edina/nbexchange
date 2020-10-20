@@ -40,7 +40,7 @@ class ExchangeFetchFeedback(abc.ExchangeFetchFeedback, Exchange):
             f"Download feedback for {quote_plus(self.coursedir.notebook_id)} from {self.service_url}"
         )
         r = self.api_request(
-            f"feedback?assignment_id={quote_plus(self.coursedir.assignment_id)}"
+            f"feedback?course_id={quote_plus(self.coursedir.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}"
         )
         self.log.info(
             f"Got back {r.status_code} {r.headers['content-type']} after file download"

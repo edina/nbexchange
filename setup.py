@@ -112,16 +112,16 @@ setup(
     # },
     setup_requires=["pytest-runner"],
     install_requires=[
-        'jupyterhub==1.1.0',
-        'nbconvert==5.6.1',
-        'nbgrader@git+https://github.com/jupyter/nbgrader.git@master#egg=nbgrader-0.7.0-dev',
-        'sentry-sdk==0.9.0'
+        "jupyterhub==1.1.0",
+        "nbconvert==5.6.1",
+        "nbgrader@git+https://github.com/jupyter/nbgrader.git@master#egg=nbgrader-0.7.0-dev",
+        "sentry-sdk==0.9.0",
     ],
     tests_require=[
         "mock==4.0.2",
         "pytest<6.0.0,>=5.4.2",
         "pytest-docker-tools<1.0.0",
-        "pytest-tornado==0.8.0"
+        "pytest-tornado==0.8.0",
     ],
     include_package_data=True,
     license="MIT",

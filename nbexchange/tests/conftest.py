@@ -60,8 +60,7 @@ def plugin_config():
 # environment variables passed in
 @pytest.fixture
 def app(request, io_loop, _nbexchange_config):
-    """Launch the NbExchange app
-    """
+    """Launch the NbExchange app"""
     nbexchange = NbExchange.instance(config=_nbexchange_config)
     nbexchange.initialize([])
     nbexchange.start(run_loop=False)

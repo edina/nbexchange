@@ -11,8 +11,7 @@ logger.setLevel(logging.ERROR)
 
 
 class TestHandlersFetch(BaseTestHandlers):
-    """ GET /assignments (list assignments)
-    """
+    """GET /assignments (list assignments)"""
 
     # require authenticated user (404 because the bounce to login fails)
     @pytest.mark.gen_test

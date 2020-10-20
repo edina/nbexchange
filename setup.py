@@ -20,36 +20,6 @@ AUTHOR = "Edina Development team"
 REQUIRES_PYTHON = ">=3.7.0"
 VERSION = None
 
-# What packages are required for this module to be executed?
-REQUIRED = [
-    "alembic",
-    "aiocontextvars",
-    "tornado",
-    "psycopg2-binary",
-    "ipykernel==5.3.1",
-    "jupyterhub",
-    "sentry-sdk==0.9.0",
-    "sqlalchemy==1.2.18",
-    "nbgrader==0.7.0.dev0",
-]
-
-# What packages are required for testing?
-TESTING = [
-    "pytest",
-    "pytest-cov",
-    "pytest-tornado",
-    "pytest-docker-tools",
-    "beautifulsoup4",
-    "html5lib",
-    "psycopg2-binary",
-    "mock",
-]
-
-# What packages are optional?
-EXTRAS = {
-    # 'fancy feature': ['django'],
-}
-
 
 def get_package_data():
     """Get package data
@@ -141,9 +111,18 @@ setup(
     #     'console_scripts': ['mycli=mymodule:cli'],
     # },
     setup_requires=["pytest-runner"],
-    install_requires=REQUIRED,
-    tests_require=TESTING,
-    extras_require=EXTRAS,
+    install_requires=[
+        'jupyterhub==1.1.0',
+        'nbconvert==5.6.1',
+        'nbgrader@git+https://github.com/jupyter/nbgrader.git@master#egg=nbgrader-0.7.0-dev',
+        'sentry-sdk==0.9.0'
+    ],
+    tests_require=[
+        "mock==4.0.2",
+        "pytest<6.0.0,>=5.4.2",
+        "pytest-docker-tools<1.0.0",
+        "pytest-tornado==0.8.0"
+    ],
     include_package_data=True,
     license="MIT",
     scripts=["scripts/nbexchange"],
@@ -158,7 +137,7 @@ setup(
         "Programming Language :: Python :: Implementation :: PyPy",
     ],
     dependency_links=[
-        "https://github.com/jupyter/nbgrader/tarball/master#egg=nbgrader-0.7.0.dev0"
+        "git+https://github.com/jupyter/nbgrader.git@master#egg=nbgrader-0.7.0-dev"
     ],
     # $ setup.py publish support.
     cmdclass={"upload": UploadCommand},

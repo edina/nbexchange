@@ -66,14 +66,15 @@ def test_feedback_authenticated_no_params(app):
         r = yield async_requests.get(app.url + "/feedback")
     response_data = r.json()
     assert response_data["success"] == False
-    assert response_data["note"] == "Feedback call requires an assignment id."
+    assert response_data["note"] == "Feedback call requires an assignment id and a course id"
 
 
 @pytest.mark.gen_test
 def test_feedback_authenticated_with_params(app):
     assignment_id = "my_assignment"
+    course_id = "my_course"
 
-    url = f"/feedback?assignment_id={assignment_id}"
+    url = f"/feedback?assignment_id={assignment_id}&course_id={course_id}"
 
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
@@ -633,7 +634,7 @@ def test_feedback_get_authenticated_with_incorrect_student(app):
     ):
         r = yield async_requests.post(app.url + url, files=feedbacks)
 
-    url = f"/feedback?assignment_id={assignment_id}"
+    url = f"/feedback?assignment_id={assignment_id}&course_id={course_id}"
 
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_brobbere_student
@@ -694,7 +695,7 @@ def test_feedback_get_authenticated_with_correct_params(app):
     ):
         r = yield async_requests.post(app.url + url, files=feedbacks)
 
-    url = f"/feedback?assignment_id={assignment_id}"
+    url = f"/feedback?assignment_id={assignment_id}&course_id={course_id}"
 
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.get(app.url + url)

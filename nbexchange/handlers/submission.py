@@ -20,12 +20,11 @@ This relys on users being logged in, and the user-object having additional data:
 
 class Submission(BaseHandler):
     """.../submisssion/
-parmas:
-    course_id: course_code
-    assignment_id: assignment_code
+    parmas:
+        course_id: course_code
+        assignment_id: assignment_code
 
-POST: (with file) submits an assignment
-"""
+    POST: (with file) submits an assignment"""
 
     urls = ["submission"]
 

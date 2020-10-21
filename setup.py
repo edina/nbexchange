@@ -29,7 +29,7 @@ REQUIRED = [
     "ipykernel==5.3.1",
     "jupyterhub",
     "sentry-sdk==0.9.0",
-    "sqlalchemy==1.2.18",
+    "sqlalchemy==1.3.20",
     "nbgrader==0.7.0.dev0",
 ]
 

@@ -63,6 +63,8 @@ class FeedbackHandler(BaseHandler):
                 .filter_by(active=True)
                 .join(nbexchange.models.courses.Course)
                 .filter_by(course_code=course_id)
+                .join(nbexchange.models.users.User)
+                .filter_by(org_id=this_user["org_id"])
                 .order_by(nbexchange.models.Assignment.id.desc())
                 .first()
             )

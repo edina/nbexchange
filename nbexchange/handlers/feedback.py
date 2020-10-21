@@ -7,6 +7,7 @@ import uuid
 
 from sqlalchemy import desc
 from tornado import web, httputil
+from dateutil import parser
 
 import nbexchange.models.actions
 import nbexchange.models.assignments
@@ -295,7 +296,7 @@ class FeedbackHandler(BaseHandler):
                 location=feedback_file,
                 student_id=student.id,
                 instructor_id=this_user.get("id"),
-                timestamp=datetime.datetime.fromisoformat(timestamp),
+                timestamp=parser.isoparse(timestamp),
             )
 
             session.add(feedback)

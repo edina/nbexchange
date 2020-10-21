@@ -12,6 +12,7 @@ import tempfile
 from nbgrader.api import new_uuid
 from traitlets import Bool
 from urllib.parse import quote_plus
+from dateutil import parser
 
 from .exchange import Exchange
 
@@ -49,7 +50,7 @@ class ExchangeFetchFeedback(abc.ExchangeFetchFeedback, Exchange):
             for f in content["feedback"]:
                 try:
                     timestamp = (
-                        datetime.datetime.fromisoformat(str(f["timestamp"]))
+                        parser.isoparse(str(f["timestamp"]))
                         .strftime(self.timestamp_format)
                         .strip()
                     )

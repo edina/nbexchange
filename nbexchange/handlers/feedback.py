@@ -67,8 +67,8 @@ class FeedbackHandler(BaseHandler):
                 .order_by(nbexchange.models.Assignment.id.desc())
                 .first()
             )
-            self.log.info(assignment)
-            self.log.info(this_user)
+            self.log.info(f"feedback.get has assignment: {assignment} on course {course_id}")
+            self.log.info(f"feedback.get requested by user {this_user}")
 
             if not assignment:
                 raise web.HTTPError(404, "Could not find requested resource")
@@ -87,6 +87,8 @@ class FeedbackHandler(BaseHandler):
                 .filter_by(assignment_id=assignment.id)
                 .all()
             )
+            self.log.info(f"feedback.get found the following pieces of feedback {res}")
+
             feedbacks = []
             for r in res:
                 f = {}

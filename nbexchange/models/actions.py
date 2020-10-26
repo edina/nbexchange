@@ -14,8 +14,8 @@ class AssignmentActions(enum.Enum):
     submitted = "submitted"
     removed = "removed"
     collected = "collected"
-    feedback_released = "fb_release"
-    feedback_fetched = "fb_fetch"
+    feedback_released = "feedback_released"
+    feedback_fetched = "feedback_fetched"
 
 
 class Action(Base):

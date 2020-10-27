@@ -99,7 +99,7 @@ class ExchangeReleaseFeedback(abc.ExchangeReleaseFeedback, Exchange):
             self.log.debug("Unique key is: {}".format(unique_key))
             checksum = notebook_hash(nbfile, unique_key)
 
-            timestamp = parser.isoparse(timestamp).isoformat()
+            timestamp = parser.parse(timestamp).strftime(self.timestamp_format)
 
 
             self.log.info(

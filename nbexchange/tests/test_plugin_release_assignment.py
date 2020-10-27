@@ -28,7 +28,7 @@ notebook1_filename = os.path.join(
 )
 notebook1_file = get_feedback_file(notebook1_filename)
 notebook2_filename = os.path.join(
-    os.path.dirname(__file__), "data", "assignment-0.6-wrong.ipynb"
+    os.path.dirname(__file__), "data", "assignment-0.6-2.ipynb"
 )
 notebook2_file = get_feedback_file(notebook2_filename)
 
@@ -57,7 +57,7 @@ def test_release_assignment_normal(plugin_config, tmpdir):
         ),
         "w",
     ) as fp:
-        fp.write("2020-01-01 00:00.0 UTC")
+        fp.write("2020-01-01 00:00:00.0 UTC")
 
     plugin = ExchangeReleaseAssignment(
         coursedir=CourseDirectory(config=plugin_config), config=plugin_config
@@ -107,7 +107,7 @@ def test_release_assignment_several_normal(plugin_config, tmpdir):
         ),
         "w",
     ) as fp:
-        fp.write("2020-01-01 00:00.0 UTC")
+        fp.write("2020-01-01 00:00:00.0 UTC")
 
     copyfile(
         notebook1_filename,
@@ -175,7 +175,7 @@ def test_release_assignment_fail(plugin_config, tmpdir):
         ),
         "w",
     ) as fp:
-        fp.write("2020-01-01 00:00.0 UTC")
+        fp.write("2020-01-01 00:00:00.0 UTC")
 
     plugin = ExchangeReleaseAssignment(
         coursedir=CourseDirectory(config=plugin_config), config=plugin_config

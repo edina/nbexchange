@@ -27,7 +27,7 @@ feedback1_filename = os.path.join(
 )
 feedback1_file = get_feedback_file(feedback1_filename)
 feedback2_filename = os.path.join(
-    os.path.dirname(__file__), "data", "assignment-0.6-wrong.html"
+    os.path.dirname(__file__), "data", "assignment-0.6-2.html"
 )
 feedback12_file = get_feedback_file(feedback1_filename)
 
@@ -36,7 +36,7 @@ notebook1_filename = os.path.join(
 )
 notebook1_file = get_feedback_file(notebook1_filename)
 notebook2_filename = os.path.join(
-    os.path.dirname(__file__), "data", "assignment-0.6-wrong.ipynb"
+    os.path.dirname(__file__), "data", "assignment-0.6-2.ipynb"
 )
 notebook2_file = get_feedback_file(notebook2_filename)
 
@@ -81,7 +81,7 @@ def test_submit_fetch_one(plugin_config, tmpdir):
                                                 "feedback_timestamp": False,
                                             }
                                         ],
-                                        "timestamp": "2020-01-01 00:00.0 UTC",
+                                        "timestamp": "2020-01-01 00:00:00.0 UTC",
                                     }
                                 ],
                             }
@@ -155,7 +155,7 @@ def test_submit_fetch_fail(plugin_config, tmpdir):
                                                 "feedback_timestamp": False,
                                             }
                                         ],
-                                        "timestamp": "2020-01-01 00:00.0 UTC",
+                                        "timestamp": "2020-01-01 00:00:00.0 UTC",
                                     }
                                 ],
                             }
@@ -229,13 +229,13 @@ def test_submit_fetch_several(plugin_config, tmpdir):
                                                 "feedback_timestamp": False,
                                             },
                                             {
-                                                "name": "assignment-0.6-wrong",
+                                                "name": "assignment-0.6-2",
                                                 "has_exchange_feedback": False,
                                                 "feedback_updated": False,
                                                 "feedback_timestamp": False,
                                             },
                                         ],
-                                        "timestamp": "2020-01-01 00:00.0 UTC",
+                                        "timestamp": "2020-01-01 00:00:00.0 UTC",
                                     }
                                 ],
                             }
@@ -256,7 +256,7 @@ def test_submit_fetch_several(plugin_config, tmpdir):
                     handle.extractall(path=pth)
 
                 assert os.path.exists(os.path.join(pth, "assignment-0.6.ipynb"))
-                assert os.path.exists(os.path.join(pth, "assignment-0.6-wrong.ipynb"))
+                assert os.path.exists(os.path.join(pth, "assignment-0.6-2.ipynb"))
                 assert os.path.exists(os.path.join(pth, "timestamp.txt"))
                 return type(
                     "Request",

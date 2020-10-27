@@ -23,7 +23,7 @@ notebook1_filename = os.path.join(
 )
 notebook1_file = get_feedback_file(notebook1_filename)
 notebook2_filename = os.path.join(
-    os.path.dirname(__file__), "data", "assignment-0.6-wrong.ipynb"
+    os.path.dirname(__file__), "data", "assignment-0.6-2.ipynb"
 )
 notebook2_file = get_feedback_file(notebook2_filename)
 
@@ -113,7 +113,7 @@ def test_fetch_assignment_fetch_several_normal(plugin_config, tmpdir):
                 os.path.join(plugin.dest_path, "assignment-0.6.ipynb")
             )
             assert os.path.exists(
-                os.path.join(plugin.dest_path, "assignment-0.6-wrong.ipynb")
+                os.path.join(plugin.dest_path, "assignment-0.6-2.ipynb")
             )
     finally:
         shutil.rmtree(plugin.dest_path)

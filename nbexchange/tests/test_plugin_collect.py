@@ -23,7 +23,7 @@ notebook1_filename = os.path.join(
 )
 notebook1_file = get_feedback_file(notebook1_filename)
 notebook2_filename = os.path.join(
-    os.path.dirname(__file__), "data", "assignment-0.6-wrong.ipynb"
+    os.path.dirname(__file__), "data", "assignment-0.6-2.ipynb"
 )
 notebook2_file = get_feedback_file(notebook2_filename)
 
@@ -62,7 +62,7 @@ def test_collect_normal(plugin_config, tmpdir):
                         "value": [
                             {
                                 "path": "/submitted/no_course/assign_1_3/1/",
-                                "timestamp": "2020-01-01 00:00.0 UTC",
+                                "timestamp": "2020-01-01 00:00:00.0 UTC",
                             }
                         ],
                     },
@@ -475,7 +475,7 @@ def test_collect_normal_several(plugin_config, tmpdir):
                         "value": [
                             {
                                 "path": "/submitted/no_course/assign_1_1/1/",
-                                "timestamp": "2020-01-01 00:00.0 UTC",
+                                "timestamp": "2020-01-01 00:00:00.0 UTC",
                             }
                         ],
                     },

@@ -170,6 +170,8 @@ which is normally Jupyter's notebook_dir.
 
     def get_local_assignments(self, assignments, user_id=None, course_id=None):
         print(f"> get local assignments called")
+        print(f">.. assignments {assignments}")
+        print(f">.. user_id {user_id}; course_id {course_id}")
 
         found_assignments = []
         for assign in assignments:

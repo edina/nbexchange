@@ -85,7 +85,7 @@ class ExchangeReleaseFeedback(abc.ExchangeReleaseFeedback, Exchange):
             )
 
             timestamp = open(os.path.join(feedback_dir, "timestamp.txt")).read().strip()
-
+            print(F"ReleaseFeedback.copy_files - timestamp: {timestamp}")
             nbfile = os.path.join(submission_dir, "{}.ipynb".format(notebook_id))
             unique_key = make_unique_key(
                 self.course_id,

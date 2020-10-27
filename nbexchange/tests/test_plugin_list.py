@@ -428,7 +428,7 @@ def test_list_normal_multiple_released_duplicates(plugin_config, tmpdir):
     finally:
         pass
 
-# a fetched item on disk should remove all "released" items in the list
+# a fetched item on disk should remove the "released" items in the list
 @pytest.mark.gen_test
 def test_list_fetched(plugin_config, tmpdir):
     try:
@@ -516,149 +516,206 @@ def test_list_fetched(plugin_config, tmpdir):
                 },
             ]
     finally:
-        # shutil.rmtree("assign_1_3")
-        pass
+        shutil.rmtree("assign_1_3")
 
 
-# @pytest.mark.gen_test
-# def test_list_several_normal_different(plugin_config, tmpdir):
-#     try:
-#         plugin_config.CourseDirectory.course_id = "no_course"
+# if an item has been fetched, a re-release is ignored
+# (on-disk takes priority)
+@pytest.mark.gen_test
+def test_list_fetched_rerelease_ignored(plugin_config, tmpdir):
+    try:
+        plugin_config.CourseDirectory.course_id = "no_course"
 
-#         os.makedirs("assign_1_3", exist_ok=True)
-#         copyfile(
-#             notebook1_filename, os.path.join("assign_1_3", basename(notebook1_filename))
-#         )
+        os.makedirs("assign_1_3", exist_ok=True)
+        copyfile(
+            notebook1_filename, os.path.join("assign_1_3", basename(notebook1_filename))
+        )
 
-#         plugin = ExchangeList(
-#             coursedir=CourseDirectory(config=plugin_config), config=plugin_config
-#         )
+        plugin = ExchangeList(
+            coursedir=CourseDirectory(config=plugin_config), config=plugin_config
+        )
 
-#         def api_request(*args, **kwargs):
-#             assert args[0] == ("assignments?course_id=no_course")
-#             assert "method" not in kwargs or kwargs.get("method").lower() == "get"
-#             return type(
-#                 "Request",
-#                 (object,),
-#                 {
-#                     "status_code": 200,
-#                     "json": (
-#                         lambda: {
-#                             "success": True,
-#                             "value": [
-#                                 {
-#                                     "assignment_id": "assign_1_1",
-#                                     "student_id": "1",
-#                                     "course_id": "no_course",
-#                                     "status": "released",
-#                                     "path": "",
-#                                     "notebooks": [
-#                                         {
-#                                             "name": "assignment-0.6",
-#                                             "has_exchange_feedback": False,
-#                                             "feedback_updated": False,
-#                                             "feedback_timestamp": False,
-#                                         }
-#                                     ],
-#                                     "timestamp": "2020-01-01 00:00:00.0 UTC",
-#                                 },
-#                                 {
-#                                     "assignment_id": "assign_1_2",
-#                                     "student_id": "1",
-#                                     "course_id": "no_course",
-#                                     "status": "released",
-#                                     "path": "",
-#                                     "notebooks": [
-#                                         {
-#                                             "name": "assignment-0.6-wrong",
-#                                             "has_exchange_feedback": False,
-#                                             "feedback_updated": False,
-#                                             "feedback_timestamp": False,
-#                                         }
-#                                     ],
-#                                     "timestamp": "2020-01-01 00:00:00.1 UTC",
-#                                 },
-#                                 {
-#                                     "assignment_id": "assign_1_3",
-#                                     "student_id": "1",
-#                                     "course_id": "no_course",
-#                                     "status": "fetched",
-#                                     "path": "",
-#                                     "notebooks": [
-#                                         {
-#                                             "name": "assignment-0.6-wrong",
-#                                             "has_exchange_feedback": False,
-#                                             "feedback_updated": False,
-#                                             "feedback_timestamp": False,
-#                                         }
-#                                     ],
-#                                     "timestamp": "2020-01-01 00:00:00.2 UTC",
-#                                 },
-#                             ],
-#                         }
-#                     ),
-#                 },
-#             )
+        def api_request(*args, **kwargs):
+            assert args[0] == ("assignments?course_id=no_course")
+            assert "method" not in kwargs or kwargs.get("method").lower() == "get"
+            return type(
+                "Request",
+                (object,),
+                {
+                    "status_code": 200,
+                    "json": (
+                        lambda: {
+                            "success": True,
+                            "value": [
+                                {
+                                    "assignment_id": "assign_1_3",
+                                    "student_id": "1",
+                                    "course_id": "no_course",
+                                    "status": "released",
+                                    "path": "",
+                                    "notebooks": [
+                                        {
+                                            "name": "assignment-0.6",
+                                            "has_exchange_feedback": False,
+                                            "feedback_updated": False,
+                                            "feedback_timestamp": False,
+                                        }
+                                    ],
+                                    "timestamp": "2020-01-01 00:00:00.0 UTC",
+                                },
+                                {
+                                    "assignment_id": "assign_1_3",
+                                    "student_id": "1",
+                                    "course_id": "no_course",
+                                    "status": "fetched",
+                                    "path": "",
+                                    "notebooks": [
+                                        {
+                                            "name": "assignment-0.6",
+                                            "has_exchange_feedback": False,
+                                            "feedback_updated": False,
+                                            "feedback_timestamp": False,
+                                        }
+                                    ],
+                                    "timestamp": "2020-01-01 00:00:00.0 UTC",
+                                },
+                                {
+                                    "assignment_id": "assign_1_3",
+                                    "student_id": "1",
+                                    "course_id": "no_course",
+                                    "status": "released",
+                                    "path": "",
+                                    "notebooks": [
+                                        {
+                                            "name": "assignment-0.6-2",
+                                            "has_exchange_feedback": False,
+                                            "feedback_updated": False,
+                                            "feedback_timestamp": False,
+                                        }
+                                    ],
+                                    "timestamp": "2020-01-01 00:00:02.0 UTC",
+                                },
+                            ],
+                        }
+                    ),
+                },
+            )
 
-#         with patch.object(Exchange, "api_request", side_effect=api_request):
-#             called = plugin.start()
-#             assert called == [
-#                 {
-#                     "assignment_id": "assign_1_1",
-#                     "course_id": "no_course",
-#                     "student_id": "1",
-#                     "status": "released",
-#                     "notebooks": [
-#                         {
-#                             "feedback_timestamp": False,
-#                             "feedback_updated": False,
-#                             "has_exchange_feedback": False,
-#                             "name": "assignment-0.6",
-#                         }
-#                     ],
-#                     "path": "",
-#                     "timestamp": "2020-01-01 00:00:00.0 UTC",
-#                 },
-#                 {
-#                     "assignment_id": "assign_1_2",
-#                     "course_id": "no_course",
-#                     "student_id": "1",
-#                     "status": "released",
-#                     "notebooks": [
-#                         {
-#                             "feedback_timestamp": False,
-#                             "feedback_updated": False,
-#                             "has_exchange_feedback": False,
-#                             "name": "assignment-0.6-wrong",
-#                         }
-#                     ],
-#                     "path": "",
-#                     "timestamp": "2020-01-01 00:00:00.1 UTC",
-#                 },
-#                 {
-#                     "assignment_id": "assign_1_3",
-#                     "course_id": "no_course",
-#                     "student_id": "1",
-#                     "status": "fetched",
-#                     "notebooks": [
-#                         {
-#                             "feedback_updated": False,
-#                             "has_exchange_feedback": False,
-#                             "has_local_feedback": False,
-#                             "local_feedback_path": None,
-#                             "name": "assignment-0.6",
-#                             "path": os.path.join(
-#                                 os.getcwd(), "assign_1_3/assignment-0.6.ipynb"
-#                             ),
-#                         }
-#                     ],
-#                     "path": "",
-#                     "timestamp": "2020-01-01 00:00:00.2 UTC",
-#                 },
-#             ]
-#     finally:
-#         #shutil.rmtree("assign_1_3")
-#         pass
+        with patch.object(Exchange, "api_request", side_effect=api_request):
+            called = plugin.start()
+            assert called == [
+                {
+                    "assignment_id": "assign_1_3",
+                    "course_id": "no_course",
+                    "student_id": "1",
+                    "status": "fetched",
+                    "notebooks": [
+                        {
+                            "name": "assignment-0.6",
+                            "has_exchange_feedback": False,
+                            "feedback_updated": False,
+                            "has_local_feedback": False,
+                            "local_feedback_path": None,
+                            "path": "./assign_1_3/assignment-0.6.ipynb",
+                        }
+                    ],
+                    "path": "",
+                    "timestamp": "2020-01-01 00:00:00.0 UTC",
+                },
+            ]
+    finally:
+        shutil.rmtree("assign_1_3")
+
+
+# An on-disk assignment with no matching released record is ignored
+@pytest.mark.gen_test
+def test_list_fetch_without_release_ignored(plugin_config, tmpdir):
+    try:
+        plugin_config.CourseDirectory.course_id = "no_course"
+
+        os.makedirs("assign_1_3", exist_ok=True)
+        copyfile(
+            notebook1_filename, os.path.join("assign_1_3", basename(notebook1_filename))
+        )
+
+        plugin = ExchangeList(
+            coursedir=CourseDirectory(config=plugin_config), config=plugin_config
+        )
+
+        def api_request(*args, **kwargs):
+            assert args[0] == ("assignments?course_id=no_course")
+            assert "method" not in kwargs or kwargs.get("method").lower() == "get"
+            return type(
+                "Request",
+                (object,),
+                {
+                    "status_code": 200,
+                    "json": (
+                        lambda: {
+                            "success": True,
+                            "value": [
+                                {
+                                    "assignment_id": "assign_1_1",
+                                    "student_id": "1",
+                                    "course_id": "no_course",
+                                    "status": "released",
+                                    "path": "",
+                                    "notebooks": [
+                                        {
+                                            "name": "assignment-0.6",
+                                            "has_exchange_feedback": False,
+                                            "feedback_updated": False,
+                                            "feedback_timestamp": False,
+                                        }
+                                    ],
+                                    "timestamp": "2020-01-01 00:00:00.0 UTC",
+                                },
+                                {
+                                    "assignment_id": "assign_1_3",
+                                    "student_id": "1",
+                                    "course_id": "no_course",
+                                    "status": "fetched",
+                                    "path": "",
+                                    "notebooks": [
+                                        {
+                                            "name": "assignment-0.6",
+                                            "has_exchange_feedback": False,
+                                            "feedback_updated": False,
+                                            "feedback_timestamp": False,
+                                        }
+                                    ],
+                                    "timestamp": "2020-01-01 00:00:00.0 UTC",
+                                },
+                            ],
+                        }
+                    ),
+                },
+            )
+
+        with patch.object(Exchange, "api_request", side_effect=api_request):
+            called = plugin.start()
+            assert called == [
+                {
+                    "assignment_id": "assign_1_1",
+                    "course_id": "no_course",
+                    "student_id": "1",
+                    "status": "released",
+                    "notebooks": [
+                        {
+                            "name": "assignment-0.6",
+                            "has_exchange_feedback": False,
+                            "feedback_updated": False,
+                            "feedback_timestamp": False,
+                        }
+                    ],
+                    "path": "",
+                    "timestamp": "2020-01-01 00:00:00.0 UTC",
+                },
+            ]
+    finally:
+        shutil.rmtree("assign_1_3")
+
+
 
 # @pytest.mark.gen_test
 # def test_list_delete(plugin_config, tmpdir):

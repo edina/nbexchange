@@ -81,12 +81,7 @@ class ExchangeList(abc.ExchangeList, Exchange):
         pass
 
     def get_fetched_assignments(self):
-        assignment_dir = ""
 
-        if self.path_includes_course:
-            assignment_dir = os.path.join(self.assignment_dir, self.course_id)
-        else:
-            assignment_dir = os.path.join(self.assignment_dir)
 
         dirs = [entry.path for entry in os.scandir(assignment_dir) if entry.is_dir() and re.match(r'[^\.]', entry.name)]
         return dirs
@@ -125,7 +120,7 @@ class ExchangeList(abc.ExchangeList, Exchange):
                     }
                 )
 
-            if len(assignment["notebooks"]):
+            if len(assignment["notebooks"]) and assignment["assignment_id"] not in self.seen_assignments[assignment.get("status")]:
                 self.seen_assignments[assignment.get("status")].append(
                     assignment["assignment_id"]
                 )
@@ -153,12 +148,6 @@ class ExchangeList(abc.ExchangeList, Exchange):
         self.assignments = []
         remote_assignments = self.query_exchange()
 
-        # on_disk_assignments = self.get_fetched_assignments()
-        # self.log.debug(
-        #     f"ExternalExchange.list.parse_assignments collected {remote_assignments}"
-        # )
-        print(f"* remote: {remote_assignments}")
-        # print(f"* local: {on_disk_assignments}")
         # if "inbound" or "cached", looking for inbound (submitted) records
         # else, looking for outbound (released) files
         print(f"inbound: {self.inbound}; cached: {self.cached}")
@@ -172,7 +161,6 @@ class ExchangeList(abc.ExchangeList, Exchange):
         else:
             print(f"'assignments' being set to remote-assignments")
             self.assignments = remote_assignments
-        # self.assignments = self.query_exchange()  # This should really set by init_dest
 
         # We want to check the local disk for "fetched" items, not what the external server
         # says we should have
@@ -180,13 +168,19 @@ class ExchangeList(abc.ExchangeList, Exchange):
         interim_assignments = []
         for assignment in self.assignments:
             interim_assignments.append(
-                self.parse_assignment(assignment) #, on_disk_assignments)
+                self.parse_assignment(assignment)
             )
             self.log.info(
                 f"parse_assignment singular assignment returned: {assignment}"
             )
         print(f"interim_assignments: {interim_assignments}")
-
+        print(f"seen assignments: {self.seen_assignments}")
+        # assignment_dir = ""
+        print("\n\n")
+        # if self.path_includes_course:
+        #     assignment_dir = os.path.join(self.assignment_dir, self.course_id)
+        # else:
+        #     assignment_dir = os.path.join(self.assignment_dir)
         # now we build three sub-lists:
         # - one "fetched" per assignment_id
         # - the last "released" per assignment_id - but only if they've not been "fetched"

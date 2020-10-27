@@ -296,7 +296,7 @@ class FeedbackHandler(BaseHandler):
                 location=feedback_file,
                 student_id=student.id,
                 instructor_id=this_user.get("id"),
-                timestamp=parser.isoparse(timestamp),
+                timestamp=parser.parse(timestamp),
             )
 
             session.add(feedback)

@@ -50,7 +50,7 @@ class ExchangeFetchFeedback(abc.ExchangeFetchFeedback, Exchange):
             for f in content["feedback"]:
                 try:
                     timestamp = (
-                        parser.isoparse(str(f["timestamp"]))
+                        parser.parse(str(f["timestamp"]))
                         .strftime(self.timestamp_format)
                         .strip()
                     )

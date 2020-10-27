@@ -10,6 +10,7 @@ import os
 import tempfile
 
 from urllib.parse import quote_plus
+from dateutil import parser
 
 from nbgrader.utils import notebook_hash, make_unique_key
 
@@ -98,17 +99,7 @@ class ExchangeReleaseFeedback(abc.ExchangeReleaseFeedback, Exchange):
             self.log.debug("Unique key is: {}".format(unique_key))
             checksum = notebook_hash(nbfile, unique_key)
 
-            try:
-                timestamp = datetime.datetime.strptime(
-                    timestamp, self.timestamp_format
-                ).isoformat()
-            except:
-                try:
-                    timestamp = datetime.datetime.strptime(
-                        timestamp, "%Y-%m-%d %H:%M:%S.%f"
-                    ).isoformat()
-                except:
-                    timestamp = datetime.datetime.fromisoformat(timestamp)
+            timestamp = parser.parse(timestamp).strftime(self.timestamp_format)
 
             self.log.info(
                 "Releasing feedback for student '{}' on assignment '{}/{}/{}' ({})".format(

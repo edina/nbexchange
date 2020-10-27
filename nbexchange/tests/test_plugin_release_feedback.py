@@ -109,7 +109,7 @@ def test_release_feedback_fetch_normal(plugin_config, tmpdir):
             "&assignment_id=assign_1"
             "&notebook=feedback"
             "&student=1"
-            "&timestamp=2020-01-01T00%3A00%3A00"
+            "&timestamp=2020-01-01+00%3A00%3A00.000000+UTC"
             "&checksum=" + checksum
         )
         assert kwargs.get("method").lower() == "post"
@@ -191,7 +191,7 @@ def test_release_feedback_fetch_several_normal(plugin_config, tmpdir):
                 "&assignment_id=assign_1"
                 "&notebook=feedback1"
                 "&student=1"
-                "&timestamp=2020-01-01T00%3A01%3A00"
+                "&timestamp=2020-01-01+01%3A00%3A00.000000+UTC"
                 "&checksum=" + checksum1
             )
             assert kwargs.get("method").lower() == "post"
@@ -209,7 +209,7 @@ def test_release_feedback_fetch_several_normal(plugin_config, tmpdir):
                 "&assignment_id=assign_1"
                 "&notebook=feedback2"
                 "&student=1"
-                "&timestamp=2020-01-01T00%3A01%3A00"
+                "&timestamp=2020-01-01+01%3A00%3A00.000000+UTC"
                 "&checksum=" + checksum2
             )
             assert kwargs.get("method").lower() == "post"

@@ -5,7 +5,7 @@ from nbexchange.models import Base
 
 
 class Course(Base):
-    """ The list of courses we know, who's subscribed to them, and what
+    """The list of courses we know, who's subscribed to them, and what
     assignments have been have been issued for each course
 
     crs = Course(org_id=1, course_code=$couurse_code, course_title=$optional_human_readable_title)

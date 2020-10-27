@@ -12,6 +12,7 @@ import tempfile
 from nbgrader.api import new_uuid
 from traitlets import Bool
 from urllib.parse import quote_plus
+from dateutil import parser
 
 from .exchange import Exchange
 
@@ -39,7 +40,7 @@ class ExchangeFetchFeedback(abc.ExchangeFetchFeedback, Exchange):
             f"Download feedback for {quote_plus(self.coursedir.notebook_id)} from {self.service_url}"
         )
         r = self.api_request(
-            f"feedback?assignment_id={quote_plus(self.coursedir.assignment_id)}"
+            f"feedback?course_id={quote_plus(self.coursedir.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}"
         )
         self.log.info(
             f"Got back {r.status_code} {r.headers['content-type']} after file download"
@@ -49,7 +50,7 @@ class ExchangeFetchFeedback(abc.ExchangeFetchFeedback, Exchange):
             for f in content["feedback"]:
                 try:
                     timestamp = (
-                        datetime.datetime.fromisoformat(str(f["timestamp"]))
+                        parser.parse(str(f["timestamp"]))
                         .strftime(self.timestamp_format)
                         .strip()
                     )

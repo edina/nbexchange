@@ -14,10 +14,12 @@ class AssignmentActions(enum.Enum):
     submitted = "submitted"
     removed = "removed"
     collected = "collected"
+    feedback_released = "feedback_released"
+    feedback_fetched = "feedback_fetched"
 
 
 class Action(Base):
-    """ Table to map multiple users to a single assignment
+    """Table to map multiple users to a single assignment
 
     # assume some main objects
     usr = User(hubuser_id = self.get_current_user().id

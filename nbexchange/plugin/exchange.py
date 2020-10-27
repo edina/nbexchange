@@ -133,6 +133,8 @@ which is normally Jupyter's notebook_dir.
         return ordered
 
     def get_files(self, root, structure=None, **kwargs):
+        print(f"> get files called {root} [ {structure} ]")
+
         fmtstrs = ["nbgrader_step", "student_id", "assignment_id"]
         if structure is None:
             structure = []
@@ -161,10 +163,14 @@ which is normally Jupyter's notebook_dir.
                 if os.path.isdir(new_root):
                     files.extend(self.get_files(new_root, structure[1:], **kwargs))
         else:
+            print(">> path doesn't exist, returning empty")
             return []
+        print(f">> returning {files}")
         return files
 
     def get_local_assignments(self, assignments, user_id=None, course_id=None):
+        print(f"> get local assignments called")
+
         found_assignments = []
         for assign in assignments:
             found_assignments.extend(

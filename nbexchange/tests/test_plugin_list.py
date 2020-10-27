@@ -19,26 +19,26 @@ from nbgrader.utils import make_unique_key, notebook_hash
 logger = logging.getLogger(__file__)
 logger.setLevel(logging.ERROR)
 
-
-feedback1_filename = os.path.join(
-    os.path.dirname(__file__), "data", "assignment-0.6.html"
-)
-feedback1_file = get_feedback_file(feedback1_filename)
-feedback2_filename = os.path.join(
-    os.path.dirname(__file__), "data", "assignment-0.6-wrong.html"
-)
-feedback12_file = get_feedback_file(feedback1_filename)
-
 notebook1_filename = os.path.join(
     os.path.dirname(__file__), "data", "assignment-0.6.ipynb"
 )
 notebook1_file = get_feedback_file(notebook1_filename)
+feedback1_filename = os.path.join(
+    os.path.dirname(__file__), "data", "assignment-0.6.html"
+)
+feedback1_file = get_feedback_file(feedback1_filename)
+
+
 notebook2_filename = os.path.join(
-    os.path.dirname(__file__), "data", "assignment-0.6-wrong.ipynb"
+    os.path.dirname(__file__), "data", "assignment-0.6-2.ipynb"
 )
 notebook2_file = get_feedback_file(notebook2_filename)
+feedback2_filename = os.path.join(
+    os.path.dirname(__file__), "data", "assignment-0.6-2.html"
+)
+feedback12_file = get_feedback_file(feedback1_filename)
 
-
+# Released items come with feedback items.
 @pytest.mark.gen_test
 def test_list_normal(plugin_config, tmpdir):
     plugin_config.CourseDirectory.course_id = "no_course"
@@ -91,10 +91,10 @@ def test_list_normal(plugin_config, tmpdir):
                 "status": "released",
                 "notebooks": [
                     {
-                        "feedback_timestamp": False,
-                        "feedback_updated": False,
-                        "has_exchange_feedback": False,
                         "name": "assignment-0.6",
+                        "has_exchange_feedback": False,
+                        "feedback_updated": False,
+                        "feedback_timestamp": False,
                     }
                 ],
                 "path": "",
@@ -102,9 +102,9 @@ def test_list_normal(plugin_config, tmpdir):
             }
         ]
 
-
+# two assignments, both get listed.
 @pytest.mark.gen_test
-def test_list_several_normal(plugin_config, tmpdir):
+def test_list_normal_multiple(plugin_config, tmpdir):
     plugin_config.CourseDirectory.course_id = "no_course"
 
     plugin = ExchangeList(
@@ -171,10 +171,10 @@ def test_list_several_normal(plugin_config, tmpdir):
                 "status": "released",
                 "notebooks": [
                     {
-                        "feedback_timestamp": False,
-                        "feedback_updated": False,
-                        "has_exchange_feedback": False,
                         "name": "assignment-0.6",
+                        "has_exchange_feedback": False,
+                        "feedback_updated": False,
+                        "feedback_timestamp": False,
                     }
                 ],
                 "path": "",
@@ -187,10 +187,10 @@ def test_list_several_normal(plugin_config, tmpdir):
                 "status": "released",
                 "notebooks": [
                     {
-                        "feedback_timestamp": False,
-                        "feedback_updated": False,
-                        "has_exchange_feedback": False,
                         "name": "assignment-0.6-wrong",
+                        "has_exchange_feedback": False,
+                        "feedback_updated": False,
+                        "feedback_timestamp": False,
                     }
                 ],
                 "path": "",
@@ -198,16 +198,11 @@ def test_list_several_normal(plugin_config, tmpdir):
             },
         ]
 
-
+# two assignments, 1 listed twice - we get the latests one
 @pytest.mark.gen_test
-def test_list_several_ignore_released(plugin_config, tmpdir):
+def test_list_normal_multiple_released(plugin_config, tmpdir):
     try:
         plugin_config.CourseDirectory.course_id = "no_course"
-
-        os.makedirs("assign_1_3", exist_ok=True)
-        copyfile(
-            notebook1_filename, os.path.join("assign_1_3", basename(notebook1_filename))
-        )
 
         plugin = ExchangeList(
             coursedir=CourseDirectory(config=plugin_config), config=plugin_config
@@ -249,23 +244,23 @@ def test_list_several_ignore_released(plugin_config, tmpdir):
                                     "path": "",
                                     "notebooks": [
                                         {
-                                            "name": "assignment-0.6-wrong",
+                                            "name": "assignment-0.6",
                                             "has_exchange_feedback": False,
                                             "feedback_updated": False,
                                             "feedback_timestamp": False,
                                         }
                                     ],
-                                    "timestamp": "2020-01-01 00:00.2 UTC",
+                                    "timestamp": "2020-01-01 00:00.0 UTC",
                                 },
                                 {
                                     "assignment_id": "assign_1_3",
                                     "student_id": "1",
                                     "course_id": "no_course",
-                                    "status": "fetched",
+                                    "status": "released",
                                     "path": "",
                                     "notebooks": [
                                         {
-                                            "name": "assignment-0.6-wrong",
+                                            "name": "assignment-0.6-2",
                                             "has_exchange_feedback": False,
                                             "feedback_updated": False,
                                             "feedback_timestamp": False,
@@ -289,10 +284,10 @@ def test_list_several_ignore_released(plugin_config, tmpdir):
                     "status": "released",
                     "notebooks": [
                         {
-                            "feedback_timestamp": False,
-                            "feedback_updated": False,
-                            "has_exchange_feedback": False,
                             "name": "assignment-0.6",
+                            "has_exchange_feedback": False,
+                            "feedback_updated": False,
+                            "feedback_timestamp": False,
                         }
                     ],
                     "path": "",
@@ -302,17 +297,13 @@ def test_list_several_ignore_released(plugin_config, tmpdir):
                     "assignment_id": "assign_1_3",
                     "course_id": "no_course",
                     "student_id": "1",
-                    "status": "fetched",
+                    "status": "released",
                     "notebooks": [
                         {
-                            "feedback_updated": False,
+                            "name": "assignment-0.6-2",
                             "has_exchange_feedback": False,
-                            "has_local_feedback": False,
-                            "local_feedback_path": None,
-                            "notebook_id": "assignment-0.6",
-                            "path": os.path.join(
-                                os.getcwd(), "assign_1_3/assignment-0.6.ipynb"
-                            ),
+                            "feedback_updated": False,
+                            "feedback_timestamp": False,
                         }
                     ],
                     "path": "",
@@ -320,11 +311,126 @@ def test_list_several_ignore_released(plugin_config, tmpdir):
                 },
             ]
     finally:
-        shutil.rmtree("assign_1_3")
+        pass
 
-
+# two assignments, 1 listed twice - we get the latests one - irrespective of order
 @pytest.mark.gen_test
-def test_list_several_latest_only(plugin_config, tmpdir):
+def test_list_normal_multiple_released_duplicates(plugin_config, tmpdir):
+    try:
+        plugin_config.CourseDirectory.course_id = "no_course"
+
+        plugin = ExchangeList(
+            coursedir=CourseDirectory(config=plugin_config), config=plugin_config
+        )
+
+        def api_request(*args, **kwargs):
+            assert args[0] == ("assignments?course_id=no_course")
+            assert "method" not in kwargs or kwargs.get("method").lower() == "get"
+            return type(
+                "Request",
+                (object,),
+                {
+                    "status_code": 200,
+                    "json": (
+                        lambda: {
+                            "success": True,
+                            "value": [
+                                {
+                                    "assignment_id": "assign_1_1",
+                                    "student_id": "1",
+                                    "course_id": "no_course",
+                                    "status": "released",
+                                    "path": "",
+                                    "notebooks": [
+                                        {
+                                            "name": "assignment-0.6",
+                                            "has_exchange_feedback": False,
+                                            "feedback_updated": False,
+                                            "feedback_timestamp": False,
+                                        }
+                                    ],
+                                    "timestamp": "2020-01-01 00:00.0 UTC",
+                                },
+                                {
+                                    "assignment_id": "assign_1_3",
+                                    "student_id": "1",
+                                    "course_id": "no_course",
+                                    "status": "released",
+                                    "path": "",
+                                    "notebooks": [
+                                        {
+                                            "name": "assignment-0.6-2",
+                                            "has_exchange_feedback": False,
+                                            "feedback_updated": False,
+                                            "feedback_timestamp": False,
+                                        }
+                                    ],
+                                    "timestamp": "2020-01-01 00:00.2 UTC",
+                                },
+                                {
+                                    "assignment_id": "assign_1_3",
+                                    "student_id": "1",
+                                    "course_id": "no_course",
+                                    "status": "released",
+                                    "path": "",
+                                    "notebooks": [
+                                        {
+                                            "name": "assignment-0.6",
+                                            "has_exchange_feedback": False,
+                                            "feedback_updated": False,
+                                            "feedback_timestamp": False,
+                                        }
+                                    ],
+                                    "timestamp": "2020-01-01 00:00.0 UTC",
+                                },
+                            ],
+                        }
+                    ),
+                },
+            )
+
+        with patch.object(Exchange, "api_request", side_effect=api_request):
+            called = plugin.start()
+            assert called == [
+                {
+                    "assignment_id": "assign_1_1",
+                    "course_id": "no_course",
+                    "student_id": "1",
+                    "status": "released",
+                    "notebooks": [
+                        {
+                            "name": "assignment-0.6",
+                            "has_exchange_feedback": False,
+                            "feedback_updated": False,
+                            "feedback_timestamp": False,
+                        }
+                    ],
+                    "path": "",
+                    "timestamp": "2020-01-01 00:00.0 UTC",
+                },
+                {
+                    "assignment_id": "assign_1_3",
+                    "course_id": "no_course",
+                    "student_id": "1",
+                    "status": "released",
+                    "notebooks": [
+                        {
+                            "name": "assignment-0.6-2",
+                            "has_exchange_feedback": False,
+                            "feedback_updated": False,
+                            "feedback_timestamp": False,
+                        }
+                    ],
+                    "path": "",
+                    "timestamp": "2020-01-01 00:00.2 UTC",
+                },
+            ]
+    finally:
+        pass
+
+# a fetched item on disk should remove all "released" items in the list
+@pytest.mark.gen_test
+def test_list_fetched(plugin_config, tmpdir):
     try:
         plugin_config.CourseDirectory.course_id = "no_course"
 
@@ -373,45 +479,13 @@ def test_list_several_latest_only(plugin_config, tmpdir):
                                     "path": "",
                                     "notebooks": [
                                         {
-                                            "name": "assignment-0.6-wrong",
+                                            "name": "assignment-0.6",
                                             "has_exchange_feedback": False,
                                             "feedback_updated": False,
                                             "feedback_timestamp": False,
                                         }
                                     ],
-                                    "timestamp": "2020-01-01 00:00.2 UTC",
-                                },
-                                {
-                                    "assignment_id": "assign_1_3",
-                                    "student_id": "1",
-                                    "course_id": "no_course",
-                                    "status": "fetched",
-                                    "path": "",
-                                    "notebooks": [
-                                        {
-                                            "name": "assignment-0.6-wrong",
-                                            "has_exchange_feedback": False,
-                                            "feedback_updated": False,
-                                            "feedback_timestamp": False,
-                                        }
-                                    ],
-                                    "timestamp": "2020-01-01 00:00.2 UTC",
-                                },
-                                {
-                                    "assignment_id": "assign_1_3",
-                                    "student_id": "1",
-                                    "course_id": "no_course",
-                                    "status": "fetched",
-                                    "path": "",
-                                    "notebooks": [
-                                        {
-                                            "name": "assignment-0.6-wrong",
-                                            "has_exchange_feedback": False,
-                                            "feedback_updated": False,
-                                            "feedback_timestamp": False,
-                                        }
-                                    ],
-                                    "timestamp": "2020-01-01 00:00.3 UTC",
+                                    "timestamp": "2020-01-01 00:00.0 UTC",
                                 },
                             ],
                         }
@@ -429,10 +503,10 @@ def test_list_several_latest_only(plugin_config, tmpdir):
                     "status": "released",
                     "notebooks": [
                         {
-                            "feedback_timestamp": False,
-                            "feedback_updated": False,
-                            "has_exchange_feedback": False,
                             "name": "assignment-0.6",
+                            "has_exchange_feedback": False,
+                            "feedback_updated": False,
+                            "feedback_timestamp": False,
                         }
                     ],
                     "path": "",
@@ -445,22 +519,19 @@ def test_list_several_latest_only(plugin_config, tmpdir):
                     "status": "fetched",
                     "notebooks": [
                         {
-                            "feedback_updated": False,
+                            "name": "assignment-0.6",
                             "has_exchange_feedback": False,
-                            "has_local_feedback": False,
-                            "local_feedback_path": None,
-                            "notebook_id": "assignment-0.6",
-                            "path": os.path.join(
-                                os.getcwd(), "assign_1_3/assignment-0.6.ipynb"
-                            ),
+                            "feedback_updated": False,
+                            "feedback_timestamp": False,
                         }
                     ],
                     "path": "",
-                    "timestamp": "2020-01-01 00:00.3 UTC",
+                    "timestamp": "2020-01-01 00:00.0 UTC",
                 },
             ]
     finally:
-        shutil.rmtree("assign_1_3")
+        # shutil.rmtree("assign_1_3")
+        pass
 
 
 @pytest.mark.gen_test
@@ -589,7 +660,7 @@ def test_list_several_normal_different(plugin_config, tmpdir):
                             "has_exchange_feedback": False,
                             "has_local_feedback": False,
                             "local_feedback_path": None,
-                            "notebook_id": "assignment-0.6",
+                            "name": "assignment-0.6",
                             "path": os.path.join(
                                 os.getcwd(), "assign_1_3/assignment-0.6.ipynb"
                             ),
@@ -600,8 +671,8 @@ def test_list_several_normal_different(plugin_config, tmpdir):
                 },
             ]
     finally:
-        shutil.rmtree("assign_1_3")
-
+        #shutil.rmtree("assign_1_3")
+        pass
 
 @pytest.mark.gen_test
 def test_list_delete(plugin_config, tmpdir):

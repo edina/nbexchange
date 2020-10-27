@@ -12,8 +12,8 @@ from datetime import datetime
 from enum import Enum
 
 # revision identifiers, used by Alembic.
-revision = '6f2a6c00affb'
-down_revision = '2805bf7747e5'
+revision = "6f2a6c00affb"
+down_revision = "2805bf7747e5"
 branch_labels = None
 depends_on = None
 
@@ -39,11 +39,15 @@ class OldAssignmentActions(Enum):
 def upgrade():
 
     connection = op.get_bind()
-    
+
     if connection.dialect.name == "postgresql":
 
-        op.execute("ALTER TYPE assignmentactions ADD VALUE IF NOT EXISTS feedback_released")
-        op.execute("ALTER TYPE assignmentactions ADD VALUE IF NOT EXISTS feedback_fetched") 
+        op.execute(
+            "ALTER TYPE assignmentactions ADD VALUE IF NOT EXISTS feedback_released"
+        )
+        op.execute(
+            "ALTER TYPE assignmentactions ADD VALUE IF NOT EXISTS feedback_fetched"
+        )
 
     else:
 

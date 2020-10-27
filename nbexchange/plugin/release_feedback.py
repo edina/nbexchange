@@ -101,7 +101,6 @@ class ExchangeReleaseFeedback(abc.ExchangeReleaseFeedback, Exchange):
 
             timestamp = parser.parse(timestamp).strftime(self.timestamp_format)
 
-
             self.log.info(
                 "Releasing feedback for student '{}' on assignment '{}/{}/{}' ({})".format(
                     student_id,

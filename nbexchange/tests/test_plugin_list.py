@@ -603,6 +603,7 @@ def test_list_fetched_rerelease_ignored(plugin_config, tmpdir):
 
         with patch.object(Exchange, "api_request", side_effect=api_request):
             called = plugin.start()
+            # The timestamp is actually from the last 'released' item on the list
             assert called == [
                 {
                     "assignment_id": "assign_1_3",
@@ -620,7 +621,7 @@ def test_list_fetched_rerelease_ignored(plugin_config, tmpdir):
                         }
                     ],
                     "path": "",
-                    "timestamp": "2020-01-01 00:00:00.0 UTC",
+                    "timestamp": "2020-01-01 00:00:02.0 UTC",
                 },
             ]
     finally:
@@ -717,893 +718,893 @@ def test_list_fetch_without_release_ignored(plugin_config, tmpdir):
 
 
 
-# @pytest.mark.gen_test
-# def test_list_delete(plugin_config, tmpdir):
-#     plugin_config.CourseDirectory.course_id = "no_course"
-#     plugin_config.CourseDirectory.assignment_id = "assign_1_1"
-#     plugin_config.ExchangeList.remove = True
+@pytest.mark.gen_test
+def test_list_delete(plugin_config, tmpdir):
+    plugin_config.CourseDirectory.course_id = "no_course"
+    plugin_config.CourseDirectory.assignment_id = "assign_1_1"
+    plugin_config.ExchangeList.remove = True
 
-#     plugin = ExchangeList(
-#         coursedir=CourseDirectory(config=plugin_config), config=plugin_config
-#     )
+    plugin = ExchangeList(
+        coursedir=CourseDirectory(config=plugin_config), config=plugin_config
+    )
 
-#     def api_request(*args, **kwargs):
-#         assert args[0] == ("assignment?course_id=no_course&assignment_id=assign_1_1")
-#         assert "method" not in kwargs or kwargs.get("method").lower() == "delete"
-#         return type("Request", (object,), {"status_code": 200})
+    def api_request(*args, **kwargs):
+        assert args[0] == ("assignment?course_id=no_course&assignment_id=assign_1_1")
+        assert "method" not in kwargs or kwargs.get("method").lower() == "delete"
+        return type("Request", (object,), {"status_code": 200})
 
-#     with patch.object(Exchange, "api_request", side_effect=api_request):
-#         called = plugin.start()
-
-
-# @pytest.mark.gen_test
-# def test_list_inbound_one(plugin_config, tmpdir):
-#     plugin_config.CourseDirectory.course_id = "no_course"
-#     plugin_config.ExchangeList.inbound = True
-
-#     plugin = ExchangeList(
-#         coursedir=CourseDirectory(config=plugin_config), config=plugin_config
-#     )
-
-#     def api_request(*args, **kwargs):
-#         assert args[0] == ("assignments?course_id=no_course")
-#         assert "method" not in kwargs or kwargs.get("method").lower() == "get"
-#         return type(
-#             "Request",
-#             (object,),
-#             {
-#                 "status_code": 200,
-#                 "json": (
-#                     lambda: {
-#                         "success": True,
-#                         "value": [
-#                             {
-#                                 "assignment_id": "assign_1_1",
-#                                 "student_id": "1",
-#                                 "course_id": "no_course",
-#                                 "status": "submitted",
-#                                 "path": "",
-#                                 "notebooks": [
-#                                     {
-#                                         "name": "assignment-0.6",
-#                                         "has_exchange_feedback": False,
-#                                         "feedback_updated": False,
-#                                         "feedback_timestamp": False,
-#                                     }
-#                                 ],
-#                                 "timestamp": "2020-01-01 00:00:00.0 UTC",
-#                             }
-#                         ],
-#                     }
-#                 ),
-#             },
-#         )
-
-#     with patch.object(Exchange, "api_request", side_effect=api_request):
-#         called = plugin.start()
-#         assert called == [
-#             {
-#                 "assignment_id": "assign_1_1",
-#                 "course_id": "no_course",
-#                 "student_id": "1",
-#                 "status": "submitted",
-#                 "submissions": [
-#                     {
-#                         "assignment_id": "assign_1_1",
-#                         "course_id": "no_course",
-#                         "feedback_updated": False,
-#                         "has_exchange_feedback": False,
-#                         "has_local_feedback": False,
-#                         "path": "",
-#                         "status": "submitted",
-#                         "student_id": "1",
-#                         "local_feedback_path": "assign_1_1/feedback/False",
-#                         "notebooks": [
-#                             {
-#                                 "feedback_timestamp": False,
-#                                 "feedback_updated": False,
-#                                 "has_exchange_feedback": False,
-#                                 "has_local_feedback": False,
-#                                 "local_feedback_path": "assign_1_1/feedback/False/assignment-0.6.html",
-#                                 "name": "assignment-0.6",
-#                             }
-#                         ],
-#                         "timestamp": "2020-01-01 00:00:00.0 UTC",
-#                     }
-#                 ],
-#             }
-#         ]
+    with patch.object(Exchange, "api_request", side_effect=api_request):
+        called = plugin.start()
 
 
-# @pytest.mark.gen_test
-# def test_list_inbound_several_same(plugin_config, tmpdir):
-#     plugin_config.CourseDirectory.course_id = "no_course"
-#     plugin_config.ExchangeList.inbound = True
+@pytest.mark.gen_test
+def test_list_inbound_one(plugin_config, tmpdir):
+    plugin_config.CourseDirectory.course_id = "no_course"
+    plugin_config.ExchangeList.inbound = True
 
-#     plugin = ExchangeList(
-#         coursedir=CourseDirectory(config=plugin_config), config=plugin_config
-#     )
+    plugin = ExchangeList(
+        coursedir=CourseDirectory(config=plugin_config), config=plugin_config
+    )
 
-#     def api_request(*args, **kwargs):
-#         assert args[0] == ("assignments?course_id=no_course")
-#         assert "method" not in kwargs or kwargs.get("method").lower() == "get"
-#         return type(
-#             "Request",
-#             (object,),
-#             {
-#                 "status_code": 200,
-#                 "json": (
-#                     lambda: {
-#                         "success": True,
-#                         "value": [
-#                             {
-#                                 "assignment_id": "assign_1_1",
-#                                 "student_id": "1",
-#                                 "course_id": "no_course",
-#                                 "status": "submitted",
-#                                 "path": "",
-#                                 "notebooks": [
-#                                     {
-#                                         "name": "assignment-0.6",
-#                                         "has_exchange_feedback": False,
-#                                         "feedback_updated": False,
-#                                         "feedback_timestamp": False,
-#                                     }
-#                                 ],
-#                                 "timestamp": "2020-01-01 00:00:00.0 UTC",
-#                             },
-#                             {
-#                                 "assignment_id": "assign_1_1",
-#                                 "student_id": "1",
-#                                 "course_id": "no_course",
-#                                 "status": "submitted",
-#                                 "path": "",
-#                                 "notebooks": [
-#                                     {
-#                                         "name": "assignment-0.6-wrong",
-#                                         "has_exchange_feedback": False,
-#                                         "feedback_updated": False,
-#                                         "feedback_timestamp": False,
-#                                     }
-#                                 ],
-#                                 "timestamp": "2020-01-01 00:00:00.1 UTC",
-#                             },
-#                         ],
-#                     }
-#                 ),
-#             },
-#         )
+    def api_request(*args, **kwargs):
+        assert args[0] == ("assignments?course_id=no_course")
+        assert "method" not in kwargs or kwargs.get("method").lower() == "get"
+        return type(
+            "Request",
+            (object,),
+            {
+                "status_code": 200,
+                "json": (
+                    lambda: {
+                        "success": True,
+                        "value": [
+                            {
+                                "assignment_id": "assign_1_1",
+                                "student_id": "1",
+                                "course_id": "no_course",
+                                "status": "submitted",
+                                "path": "",
+                                "notebooks": [
+                                    {
+                                        "name": "assignment-0.6",
+                                        "has_exchange_feedback": False,
+                                        "feedback_updated": False,
+                                        "feedback_timestamp": False,
+                                    }
+                                ],
+                                "timestamp": "2020-01-01 00:00:00.0 UTC",
+                            }
+                        ],
+                    }
+                ),
+            },
+        )
 
-#     with patch.object(Exchange, "api_request", side_effect=api_request):
-#         called = plugin.start()
-#         assert called == [
-#             {
-#                 "assignment_id": "assign_1_1",
-#                 "course_id": "no_course",
-#                 "student_id": "1",
-#                 "status": "submitted",
-#                 "submissions": [
-#                     {
-#                         "assignment_id": "assign_1_1",
-#                         "course_id": "no_course",
-#                         "feedback_updated": False,
-#                         "has_exchange_feedback": False,
-#                         "has_local_feedback": False,
-#                         "path": "",
-#                         "status": "submitted",
-#                         "student_id": "1",
-#                         "local_feedback_path": "assign_1_1/feedback/False",
-#                         "notebooks": [
-#                             {
-#                                 "feedback_timestamp": False,
-#                                 "feedback_updated": False,
-#                                 "has_exchange_feedback": False,
-#                                 "has_local_feedback": False,
-#                                 "local_feedback_path": "assign_1_1/feedback/False/assignment-0.6.html",
-#                                 "name": "assignment-0.6",
-#                             }
-#                         ],
-#                         "timestamp": "2020-01-01 00:00:00.0 UTC",
-#                     },
-#                     {
-#                         "assignment_id": "assign_1_1",
-#                         "course_id": "no_course",
-#                         "feedback_updated": False,
-#                         "has_exchange_feedback": False,
-#                         "has_local_feedback": False,
-#                         "path": "",
-#                         "status": "submitted",
-#                         "student_id": "1",
-#                         "local_feedback_path": "assign_1_1/feedback/False",
-#                         "notebooks": [
-#                             {
-#                                 "feedback_timestamp": False,
-#                                 "feedback_updated": False,
-#                                 "has_exchange_feedback": False,
-#                                 "has_local_feedback": False,
-#                                 "local_feedback_path": "assign_1_1/feedback/False/assignment-0.6-wrong.html",
-#                                 "name": "assignment-0.6-wrong",
-#                             }
-#                         ],
-#                         "timestamp": "2020-01-01 00:00:00.1 UTC",
-#                     },
-#                 ],
-#             }
-#         ]
+    with patch.object(Exchange, "api_request", side_effect=api_request):
+        called = plugin.start()
+        assert called == [
+            {
+                "assignment_id": "assign_1_1",
+                "course_id": "no_course",
+                "student_id": "1",
+                "status": "submitted",
+                "submissions": [
+                    {
+                        "assignment_id": "assign_1_1",
+                        "course_id": "no_course",
+                        "feedback_updated": False,
+                        "has_exchange_feedback": False,
+                        "has_local_feedback": False,
+                        "path": "",
+                        "status": "submitted",
+                        "student_id": "1",
+                        "local_feedback_path": "assign_1_1/feedback/False",
+                        "notebooks": [
+                            {
+                                "feedback_timestamp": False,
+                                "feedback_updated": False,
+                                "has_exchange_feedback": False,
+                                "has_local_feedback": False,
+                                "local_feedback_path": "assign_1_1/feedback/False/assignment-0.6.html",
+                                "name": "assignment-0.6",
+                            }
+                        ],
+                        "timestamp": "2020-01-01 00:00:00.0 UTC",
+                    }
+                ],
+            }
+        ]
 
 
-# @pytest.mark.gen_test
-# def test_list_inbound_several_students(plugin_config, tmpdir):
-#     plugin_config.CourseDirectory.course_id = "no_course"
-#     plugin_config.ExchangeList.inbound = True
+@pytest.mark.gen_test
+def test_list_inbound_several_same(plugin_config, tmpdir):
+    plugin_config.CourseDirectory.course_id = "no_course"
+    plugin_config.ExchangeList.inbound = True
 
-#     plugin = ExchangeList(
-#         coursedir=CourseDirectory(config=plugin_config), config=plugin_config
-#     )
+    plugin = ExchangeList(
+        coursedir=CourseDirectory(config=plugin_config), config=plugin_config
+    )
 
-#     def api_request(*args, **kwargs):
-#         assert args[0] == ("assignments?course_id=no_course")
-#         assert "method" not in kwargs or kwargs.get("method").lower() == "get"
-#         return type(
-#             "Request",
-#             (object,),
-#             {
-#                 "status_code": 200,
-#                 "json": (
-#                     lambda: {
-#                         "success": True,
-#                         "value": [
-#                             {
-#                                 "assignment_id": "assign_1_1",
-#                                 "student_id": "1",
-#                                 "course_id": "no_course",
-#                                 "status": "submitted",
-#                                 "path": "",
-#                                 "notebooks": [
-#                                     {
-#                                         "name": "assignment-0.6",
-#                                         "has_exchange_feedback": False,
-#                                         "feedback_updated": False,
-#                                         "feedback_timestamp": False,
-#                                     }
-#                                 ],
-#                                 "timestamp": "2020-01-01 00:00:00.0 UTC",
-#                             },
-#                             {
-#                                 "assignment_id": "assign_1_1",
-#                                 "student_id": "1",
-#                                 "course_id": "no_course",
-#                                 "status": "submitted",
-#                                 "path": "",
-#                                 "notebooks": [
-#                                     {
-#                                         "name": "assignment-0.6-wrong",
-#                                         "has_exchange_feedback": False,
-#                                         "feedback_updated": False,
-#                                         "feedback_timestamp": False,
-#                                     }
-#                                 ],
-#                                 "timestamp": "2020-01-01 00:00:00.1 UTC",
-#                             },
-#                             {
-#                                 "assignment_id": "assign_1_1",
-#                                 "student_id": "2",
-#                                 "course_id": "no_course",
-#                                 "status": "submitted",
-#                                 "path": "",
-#                                 "notebooks": [
-#                                     {
-#                                         "name": "assignment-0.6-wrong",
-#                                         "has_exchange_feedback": False,
-#                                         "feedback_updated": False,
-#                                         "feedback_timestamp": False,
-#                                     }
-#                                 ],
-#                                 "timestamp": "2020-01-01 00:00:00.3 UTC",
-#                             },
-#                         ],
-#                     }
-#                 ),
-#             },
-#         )
+    def api_request(*args, **kwargs):
+        assert args[0] == ("assignments?course_id=no_course")
+        assert "method" not in kwargs or kwargs.get("method").lower() == "get"
+        return type(
+            "Request",
+            (object,),
+            {
+                "status_code": 200,
+                "json": (
+                    lambda: {
+                        "success": True,
+                        "value": [
+                            {
+                                "assignment_id": "assign_1_1",
+                                "student_id": "1",
+                                "course_id": "no_course",
+                                "status": "submitted",
+                                "path": "",
+                                "notebooks": [
+                                    {
+                                        "name": "assignment-0.6",
+                                        "has_exchange_feedback": False,
+                                        "feedback_updated": False,
+                                        "feedback_timestamp": False,
+                                    }
+                                ],
+                                "timestamp": "2020-01-01 00:00:00.0 UTC",
+                            },
+                            {
+                                "assignment_id": "assign_1_1",
+                                "student_id": "1",
+                                "course_id": "no_course",
+                                "status": "submitted",
+                                "path": "",
+                                "notebooks": [
+                                    {
+                                        "name": "assignment-0.6-wrong",
+                                        "has_exchange_feedback": False,
+                                        "feedback_updated": False,
+                                        "feedback_timestamp": False,
+                                    }
+                                ],
+                                "timestamp": "2020-01-01 00:00:00.1 UTC",
+                            },
+                        ],
+                    }
+                ),
+            },
+        )
 
-#     with patch.object(Exchange, "api_request", side_effect=api_request):
-#         called = plugin.start()
-#         assert called == [
-#             {
-#                 "assignment_id": "assign_1_1",
-#                 "course_id": "no_course",
-#                 "student_id": "1",
-#                 "status": "submitted",
-#                 "submissions": [
-#                     {
-#                         "assignment_id": "assign_1_1",
-#                         "course_id": "no_course",
-#                         "feedback_updated": False,
-#                         "has_exchange_feedback": False,
-#                         "has_local_feedback": False,
-#                         "path": "",
-#                         "status": "submitted",
-#                         "student_id": "1",
-#                         "local_feedback_path": "assign_1_1/feedback/False",
-#                         "notebooks": [
-#                             {
-#                                 "feedback_timestamp": False,
-#                                 "feedback_updated": False,
-#                                 "has_exchange_feedback": False,
-#                                 "has_local_feedback": False,
-#                                 "local_feedback_path": "assign_1_1/feedback/False/assignment-0.6.html",
-#                                 "name": "assignment-0.6",
-#                             }
-#                         ],
-#                         "timestamp": "2020-01-01 00:00:00.0 UTC",
-#                     },
-#                     {
-#                         "assignment_id": "assign_1_1",
-#                         "course_id": "no_course",
-#                         "feedback_updated": False,
-#                         "has_exchange_feedback": False,
-#                         "has_local_feedback": False,
-#                         "path": "",
-#                         "status": "submitted",
-#                         "student_id": "1",
-#                         "local_feedback_path": "assign_1_1/feedback/False",
-#                         "notebooks": [
-#                             {
-#                                 "feedback_timestamp": False,
-#                                 "feedback_updated": False,
-#                                 "has_exchange_feedback": False,
-#                                 "has_local_feedback": False,
-#                                 "local_feedback_path": "assign_1_1/feedback/False/assignment-0.6-wrong.html",
-#                                 "name": "assignment-0.6-wrong",
-#                             }
-#                         ],
-#                         "timestamp": "2020-01-01 00:00:00.1 UTC",
-#                     },
-#                 ],
-#             },
-#             {
-#                 "assignment_id": "assign_1_1",
-#                 "course_id": "no_course",
-#                 "student_id": "2",
-#                 "status": "submitted",
-#                 "submissions": [
-#                     {
-#                         "assignment_id": "assign_1_1",
-#                         "course_id": "no_course",
-#                         "feedback_updated": False,
-#                         "has_exchange_feedback": False,
-#                         "has_local_feedback": False,
-#                         "path": "",
-#                         "status": "submitted",
-#                         "student_id": "2",
-#                         "local_feedback_path": "assign_1_1/feedback/False",
-#                         "notebooks": [
-#                             {
-#                                 "feedback_timestamp": False,
-#                                 "feedback_updated": False,
-#                                 "has_exchange_feedback": False,
-#                                 "has_local_feedback": False,
-#                                 "local_feedback_path": "assign_1_1/feedback/False/assignment-0.6-wrong.html",
-#                                 "name": "assignment-0.6-wrong",
-#                             }
-#                         ],
-#                         "timestamp": "2020-01-01 00:00:00.3 UTC",
-#                     }
-#                 ],
-#             },
-#         ]
+    with patch.object(Exchange, "api_request", side_effect=api_request):
+        called = plugin.start()
+        assert called == [
+            {
+                "assignment_id": "assign_1_1",
+                "course_id": "no_course",
+                "student_id": "1",
+                "status": "submitted",
+                "submissions": [
+                    {
+                        "assignment_id": "assign_1_1",
+                        "course_id": "no_course",
+                        "feedback_updated": False,
+                        "has_exchange_feedback": False,
+                        "has_local_feedback": False,
+                        "path": "",
+                        "status": "submitted",
+                        "student_id": "1",
+                        "local_feedback_path": "assign_1_1/feedback/False",
+                        "notebooks": [
+                            {
+                                "feedback_timestamp": False,
+                                "feedback_updated": False,
+                                "has_exchange_feedback": False,
+                                "has_local_feedback": False,
+                                "local_feedback_path": "assign_1_1/feedback/False/assignment-0.6.html",
+                                "name": "assignment-0.6",
+                            }
+                        ],
+                        "timestamp": "2020-01-01 00:00:00.0 UTC",
+                    },
+                    {
+                        "assignment_id": "assign_1_1",
+                        "course_id": "no_course",
+                        "feedback_updated": False,
+                        "has_exchange_feedback": False,
+                        "has_local_feedback": False,
+                        "path": "",
+                        "status": "submitted",
+                        "student_id": "1",
+                        "local_feedback_path": "assign_1_1/feedback/False",
+                        "notebooks": [
+                            {
+                                "feedback_timestamp": False,
+                                "feedback_updated": False,
+                                "has_exchange_feedback": False,
+                                "has_local_feedback": False,
+                                "local_feedback_path": "assign_1_1/feedback/False/assignment-0.6-wrong.html",
+                                "name": "assignment-0.6-wrong",
+                            }
+                        ],
+                        "timestamp": "2020-01-01 00:00:00.1 UTC",
+                    },
+                ],
+            }
+        ]
 
 
-# @pytest.mark.gen_test
-# def test_list_inbound_several_assignments(plugin_config, tmpdir):
-#     plugin_config.CourseDirectory.course_id = "no_course"
-#     plugin_config.ExchangeList.inbound = True
+@pytest.mark.gen_test
+def test_list_inbound_several_students(plugin_config, tmpdir):
+    plugin_config.CourseDirectory.course_id = "no_course"
+    plugin_config.ExchangeList.inbound = True
 
-#     plugin = ExchangeList(
-#         coursedir=CourseDirectory(config=plugin_config), config=plugin_config
-#     )
+    plugin = ExchangeList(
+        coursedir=CourseDirectory(config=plugin_config), config=plugin_config
+    )
 
-#     def api_request(*args, **kwargs):
-#         assert args[0] == ("assignments?course_id=no_course")
-#         assert "method" not in kwargs or kwargs.get("method").lower() == "get"
-#         return type(
-#             "Request",
-#             (object,),
-#             {
-#                 "status_code": 200,
-#                 "json": (
-#                     lambda: {
-#                         "success": True,
-#                         "value": [
-#                             {
-#                                 "assignment_id": "assign_1_1",
-#                                 "student_id": "1",
-#                                 "course_id": "no_course",
-#                                 "status": "submitted",
-#                                 "path": "",
-#                                 "notebooks": [
-#                                     {
-#                                         "name": "assignment-0.6",
-#                                         "has_exchange_feedback": False,
-#                                         "feedback_updated": False,
-#                                         "feedback_timestamp": False,
-#                                     }
-#                                 ],
-#                                 "timestamp": "2020-01-01 00:00:00.0 UTC",
-#                             },
-#                             {
-#                                 "assignment_id": "assign_1_1",
-#                                 "student_id": "1",
-#                                 "course_id": "no_course",
-#                                 "status": "submitted",
-#                                 "path": "",
-#                                 "notebooks": [
-#                                     {
-#                                         "name": "assignment-0.6-wrong",
-#                                         "has_exchange_feedback": False,
-#                                         "feedback_updated": False,
-#                                         "feedback_timestamp": False,
-#                                     }
-#                                 ],
-#                                 "timestamp": "2020-01-01 00:00:00.1 UTC",
-#                             },
-#                             {
-#                                 "assignment_id": "assign_1_1",
-#                                 "student_id": "2",
-#                                 "course_id": "no_course",
-#                                 "status": "submitted",
-#                                 "path": "",
-#                                 "notebooks": [
-#                                     {
-#                                         "name": "assignment-0.6-wrong",
-#                                         "has_exchange_feedback": False,
-#                                         "feedback_updated": False,
-#                                         "feedback_timestamp": False,
-#                                     }
-#                                 ],
-#                                 "timestamp": "2020-01-01 00:00:00.3 UTC",
-#                             },
-#                             {
-#                                 "assignment_id": "assign_1_2",
-#                                 "student_id": "2",
-#                                 "course_id": "no_course",
-#                                 "status": "submitted",
-#                                 "path": "",
-#                                 "notebooks": [
-#                                     {
-#                                         "name": "assignment-0.6-wrong",
-#                                         "has_exchange_feedback": False,
-#                                         "feedback_updated": False,
-#                                         "feedback_timestamp": False,
-#                                     }
-#                                 ],
-#                                 "timestamp": "2020-01-01 00:00:00.4 UTC",
-#                             },
-#                         ],
-#                     }
-#                 ),
-#             },
-#         )
+    def api_request(*args, **kwargs):
+        assert args[0] == ("assignments?course_id=no_course")
+        assert "method" not in kwargs or kwargs.get("method").lower() == "get"
+        return type(
+            "Request",
+            (object,),
+            {
+                "status_code": 200,
+                "json": (
+                    lambda: {
+                        "success": True,
+                        "value": [
+                            {
+                                "assignment_id": "assign_1_1",
+                                "student_id": "1",
+                                "course_id": "no_course",
+                                "status": "submitted",
+                                "path": "",
+                                "notebooks": [
+                                    {
+                                        "name": "assignment-0.6",
+                                        "has_exchange_feedback": False,
+                                        "feedback_updated": False,
+                                        "feedback_timestamp": False,
+                                    }
+                                ],
+                                "timestamp": "2020-01-01 00:00:00.0 UTC",
+                            },
+                            {
+                                "assignment_id": "assign_1_1",
+                                "student_id": "1",
+                                "course_id": "no_course",
+                                "status": "submitted",
+                                "path": "",
+                                "notebooks": [
+                                    {
+                                        "name": "assignment-0.6-wrong",
+                                        "has_exchange_feedback": False,
+                                        "feedback_updated": False,
+                                        "feedback_timestamp": False,
+                                    }
+                                ],
+                                "timestamp": "2020-01-01 00:00:00.1 UTC",
+                            },
+                            {
+                                "assignment_id": "assign_1_1",
+                                "student_id": "2",
+                                "course_id": "no_course",
+                                "status": "submitted",
+                                "path": "",
+                                "notebooks": [
+                                    {
+                                        "name": "assignment-0.6-wrong",
+                                        "has_exchange_feedback": False,
+                                        "feedback_updated": False,
+                                        "feedback_timestamp": False,
+                                    }
+                                ],
+                                "timestamp": "2020-01-01 00:00:00.3 UTC",
+                            },
+                        ],
+                    }
+                ),
+            },
+        )
 
-#     with patch.object(Exchange, "api_request", side_effect=api_request):
-#         called = plugin.start()
-#         assert called == [
-#             {
-#                 "assignment_id": "assign_1_1",
-#                 "course_id": "no_course",
-#                 "student_id": "1",
-#                 "status": "submitted",
-#                 "submissions": [
-#                     {
-#                         "assignment_id": "assign_1_1",
-#                         "course_id": "no_course",
-#                         "feedback_updated": False,
-#                         "has_exchange_feedback": False,
-#                         "has_local_feedback": False,
-#                         "path": "",
-#                         "status": "submitted",
-#                         "student_id": "1",
-#                         "local_feedback_path": "assign_1_1/feedback/False",
-#                         "notebooks": [
-#                             {
-#                                 "feedback_timestamp": False,
-#                                 "feedback_updated": False,
-#                                 "has_exchange_feedback": False,
-#                                 "has_local_feedback": False,
-#                                 "local_feedback_path": "assign_1_1/feedback/False/assignment-0.6.html",
-#                                 "name": "assignment-0.6",
-#                             }
-#                         ],
-#                         "timestamp": "2020-01-01 00:00:00.0 UTC",
-#                     },
-#                     {
-#                         "assignment_id": "assign_1_1",
-#                         "course_id": "no_course",
-#                         "feedback_updated": False,
-#                         "has_exchange_feedback": False,
-#                         "has_local_feedback": False,
-#                         "path": "",
-#                         "status": "submitted",
-#                         "student_id": "1",
-#                         "local_feedback_path": "assign_1_1/feedback/False",
-#                         "notebooks": [
-#                             {
-#                                 "feedback_timestamp": False,
-#                                 "feedback_updated": False,
-#                                 "has_exchange_feedback": False,
-#                                 "has_local_feedback": False,
-#                                 "local_feedback_path": "assign_1_1/feedback/False/assignment-0.6-wrong.html",
-#                                 "name": "assignment-0.6-wrong",
-#                             }
-#                         ],
-#                         "timestamp": "2020-01-01 00:00:00.1 UTC",
-#                     },
-#                 ],
-#             },
-#             {
-#                 "assignment_id": "assign_1_1",
-#                 "course_id": "no_course",
-#                 "student_id": "2",
-#                 "status": "submitted",
-#                 "submissions": [
-#                     {
-#                         "assignment_id": "assign_1_1",
-#                         "course_id": "no_course",
-#                         "feedback_updated": False,
-#                         "has_exchange_feedback": False,
-#                         "has_local_feedback": False,
-#                         "path": "",
-#                         "status": "submitted",
-#                         "student_id": "2",
-#                         "local_feedback_path": "assign_1_1/feedback/False",
-#                         "notebooks": [
-#                             {
-#                                 "feedback_timestamp": False,
-#                                 "feedback_updated": False,
-#                                 "has_exchange_feedback": False,
-#                                 "has_local_feedback": False,
-#                                 "local_feedback_path": "assign_1_1/feedback/False/assignment-0.6-wrong.html",
-#                                 "name": "assignment-0.6-wrong",
-#                             }
-#                         ],
-#                         "timestamp": "2020-01-01 00:00:00.3 UTC",
-#                     }
-#                 ],
-#             },
-#             {
-#                 "assignment_id": "assign_1_2",
-#                 "course_id": "no_course",
-#                 "student_id": "2",
-#                 "status": "submitted",
-#                 "submissions": [
-#                     {
-#                         "assignment_id": "assign_1_2",
-#                         "course_id": "no_course",
-#                         "feedback_updated": False,
-#                         "has_exchange_feedback": False,
-#                         "has_local_feedback": False,
-#                         "path": "",
-#                         "status": "submitted",
-#                         "student_id": "2",
-#                         "local_feedback_path": "assign_1_2/feedback/False",
-#                         "notebooks": [
-#                             {
-#                                 "feedback_timestamp": False,
-#                                 "feedback_updated": False,
-#                                 "has_exchange_feedback": False,
-#                                 "has_local_feedback": False,
-#                                 "local_feedback_path": "assign_1_2/feedback/False/assignment-0.6-wrong.html",
-#                                 "name": "assignment-0.6-wrong",
-#                             }
-#                         ],
-#                         "timestamp": "2020-01-01 00:00:00.4 UTC",
-#                     }
-#                 ],
-#             },
-#         ]
+    with patch.object(Exchange, "api_request", side_effect=api_request):
+        called = plugin.start()
+        assert called == [
+            {
+                "assignment_id": "assign_1_1",
+                "course_id": "no_course",
+                "student_id": "1",
+                "status": "submitted",
+                "submissions": [
+                    {
+                        "assignment_id": "assign_1_1",
+                        "course_id": "no_course",
+                        "feedback_updated": False,
+                        "has_exchange_feedback": False,
+                        "has_local_feedback": False,
+                        "path": "",
+                        "status": "submitted",
+                        "student_id": "1",
+                        "local_feedback_path": "assign_1_1/feedback/False",
+                        "notebooks": [
+                            {
+                                "feedback_timestamp": False,
+                                "feedback_updated": False,
+                                "has_exchange_feedback": False,
+                                "has_local_feedback": False,
+                                "local_feedback_path": "assign_1_1/feedback/False/assignment-0.6.html",
+                                "name": "assignment-0.6",
+                            }
+                        ],
+                        "timestamp": "2020-01-01 00:00:00.0 UTC",
+                    },
+                    {
+                        "assignment_id": "assign_1_1",
+                        "course_id": "no_course",
+                        "feedback_updated": False,
+                        "has_exchange_feedback": False,
+                        "has_local_feedback": False,
+                        "path": "",
+                        "status": "submitted",
+                        "student_id": "1",
+                        "local_feedback_path": "assign_1_1/feedback/False",
+                        "notebooks": [
+                            {
+                                "feedback_timestamp": False,
+                                "feedback_updated": False,
+                                "has_exchange_feedback": False,
+                                "has_local_feedback": False,
+                                "local_feedback_path": "assign_1_1/feedback/False/assignment-0.6-wrong.html",
+                                "name": "assignment-0.6-wrong",
+                            }
+                        ],
+                        "timestamp": "2020-01-01 00:00:00.1 UTC",
+                    },
+                ],
+            },
+            {
+                "assignment_id": "assign_1_1",
+                "course_id": "no_course",
+                "student_id": "2",
+                "status": "submitted",
+                "submissions": [
+                    {
+                        "assignment_id": "assign_1_1",
+                        "course_id": "no_course",
+                        "feedback_updated": False,
+                        "has_exchange_feedback": False,
+                        "has_local_feedback": False,
+                        "path": "",
+                        "status": "submitted",
+                        "student_id": "2",
+                        "local_feedback_path": "assign_1_1/feedback/False",
+                        "notebooks": [
+                            {
+                                "feedback_timestamp": False,
+                                "feedback_updated": False,
+                                "has_exchange_feedback": False,
+                                "has_local_feedback": False,
+                                "local_feedback_path": "assign_1_1/feedback/False/assignment-0.6-wrong.html",
+                                "name": "assignment-0.6-wrong",
+                            }
+                        ],
+                        "timestamp": "2020-01-01 00:00:00.3 UTC",
+                    }
+                ],
+            },
+        ]
 
 
-# @pytest.mark.gen_test
-# def test_list_inbound_ignore_outbound(plugin_config, tmpdir):
-#     plugin_config.CourseDirectory.course_id = "no_course"
-#     plugin_config.ExchangeList.inbound = True
+@pytest.mark.gen_test
+def test_list_inbound_several_assignments(plugin_config, tmpdir):
+    plugin_config.CourseDirectory.course_id = "no_course"
+    plugin_config.ExchangeList.inbound = True
 
-#     plugin = ExchangeList(
-#         coursedir=CourseDirectory(config=plugin_config), config=plugin_config
-#     )
+    plugin = ExchangeList(
+        coursedir=CourseDirectory(config=plugin_config), config=plugin_config
+    )
 
-#     def api_request(*args, **kwargs):
-#         assert args[0] == ("assignments?course_id=no_course")
-#         assert "method" not in kwargs or kwargs.get("method").lower() == "get"
-#         return type(
-#             "Request",
-#             (object,),
-#             {
-#                 "status_code": 200,
-#                 "json": (
-#                     lambda: {
-#                         "success": True,
-#                         "value": [
-#                             {
-#                                 "assignment_id": "assign_1_1",
-#                                 "student_id": "1",
-#                                 "course_id": "no_course",
-#                                 "status": "submitted",
-#                                 "path": "",
-#                                 "notebooks": [
-#                                     {
-#                                         "name": "assignment-0.6",
-#                                         "has_exchange_feedback": False,
-#                                         "feedback_updated": False,
-#                                         "feedback_timestamp": False,
-#                                     }
-#                                 ],
-#                                 "timestamp": "2020-01-01 00:00:00.0 UTC",
-#                             },
-#                             {
-#                                 "assignment_id": "assign_1_1",
-#                                 "student_id": "1",
-#                                 "course_id": "no_course",
-#                                 "status": "submitted",
-#                                 "path": "",
-#                                 "notebooks": [
-#                                     {
-#                                         "name": "assignment-0.6-wrong",
-#                                         "has_exchange_feedback": False,
-#                                         "feedback_updated": False,
-#                                         "feedback_timestamp": False,
-#                                     }
-#                                 ],
-#                                 "timestamp": "2020-01-01 00:00:00.1 UTC",
-#                             },
-#                             {
-#                                 "assignment_id": "assign_1_4",
-#                                 "student_id": "1",
-#                                 "course_id": "no_course",
-#                                 "status": "fetched",
-#                                 "path": "",
-#                                 "notebooks": [
-#                                     {
-#                                         "name": "assignment-0.6",
-#                                         "has_exchange_feedback": False,
-#                                         "feedback_updated": False,
-#                                         "feedback_timestamp": False,
-#                                     }
-#                                 ],
-#                                 "timestamp": "2020-01-01 00:00:00.44 UTC",
-#                             },
-#                             {
-#                                 "assignment_id": "assign_13",
-#                                 "student_id": "1",
-#                                 "course_id": "no_course",
-#                                 "status": "released",
-#                                 "path": "",
-#                                 "notebooks": [
-#                                     {
-#                                         "name": "assignment-0.6-wrong",
-#                                         "has_exchange_feedback": False,
-#                                         "feedback_updated": False,
-#                                         "feedback_timestamp": False,
-#                                     }
-#                                 ],
-#                                 "timestamp": "2020-01-01 00:00:00.23 UTC",
-#                             },
-#                             {
-#                                 "assignment_id": "assign_1_1",
-#                                 "student_id": "2",
-#                                 "course_id": "no_course",
-#                                 "status": "submitted",
-#                                 "path": "",
-#                                 "notebooks": [
-#                                     {
-#                                         "name": "assignment-0.6-wrong",
-#                                         "has_exchange_feedback": False,
-#                                         "feedback_updated": False,
-#                                         "feedback_timestamp": False,
-#                                     }
-#                                 ],
-#                                 "timestamp": "2020-01-01 00:00:00.3 UTC",
-#                             },
-#                             {
-#                                 "assignment_id": "assign_1_2",
-#                                 "student_id": "2",
-#                                 "course_id": "no_course",
-#                                 "status": "submitted",
-#                                 "path": "",
-#                                 "notebooks": [
-#                                     {
-#                                         "name": "assignment-0.6-wrong",
-#                                         "has_exchange_feedback": False,
-#                                         "feedback_updated": False,
-#                                         "feedback_timestamp": False,
-#                                     }
-#                                 ],
-#                                 "timestamp": "2020-01-01 00:00:00.4 UTC",
-#                             },
-#                         ],
-#                     }
-#                 ),
-#             },
-#         )
+    def api_request(*args, **kwargs):
+        assert args[0] == ("assignments?course_id=no_course")
+        assert "method" not in kwargs or kwargs.get("method").lower() == "get"
+        return type(
+            "Request",
+            (object,),
+            {
+                "status_code": 200,
+                "json": (
+                    lambda: {
+                        "success": True,
+                        "value": [
+                            {
+                                "assignment_id": "assign_1_1",
+                                "student_id": "1",
+                                "course_id": "no_course",
+                                "status": "submitted",
+                                "path": "",
+                                "notebooks": [
+                                    {
+                                        "name": "assignment-0.6",
+                                        "has_exchange_feedback": False,
+                                        "feedback_updated": False,
+                                        "feedback_timestamp": False,
+                                    }
+                                ],
+                                "timestamp": "2020-01-01 00:00:00.0 UTC",
+                            },
+                            {
+                                "assignment_id": "assign_1_1",
+                                "student_id": "1",
+                                "course_id": "no_course",
+                                "status": "submitted",
+                                "path": "",
+                                "notebooks": [
+                                    {
+                                        "name": "assignment-0.6-wrong",
+                                        "has_exchange_feedback": False,
+                                        "feedback_updated": False,
+                                        "feedback_timestamp": False,
+                                    }
+                                ],
+                                "timestamp": "2020-01-01 00:00:00.1 UTC",
+                            },
+                            {
+                                "assignment_id": "assign_1_1",
+                                "student_id": "2",
+                                "course_id": "no_course",
+                                "status": "submitted",
+                                "path": "",
+                                "notebooks": [
+                                    {
+                                        "name": "assignment-0.6-wrong",
+                                        "has_exchange_feedback": False,
+                                        "feedback_updated": False,
+                                        "feedback_timestamp": False,
+                                    }
+                                ],
+                                "timestamp": "2020-01-01 00:00:00.3 UTC",
+                            },
+                            {
+                                "assignment_id": "assign_1_2",
+                                "student_id": "2",
+                                "course_id": "no_course",
+                                "status": "submitted",
+                                "path": "",
+                                "notebooks": [
+                                    {
+                                        "name": "assignment-0.6-wrong",
+                                        "has_exchange_feedback": False,
+                                        "feedback_updated": False,
+                                        "feedback_timestamp": False,
+                                    }
+                                ],
+                                "timestamp": "2020-01-01 00:00:00.4 UTC",
+                            },
+                        ],
+                    }
+                ),
+            },
+        )
 
-#     with patch.object(Exchange, "api_request", side_effect=api_request):
-#         called = plugin.start()
-#         assert called == [
-#             {
-#                 "assignment_id": "assign_1_1",
-#                 "course_id": "no_course",
-#                 "student_id": "1",
-#                 "status": "submitted",
-#                 "submissions": [
-#                     {
-#                         "assignment_id": "assign_1_1",
-#                         "course_id": "no_course",
-#                         "feedback_updated": False,
-#                         "has_exchange_feedback": False,
-#                         "has_local_feedback": False,
-#                         "path": "",
-#                         "status": "submitted",
-#                         "student_id": "1",
-#                         "local_feedback_path": "assign_1_1/feedback/False",
-#                         "notebooks": [
-#                             {
-#                                 "feedback_timestamp": False,
-#                                 "feedback_updated": False,
-#                                 "has_exchange_feedback": False,
-#                                 "has_local_feedback": False,
-#                                 "local_feedback_path": "assign_1_1/feedback/False/assignment-0.6.html",
-#                                 "name": "assignment-0.6",
-#                             }
-#                         ],
-#                         "timestamp": "2020-01-01 00:00:00.0 UTC",
-#                     },
-#                     {
-#                         "assignment_id": "assign_1_1",
-#                         "course_id": "no_course",
-#                         "feedback_updated": False,
-#                         "has_exchange_feedback": False,
-#                         "has_local_feedback": False,
-#                         "path": "",
-#                         "status": "submitted",
-#                         "student_id": "1",
-#                         "local_feedback_path": "assign_1_1/feedback/False",
-#                         "notebooks": [
-#                             {
-#                                 "feedback_timestamp": False,
-#                                 "feedback_updated": False,
-#                                 "has_exchange_feedback": False,
-#                                 "has_local_feedback": False,
-#                                 "local_feedback_path": "assign_1_1/feedback/False/assignment-0.6-wrong.html",
-#                                 "name": "assignment-0.6-wrong",
-#                             }
-#                         ],
-#                         "timestamp": "2020-01-01 00:00:00.1 UTC",
-#                     },
-#                 ],
-#             },
-#             {
-#                 "assignment_id": "assign_1_1",
-#                 "course_id": "no_course",
-#                 "student_id": "2",
-#                 "status": "submitted",
-#                 "submissions": [
-#                     {
-#                         "assignment_id": "assign_1_1",
-#                         "course_id": "no_course",
-#                         "feedback_updated": False,
-#                         "has_exchange_feedback": False,
-#                         "has_local_feedback": False,
-#                         "path": "",
-#                         "status": "submitted",
-#                         "student_id": "2",
-#                         "local_feedback_path": "assign_1_1/feedback/False",
-#                         "notebooks": [
-#                             {
-#                                 "feedback_timestamp": False,
-#                                 "feedback_updated": False,
-#                                 "has_exchange_feedback": False,
-#                                 "has_local_feedback": False,
-#                                 "local_feedback_path": "assign_1_1/feedback/False/assignment-0.6-wrong.html",
-#                                 "name": "assignment-0.6-wrong",
-#                             }
-#                         ],
-#                         "timestamp": "2020-01-01 00:00:00.3 UTC",
-#                     }
-#                 ],
-#             },
-#             {
-#                 "assignment_id": "assign_1_2",
-#                 "course_id": "no_course",
-#                 "student_id": "2",
-#                 "status": "submitted",
-#                 "submissions": [
-#                     {
-#                         "assignment_id": "assign_1_2",
-#                         "course_id": "no_course",
-#                         "feedback_updated": False,
-#                         "has_exchange_feedback": False,
-#                         "has_local_feedback": False,
-#                         "path": "",
-#                         "status": "submitted",
-#                         "student_id": "2",
-#                         "local_feedback_path": "assign_1_2/feedback/False",
-#                         "notebooks": [
-#                             {
-#                                 "feedback_timestamp": False,
-#                                 "feedback_updated": False,
-#                                 "has_exchange_feedback": False,
-#                                 "has_local_feedback": False,
-#                                 "local_feedback_path": "assign_1_2/feedback/False/assignment-0.6-wrong.html",
-#                                 "name": "assignment-0.6-wrong",
-#                             }
-#                         ],
-#                         "timestamp": "2020-01-01 00:00:00.4 UTC",
-#                     }
-#                 ],
-#             },
-#         ]
+    with patch.object(Exchange, "api_request", side_effect=api_request):
+        called = plugin.start()
+        assert called == [
+            {
+                "assignment_id": "assign_1_1",
+                "course_id": "no_course",
+                "student_id": "1",
+                "status": "submitted",
+                "submissions": [
+                    {
+                        "assignment_id": "assign_1_1",
+                        "course_id": "no_course",
+                        "feedback_updated": False,
+                        "has_exchange_feedback": False,
+                        "has_local_feedback": False,
+                        "path": "",
+                        "status": "submitted",
+                        "student_id": "1",
+                        "local_feedback_path": "assign_1_1/feedback/False",
+                        "notebooks": [
+                            {
+                                "feedback_timestamp": False,
+                                "feedback_updated": False,
+                                "has_exchange_feedback": False,
+                                "has_local_feedback": False,
+                                "local_feedback_path": "assign_1_1/feedback/False/assignment-0.6.html",
+                                "name": "assignment-0.6",
+                            }
+                        ],
+                        "timestamp": "2020-01-01 00:00:00.0 UTC",
+                    },
+                    {
+                        "assignment_id": "assign_1_1",
+                        "course_id": "no_course",
+                        "feedback_updated": False,
+                        "has_exchange_feedback": False,
+                        "has_local_feedback": False,
+                        "path": "",
+                        "status": "submitted",
+                        "student_id": "1",
+                        "local_feedback_path": "assign_1_1/feedback/False",
+                        "notebooks": [
+                            {
+                                "feedback_timestamp": False,
+                                "feedback_updated": False,
+                                "has_exchange_feedback": False,
+                                "has_local_feedback": False,
+                                "local_feedback_path": "assign_1_1/feedback/False/assignment-0.6-wrong.html",
+                                "name": "assignment-0.6-wrong",
+                            }
+                        ],
+                        "timestamp": "2020-01-01 00:00:00.1 UTC",
+                    },
+                ],
+            },
+            {
+                "assignment_id": "assign_1_1",
+                "course_id": "no_course",
+                "student_id": "2",
+                "status": "submitted",
+                "submissions": [
+                    {
+                        "assignment_id": "assign_1_1",
+                        "course_id": "no_course",
+                        "feedback_updated": False,
+                        "has_exchange_feedback": False,
+                        "has_local_feedback": False,
+                        "path": "",
+                        "status": "submitted",
+                        "student_id": "2",
+                        "local_feedback_path": "assign_1_1/feedback/False",
+                        "notebooks": [
+                            {
+                                "feedback_timestamp": False,
+                                "feedback_updated": False,
+                                "has_exchange_feedback": False,
+                                "has_local_feedback": False,
+                                "local_feedback_path": "assign_1_1/feedback/False/assignment-0.6-wrong.html",
+                                "name": "assignment-0.6-wrong",
+                            }
+                        ],
+                        "timestamp": "2020-01-01 00:00:00.3 UTC",
+                    }
+                ],
+            },
+            {
+                "assignment_id": "assign_1_2",
+                "course_id": "no_course",
+                "student_id": "2",
+                "status": "submitted",
+                "submissions": [
+                    {
+                        "assignment_id": "assign_1_2",
+                        "course_id": "no_course",
+                        "feedback_updated": False,
+                        "has_exchange_feedback": False,
+                        "has_local_feedback": False,
+                        "path": "",
+                        "status": "submitted",
+                        "student_id": "2",
+                        "local_feedback_path": "assign_1_2/feedback/False",
+                        "notebooks": [
+                            {
+                                "feedback_timestamp": False,
+                                "feedback_updated": False,
+                                "has_exchange_feedback": False,
+                                "has_local_feedback": False,
+                                "local_feedback_path": "assign_1_2/feedback/False/assignment-0.6-wrong.html",
+                                "name": "assignment-0.6-wrong",
+                            }
+                        ],
+                        "timestamp": "2020-01-01 00:00:00.4 UTC",
+                    }
+                ],
+            },
+        ]
 
 
-# @pytest.mark.gen_test
-# def test_list_inbound_no_inbound(plugin_config, tmpdir):
-#     plugin_config.CourseDirectory.course_id = "no_course"
-#     plugin_config.ExchangeList.inbound = True
+@pytest.mark.gen_test
+def test_list_inbound_ignore_outbound(plugin_config, tmpdir):
+    plugin_config.CourseDirectory.course_id = "no_course"
+    plugin_config.ExchangeList.inbound = True
 
-#     plugin = ExchangeList(
-#         coursedir=CourseDirectory(config=plugin_config), config=plugin_config
-#     )
+    plugin = ExchangeList(
+        coursedir=CourseDirectory(config=plugin_config), config=plugin_config
+    )
 
-#     def api_request(*args, **kwargs):
-#         assert args[0] == ("assignments?course_id=no_course")
-#         assert "method" not in kwargs or kwargs.get("method").lower() == "get"
-#         return type(
-#             "Request",
-#             (object,),
-#             {
-#                 "status_code": 200,
-#                 "json": (
-#                     lambda: {
-#                         "success": True,
-#                         "value": [
-#                             {
-#                                 "assignment_id": "assign_1_4",
-#                                 "student_id": "1",
-#                                 "course_id": "no_course",
-#                                 "status": "fetched",
-#                                 "path": "",
-#                                 "notebooks": [
-#                                     {
-#                                         "name": "assignment-0.6",
-#                                         "has_exchange_feedback": False,
-#                                         "feedback_updated": False,
-#                                         "feedback_timestamp": False,
-#                                     }
-#                                 ],
-#                                 "timestamp": "2020-01-01 00:00:00.44 UTC",
-#                             },
-#                             {
-#                                 "assignment_id": "assign_13",
-#                                 "student_id": "1",
-#                                 "course_id": "no_course",
-#                                 "status": "released",
-#                                 "path": "",
-#                                 "notebooks": [
-#                                     {
-#                                         "name": "assignment-0.6-wrong",
-#                                         "has_exchange_feedback": False,
-#                                         "feedback_updated": False,
-#                                         "feedback_timestamp": False,
-#                                     }
-#                                 ],
-#                                 "timestamp": "2020-01-01 00:00:00.23 UTC",
-#                             },
-#                         ],
-#                     }
-#                 ),
-#             },
-#         )
+    def api_request(*args, **kwargs):
+        assert args[0] == ("assignments?course_id=no_course")
+        assert "method" not in kwargs or kwargs.get("method").lower() == "get"
+        return type(
+            "Request",
+            (object,),
+            {
+                "status_code": 200,
+                "json": (
+                    lambda: {
+                        "success": True,
+                        "value": [
+                            {
+                                "assignment_id": "assign_1_1",
+                                "student_id": "1",
+                                "course_id": "no_course",
+                                "status": "submitted",
+                                "path": "",
+                                "notebooks": [
+                                    {
+                                        "name": "assignment-0.6",
+                                        "has_exchange_feedback": False,
+                                        "feedback_updated": False,
+                                        "feedback_timestamp": False,
+                                    }
+                                ],
+                                "timestamp": "2020-01-01 00:00:00.0 UTC",
+                            },
+                            {
+                                "assignment_id": "assign_1_1",
+                                "student_id": "1",
+                                "course_id": "no_course",
+                                "status": "submitted",
+                                "path": "",
+                                "notebooks": [
+                                    {
+                                        "name": "assignment-0.6-wrong",
+                                        "has_exchange_feedback": False,
+                                        "feedback_updated": False,
+                                        "feedback_timestamp": False,
+                                    }
+                                ],
+                                "timestamp": "2020-01-01 00:00:00.1 UTC",
+                            },
+                            {
+                                "assignment_id": "assign_1_4",
+                                "student_id": "1",
+                                "course_id": "no_course",
+                                "status": "fetched",
+                                "path": "",
+                                "notebooks": [
+                                    {
+                                        "name": "assignment-0.6",
+                                        "has_exchange_feedback": False,
+                                        "feedback_updated": False,
+                                        "feedback_timestamp": False,
+                                    }
+                                ],
+                                "timestamp": "2020-01-01 00:00:00.44 UTC",
+                            },
+                            {
+                                "assignment_id": "assign_13",
+                                "student_id": "1",
+                                "course_id": "no_course",
+                                "status": "released",
+                                "path": "",
+                                "notebooks": [
+                                    {
+                                        "name": "assignment-0.6-wrong",
+                                        "has_exchange_feedback": False,
+                                        "feedback_updated": False,
+                                        "feedback_timestamp": False,
+                                    }
+                                ],
+                                "timestamp": "2020-01-01 00:00:00.23 UTC",
+                            },
+                            {
+                                "assignment_id": "assign_1_1",
+                                "student_id": "2",
+                                "course_id": "no_course",
+                                "status": "submitted",
+                                "path": "",
+                                "notebooks": [
+                                    {
+                                        "name": "assignment-0.6-wrong",
+                                        "has_exchange_feedback": False,
+                                        "feedback_updated": False,
+                                        "feedback_timestamp": False,
+                                    }
+                                ],
+                                "timestamp": "2020-01-01 00:00:00.3 UTC",
+                            },
+                            {
+                                "assignment_id": "assign_1_2",
+                                "student_id": "2",
+                                "course_id": "no_course",
+                                "status": "submitted",
+                                "path": "",
+                                "notebooks": [
+                                    {
+                                        "name": "assignment-0.6-wrong",
+                                        "has_exchange_feedback": False,
+                                        "feedback_updated": False,
+                                        "feedback_timestamp": False,
+                                    }
+                                ],
+                                "timestamp": "2020-01-01 00:00:00.4 UTC",
+                            },
+                        ],
+                    }
+                ),
+            },
+        )
 
-#     with patch.object(Exchange, "api_request", side_effect=api_request):
-#         called = plugin.start()
-#         assert called == []
+    with patch.object(Exchange, "api_request", side_effect=api_request):
+        called = plugin.start()
+        assert called == [
+            {
+                "assignment_id": "assign_1_1",
+                "course_id": "no_course",
+                "student_id": "1",
+                "status": "submitted",
+                "submissions": [
+                    {
+                        "assignment_id": "assign_1_1",
+                        "course_id": "no_course",
+                        "feedback_updated": False,
+                        "has_exchange_feedback": False,
+                        "has_local_feedback": False,
+                        "path": "",
+                        "status": "submitted",
+                        "student_id": "1",
+                        "local_feedback_path": "assign_1_1/feedback/False",
+                        "notebooks": [
+                            {
+                                "feedback_timestamp": False,
+                                "feedback_updated": False,
+                                "has_exchange_feedback": False,
+                                "has_local_feedback": False,
+                                "local_feedback_path": "assign_1_1/feedback/False/assignment-0.6.html",
+                                "name": "assignment-0.6",
+                            }
+                        ],
+                        "timestamp": "2020-01-01 00:00:00.0 UTC",
+                    },
+                    {
+                        "assignment_id": "assign_1_1",
+                        "course_id": "no_course",
+                        "feedback_updated": False,
+                        "has_exchange_feedback": False,
+                        "has_local_feedback": False,
+                        "path": "",
+                        "status": "submitted",
+                        "student_id": "1",
+                        "local_feedback_path": "assign_1_1/feedback/False",
+                        "notebooks": [
+                            {
+                                "feedback_timestamp": False,
+                                "feedback_updated": False,
+                                "has_exchange_feedback": False,
+                                "has_local_feedback": False,
+                                "local_feedback_path": "assign_1_1/feedback/False/assignment-0.6-wrong.html",
+                                "name": "assignment-0.6-wrong",
+                            }
+                        ],
+                        "timestamp": "2020-01-01 00:00:00.1 UTC",
+                    },
+                ],
+            },
+            {
+                "assignment_id": "assign_1_1",
+                "course_id": "no_course",
+                "student_id": "2",
+                "status": "submitted",
+                "submissions": [
+                    {
+                        "assignment_id": "assign_1_1",
+                        "course_id": "no_course",
+                        "feedback_updated": False,
+                        "has_exchange_feedback": False,
+                        "has_local_feedback": False,
+                        "path": "",
+                        "status": "submitted",
+                        "student_id": "2",
+                        "local_feedback_path": "assign_1_1/feedback/False",
+                        "notebooks": [
+                            {
+                                "feedback_timestamp": False,
+                                "feedback_updated": False,
+                                "has_exchange_feedback": False,
+                                "has_local_feedback": False,
+                                "local_feedback_path": "assign_1_1/feedback/False/assignment-0.6-wrong.html",
+                                "name": "assignment-0.6-wrong",
+                            }
+                        ],
+                        "timestamp": "2020-01-01 00:00:00.3 UTC",
+                    }
+                ],
+            },
+            {
+                "assignment_id": "assign_1_2",
+                "course_id": "no_course",
+                "student_id": "2",
+                "status": "submitted",
+                "submissions": [
+                    {
+                        "assignment_id": "assign_1_2",
+                        "course_id": "no_course",
+                        "feedback_updated": False,
+                        "has_exchange_feedback": False,
+                        "has_local_feedback": False,
+                        "path": "",
+                        "status": "submitted",
+                        "student_id": "2",
+                        "local_feedback_path": "assign_1_2/feedback/False",
+                        "notebooks": [
+                            {
+                                "feedback_timestamp": False,
+                                "feedback_updated": False,
+                                "has_exchange_feedback": False,
+                                "has_local_feedback": False,
+                                "local_feedback_path": "assign_1_2/feedback/False/assignment-0.6-wrong.html",
+                                "name": "assignment-0.6-wrong",
+                            }
+                        ],
+                        "timestamp": "2020-01-01 00:00:00.4 UTC",
+                    }
+                ],
+            },
+        ]
+
+
+@pytest.mark.gen_test
+def test_list_inbound_no_records(plugin_config, tmpdir):
+    plugin_config.CourseDirectory.course_id = "no_course"
+    plugin_config.ExchangeList.inbound = True
+
+    plugin = ExchangeList(
+        coursedir=CourseDirectory(config=plugin_config), config=plugin_config
+    )
+
+    def api_request(*args, **kwargs):
+        assert args[0] == ("assignments?course_id=no_course")
+        assert "method" not in kwargs or kwargs.get("method").lower() == "get"
+        return type(
+            "Request",
+            (object,),
+            {
+                "status_code": 200,
+                "json": (
+                    lambda: {
+                        "success": True,
+                        "value": [
+                            {
+                                "assignment_id": "assign_1_4",
+                                "student_id": "1",
+                                "course_id": "no_course",
+                                "status": "fetched",
+                                "path": "",
+                                "notebooks": [
+                                    {
+                                        "name": "assignment-0.6",
+                                        "has_exchange_feedback": False,
+                                        "feedback_updated": False,
+                                        "feedback_timestamp": False,
+                                    }
+                                ],
+                                "timestamp": "2020-01-01 00:00:00.44 UTC",
+                            },
+                            {
+                                "assignment_id": "assign_13",
+                                "student_id": "1",
+                                "course_id": "no_course",
+                                "status": "released",
+                                "path": "",
+                                "notebooks": [
+                                    {
+                                        "name": "assignment-0.6-wrong",
+                                        "has_exchange_feedback": False,
+                                        "feedback_updated": False,
+                                        "feedback_timestamp": False,
+                                    }
+                                ],
+                                "timestamp": "2020-01-01 00:00:00.23 UTC",
+                            },
+                        ],
+                    }
+                ),
+            },
+        )
+
+    with patch.object(Exchange, "api_request", side_effect=api_request):
+        called = plugin.start()
+        assert called == []

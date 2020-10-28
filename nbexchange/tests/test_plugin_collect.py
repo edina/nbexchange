@@ -174,7 +174,7 @@ def test_collect_normal_update(plugin_config, tmpdir):
                         "success": True,
                         "value": [
                             {
-                                "path": "/submitted/no_course/{ass_1_2}/1/",
+                                "path": f"/submitted/no_course/{ass_1_2}/1/",
                                 "timestamp": "2020-02-01 00:00:00.100",
                             }
                         ],
@@ -290,7 +290,7 @@ def test_collect_normal_dont_update(plugin_config, tmpdir):
                         "success": True,
                         "value": [
                             {
-                                "path": "/submitted/no_course/{ass_1_4}/1/",
+                                "path": f"/submitted/no_course/{ass_1_4}/1/",
                                 "timestamp": "2020-02-01 00:00:00.100",
                             }
                         ],
@@ -406,7 +406,7 @@ def test_collect_normal_dont_update_old(plugin_config, tmpdir):
                         "success": True,
                         "value": [
                             {
-                                "path": "/submitted/no_course/{ass_1_5}/1/",
+                                "path": f"/submitted/no_course/{ass_1_5}/1/",
                                 "timestamp": "2020-01-01 00:00:00.100",
                             }
                         ],
@@ -495,7 +495,7 @@ def test_collect_normal_several(plugin_config, tmpdir):
                         "success": True,
                         "value": [
                             {
-                                "path": "/submitted/no_course/{ass_1_1}/1/",
+                                "path": f"/submitted/no_course/{ass_1_1}/1/",
                                 "timestamp": "2020-01-01 00:00:00.0 UTC",
                             }
                         ],

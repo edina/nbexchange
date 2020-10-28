@@ -18,6 +18,9 @@ logger.setLevel(logging.ERROR)
 feedback_filename = sys.argv[0]  # ourself :)
 feedback_file = get_feedback_file(feedback_filename)
 
+student_id = "1"
+assignment_id = "assign_1"
+
 
 @pytest.mark.gen_test
 def test_fetch_feedback_dir_created(plugin_config, tmpdir):
@@ -25,10 +28,10 @@ def test_fetch_feedback_dir_created(plugin_config, tmpdir):
         tmpdir.mkdir("feedback_test").realpath()
     )
     plugin_config.CourseDirectory.course_id = "no_course"
-    plugin_config.CourseDirectory.assignment_id = "assign_1"
+    plugin_config.CourseDirectory.assignment_id = assignment_id
 
     assert not os.path.isdir(
-        os.path.join(plugin_config.Exchange.assignment_dir, "1", "feedback")
+        os.path.join(plugin_config.Exchange.assignment_dir, student_id, "feedback")
     )
 
     plugin = ExchangeFetchFeedback(
@@ -50,7 +53,9 @@ def test_fetch_feedback_dir_created(plugin_config, tmpdir):
     with patch.object(Exchange, "api_request", side_effect=api_request):
         called = plugin.start()
         assert os.path.isdir(
-            os.path.join(plugin_config.Exchange.assignment_dir, "assign_1", "feedback")
+            os.path.join(
+                plugin_config.Exchange.assignment_dir, assignment_id, "feedback"
+            )
         )
 
 
@@ -61,11 +66,11 @@ def test_fetch_feedback_dir_created_with_course_id(plugin_config, tmpdir):
     )
     plugin_config.Exchange.path_includes_course = True
     plugin_config.CourseDirectory.course_id = "no_course"
-    plugin_config.CourseDirectory.assignment_id = "assign_1"
+    plugin_config.CourseDirectory.assignment_id = assignment_id
 
     assert not os.path.isdir(
         os.path.join(
-            plugin_config.Exchange.assignment_dir, "no_course", "1", "feedback"
+            plugin_config.Exchange.assignment_dir, "no_course", student_id, "feedback"
         )
     )
 
@@ -91,7 +96,7 @@ def test_fetch_feedback_dir_created_with_course_id(plugin_config, tmpdir):
             os.path.join(
                 plugin_config.Exchange.assignment_dir,
                 "no_course",
-                "assign_1",
+                assignment_id,
                 "feedback",
             )
         )
@@ -103,7 +108,7 @@ def test_fetch_feedback_fetch_normal(plugin_config, tmpdir):
         tmpdir.mkdir("feedback_test").realpath()
     )
     plugin_config.CourseDirectory.course_id = "no_course"
-    plugin_config.CourseDirectory.assignment_id = "assign_1"
+    plugin_config.CourseDirectory.assignment_id = assignment_id
 
     plugin = ExchangeFetchFeedback(
         coursedir=CourseDirectory(config=plugin_config), config=plugin_config
@@ -146,7 +151,7 @@ def test_fetch_feedback_fetch_several_normal(plugin_config, tmpdir):
         tmpdir.mkdir("feedback_test").realpath()
     )
     plugin_config.CourseDirectory.course_id = "no_course"
-    plugin_config.CourseDirectory.assignment_id = "assign_1"
+    plugin_config.CourseDirectory.assignment_id = assignment_id
 
     plugin = ExchangeFetchFeedback(
         coursedir=CourseDirectory(config=plugin_config), config=plugin_config

@@ -75,7 +75,7 @@ def test_submit_fetch_one(plugin_config, tmpdir):
                                         "path": "",
                                         "notebooks": [
                                             {
-                                                "name": "assignment-0.6",
+                                                "notebook_id": "assignment-0.6",
                                                 "has_exchange_feedback": False,
                                                 "feedback_updated": False,
                                                 "feedback_timestamp": False,
@@ -149,7 +149,7 @@ def test_submit_fetch_fail(plugin_config, tmpdir):
                                         "path": "",
                                         "notebooks": [
                                             {
-                                                "name": "assignment-0.6",
+                                                "notebook_id": "assignment-0.6",
                                                 "has_exchange_feedback": False,
                                                 "feedback_updated": False,
                                                 "feedback_timestamp": False,
@@ -223,13 +223,13 @@ def test_submit_fetch_several(plugin_config, tmpdir):
                                         "path": "",
                                         "notebooks": [
                                             {
-                                                "name": "assignment-0.6",
+                                                "notebook_id": "assignment-0.6",
                                                 "has_exchange_feedback": False,
                                                 "feedback_updated": False,
                                                 "feedback_timestamp": False,
                                             },
                                             {
-                                                "name": "assignment-0.6-2",
+                                                "notebook_id": "assignment-0.6-2",
                                                 "has_exchange_feedback": False,
                                                 "feedback_updated": False,
                                                 "feedback_timestamp": False,

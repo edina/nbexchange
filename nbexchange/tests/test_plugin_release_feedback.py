@@ -127,8 +127,10 @@ def test_release_feedback_fetch_normal(plugin_config, tmpdir):
         called = plugin.start()
 
 
+####this one
 @pytest.mark.gen_test
 def test_release_feedback_fetch_several_normal(plugin_config, tmpdir):
+    # set up the submitted & feeback directories
     feedback_directory = str(tmpdir.mkdir("feedback_test").realpath())
     submitted_directory = str(tmpdir.mkdir("submitted_test").realpath())
     plugin_config.CourseDirectory.root = "/"
@@ -137,6 +139,8 @@ def test_release_feedback_fetch_several_normal(plugin_config, tmpdir):
     plugin_config.CourseDirectory.assignment_id = "assign_1"
     os.makedirs(os.path.join(feedback_directory, "1", "assign_1"), exist_ok=True)
     os.makedirs(os.path.join(submitted_directory, "1", "assign_1"), exist_ok=True)
+
+    # two pieces of feedback for #########
     feedback1_filename_uploaded = os.path.join(
         feedback_directory, "1", "assign_1", "feedback1.html"
     )

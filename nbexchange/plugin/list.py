@@ -54,7 +54,9 @@ class ExchangeList(abc.ExchangeList, Exchange):
         self.log.info(
             f"ExchangeList.query_exchange - Got back {assignments} when listing assignments"
         )
-        print(f"ExchangeList.query_exchange - Got back {assignments} when listing assignments")
+        print(
+            f"ExchangeList.query_exchange - Got back {assignments} when listing assignments"
+        )
         return assignments["value"]
 
     def init_src(self):
@@ -114,7 +116,7 @@ class ExchangeList(abc.ExchangeList, Exchange):
                 assignment["notebooks"].append(
                     {
                         "path": notebook,
-                        "name": notebook_id,
+                        "notebook_id": notebook_id,
                         "has_local_feedback": False,
                         "has_exchange_feedback": False,
                         "local_feedback_path": None,
@@ -289,7 +291,7 @@ class ExchangeList(abc.ExchangeList, Exchange):
                         )
                     )
                     local_feedback_path = os.path.join(
-                        local_feedback_dir, "{0}.html".format(notebook["name"])
+                        local_feedback_dir, "{0}.html".format(notebook["notebook_id"])
                     )
                     has_local_feedback = os.path.isfile(local_feedback_path)
                     notebook["has_local_feedback"] = has_local_feedback

@@ -76,7 +76,9 @@ class ExchangeSubmit(abc.ExchangeSubmit, Exchange):
                 continue
 
             released_notebooks = [
-                n["name"] + ".ipynb" for n in assignment["notebooks"] if "name" in n
+                n["notebook_id"] + ".ipynb"
+                for n in assignment["notebooks"]
+                if "notebook_id" in n
             ]
         submitted_notebooks = find_all_notebooks(self.src_path)
 

@@ -34,9 +34,6 @@ class ExchangeReleaseFeedback(abc.ExchangeReleaseFeedback, Exchange):
     def init_dest(self):
         pass
 
-    def download(self):
-        pass
-
     def copy_if_missing(self, src, dest, ignore=None):
         pass
 
@@ -86,7 +83,7 @@ class ExchangeReleaseFeedback(abc.ExchangeReleaseFeedback, Exchange):
             )
 
             timestamp = open(os.path.join(feedback_dir, "timestamp.txt")).read().strip()
-            print(F"ReleaseFeedback.copy_files - timestamp: {timestamp}")
+            print(f"ReleaseFeedback.copy_files - timestamp: {timestamp}")
             nbfile = os.path.join(submission_dir, "{}.ipynb".format(notebook_id))
             unique_key = make_unique_key(
                 self.course_id,

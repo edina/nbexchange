@@ -67,7 +67,7 @@ def test_list_normal(plugin_config, tmpdir):
                                 "path": "",
                                 "notebooks": [
                                     {
-                                        "name": "assignment-0.6",
+                                        "notebook_id": "assignment-0.6",
                                         "has_exchange_feedback": False,
                                         "feedback_updated": False,
                                         "feedback_timestamp": False,
@@ -91,7 +91,7 @@ def test_list_normal(plugin_config, tmpdir):
                 "status": "released",
                 "notebooks": [
                     {
-                        "name": "assignment-0.6",
+                        "notebook_id": "assignment-0.6",
                         "has_exchange_feedback": False,
                         "feedback_updated": False,
                         "feedback_timestamp": False,
@@ -101,6 +101,7 @@ def test_list_normal(plugin_config, tmpdir):
                 "timestamp": "2020-01-01 00:00:00.0 UTC",
             }
         ]
+
 
 # two assignments, both get listed.
 @pytest.mark.gen_test
@@ -131,7 +132,7 @@ def test_list_normal_multiple(plugin_config, tmpdir):
                                 "path": "",
                                 "notebooks": [
                                     {
-                                        "name": "assignment-0.6",
+                                        "notebook_id": "assignment-0.6",
                                         "has_exchange_feedback": False,
                                         "feedback_updated": False,
                                         "feedback_timestamp": False,
@@ -147,7 +148,7 @@ def test_list_normal_multiple(plugin_config, tmpdir):
                                 "path": "",
                                 "notebooks": [
                                     {
-                                        "name": "assignment-0.6-wrong",
+                                        "notebook_id": "assignment-0.6-wrong",
                                         "has_exchange_feedback": False,
                                         "feedback_updated": False,
                                         "feedback_timestamp": False,
@@ -171,7 +172,7 @@ def test_list_normal_multiple(plugin_config, tmpdir):
                 "status": "released",
                 "notebooks": [
                     {
-                        "name": "assignment-0.6",
+                        "notebook_id": "assignment-0.6",
                         "has_exchange_feedback": False,
                         "feedback_updated": False,
                         "feedback_timestamp": False,
@@ -187,7 +188,7 @@ def test_list_normal_multiple(plugin_config, tmpdir):
                 "status": "released",
                 "notebooks": [
                     {
-                        "name": "assignment-0.6-wrong",
+                        "notebook_id": "assignment-0.6-wrong",
                         "has_exchange_feedback": False,
                         "feedback_updated": False,
                         "feedback_timestamp": False,
@@ -197,6 +198,7 @@ def test_list_normal_multiple(plugin_config, tmpdir):
                 "timestamp": "2020-01-01 00:00:00.1 UTC",
             },
         ]
+
 
 # two assignments, 1 listed twice - we get the latests one
 @pytest.mark.gen_test
@@ -228,7 +230,7 @@ def test_list_normal_multiple_released(plugin_config, tmpdir):
                                     "path": "",
                                     "notebooks": [
                                         {
-                                            "name": "assignment-0.6",
+                                            "notebook_id": "assignment-0.6",
                                             "has_exchange_feedback": False,
                                             "feedback_updated": False,
                                             "feedback_timestamp": False,
@@ -244,7 +246,7 @@ def test_list_normal_multiple_released(plugin_config, tmpdir):
                                     "path": "",
                                     "notebooks": [
                                         {
-                                            "name": "assignment-0.6",
+                                            "notebook_id": "assignment-0.6",
                                             "has_exchange_feedback": False,
                                             "feedback_updated": False,
                                             "feedback_timestamp": False,
@@ -260,7 +262,7 @@ def test_list_normal_multiple_released(plugin_config, tmpdir):
                                     "path": "",
                                     "notebooks": [
                                         {
-                                            "name": "assignment-0.6-2",
+                                            "notebook_id": "assignment-0.6-2",
                                             "has_exchange_feedback": False,
                                             "feedback_updated": False,
                                             "feedback_timestamp": False,
@@ -284,7 +286,7 @@ def test_list_normal_multiple_released(plugin_config, tmpdir):
                     "status": "released",
                     "notebooks": [
                         {
-                            "name": "assignment-0.6",
+                            "notebook_id": "assignment-0.6",
                             "has_exchange_feedback": False,
                             "feedback_updated": False,
                             "feedback_timestamp": False,
@@ -300,7 +302,7 @@ def test_list_normal_multiple_released(plugin_config, tmpdir):
                     "status": "released",
                     "notebooks": [
                         {
-                            "name": "assignment-0.6-2",
+                            "notebook_id": "assignment-0.6-2",
                             "has_exchange_feedback": False,
                             "feedback_updated": False,
                             "feedback_timestamp": False,
@@ -312,6 +314,7 @@ def test_list_normal_multiple_released(plugin_config, tmpdir):
             ]
     finally:
         pass
+
 
 # two assignments, 1 listed twice - we get the latests one - irrespective of order
 @pytest.mark.gen_test
@@ -343,7 +346,7 @@ def test_list_normal_multiple_released_duplicates(plugin_config, tmpdir):
                                     "path": "",
                                     "notebooks": [
                                         {
-                                            "name": "assignment-0.6",
+                                            "notebook_id": "assignment-0.6",
                                             "has_exchange_feedback": False,
                                             "feedback_updated": False,
                                             "feedback_timestamp": False,
@@ -359,7 +362,7 @@ def test_list_normal_multiple_released_duplicates(plugin_config, tmpdir):
                                     "path": "",
                                     "notebooks": [
                                         {
-                                            "name": "assignment-0.6-2",
+                                            "notebook_id": "assignment-0.6-2",
                                             "has_exchange_feedback": False,
                                             "feedback_updated": False,
                                             "feedback_timestamp": False,
@@ -375,7 +378,7 @@ def test_list_normal_multiple_released_duplicates(plugin_config, tmpdir):
                                     "path": "",
                                     "notebooks": [
                                         {
-                                            "name": "assignment-0.6",
+                                            "notebook_id": "assignment-0.6",
                                             "has_exchange_feedback": False,
                                             "feedback_updated": False,
                                             "feedback_timestamp": False,
@@ -399,7 +402,7 @@ def test_list_normal_multiple_released_duplicates(plugin_config, tmpdir):
                     "status": "released",
                     "notebooks": [
                         {
-                            "name": "assignment-0.6",
+                            "notebook_id": "assignment-0.6",
                             "has_exchange_feedback": False,
                             "feedback_updated": False,
                             "feedback_timestamp": False,
@@ -415,7 +418,7 @@ def test_list_normal_multiple_released_duplicates(plugin_config, tmpdir):
                     "status": "released",
                     "notebooks": [
                         {
-                            "name": "assignment-0.6-2",
+                            "notebook_id": "assignment-0.6-2",
                             "has_exchange_feedback": False,
                             "feedback_updated": False,
                             "feedback_timestamp": False,
@@ -427,6 +430,7 @@ def test_list_normal_multiple_released_duplicates(plugin_config, tmpdir):
             ]
     finally:
         pass
+
 
 # a fetched item on disk should remove the "released" items in the list
 @pytest.mark.gen_test
@@ -463,7 +467,7 @@ def test_list_fetched(plugin_config, tmpdir):
                                     "path": "",
                                     "notebooks": [
                                         {
-                                            "name": "assignment-0.6",
+                                            "notebook_id": "assignment-0.6",
                                             "has_exchange_feedback": False,
                                             "feedback_updated": False,
                                             "feedback_timestamp": False,
@@ -479,7 +483,7 @@ def test_list_fetched(plugin_config, tmpdir):
                                     "path": "",
                                     "notebooks": [
                                         {
-                                            "name": "assignment-0.6",
+                                            "notebook_id": "assignment-0.6",
                                             "has_exchange_feedback": False,
                                             "feedback_updated": False,
                                             "feedback_timestamp": False,
@@ -503,7 +507,7 @@ def test_list_fetched(plugin_config, tmpdir):
                     "status": "fetched",
                     "notebooks": [
                         {
-                            "name": "assignment-0.6",
+                            "notebook_id": "assignment-0.6",
                             "has_exchange_feedback": False,
                             "feedback_updated": False,
                             "has_local_feedback": False,
@@ -555,7 +559,7 @@ def test_list_fetched_rerelease_ignored(plugin_config, tmpdir):
                                     "path": "",
                                     "notebooks": [
                                         {
-                                            "name": "assignment-0.6",
+                                            "notebook_id": "assignment-0.6",
                                             "has_exchange_feedback": False,
                                             "feedback_updated": False,
                                             "feedback_timestamp": False,
@@ -571,7 +575,7 @@ def test_list_fetched_rerelease_ignored(plugin_config, tmpdir):
                                     "path": "",
                                     "notebooks": [
                                         {
-                                            "name": "assignment-0.6",
+                                            "notebook_id": "assignment-0.6",
                                             "has_exchange_feedback": False,
                                             "feedback_updated": False,
                                             "feedback_timestamp": False,
@@ -587,7 +591,7 @@ def test_list_fetched_rerelease_ignored(plugin_config, tmpdir):
                                     "path": "",
                                     "notebooks": [
                                         {
-                                            "name": "assignment-0.6-2",
+                                            "notebook_id": "assignment-0.6-2",
                                             "has_exchange_feedback": False,
                                             "feedback_updated": False,
                                             "feedback_timestamp": False,
@@ -612,7 +616,7 @@ def test_list_fetched_rerelease_ignored(plugin_config, tmpdir):
                     "status": "fetched",
                     "notebooks": [
                         {
-                            "name": "assignment-0.6",
+                            "notebook_id": "assignment-0.6",
                             "has_exchange_feedback": False,
                             "feedback_updated": False,
                             "has_local_feedback": False,
@@ -663,7 +667,7 @@ def test_list_fetch_without_release_ignored(plugin_config, tmpdir):
                                     "path": "",
                                     "notebooks": [
                                         {
-                                            "name": "assignment-0.6",
+                                            "notebook_id": "assignment-0.6",
                                             "has_exchange_feedback": False,
                                             "feedback_updated": False,
                                             "feedback_timestamp": False,
@@ -679,7 +683,7 @@ def test_list_fetch_without_release_ignored(plugin_config, tmpdir):
                                     "path": "",
                                     "notebooks": [
                                         {
-                                            "name": "assignment-0.6",
+                                            "notebook_id": "assignment-0.6",
                                             "has_exchange_feedback": False,
                                             "feedback_updated": False,
                                             "feedback_timestamp": False,
@@ -703,7 +707,7 @@ def test_list_fetch_without_release_ignored(plugin_config, tmpdir):
                     "status": "released",
                     "notebooks": [
                         {
-                            "name": "assignment-0.6",
+                            "notebook_id": "assignment-0.6",
                             "has_exchange_feedback": False,
                             "feedback_updated": False,
                             "feedback_timestamp": False,
@@ -715,7 +719,6 @@ def test_list_fetch_without_release_ignored(plugin_config, tmpdir):
             ]
     finally:
         shutil.rmtree("assign_1_3")
-
 
 
 @pytest.mark.gen_test
@@ -766,7 +769,7 @@ def test_list_inbound_one(plugin_config, tmpdir):
                                 "path": "",
                                 "notebooks": [
                                     {
-                                        "name": "assignment-0.6",
+                                        "notebook_id": "assignment-0.6",
                                         "has_exchange_feedback": False,
                                         "feedback_updated": False,
                                         "feedback_timestamp": False,
@@ -806,7 +809,7 @@ def test_list_inbound_one(plugin_config, tmpdir):
                                 "has_exchange_feedback": False,
                                 "has_local_feedback": False,
                                 "local_feedback_path": "assign_1_1/feedback/False/assignment-0.6.html",
-                                "name": "assignment-0.6",
+                                "notebook_id": "assignment-0.6",
                             }
                         ],
                         "timestamp": "2020-01-01 00:00:00.0 UTC",
@@ -845,7 +848,7 @@ def test_list_inbound_several_same(plugin_config, tmpdir):
                                 "path": "",
                                 "notebooks": [
                                     {
-                                        "name": "assignment-0.6",
+                                        "notebook_id": "assignment-0.6",
                                         "has_exchange_feedback": False,
                                         "feedback_updated": False,
                                         "feedback_timestamp": False,
@@ -861,7 +864,7 @@ def test_list_inbound_several_same(plugin_config, tmpdir):
                                 "path": "",
                                 "notebooks": [
                                     {
-                                        "name": "assignment-0.6-wrong",
+                                        "notebook_id": "assignment-0.6-wrong",
                                         "has_exchange_feedback": False,
                                         "feedback_updated": False,
                                         "feedback_timestamp": False,
@@ -901,7 +904,7 @@ def test_list_inbound_several_same(plugin_config, tmpdir):
                                 "has_exchange_feedback": False,
                                 "has_local_feedback": False,
                                 "local_feedback_path": "assign_1_1/feedback/False/assignment-0.6.html",
-                                "name": "assignment-0.6",
+                                "notebook_id": "assignment-0.6",
                             }
                         ],
                         "timestamp": "2020-01-01 00:00:00.0 UTC",
@@ -923,7 +926,7 @@ def test_list_inbound_several_same(plugin_config, tmpdir):
                                 "has_exchange_feedback": False,
                                 "has_local_feedback": False,
                                 "local_feedback_path": "assign_1_1/feedback/False/assignment-0.6-wrong.html",
-                                "name": "assignment-0.6-wrong",
+                                "notebook_id": "assignment-0.6-wrong",
                             }
                         ],
                         "timestamp": "2020-01-01 00:00:00.1 UTC",
@@ -962,7 +965,7 @@ def test_list_inbound_several_students(plugin_config, tmpdir):
                                 "path": "",
                                 "notebooks": [
                                     {
-                                        "name": "assignment-0.6",
+                                        "notebook_id": "assignment-0.6",
                                         "has_exchange_feedback": False,
                                         "feedback_updated": False,
                                         "feedback_timestamp": False,
@@ -978,7 +981,7 @@ def test_list_inbound_several_students(plugin_config, tmpdir):
                                 "path": "",
                                 "notebooks": [
                                     {
-                                        "name": "assignment-0.6-wrong",
+                                        "notebook_id": "assignment-0.6-wrong",
                                         "has_exchange_feedback": False,
                                         "feedback_updated": False,
                                         "feedback_timestamp": False,
@@ -994,7 +997,7 @@ def test_list_inbound_several_students(plugin_config, tmpdir):
                                 "path": "",
                                 "notebooks": [
                                     {
-                                        "name": "assignment-0.6-wrong",
+                                        "notebook_id": "assignment-0.6-wrong",
                                         "has_exchange_feedback": False,
                                         "feedback_updated": False,
                                         "feedback_timestamp": False,
@@ -1034,7 +1037,7 @@ def test_list_inbound_several_students(plugin_config, tmpdir):
                                 "has_exchange_feedback": False,
                                 "has_local_feedback": False,
                                 "local_feedback_path": "assign_1_1/feedback/False/assignment-0.6.html",
-                                "name": "assignment-0.6",
+                                "notebook_id": "assignment-0.6",
                             }
                         ],
                         "timestamp": "2020-01-01 00:00:00.0 UTC",
@@ -1056,7 +1059,7 @@ def test_list_inbound_several_students(plugin_config, tmpdir):
                                 "has_exchange_feedback": False,
                                 "has_local_feedback": False,
                                 "local_feedback_path": "assign_1_1/feedback/False/assignment-0.6-wrong.html",
-                                "name": "assignment-0.6-wrong",
+                                "notebook_id": "assignment-0.6-wrong",
                             }
                         ],
                         "timestamp": "2020-01-01 00:00:00.1 UTC",
@@ -1086,7 +1089,7 @@ def test_list_inbound_several_students(plugin_config, tmpdir):
                                 "has_exchange_feedback": False,
                                 "has_local_feedback": False,
                                 "local_feedback_path": "assign_1_1/feedback/False/assignment-0.6-wrong.html",
-                                "name": "assignment-0.6-wrong",
+                                "notebook_id": "assignment-0.6-wrong",
                             }
                         ],
                         "timestamp": "2020-01-01 00:00:00.3 UTC",
@@ -1125,7 +1128,7 @@ def test_list_inbound_several_assignments(plugin_config, tmpdir):
                                 "path": "",
                                 "notebooks": [
                                     {
-                                        "name": "assignment-0.6",
+                                        "notebook_id": "assignment-0.6",
                                         "has_exchange_feedback": False,
                                         "feedback_updated": False,
                                         "feedback_timestamp": False,
@@ -1141,7 +1144,7 @@ def test_list_inbound_several_assignments(plugin_config, tmpdir):
                                 "path": "",
                                 "notebooks": [
                                     {
-                                        "name": "assignment-0.6-wrong",
+                                        "notebook_id": "assignment-0.6-wrong",
                                         "has_exchange_feedback": False,
                                         "feedback_updated": False,
                                         "feedback_timestamp": False,
@@ -1157,7 +1160,7 @@ def test_list_inbound_several_assignments(plugin_config, tmpdir):
                                 "path": "",
                                 "notebooks": [
                                     {
-                                        "name": "assignment-0.6-wrong",
+                                        "notebook_id": "assignment-0.6-wrong",
                                         "has_exchange_feedback": False,
                                         "feedback_updated": False,
                                         "feedback_timestamp": False,
@@ -1173,7 +1176,7 @@ def test_list_inbound_several_assignments(plugin_config, tmpdir):
                                 "path": "",
                                 "notebooks": [
                                     {
-                                        "name": "assignment-0.6-wrong",
+                                        "notebook_id": "assignment-0.6-wrong",
                                         "has_exchange_feedback": False,
                                         "feedback_updated": False,
                                         "feedback_timestamp": False,
@@ -1213,7 +1216,7 @@ def test_list_inbound_several_assignments(plugin_config, tmpdir):
                                 "has_exchange_feedback": False,
                                 "has_local_feedback": False,
                                 "local_feedback_path": "assign_1_1/feedback/False/assignment-0.6.html",
-                                "name": "assignment-0.6",
+                                "notebook_id": "assignment-0.6",
                             }
                         ],
                         "timestamp": "2020-01-01 00:00:00.0 UTC",
@@ -1235,7 +1238,7 @@ def test_list_inbound_several_assignments(plugin_config, tmpdir):
                                 "has_exchange_feedback": False,
                                 "has_local_feedback": False,
                                 "local_feedback_path": "assign_1_1/feedback/False/assignment-0.6-wrong.html",
-                                "name": "assignment-0.6-wrong",
+                                "notebook_id": "assignment-0.6-wrong",
                             }
                         ],
                         "timestamp": "2020-01-01 00:00:00.1 UTC",
@@ -1265,7 +1268,7 @@ def test_list_inbound_several_assignments(plugin_config, tmpdir):
                                 "has_exchange_feedback": False,
                                 "has_local_feedback": False,
                                 "local_feedback_path": "assign_1_1/feedback/False/assignment-0.6-wrong.html",
-                                "name": "assignment-0.6-wrong",
+                                "notebook_id": "assignment-0.6-wrong",
                             }
                         ],
                         "timestamp": "2020-01-01 00:00:00.3 UTC",
@@ -1295,7 +1298,7 @@ def test_list_inbound_several_assignments(plugin_config, tmpdir):
                                 "has_exchange_feedback": False,
                                 "has_local_feedback": False,
                                 "local_feedback_path": "assign_1_2/feedback/False/assignment-0.6-wrong.html",
-                                "name": "assignment-0.6-wrong",
+                                "notebook_id": "assignment-0.6-wrong",
                             }
                         ],
                         "timestamp": "2020-01-01 00:00:00.4 UTC",
@@ -1334,7 +1337,7 @@ def test_list_inbound_ignore_outbound(plugin_config, tmpdir):
                                 "path": "",
                                 "notebooks": [
                                     {
-                                        "name": "assignment-0.6",
+                                        "notebook_id": "assignment-0.6",
                                         "has_exchange_feedback": False,
                                         "feedback_updated": False,
                                         "feedback_timestamp": False,
@@ -1350,7 +1353,7 @@ def test_list_inbound_ignore_outbound(plugin_config, tmpdir):
                                 "path": "",
                                 "notebooks": [
                                     {
-                                        "name": "assignment-0.6-wrong",
+                                        "notebook_id": "assignment-0.6-wrong",
                                         "has_exchange_feedback": False,
                                         "feedback_updated": False,
                                         "feedback_timestamp": False,
@@ -1366,7 +1369,7 @@ def test_list_inbound_ignore_outbound(plugin_config, tmpdir):
                                 "path": "",
                                 "notebooks": [
                                     {
-                                        "name": "assignment-0.6",
+                                        "notebook_id": "assignment-0.6",
                                         "has_exchange_feedback": False,
                                         "feedback_updated": False,
                                         "feedback_timestamp": False,
@@ -1382,7 +1385,7 @@ def test_list_inbound_ignore_outbound(plugin_config, tmpdir):
                                 "path": "",
                                 "notebooks": [
                                     {
-                                        "name": "assignment-0.6-wrong",
+                                        "notebook_id": "assignment-0.6-wrong",
                                         "has_exchange_feedback": False,
                                         "feedback_updated": False,
                                         "feedback_timestamp": False,
@@ -1398,7 +1401,7 @@ def test_list_inbound_ignore_outbound(plugin_config, tmpdir):
                                 "path": "",
                                 "notebooks": [
                                     {
-                                        "name": "assignment-0.6-wrong",
+                                        "notebook_id": "assignment-0.6-wrong",
                                         "has_exchange_feedback": False,
                                         "feedback_updated": False,
                                         "feedback_timestamp": False,
@@ -1414,7 +1417,7 @@ def test_list_inbound_ignore_outbound(plugin_config, tmpdir):
                                 "path": "",
                                 "notebooks": [
                                     {
-                                        "name": "assignment-0.6-wrong",
+                                        "notebook_id": "assignment-0.6-wrong",
                                         "has_exchange_feedback": False,
                                         "feedback_updated": False,
                                         "feedback_timestamp": False,
@@ -1454,7 +1457,7 @@ def test_list_inbound_ignore_outbound(plugin_config, tmpdir):
                                 "has_exchange_feedback": False,
                                 "has_local_feedback": False,
                                 "local_feedback_path": "assign_1_1/feedback/False/assignment-0.6.html",
-                                "name": "assignment-0.6",
+                                "notebook_id": "assignment-0.6",
                             }
                         ],
                         "timestamp": "2020-01-01 00:00:00.0 UTC",
@@ -1476,7 +1479,7 @@ def test_list_inbound_ignore_outbound(plugin_config, tmpdir):
                                 "has_exchange_feedback": False,
                                 "has_local_feedback": False,
                                 "local_feedback_path": "assign_1_1/feedback/False/assignment-0.6-wrong.html",
-                                "name": "assignment-0.6-wrong",
+                                "notebook_id": "assignment-0.6-wrong",
                             }
                         ],
                         "timestamp": "2020-01-01 00:00:00.1 UTC",
@@ -1506,7 +1509,7 @@ def test_list_inbound_ignore_outbound(plugin_config, tmpdir):
                                 "has_exchange_feedback": False,
                                 "has_local_feedback": False,
                                 "local_feedback_path": "assign_1_1/feedback/False/assignment-0.6-wrong.html",
-                                "name": "assignment-0.6-wrong",
+                                "notebook_id": "assignment-0.6-wrong",
                             }
                         ],
                         "timestamp": "2020-01-01 00:00:00.3 UTC",
@@ -1536,7 +1539,7 @@ def test_list_inbound_ignore_outbound(plugin_config, tmpdir):
                                 "has_exchange_feedback": False,
                                 "has_local_feedback": False,
                                 "local_feedback_path": "assign_1_2/feedback/False/assignment-0.6-wrong.html",
-                                "name": "assignment-0.6-wrong",
+                                "notebook_id": "assignment-0.6-wrong",
                             }
                         ],
                         "timestamp": "2020-01-01 00:00:00.4 UTC",
@@ -1575,7 +1578,7 @@ def test_list_inbound_no_records(plugin_config, tmpdir):
                                 "path": "",
                                 "notebooks": [
                                     {
-                                        "name": "assignment-0.6",
+                                        "notebook_id": "assignment-0.6",
                                         "has_exchange_feedback": False,
                                         "feedback_updated": False,
                                         "feedback_timestamp": False,
@@ -1591,7 +1594,7 @@ def test_list_inbound_no_records(plugin_config, tmpdir):
                                 "path": "",
                                 "notebooks": [
                                     {
-                                        "name": "assignment-0.6-wrong",
+                                        "notebook_id": "assignment-0.6-wrong",
                                         "has_exchange_feedback": False,
                                         "feedback_updated": False,
                                         "feedback_timestamp": False,

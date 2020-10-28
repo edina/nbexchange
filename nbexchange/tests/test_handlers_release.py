@@ -192,9 +192,7 @@ def test_post_assignment10(app):
     paths = list(map(lambda assignment: assignment["path"], response_data["value"]))
     actions = list(map(lambda assignment: assignment["status"], response_data["value"]))
     assert len(paths) == 3
-    print(f"returned assignments list: {response_data['value']}")
-    print(f"release paths: {paths}")
-    print(f"release actions: {actions}")
+
     assert paths[0] != paths[1]  # 1st relase is not the same path as the 2nd release
     assert paths[1] != paths[2]  # 2nd not the same as 3rd
     assert paths[0] != paths[2]  # 1st not the same as third

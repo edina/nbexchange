@@ -51,12 +51,10 @@ class ExchangeList(abc.ExchangeList, Exchange):
             self.log.error(f"Got back an invalid response when listing assignments")
             return []
 
-        self.log.info(
+        self.log.debug(
             f"ExchangeList.query_exchange - Got back {assignments} when listing assignments"
         )
-        print(
-            f"ExchangeList.query_exchange - Got back {assignments} when listing assignments"
-        )
+
         return assignments["value"]
 
     def init_src(self):
@@ -93,12 +91,14 @@ class ExchangeList(abc.ExchangeList, Exchange):
     def copy_files(self):
         pass
 
-    ### We need to add feedback into submitted items
-    ### (this may not be the best place to process them)
+    # Add the path for notebooks on disk, and add the blank parameters
+    # Feedback details is listed in "submitted" records
     def parse_assignment(self, assignment):  # , on_disk_assignments=None):
 
         # If the assignment was found on disk, we need to expand the metadata
-        if assignment.get("status") in ("fetched", "collected"):
+        if assignment.get("status") == "fetched":
+
+            # get the individual notebook details
             assignment_dir = os.path.join(
                 self.assignment_dir, assignment.get("assignment_id")
             )
@@ -108,7 +108,6 @@ class ExchangeList(abc.ExchangeList, Exchange):
                     self.assignment_dir, self.course_id, assignment.get("assignment_id")
                 )
 
-            print(f"plugin/list.parse_assignment looking in {assignment_dir}")
             assignment["notebooks"] = []
             # Find the ipynb files
             for notebook in sorted(glob.glob(os.path.join(assignment_dir, "*.ipynb"))):
@@ -124,25 +123,16 @@ class ExchangeList(abc.ExchangeList, Exchange):
                     }
                 )
 
-            if (
-                len(assignment["notebooks"])
-                and assignment["assignment_id"]
-                not in self.seen_assignments[assignment.get("status")]
-            ):
-                self.seen_assignments[assignment.get("status")].append(
-                    assignment["assignment_id"]
-                )
-            return assignment
+        return assignment
 
-        else:
-            return assignment
-
-    ### Need to add feedback into here!!!
-    ### (check what the 'exchange.parse_assignment(path)' puts into 'info[]')
-    ### Needs 'notebook' ling moved to 'action'
     def parse_assignments(self):
-        print("list.parse_assignments called")
-        assignment_dir = ""
+
+        # Set up some general variables
+        self.assignments = []
+        held_assignments = {"fetched": {}, "released": {}}
+        assignment_dir = os.path.join(self.assignment_dir)
+        if self.path_includes_course:
+            assignment_dir = os.path.join(self.assignment_dir, self.course_id)
 
         course_id = self.course_id if self.course_id and self.course_id != "*" else None
         assignment_id = (
@@ -156,22 +146,13 @@ class ExchangeList(abc.ExchangeList, Exchange):
             else None
         )
 
-        if self.path_includes_course:
-            assignment_dir = os.path.join(self.assignment_dir, self.course_id)
-        else:
-            assignment_dir = os.path.join(self.assignment_dir)
-
-        self.assignments = []
-        print(f"call query_exchange")
-
+        # Get a list of everything from the exchange
         exchange_listed_assignments = self.query_exchange()
 
-        print(f"get back: {exchange_listed_assignments}")
-
-        # if "inbound" or "cached", looking for inbound (submitted) records
-        # else, looking for outbound (released) files
-        print(f"inbound: {self.inbound}; cached: {self.cached}")
-
+        # if "inbound" or "cached" are true, we're looking for inbound
+        #  (submitted) records else we're looking for outbound (released)
+        #  records
+        # (everything else is irrelevant for this method)
         if self.inbound or self.cached:
             for assignment in exchange_listed_assignments:
                 if assignment.get("status") == "submitted":
@@ -180,14 +161,11 @@ class ExchangeList(abc.ExchangeList, Exchange):
             for assignment in exchange_listed_assignments:
                 if assignment.get("status") == "released":
                     self.assignments.append(assignment)
-        print(f"assignments shrunk to: {self.assignments}")
 
         # We want to check the local disk for "fetched" items, not what the external server
         # says we should have
-        print(f"modify each 'assignment' in view of what we have in local assignments")
-        print(f"initial assignments: {self.assignments}")
         interim_assignments = []
-        found_fetched = set()
+        found_fetched = set([])
         for assignment in self.assignments:
             assignment_directory = (
                 self.fetched_root + "/" + assignment.get("assignment_id")
@@ -200,27 +178,19 @@ class ExchangeList(abc.ExchangeList, Exchange):
                 if os.path.isdir(assignment_directory):
                     assignment["status"] = "fetched"
                     # lets just take a note of having found this assignment
-                    found_fetched.update(assignment["assignment_id"])
-
-            print(f"try parsing assignments {assignment}")
+                    found_fetched.add(assignment["assignment_id"])
 
             interim_assignments.append(self.parse_assignment(assignment))
-            self.log.info(
+            self.log.debug(
                 f"parse_assignment singular assignment returned: {assignment}"
             )
-            print("\n")
-        print(f"interim_assignments: {interim_assignments}")
-        print(f"seen assignments: {self.seen_assignments}")
-        print("\n\n")
 
         # now we build two sub-lists:
         # - the last "released" per assignment_id - but only if they've not been "fetched"
         #
         # all "submitted" fall through this
-        held_assignments = {"fetched": {}, "released": {}}
         my_assignments = []
         for assignment in interim_assignments:
-            print(f"> this assignment starts as: {assignment}")
             # Skip those not being seen
             if assignment is None:
                 continue
@@ -229,39 +199,19 @@ class ExchangeList(abc.ExchangeList, Exchange):
                 self.fetched_root + "/" + assignment.get("assignment_id")
             )
 
-            # Only keep a fetched assignment directory is on disk.
-            # Keep only one fetched per assignment_id - any will do
-            if assignment.get("status") == "fetched" and os.path.isdir(
-                assignment_directory
-            ):
-
+            # Hang onto the fetched assignment, if there is one
+            if assignment.get("status") == "fetched":
                 held_assignments["fetched"][
                     assignment.get("assignment_id")
                 ] = assignment
-                print(
-                    f">> this assignment is 'fetched' and {assignment_directory} exists"
-                )
-                print(f">> held assignments is now {held_assignments}")
                 continue
 
             # filter out all the released items:
             if assignment.get("status") == "released":
-                print(
-                    f">> this assignment is {assignment.get('status')}, and needs checking"
-                )
                 # This is complicated:
-                #  - If the user has "fetched" the assignment, and the asignment directory is on disk
-                #    ... don't keep it
+                #  - If the user has "fetched" the assignment, don't keep it
                 #  - otherwise keep the latest one
-                print(
-                    f">> checking seen assignments for {assignment.get('assignment_id')} : {self.seen_assignments}"
-                )
-                if assignment.get("assignment_id") in self.seen_assignments[
-                    "fetched"
-                ] and os.path.isdir(assignment_directory):
-                    print(
-                        f">>> this assignment has been tagged as fetched, and exists on disk - skip"
-                    )
+                if assignment.get("assignment_id") in held_assignments["fetched"]:
                     continue
                 else:
                     latest = held_assignments["released"].get(
@@ -272,16 +222,11 @@ class ExchangeList(abc.ExchangeList, Exchange):
                         held_assignments["released"][
                             assignment.get("assignment_id")
                         ] = assignment
-                    print(
-                        f">>> this assignment is a newest version we've seen, hang onto it"
-                    )
                     continue
 
             # "Submitted" assignments [may] have feedback
-            if assignment.get("status") in ["released", "submitted"]:
-                print(
-                    f">> this assignment is {assignment.get('status')}, and we need to look for feedback"
-                )
+            if assignment.get("status") == "submitted":
+
                 local_feedback_dir = None
                 for notebook in assignment["notebooks"]:
                     feedback_timestamp = str(notebook["feedback_timestamp"])
@@ -296,9 +241,6 @@ class ExchangeList(abc.ExchangeList, Exchange):
                     has_local_feedback = os.path.isfile(local_feedback_path)
                     notebook["has_local_feedback"] = has_local_feedback
                     notebook["local_feedback_path"] = local_feedback_path
-                    print(
-                        f">>> feedback_timestamp: {feedback_timestamp}; local_feedback_dir: {local_feedback_dir}"
-                    )
 
                 if assignment["notebooks"]:
                     has_local_feedback = all(
@@ -314,27 +256,20 @@ class ExchangeList(abc.ExchangeList, Exchange):
                     has_local_feedback = False
                     has_exchange_feedback = False
                     feedback_updated = False
-                print(
-                    f">>> has_local_feedback: {has_local_feedback}; has_exchange_feedback: {has_exchange_feedback}; feedback_updated: {feedback_updated}"
-                )
                 assignment["has_local_feedback"] = has_local_feedback
                 assignment["has_exchange_feedback"] = has_exchange_feedback
                 assignment["feedback_updated"] = feedback_updated
                 assignment["local_feedback_path"] = local_feedback_dir
                 # We keep everything we've not filtered out
-            print(f"> this assignment ends up as: {assignment}")
             my_assignments.append(assignment)
-        print(f"my_assignments: {my_assignments}")
-        print(f"held_assignments: {held_assignments}")
 
+        # concatinate the "released" and "fetched" sublists to my_assignments
         for assignment_type in ("released", "fetched"):
             if held_assignments[assignment_type].items():
                 for assignment_id in held_assignments[assignment_type]:
                     my_assignments.append(
                         held_assignments[assignment_type][assignment_id]
                     )
-        print(f"my_assignments: {my_assignments}")
-        print(f"held_assignments: {held_assignments}")
 
         if self.inbound or self.cached:
             _get_key = lambda info: (
@@ -368,16 +303,11 @@ class ExchangeList(abc.ExchangeList, Exchange):
                 x for x in my_assignments if x.get("status") != "submitted"
             ]
 
-        print(f"end parse_assignments - my_assignments: {my_assignments}")
         return my_assignments
 
     def list_files(self):
         """List files"""
-        self.log.info(f"ExchaneList.list_file starting")
-        # TODO: this is a legacy option from ExchangeList and should be handled more elegantly
-        # if self.cached:
-        #     return []
-        print("list.list_files called")
+        self.log.debug(f"ExchaneList.list_file starting")
 
         assignments = self.parse_assignments()
 
@@ -394,8 +324,6 @@ class ExchangeList(abc.ExchangeList, Exchange):
             self.log.debug(f"Got back {r.status_code} after assignment unrelease")
 
     def start(self):
-        print("list.start called")
-        print(f"submitted_directory = {self.coursedir.submitted_directory}")
         if self.path_includes_course:
             self.coursedir.submitted_directory = os.path.join(
                 self.course_id, "collected"
@@ -412,5 +340,4 @@ class ExchangeList(abc.ExchangeList, Exchange):
         if self.remove:
             return self.remove_files()
         else:
-            print("returning a list")
             return self.list_files()

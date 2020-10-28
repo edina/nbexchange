@@ -625,7 +625,7 @@ def test_list_fetched_rerelease_ignored(plugin_config, tmpdir):
                         }
                     ],
                     "path": "",
-                    "timestamp": "2020-01-01 00:00:02.0 UTC",
+                    "timestamp": "2020-01-01 00:00:00.0 UTC",
                 },
             ]
     finally:

@@ -114,7 +114,7 @@ class Assignments(BaseHandler):
 
                         notebooks.append(
                             {
-                                "name": notebook.name,
+                                "notebook_id": notebook.name,
                                 "has_exchange_feedback": feedback_available,
                                 "feedback_updated": False,  # TODO: needs a real value
                                 "feedback_timestamp": feedback_timestamp,

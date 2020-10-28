@@ -90,7 +90,8 @@ class Collections(BaseHandler):
                                 "status": action.action.value,  # currently called 'action' in our db
                                 "path": action.location,
                                 "notebooks": [
-                                    {"name": x.name} for x in assignment.notebooks
+                                    {"notebook_id": x.name}
+                                    for x in assignment.notebooks
                                 ],
                                 "timestamp": action.timestamp.strftime(
                                     "%Y-%m-%d %H:%M:%S.%f %Z"

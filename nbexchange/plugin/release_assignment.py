@@ -70,7 +70,7 @@ class ExchangeReleaseAssignment(abc.ExchangeReleaseAssignment, Exchange):
         notebooks = []
         for notebook in sorted(glob.glob(os.path.join(self.src_path, "*.ipynb"))):
             notebooks.append(os.path.splitext(os.path.split(notebook)[1])[0])
-        self.log.info(f"Found {len(notebooks)} notebooks: \n{notebooks}")
+        self.log.debug(f"Found {len(notebooks)} notebooks: \n{notebooks}")
         self.notebooks = notebooks
 
     def upload(self, file):

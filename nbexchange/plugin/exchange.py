@@ -60,11 +60,10 @@ which is normally Jupyter's notebook_dir.
 
         url = self.service_url() + path
 
-        self.log.info(f"Exchange.api_request calling exchange with url {url}")
+        self.log.debug(f"Exchange.api_request calling exchange with url {url}")
 
         if method == "GET":
             get_req = partial(requests.get, url, headers=headers, cookies=cookies)
-            self.log.info(f"Exchange.api_request GET returning {get_req}")
             return get_req(*args, **kwargs)
         elif method == "POST":
             post_req = partial(requests.post, url, headers=headers, cookies=cookies)
@@ -92,7 +91,7 @@ which is normally Jupyter's notebook_dir.
         raise NotImplementedError
 
     def start(self):
-        self.log.info(f"Called start on {self.__class__.__name__}")
+        self.log.debug(f"Called start on {self.__class__.__name__}")
 
         self.init_src()
         self.init_dest()

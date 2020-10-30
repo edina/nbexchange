@@ -103,7 +103,7 @@ class Assignments(BaseHandler):
                             )
                             feedback_available = bool(feedback)
                             feedback_timestamp = (
-                                feedback.timestamp.isoformat()
+                                feedback.timestamp.isoformat(" ")
                                 if feedback_available
                                 else None
                             )
@@ -298,8 +298,6 @@ class Assignment(BaseHandler):
                 assignment = nbexchange.models.assignments.Assignment.find_by_code(
                     db=session, code=assignment_code, course_id=course.id, active=False
                 )
-
-            self.log.warn(f"The value of assignment here is : {assignment}")
 
             if assignment is None:
                 self.log.info(

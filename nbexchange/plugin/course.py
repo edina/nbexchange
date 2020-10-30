@@ -34,7 +34,7 @@ class ExchangeCourse(Exchange):
             self.log.error(f"Got back an invalid response when listing courses")
             return []
 
-        self.log.info(
+        self.log.debug(
             f"ExchangeList.query_exchange - Got back {courses} when listing courses"
         )
 

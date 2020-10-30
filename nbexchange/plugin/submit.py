@@ -35,7 +35,7 @@ class ExchangeSubmit(abc.ExchangeSubmit, Exchange):
         from contextlib import closing
         from datetime import datetime
 
-        timestamp = datetime.now().strftime(self.timestamp_format)
+        timestamp = datetime.now().strftime(self.timestamp_format).strip()
         tar_file = io.BytesIO()
         with tarfile.open(fileobj=tar_file, mode="w:gz") as tar_handle:
             tar_handle.add(self.src_path, arcname=".")

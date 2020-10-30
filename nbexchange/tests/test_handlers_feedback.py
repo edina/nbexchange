@@ -238,7 +238,7 @@ def test_feedback_post_authenticated_with_incorrect_assignment_id(app):
     course_id = "course_2"
     notebook = "notebook"
     student = user_kiz_student
-    timestamp = datetime.datetime.utcnow().isoformat()
+    timestamp = datetime.datetime.utcnow().isoformat(" ")
     checksum = notebook_hash(
         feedback_filename,
         make_unique_key(course_id, assignment_id, notebook, student["name"], timestamp),
@@ -288,7 +288,7 @@ def test_feedback_post_authenticated_with_incorrect_notebook_id(app):
     course_id = "course_2"
     notebook = "notebook"
     student = user_kiz_student
-    timestamp = datetime.datetime.utcnow().isoformat()
+    timestamp = datetime.datetime.utcnow().isoformat(" ")
     checksum = notebook_hash(
         feedback_filename,
         make_unique_key(course_id, assignment_id, notebook, student["name"], timestamp),
@@ -338,7 +338,7 @@ def test_feedback_post_authenticated_with_incorrect_student_id(app):
     course_id = "course_2"
     notebook = "notebook"
     student = user_brobbere_student
-    timestamp = datetime.datetime.utcnow().isoformat()
+    timestamp = datetime.datetime.utcnow().isoformat(" ")
     checksum = notebook_hash(
         feedback_filename,
         make_unique_key(course_id, assignment_id, notebook, student["name"], timestamp),
@@ -389,7 +389,7 @@ def test_feedback_post_authenticated_with_incorrect_checksum(app):
     course_id = "course_2"
     notebook = "notebook"
     student = user_kiz_student
-    timestamp = datetime.datetime.utcnow().isoformat()
+    timestamp = datetime.datetime.utcnow().isoformat(" ")
     checksum = notebook_hash(
         feedback_filename,
         make_unique_key(course_id, assignment_id, notebook, student["name"], timestamp),
@@ -439,7 +439,7 @@ def test_feedback_post_authenticated_with_correct_params(app):
     course_id = "course_2"
     notebook = "notebook"
     student = user_kiz_student
-    timestamp = datetime.datetime.utcnow().isoformat()
+    timestamp = datetime.datetime.utcnow().isoformat(" ")
     checksum = notebook_hash(
         feedback_filename,
         make_unique_key(course_id, assignment_id, notebook, student["name"], timestamp),
@@ -491,7 +491,7 @@ def test_feedback_post_authenticated_with_correct_params_incorrect_instructor(ap
     course_id = "course_2"
     notebook = "notebook"
     student = user_kiz_student
-    timestamp = datetime.datetime.utcnow().isoformat()
+    timestamp = datetime.datetime.utcnow().isoformat(" ")
     checksum = notebook_hash(
         feedback_filename,
         make_unique_key(course_id, assignment_id, notebook, student["name"], timestamp),
@@ -544,7 +544,7 @@ def test_feedback_post_authenticated_with_correct_params_student_submitter(app):
     course_id = "course_2"
     notebook = "notebook"
     student = user_kiz_student
-    timestamp = datetime.datetime.utcnow().isoformat()
+    timestamp = datetime.datetime.utcnow().isoformat(" ")
     checksum = notebook_hash(
         feedback_filename,
         make_unique_key(course_id, assignment_id, notebook, student["name"], timestamp),
@@ -595,7 +595,7 @@ def test_feedback_get_authenticated_with_incorrect_student(app):
     course_id = "course_2"
     notebook = "notebook"
     student = user_kiz_student
-    timestamp = datetime.datetime.utcnow().isoformat()
+    timestamp = datetime.datetime.utcnow().isoformat(" ")
     checksum = notebook_hash(
         feedback_filename,
         make_unique_key(course_id, assignment_id, notebook, student["name"], timestamp),
@@ -657,7 +657,7 @@ def test_feedback_get_authenticated_with_correct_params(app):
     course_id = "course_2"
     notebook = "notebook"
     student = user_kiz_student
-    timestamp = datetime.datetime.utcnow().isoformat()
+    timestamp = datetime.datetime.utcnow().isoformat(" ")
     checksum = notebook_hash(
         feedback_filename,
         make_unique_key(course_id, assignment_id, notebook, student["name"], timestamp),

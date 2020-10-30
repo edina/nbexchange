@@ -129,7 +129,7 @@ def test_fetch_feedback_fetch_normal(plugin_config, tmpdir):
                         {
                             "filename": "test_feedback.html",
                             "content": feedback_file,
-                            "timestamp": "2020-01-01T00:00:00.100",
+                            "timestamp": "2020-01-01 00:00:00.100",
                         }
                     ],
                 },
@@ -172,12 +172,12 @@ def test_fetch_feedback_fetch_several_normal(plugin_config, tmpdir):
                         {
                             "filename": "test_feedback1.html",
                             "content": feedback_file,
-                            "timestamp": "2020-01-01T00:00:01",
+                            "timestamp": "2020-01-01 00:00:01",
                         },
                         {
                             "filename": "test_feedback2.html",
                             "content": feedback_file,
-                            "timestamp": "2020-01-01T00:00:00",
+                            "timestamp": "2020-01-01 00:00:00",
                         },
                     ],
                 },

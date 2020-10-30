@@ -51,10 +51,6 @@ class ExchangeList(abc.ExchangeList, Exchange):
             self.log.error(f"Got back an invalid response when listing assignments")
             return []
 
-        self.log.debug(
-            f"ExchangeList.query_exchange - Got back {assignments} when listing assignments"
-        )
-
         return assignments["value"]
 
     def init_src(self):
@@ -74,7 +70,7 @@ class ExchangeList(abc.ExchangeList, Exchange):
         self.log.debug(
             f"ExternalExchange.list.init_dest collected {exchange_listed_assignments}"
         )
-        print(f"exchange_listed_assignments: {exchange_listed_assignments}")
+
         # if "inbound", looking for inbound (submitted) records
         # elif 'cached', looking for already downloaded files
         # else, looking for outbound (released) files
@@ -86,7 +82,6 @@ class ExchangeList(abc.ExchangeList, Exchange):
             self.assignments = filter(
                 lambda x: x.get["status"] == "released", exchange_listed_assignments
             )
-        print(f"assignments: {self.assignments}")
 
     def copy_files(self):
         pass
@@ -188,7 +183,6 @@ class ExchangeList(abc.ExchangeList, Exchange):
         # now we build two sub-lists:
         # - the last "released" per assignment_id - but only if they've not been "fetched"
         #
-        # all "submitted" fall through this
         my_assignments = []
         for assignment in interim_assignments:
             # Skip those not being seen
@@ -216,7 +210,7 @@ class ExchangeList(abc.ExchangeList, Exchange):
                 else:
                     latest = held_assignments["released"].get(
                         assignment.get("assignment_id"),
-                        {"timestamp": "1990-01-01 00:00:00"},
+                        {"timestamp": "1990-01-01 00:00:00+00:00"},
                     )
                     if assignment.get("timestamp") > latest.get("timestamp"):
                         held_assignments["released"][
@@ -225,28 +219,47 @@ class ExchangeList(abc.ExchangeList, Exchange):
                     continue
 
             # "Submitted" assignments [may] have feedback
+            # If they do, we need to promote details of local [on disk] feedback
+            # to the "assignment" level. It would have been nice to match
+            # sumbission times to feedback directories.
+            # Note that the UI displays the "submitted" time in the table, but
+            # will provide a link to a folder that is the "feedback" time
+            # ("feedback-time" for all notebooks in one 'release' is the same)
             if assignment.get("status") == "submitted":
 
                 local_feedback_dir = None
+                local_feedback_path = False
+                has_local_feedback = False
+                has_exchange_feedback = False
+                feedback_updated = False
                 for notebook in assignment["notebooks"]:
-                    feedback_timestamp = str(notebook["feedback_timestamp"])
-                    local_feedback_dir = os.path.relpath(
-                        os.path.join(
-                            assignment_directory, "feedback", feedback_timestamp
+                    nb_timestamp = notebook["feedback_timestamp"]
+                    if nb_timestamp:
+                        re.sub(
+                            r"T", " ", nb_timestamp
+                        )  # blasted timestamps come through with a 'T' in them!
+                    if nb_timestamp:
+                        local_feedback_dir = os.path.relpath(
+                            os.path.join(
+                                assignment_directory, "feedback", nb_timestamp,
+                            )
                         )
-                    )
-                    local_feedback_path = os.path.join(
-                        local_feedback_dir, "{0}.html".format(notebook["notebook_id"])
-                    )
-                    has_local_feedback = os.path.isfile(local_feedback_path)
+                        if os.path.isdir(local_feedback_dir):
+                            local_feedback_path = os.path.join(
+                                local_feedback_dir, f"{notebook['notebook_id']}.html"
+                            )
+                            has_local_feedback = os.path.isfile(local_feedback_path)
+
                     notebook["has_local_feedback"] = has_local_feedback
                     notebook["local_feedback_path"] = local_feedback_path
 
+                # Set assignment-level variables is any not the individual notebooks
+                # have them
                 if assignment["notebooks"]:
-                    has_local_feedback = all(
+                    has_local_feedback = any(
                         [nb["has_local_feedback"] for nb in assignment["notebooks"]]
                     )
-                    has_exchange_feedback = all(
+                    has_exchange_feedback = any(
                         [nb["has_exchange_feedback"] for nb in assignment["notebooks"]]
                     )
                     feedback_updated = any(
@@ -256,6 +269,7 @@ class ExchangeList(abc.ExchangeList, Exchange):
                     has_local_feedback = False
                     has_exchange_feedback = False
                     feedback_updated = False
+
                 assignment["has_local_feedback"] = has_local_feedback
                 assignment["has_exchange_feedback"] = has_exchange_feedback
                 assignment["feedback_updated"] = feedback_updated
@@ -310,7 +324,6 @@ class ExchangeList(abc.ExchangeList, Exchange):
         self.log.debug(f"ExchaneList.list_file starting")
 
         assignments = self.parse_assignments()
-
         return assignments
 
     def remove_files(self):
@@ -333,9 +346,6 @@ class ExchangeList(abc.ExchangeList, Exchange):
             self.coursedir.submitted_directory = "collected"
             r = "."
 
-        self.log.info(
-            f"externalexchange.list.start - coursedir.submitted_directory = {self.coursedir.submitted_directory}"
-        )
         self.fetched_root = os.path.abspath(os.path.join("", r))
         if self.remove:
             return self.remove_files()

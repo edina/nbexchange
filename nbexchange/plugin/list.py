@@ -228,7 +228,7 @@ class ExchangeList(abc.ExchangeList, Exchange):
             if assignment.get("status") == "submitted":
 
                 local_feedback_dir = None
-                local_feedback_path = False
+                local_feedback_path = None
                 has_local_feedback = False
                 has_exchange_feedback = False
                 feedback_updated = False
@@ -241,7 +241,9 @@ class ExchangeList(abc.ExchangeList, Exchange):
                     if nb_timestamp:
                         local_feedback_dir = os.path.relpath(
                             os.path.join(
-                                assignment_directory, "feedback", nb_timestamp,
+                                assignment_directory,
+                                "feedback",
+                                nb_timestamp,
                             )
                         )
                         if os.path.isdir(local_feedback_dir):

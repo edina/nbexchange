@@ -801,14 +801,14 @@ def test_list_inbound_one(plugin_config, tmpdir):
                         "path": "",
                         "status": "submitted",
                         "student_id": "1",
-                        "local_feedback_path": "assign_1_1/feedback/False",
+                        "local_feedback_path": None,
                         "notebooks": [
                             {
                                 "feedback_timestamp": False,
                                 "feedback_updated": False,
                                 "has_exchange_feedback": False,
                                 "has_local_feedback": False,
-                                "local_feedback_path": "assign_1_1/feedback/False/assignment-0.6.html",
+                                "local_feedback_path": None,
                                 "notebook_id": "assignment-0.6",
                             }
                         ],
@@ -896,14 +896,14 @@ def test_list_inbound_several_same(plugin_config, tmpdir):
                         "path": "",
                         "status": "submitted",
                         "student_id": "1",
-                        "local_feedback_path": "assign_1_1/feedback/False",
+                        "local_feedback_path": None,
                         "notebooks": [
                             {
                                 "feedback_timestamp": False,
                                 "feedback_updated": False,
                                 "has_exchange_feedback": False,
                                 "has_local_feedback": False,
-                                "local_feedback_path": "assign_1_1/feedback/False/assignment-0.6.html",
+                                "local_feedback_path": None,
                                 "notebook_id": "assignment-0.6",
                             }
                         ],
@@ -918,14 +918,14 @@ def test_list_inbound_several_same(plugin_config, tmpdir):
                         "path": "",
                         "status": "submitted",
                         "student_id": "1",
-                        "local_feedback_path": "assign_1_1/feedback/False",
+                        "local_feedback_path": None,
                         "notebooks": [
                             {
                                 "feedback_timestamp": False,
                                 "feedback_updated": False,
                                 "has_exchange_feedback": False,
                                 "has_local_feedback": False,
-                                "local_feedback_path": "assign_1_1/feedback/False/assignment-0.6-wrong.html",
+                                "local_feedback_path": None,
                                 "notebook_id": "assignment-0.6-wrong",
                             }
                         ],
@@ -1029,14 +1029,14 @@ def test_list_inbound_several_students(plugin_config, tmpdir):
                         "path": "",
                         "status": "submitted",
                         "student_id": "1",
-                        "local_feedback_path": "assign_1_1/feedback/False",
+                        "local_feedback_path": None,
                         "notebooks": [
                             {
                                 "feedback_timestamp": False,
                                 "feedback_updated": False,
                                 "has_exchange_feedback": False,
                                 "has_local_feedback": False,
-                                "local_feedback_path": "assign_1_1/feedback/False/assignment-0.6.html",
+                                "local_feedback_path": None,
                                 "notebook_id": "assignment-0.6",
                             }
                         ],
@@ -1051,14 +1051,14 @@ def test_list_inbound_several_students(plugin_config, tmpdir):
                         "path": "",
                         "status": "submitted",
                         "student_id": "1",
-                        "local_feedback_path": "assign_1_1/feedback/False",
+                        "local_feedback_path": None,
                         "notebooks": [
                             {
                                 "feedback_timestamp": False,
                                 "feedback_updated": False,
                                 "has_exchange_feedback": False,
                                 "has_local_feedback": False,
-                                "local_feedback_path": "assign_1_1/feedback/False/assignment-0.6-wrong.html",
+                                "local_feedback_path": None,
                                 "notebook_id": "assignment-0.6-wrong",
                             }
                         ],
@@ -1081,14 +1081,14 @@ def test_list_inbound_several_students(plugin_config, tmpdir):
                         "path": "",
                         "status": "submitted",
                         "student_id": "2",
-                        "local_feedback_path": "assign_1_1/feedback/False",
+                        "local_feedback_path": None,
                         "notebooks": [
                             {
                                 "feedback_timestamp": False,
                                 "feedback_updated": False,
                                 "has_exchange_feedback": False,
                                 "has_local_feedback": False,
-                                "local_feedback_path": "assign_1_1/feedback/False/assignment-0.6-wrong.html",
+                                "local_feedback_path": None,
                                 "notebook_id": "assignment-0.6-wrong",
                             }
                         ],
@@ -1208,14 +1208,14 @@ def test_list_inbound_several_assignments(plugin_config, tmpdir):
                         "path": "",
                         "status": "submitted",
                         "student_id": "1",
-                        "local_feedback_path": "assign_1_1/feedback/False",
+                        "local_feedback_path": None,
                         "notebooks": [
                             {
                                 "feedback_timestamp": False,
                                 "feedback_updated": False,
                                 "has_exchange_feedback": False,
                                 "has_local_feedback": False,
-                                "local_feedback_path": "assign_1_1/feedback/False/assignment-0.6.html",
+                                "local_feedback_path": None,
                                 "notebook_id": "assignment-0.6",
                             }
                         ],
@@ -1230,14 +1230,14 @@ def test_list_inbound_several_assignments(plugin_config, tmpdir):
                         "path": "",
                         "status": "submitted",
                         "student_id": "1",
-                        "local_feedback_path": "assign_1_1/feedback/False",
+                        "local_feedback_path": None,
                         "notebooks": [
                             {
                                 "feedback_timestamp": False,
                                 "feedback_updated": False,
                                 "has_exchange_feedback": False,
                                 "has_local_feedback": False,
-                                "local_feedback_path": "assign_1_1/feedback/False/assignment-0.6-wrong.html",
+                                "local_feedback_path": None,
                                 "notebook_id": "assignment-0.6-wrong",
                             }
                         ],
@@ -1260,14 +1260,14 @@ def test_list_inbound_several_assignments(plugin_config, tmpdir):
                         "path": "",
                         "status": "submitted",
                         "student_id": "2",
-                        "local_feedback_path": "assign_1_1/feedback/False",
+                        "local_feedback_path": None,
                         "notebooks": [
                             {
                                 "feedback_timestamp": False,
                                 "feedback_updated": False,
                                 "has_exchange_feedback": False,
                                 "has_local_feedback": False,
-                                "local_feedback_path": "assign_1_1/feedback/False/assignment-0.6-wrong.html",
+                                "local_feedback_path": None,
                                 "notebook_id": "assignment-0.6-wrong",
                             }
                         ],
@@ -1290,14 +1290,14 @@ def test_list_inbound_several_assignments(plugin_config, tmpdir):
                         "path": "",
                         "status": "submitted",
                         "student_id": "2",
-                        "local_feedback_path": "assign_1_2/feedback/False",
+                        "local_feedback_path": None,
                         "notebooks": [
                             {
                                 "feedback_timestamp": False,
                                 "feedback_updated": False,
                                 "has_exchange_feedback": False,
                                 "has_local_feedback": False,
-                                "local_feedback_path": "assign_1_2/feedback/False/assignment-0.6-wrong.html",
+                                "local_feedback_path": None,
                                 "notebook_id": "assignment-0.6-wrong",
                             }
                         ],
@@ -1449,14 +1449,14 @@ def test_list_inbound_ignore_outbound(plugin_config, tmpdir):
                         "path": "",
                         "status": "submitted",
                         "student_id": "1",
-                        "local_feedback_path": "assign_1_1/feedback/False",
+                        "local_feedback_path": None,
                         "notebooks": [
                             {
                                 "feedback_timestamp": False,
                                 "feedback_updated": False,
                                 "has_exchange_feedback": False,
                                 "has_local_feedback": False,
-                                "local_feedback_path": "assign_1_1/feedback/False/assignment-0.6.html",
+                                "local_feedback_path": None,
                                 "notebook_id": "assignment-0.6",
                             }
                         ],
@@ -1471,14 +1471,14 @@ def test_list_inbound_ignore_outbound(plugin_config, tmpdir):
                         "path": "",
                         "status": "submitted",
                         "student_id": "1",
-                        "local_feedback_path": "assign_1_1/feedback/False",
+                        "local_feedback_path": None,
                         "notebooks": [
                             {
                                 "feedback_timestamp": False,
                                 "feedback_updated": False,
                                 "has_exchange_feedback": False,
                                 "has_local_feedback": False,
-                                "local_feedback_path": "assign_1_1/feedback/False/assignment-0.6-wrong.html",
+                                "local_feedback_path": None,
                                 "notebook_id": "assignment-0.6-wrong",
                             }
                         ],
@@ -1501,14 +1501,14 @@ def test_list_inbound_ignore_outbound(plugin_config, tmpdir):
                         "path": "",
                         "status": "submitted",
                         "student_id": "2",
-                        "local_feedback_path": "assign_1_1/feedback/False",
+                        "local_feedback_path": None,
                         "notebooks": [
                             {
                                 "feedback_timestamp": False,
                                 "feedback_updated": False,
                                 "has_exchange_feedback": False,
                                 "has_local_feedback": False,
-                                "local_feedback_path": "assign_1_1/feedback/False/assignment-0.6-wrong.html",
+                                "local_feedback_path": None,
                                 "notebook_id": "assignment-0.6-wrong",
                             }
                         ],
@@ -1531,14 +1531,14 @@ def test_list_inbound_ignore_outbound(plugin_config, tmpdir):
                         "path": "",
                         "status": "submitted",
                         "student_id": "2",
-                        "local_feedback_path": "assign_1_2/feedback/False",
+                        "local_feedback_path": None,
                         "notebooks": [
                             {
                                 "feedback_timestamp": False,
                                 "feedback_updated": False,
                                 "has_exchange_feedback": False,
                                 "has_local_feedback": False,
-                                "local_feedback_path": "assign_1_2/feedback/False/assignment-0.6-wrong.html",
+                                "local_feedback_path": None,
                                 "notebook_id": "assignment-0.6-wrong",
                             }
                         ],

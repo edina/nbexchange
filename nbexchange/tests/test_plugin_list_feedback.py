@@ -705,7 +705,8 @@ def test_list_feedback_available(plugin_config, tmpdir):
         copyfile(
             feedback1_filename,
             os.path.join(
-                "assign_1_1/feedback/2020-01-01 00:02:00.2", basename(feedback1_filename)
+                "assign_1_1/feedback/2020-01-01 00:02:00.2",
+                basename(feedback1_filename),
             ),
         )
 

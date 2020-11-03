@@ -14,11 +14,16 @@ Returns
 
     {"success": True,
         "value": [{
-            "assignment_id": $assignment_code,
-            "course_id": $course_code,
+            "assignment_id": "$assignment_code",
+            "course_id": "$course_code",
+            "student_id": Int
             "status": Str,
             "path": path,
-            "notebooks": [{"name": x.name} for x in assignment.notebooks],
+            "notebooks": [
+                { "name": x.name,
+                  "has_exchange_feedback": False,
+                  "feedback_updated": False,
+                  "feedback_timestamp": None, } for x in assignment.notebooks],
             "timestamp": action.timestamp.strftime(
                 "%Y-%m-%d %H:%M:%S.%f %Z"
             ),

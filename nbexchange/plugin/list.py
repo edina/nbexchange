@@ -194,6 +194,9 @@ class ExchangeList(abc.ExchangeList, Exchange):
             )
 
             # Hang onto the fetched assignment, if there is one
+            # Note, we'll only have a note of the _first_ one - but that's fine
+            #  as the timestamp is irrelevant... we just need to know if we
+            #  need to look to the local disk
             if assignment.get("status") == "fetched":
                 held_assignments["fetched"][
                     assignment.get("assignment_id")
@@ -241,9 +244,7 @@ class ExchangeList(abc.ExchangeList, Exchange):
                     if nb_timestamp:
                         local_feedback_dir = os.path.relpath(
                             os.path.join(
-                                assignment_directory,
-                                "feedback",
-                                nb_timestamp,
+                                assignment_directory, "feedback", nb_timestamp,
                             )
                         )
                         if os.path.isdir(local_feedback_dir):

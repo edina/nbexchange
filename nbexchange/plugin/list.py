@@ -5,6 +5,7 @@ import os
 import re
 import sys
 
+from dateutil import parser
 from traitlets import Bool, Unicode
 from urllib.parse import quote_plus
 
@@ -213,7 +214,7 @@ class ExchangeList(abc.ExchangeList, Exchange):
                 else:
                     latest = held_assignments["released"].get(
                         assignment.get("assignment_id"),
-                        {"timestamp": "1990-01-01 00:00:00+00:00"},
+                        {"timestamp": "1990-01-01 00:00:00"},
                     )
                     if assignment.get("timestamp") > latest.get("timestamp"):
                         held_assignments["released"][
@@ -236,12 +237,14 @@ class ExchangeList(abc.ExchangeList, Exchange):
                 has_exchange_feedback = False
                 feedback_updated = False
                 for notebook in assignment["notebooks"]:
+
                     nb_timestamp = notebook["feedback_timestamp"]
+
+                    # This has to match timestamp in fetch_feedback.download
                     if nb_timestamp:
-                        re.sub(
-                            r"T", " ", nb_timestamp
-                        )  # blasted timestamps come through with a 'T' in them!
-                    if nb_timestamp:
+                        # nb_timestamp = parser.parse(nb_timestamp)
+                        # nb_timestamp = nb_timestamp.strftime(self.timestamp_format).strip()
+
                         local_feedback_dir = os.path.relpath(
                             os.path.join(
                                 assignment_directory,

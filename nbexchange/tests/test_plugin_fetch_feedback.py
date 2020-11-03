@@ -21,6 +21,10 @@ feedback_file = get_feedback_file(feedback_filename)
 student_id = "1"
 assignment_id = "assign_1"
 
+"""
+Note that the directory created for feedback is "2020-01-01 00:00:00.100000", not "2020-01-01 00:00:00.10 00:00"
+"""
+
 
 @pytest.mark.gen_test
 def test_fetch_feedback_dir_created(plugin_config, tmpdir):
@@ -129,7 +133,7 @@ def test_fetch_feedback_fetch_normal(plugin_config, tmpdir):
                         {
                             "filename": "test_feedback.html",
                             "content": feedback_file,
-                            "timestamp": "2020-01-01 00:00:00.100",
+                            "timestamp": "2020-01-01 00:00:00.100 00:00",
                         }
                     ],
                 },
@@ -140,7 +144,7 @@ def test_fetch_feedback_fetch_normal(plugin_config, tmpdir):
         called = plugin.start()
         assert os.path.exists(
             os.path.join(
-                plugin.dest_path, "2020-01-01 00:00:00.100000", "test_feedback.html"
+                plugin.dest_path, "2020-01-01 00:00:00.100 00:00", "test_feedback.html"
             )
         )
 
@@ -172,12 +176,12 @@ def test_fetch_feedback_fetch_several_normal(plugin_config, tmpdir):
                         {
                             "filename": "test_feedback1.html",
                             "content": feedback_file,
-                            "timestamp": "2020-01-01 00:00:01",
+                            "timestamp": "2020-01-01 00:00:01 00:00",
                         },
                         {
                             "filename": "test_feedback2.html",
                             "content": feedback_file,
-                            "timestamp": "2020-01-01 00:00:00",
+                            "timestamp": "2020-01-01 00:00:00 00:00",
                         },
                     ],
                 },
@@ -189,11 +193,11 @@ def test_fetch_feedback_fetch_several_normal(plugin_config, tmpdir):
 
         assert os.path.exists(
             os.path.join(
-                plugin.dest_path, "2020-01-01 00:00:01.000000", "test_feedback1.html"
+                plugin.dest_path, "2020-01-01 00:00:01 00:00", "test_feedback1.html"
             )
         )
         assert os.path.exists(
             os.path.join(
-                plugin.dest_path, "2020-01-01 00:00:00.000000", "test_feedback2.html"
+                plugin.dest_path, "2020-01-01 00:00:00 00:00", "test_feedback2.html"
             )
         )

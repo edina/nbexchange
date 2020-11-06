@@ -261,9 +261,10 @@ def test_assignment15(app):
 
 
 # Confirm that a fetch always matches the last release
+### This is skipped because it's database is cumulitive with earlier tests - which we don't waht!
 @pytest.mark.skip
 @pytest.mark.gen_test
-def test_post_assignment9(app):
+def test_post_assignment16(app):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):
@@ -306,8 +307,9 @@ def test_post_assignment9(app):
     assert "note" not in response_data  # just that it's missing
     paths = list(map(lambda assignment: assignment["path"], response_data["value"]))
     actions = list(map(lambda assignment: assignment["status"], response_data["value"]))
-
-    assert len(paths) == 6
+    print(f"paths {paths}")
+    print(f"actions {actions}")
+    assert len(paths) == 7  # 6
     assert actions == [
         "released",
         "released",

@@ -515,6 +515,100 @@ def test_list_fetched(plugin_config, tmpdir):
         shutil.rmtree("assign_1_3")
 
 
+# a fetched item on disk should remove the "released" items in the list
+# Honour path_includes_course
+@pytest.mark.gen_test
+def test_list_fetched_with_path_includes_course(plugin_config, tmpdir):
+    try:
+        plugin_config.CourseDirectory.course_id = "no_course"
+        plugin_config.Exchange.path_includes_course = True
+
+        os.makedirs(os.path.join("no_course", "assign_1_3"), exist_ok=True)
+        copyfile(
+            notebook1_filename,
+            os.path.join("no_course", "assign_1_3", basename(notebook1_filename)),
+        )
+
+        plugin = ExchangeList(
+            coursedir=CourseDirectory(config=plugin_config), config=plugin_config
+        )
+
+        def api_request(*args, **kwargs):
+            assert args[0] == ("assignments?course_id=no_course")
+            assert "method" not in kwargs or kwargs.get("method").lower() == "get"
+            return type(
+                "Request",
+                (object,),
+                {
+                    "status_code": 200,
+                    "json": (
+                        lambda: {
+                            "success": True,
+                            "value": [
+                                {
+                                    "assignment_id": "assign_1_3",
+                                    "student_id": 1,
+                                    "course_id": "no_course",
+                                    "status": "released",
+                                    "path": "",
+                                    "notebooks": [
+                                        {
+                                            "notebook_id": "assignment-0.6",
+                                            "has_exchange_feedback": False,
+                                            "feedback_updated": False,
+                                            "feedback_timestamp": None,
+                                        }
+                                    ],
+                                    "timestamp": "2020-01-01 00:00:00.0 00:00",
+                                },
+                                {
+                                    "assignment_id": "assign_1_3",
+                                    "student_id": 1,
+                                    "course_id": "no_course",
+                                    "status": "fetched",
+                                    "path": "",
+                                    "notebooks": [
+                                        {
+                                            "notebook_id": "assignment-0.6",
+                                            "has_exchange_feedback": False,
+                                            "feedback_updated": False,
+                                            "feedback_timestamp": None,
+                                        }
+                                    ],
+                                    "timestamp": "2020-01-01 00:00:00.0 00:00",
+                                },
+                            ],
+                        }
+                    ),
+                },
+            )
+
+        with patch.object(Exchange, "api_request", side_effect=api_request):
+            called = plugin.start()
+            assert called == [
+                {
+                    "assignment_id": "assign_1_3",
+                    "course_id": "no_course",
+                    "student_id": 1,
+                    "status": "fetched",
+                    "notebooks": [
+                        {
+                            "notebook_id": "assignment-0.6",
+                            "has_exchange_feedback": False,
+                            "feedback_updated": False,
+                            "has_local_feedback": False,
+                            "local_feedback_path": None,
+                            "path": "./no_course/assign_1_3/assignment-0.6.ipynb",
+                        }
+                    ],
+                    "path": "",
+                    "timestamp": "2020-01-01 00:00:00.0 00:00",
+                },
+            ]
+    finally:
+        shutil.rmtree("no_course")
+
+
 # if an item has been fetched, a re-release is ignored
 # (on-disk takes priority)
 @pytest.mark.gen_test

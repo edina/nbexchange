@@ -7,15 +7,20 @@ A Jupyterhub service that replaces the nbgrader Exchange.
 <!-- TOC -->
 
 - [Highlights of nbexchange](#highlights-of-nbexchange)
-  - [Compatibility](#compatibility)
+    - [Compatibility](#compatibility)
 - [Documentation](#documentation)
-  - [Database relationships](#database-relationships)
+    - [Database relationships](#database-relationships)
 - [Installing](#installing)
+    - [Configuration](#configuration)
+    - [How to](#how-to)
 - [Contributing](#contributing)
-- [Configuration](#configuration)
-  - [Configuring `nbexchange`](#configuring-nbexchange)
-  - [Configuring `nbgrader`](#configuring-nbgrader)
-- [Know To-Do stuff](#know-to-do-stuff)
+- [Configuration](#configuration-1)
+    - [Configuring `nbexchange`](#configuring-nbexchange)
+    - [Configuring `nbgrader`](#configuring-nbgrader)
+- [Running a demo, locally](#running-a-demo-locally)
+    - [looking at the configuration](#looking-at-the-configuration)
+        - [nbexchange](#nbexchange)
+        - [notebook](#notebook)
 
 <!-- /TOC -->
 
@@ -185,10 +190,53 @@ c.ExchangeFactory.release_feedback = 'nbexchange.plugin.ExchangeReleaseFeedback'
 c.ExchangeFactory.submit = 'nbexchange.plugin.ExchangeSubmit'
 ```
 
-# Know To-Do stuff
+# Running a demo, locally
 
-- ~~Get the initial code up~~
-- Get a master-branch established
-- Get a `handlers/auth/user_handler` to get details from jupyterhub (users, courses, and assignments should all be in the config file)
-- Get an external sanity-check for the code
-- Get docs to ReadTheDocs
+You can run a notebook, and talk to a local nbexchange service with this simple example:
+
+1. Build the docker images:
+
+```
+docker-compose -f local.yaml build
+```
+
+2. Start up the stack:
+
+```
+docker-compose -f local.yaml up
+```
+
+3. Connect to the notebook:
+
+[http://localhost:8888/?token=secret-token](http://localhost:8888/?token=secret-token) - we cheat: the token is specified in `jupyter_notebook_config.py`
+
+## looking at the configuration
+
+### nbexchange
+
+In `nbexchange_config.py` we have a faked authentication routine:
+
+```
+class MyUserHandler(BaseUserHandler):
+    def get_current_user(self, request):
+        return {
+            "name": "myname",
+            "course_id": "cool_course_id",
+            "course_title": "cool course",
+            "course_role": "Instructor",
+            "org_id": 1,
+        }
+
+
+c.NbExchange.user_plugin_class = MyUserHandler
+```
+.... you will need to write your own `c.NbExchange.user_plugin_class` with a `get_current_user` that returns a `dict` as shown
+
+- Note that the database is an sqlite database in the docker image, and you can poke at it with `sqlite3 ????`
+- The exchange is saving files in ` /tmp/courses/1/*` (the `1` is the `org-id` code)
+
+You can now use `Formgrader` to create an assignment (there's even a demo notebook included in the `notebook` sub-directory) and `Assignment list` to fetch & submit it.
+
+### notebook
+
+The configuration for the notebook is in two parts: `jupyter_notebook_config.py` is for the main notebook, and `nbgrader_config.py` for nbgrader (and defined the nbexchange plugin modules for the exchange services)

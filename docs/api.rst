@@ -20,7 +20,7 @@ Returns
             "status": Str,
             "path": path,
             "notebooks": [
-                { "name": x.name,
+                { "notebook_id": x.name,
                   "has_exchange_feedback": False,
                   "feedback_updated": False,
                   "feedback_timestamp": None, } for x in assignment.notebooks],

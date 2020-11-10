@@ -23,7 +23,7 @@ feedback1_filename = os.path.join(
 )
 feedback1_file = get_feedback_file(feedback1_filename)
 feedback2_filename = os.path.join(
-    os.path.dirname(__file__), "data", "assignment-0.6-wrong.html"
+    os.path.dirname(__file__), "data", "assignment-0.6-2.html"
 )
 feedback12_file = get_feedback_file(feedback1_filename)
 
@@ -32,9 +32,12 @@ notebook1_filename = os.path.join(
 )
 notebook1_file = get_feedback_file(notebook1_filename)
 notebook2_filename = os.path.join(
-    os.path.dirname(__file__), "data", "assignment-0.6-wrong.ipynb"
+    os.path.dirname(__file__), "data", "assignment-0.6-2.ipynb"
 )
 notebook2_file = get_feedback_file(notebook2_filename)
+
+student_id = "1"
+assignment_id = "assign_1"
 
 
 @pytest.mark.gen_test
@@ -46,22 +49,24 @@ def test_release_feedback_fetch_normal(plugin_config, tmpdir):
     plugin_config.CourseDirectory.submitted_directory = str(
         tmpdir.mkdir("submitted_test").realpath()
     )
-    plugin_config.CourseDirectory.assignment_id = "assign_1"
+    plugin_config.CourseDirectory.assignment_id = assignment_id
     os.makedirs(
-        os.path.join(plugin_config.CourseDirectory.feedback_directory, "1", "assign_1"),
+        os.path.join(
+            plugin_config.CourseDirectory.feedback_directory, student_id, assignment_id
+        ),
         exist_ok=True,
     )
     os.makedirs(
         os.path.join(
-            plugin_config.CourseDirectory.submitted_directory, "1", "assign_1"
+            plugin_config.CourseDirectory.submitted_directory, student_id, assignment_id
         ),
         exist_ok=True,
     )
 
     feedback_filename_uploaded = os.path.join(
         plugin_config.CourseDirectory.feedback_directory,
-        "1",
-        "assign_1",
+        student_id,
+        assignment_id,
         "feedback.html",
     )
     copyfile(feedback1_filename, feedback_filename_uploaded)
@@ -70,30 +75,30 @@ def test_release_feedback_fetch_normal(plugin_config, tmpdir):
         notebook1_filename,
         os.path.join(
             plugin_config.CourseDirectory.submitted_directory,
-            "1",
-            "assign_1",
+            student_id,
+            assignment_id,
             "feedback.ipynb",
         ),
     )
     with open(
         os.path.join(
             plugin_config.CourseDirectory.feedback_directory,
-            "1",
-            "assign_1",
+            student_id,
+            assignment_id,
             "timestamp.txt",
         ),
         "w",
     ) as fp:
-        fp.write("2020-01-01 00:00.0 UTC")
+        fp.write("2020-01-01 00:00:00.0 UTC")
 
     unique_key = make_unique_key(
-        "no_course", "assign_1", "feedback", "1", "2020-01-01 00:00.0 UTC"
+        "no_course", assignment_id, "feedback", student_id, "2020-01-01 00:00:00.0 UTC"
     )
     checksum = notebook_hash(
         os.path.join(
             plugin_config.CourseDirectory.submitted_directory,
-            "1",
-            "assign_1",
+            student_id,
+            assignment_id,
             "feedback.ipynb",
         ),
         unique_key,
@@ -106,9 +111,9 @@ def test_release_feedback_fetch_normal(plugin_config, tmpdir):
     def api_request(*args, **kwargs):
         assert args[0] == (
             "feedback?course_id=no_course"
-            "&assignment_id=assign_1"
+            f"&assignment_id={assignment_id}"
             "&notebook=feedback"
-            "&student=1"
+            f"&student={student_id}"
             "&timestamp=2020-01-01+00%3A00%3A00.000000+UTC"
             "&checksum=" + checksum
         )
@@ -127,53 +132,66 @@ def test_release_feedback_fetch_normal(plugin_config, tmpdir):
         called = plugin.start()
 
 
+####this one
 @pytest.mark.gen_test
 def test_release_feedback_fetch_several_normal(plugin_config, tmpdir):
+    # set up the submitted & feeback directories
     feedback_directory = str(tmpdir.mkdir("feedback_test").realpath())
     submitted_directory = str(tmpdir.mkdir("submitted_test").realpath())
     plugin_config.CourseDirectory.root = "/"
     plugin_config.CourseDirectory.feedback_directory = feedback_directory
     plugin_config.CourseDirectory.submitted_directory = submitted_directory
-    plugin_config.CourseDirectory.assignment_id = "assign_1"
-    os.makedirs(os.path.join(feedback_directory, "1", "assign_1"), exist_ok=True)
-    os.makedirs(os.path.join(submitted_directory, "1", "assign_1"), exist_ok=True)
+    plugin_config.CourseDirectory.assignment_id = assignment_id
+    os.makedirs(
+        os.path.join(feedback_directory, student_id, assignment_id), exist_ok=True
+    )
+    os.makedirs(
+        os.path.join(submitted_directory, student_id, assignment_id), exist_ok=True
+    )
+
+    # Scenario:
+    # two pieces of feedback for two notebooks, for the same submission
+    # * submitted_directory is where the student .ipynb file was collected into
+    # * feedback_directory is where the generated .html feeback was written to
     feedback1_filename_uploaded = os.path.join(
-        feedback_directory, "1", "assign_1", "feedback1.html"
+        feedback_directory, student_id, assignment_id, "feedback1.html"
     )
     copyfile(feedback1_filename, feedback1_filename_uploaded)
     copyfile(
         notebook1_filename,
-        os.path.join(submitted_directory, "1", "assign_1", "feedback1.ipynb"),
+        os.path.join(submitted_directory, student_id, assignment_id, "feedback1.ipynb"),
     )
 
     feedback2_filename_uploaded = os.path.join(
-        feedback_directory, "1", "assign_1", "feedback2.html"
+        feedback_directory, student_id, assignment_id, "feedback2.html"
     )
     copyfile(feedback2_filename, feedback2_filename_uploaded)
     copyfile(
         notebook2_filename,
-        os.path.join(submitted_directory, "1", "assign_1", "feedback2.ipynb"),
+        os.path.join(submitted_directory, student_id, assignment_id, "feedback2.ipynb"),
     )
+    # ...... don't forget the timestamp for the submission
+    with open(
+        os.path.join(feedback_directory, student_id, assignment_id, "timestamp.txt"),
+        "w",
+    ) as fp:
+        fp.write("2020-01-01 00:01:00.0 UTC")
 
+    # this makes the unique key & checksums for the submission
     unique_key1 = make_unique_key(
-        "no_course", "assign_1", "feedback1", "1", "2020-01-01 01:00.0 UTC"
+        "no_course", assignment_id, "feedback1", student_id, "2020-01-01 00:01:00.0 UTC"
     )
     checksum1 = notebook_hash(
-        os.path.join(submitted_directory, "1", "assign_1", "feedback1.ipynb"),
+        os.path.join(submitted_directory, student_id, assignment_id, "feedback1.ipynb"),
         unique_key1,
     )
     unique_key2 = make_unique_key(
-        "no_course", "assign_1", "feedback2", "1", "2020-01-01 01:00.0 UTC"
+        "no_course", assignment_id, "feedback2", student_id, "2020-01-01 00:01:00.0 UTC"
     )
     checksum2 = notebook_hash(
-        os.path.join(submitted_directory, "1", "assign_1", "feedback2.ipynb"),
+        os.path.join(submitted_directory, student_id, assignment_id, "feedback2.ipynb"),
         unique_key2,
     )
-
-    with open(
-        os.path.join(feedback_directory, "1", "assign_1", "timestamp.txt"), "w"
-    ) as fp:
-        fp.write("2020-01-01 01:00.0 UTC")
 
     plugin = ExchangeReleaseFeedback(
         coursedir=CourseDirectory(config=plugin_config), config=plugin_config
@@ -188,10 +206,10 @@ def test_release_feedback_fetch_several_normal(plugin_config, tmpdir):
             seen_feedback1 = True
             assert args[0] == (
                 "feedback?course_id=no_course"
-                "&assignment_id=assign_1"
+                f"&assignment_id={assignment_id}"
                 "&notebook=feedback1"
-                "&student=1"
-                "&timestamp=2020-01-01+01%3A00%3A00.000000+UTC"
+                f"&student={student_id}"
+                "&timestamp=2020-01-01+00%3A01%3A00.000000+UTC"
                 "&checksum=" + checksum1
             )
             assert kwargs.get("method").lower() == "post"
@@ -206,10 +224,10 @@ def test_release_feedback_fetch_several_normal(plugin_config, tmpdir):
             seen_feedback2 = True
             assert args[0] == (
                 "feedback?course_id=no_course"
-                "&assignment_id=assign_1"
+                f"&assignment_id={assignment_id}"
                 "&notebook=feedback2"
-                "&student=1"
-                "&timestamp=2020-01-01+01%3A00%3A00.000000+UTC"
+                f"&student={student_id}"
+                "&timestamp=2020-01-01+00%3A01%3A00.000000+UTC"
                 "&checksum=" + checksum2
             )
             assert kwargs.get("method").lower() == "post"
@@ -240,22 +258,24 @@ def test_release_feedback_fetch_fail(plugin_config, tmpdir):
     plugin_config.CourseDirectory.submitted_directory = str(
         tmpdir.mkdir("submitted_test").realpath()
     )
-    plugin_config.CourseDirectory.assignment_id = "assign_1"
+    plugin_config.CourseDirectory.assignment_id = assignment_id
     os.makedirs(
-        os.path.join(plugin_config.CourseDirectory.feedback_directory, "1", "assign_1"),
+        os.path.join(
+            plugin_config.CourseDirectory.feedback_directory, student_id, assignment_id
+        ),
         exist_ok=True,
     )
     os.makedirs(
         os.path.join(
-            plugin_config.CourseDirectory.submitted_directory, "1", "assign_1"
+            plugin_config.CourseDirectory.submitted_directory, student_id, assignment_id
         ),
         exist_ok=True,
     )
 
     feedback_filename_uploaded = os.path.join(
         plugin_config.CourseDirectory.feedback_directory,
-        "1",
-        "assign_1",
+        student_id,
+        assignment_id,
         "feedback.html",
     )
     copyfile(feedback1_filename, feedback_filename_uploaded)
@@ -264,21 +284,21 @@ def test_release_feedback_fetch_fail(plugin_config, tmpdir):
         notebook1_filename,
         os.path.join(
             plugin_config.CourseDirectory.submitted_directory,
-            "1",
-            "assign_1",
+            student_id,
+            assignment_id,
             "feedback.ipynb",
         ),
     )
     with open(
         os.path.join(
             plugin_config.CourseDirectory.feedback_directory,
-            "1",
-            "assign_1",
+            student_id,
+            assignment_id,
             "timestamp.txt",
         ),
         "w",
     ) as fp:
-        fp.write("2020-01-01 00:00.0 UTC")
+        fp.write("2020-01-01 00:00:00.0 UTC")
 
     plugin = ExchangeReleaseFeedback(
         coursedir=CourseDirectory(config=plugin_config), config=plugin_config

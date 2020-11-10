@@ -35,7 +35,7 @@ class ExchangeSubmit(abc.ExchangeSubmit, Exchange):
         from contextlib import closing
         from datetime import datetime
 
-        timestamp = datetime.now().strftime(self.timestamp_format)
+        timestamp = datetime.now().strftime(self.timestamp_format).strip()
         tar_file = io.BytesIO()
         with tarfile.open(fileobj=tar_file, mode="w:gz") as tar_handle:
             tar_handle.add(self.src_path, arcname=".")
@@ -65,23 +65,28 @@ class ExchangeSubmit(abc.ExchangeSubmit, Exchange):
     def check_filename_diff(self):
         # List of filenames, no paths
         released_notebooks = []
-        # TODO: This really needs to be fixed!
+
         assignments = ExchangeList.query_exchange(self)
+        latest_timestamp = "1990-01-01 00:00:00"
         for assignment in assignments:
             # We want the last released version of this assignments
             if (
-                self.coursedir.assignment_id != assignment["assignment_id"]
-                and assignment.get("status") != "released"
+                self.coursedir.assignment_id == assignment["assignment_id"]
+                and assignment.get("status") == "released"
             ):
-                continue
+                if assignment.get("timestamp") > latest_timestamp:
+                    latest_timestamp = assignment.get("timestamp")
+                    released_notebooks = [
+                        n["notebook_id"] + ".ipynb"
+                        for n in assignment["notebooks"]
+                        if "notebook_id" in n
+                    ]
+                else:
+                    continue
 
-            released_notebooks = [
-                n["name"] + ".ipynb" for n in assignment["notebooks"] if "name" in n
-            ]
         submitted_notebooks = find_all_notebooks(self.src_path)
 
-        # Now
-        # Look for missing notebooks in submitted notebooks
+        # Now look for missing notebooks in submitted notebooks
         missing = False
         release_diff = list()
         for filename in released_notebooks:

@@ -240,8 +240,8 @@ Note that ``CourseDirectory`` and ``Authenticator`` are defined when the server_
 returns a List of Dicts - eg::
 
     [
-        {'course_id': 'course_2', 'assignment_id': 'car c2', 'status': 'released', 'path': '/tmp/exchange/course_2/outbound/car c2', 'notebooks': [{'notebook_id': 'Assignment', 'path': '/tmp/exchange/course_2/outbound/car c2/Assignment.ipynb'}]},
-        {'course_id': 'course_2', 'assignment_id': 'tree c2', 'status': 'released', 'path': '/tmp/exchange/course_2/outbound/tree c2', 'notebooks': [{'notebook_id': 'Assignment', 'path': '/tmp/exchange/course_2/outbound/tree c2/Assignment.ipynb'}]}
+        {'course_id': 'course_2', 'assignment_id': 'car c2', 'status': 'released', .....},
+        {'course_id': 'course_2', 'assignment_id': 'tree c2', 'status': 'released', .....},
     ]
 
 The format and structure of this data is discussed in `ExchangeList Date Return structure`_ below.
@@ -361,7 +361,7 @@ Released & Submitted
 
 ::
 
-    {course_id: xxxx, assignment_id: yyyy}
+    {course_id: xxxx, assignment_id: yyyy, timestamp: ISO 8601}
 
 ``submitted``
 
@@ -388,6 +388,8 @@ Released & Submitted
         # Note, no path - it's been deleted.
 
 (``assignment_dir`` is the directory in the students home space, so needs to take into account ``self.path_includes_course``)
+
+Note that the API does include ``collected``, ``feedback_released`` and ``feedback_fetched`` items, however NBgrader doesn't use them, so they are essentially un-processed records - ``feedback_released`` is per-notebook (with a path) and ``collected`` & ``feedback_fetched`` is all notebooks (and sans path)
 
 3. Next loop through all the *notebooks* in the ``path``, and get some basic data::
 

@@ -26,7 +26,7 @@ class NoteableAuthPlugin(BaseAuthPlugin):
             self.log.error(f"Got back an invalid response when listing courses")
             return []
 
-        self.log.info(
+        self.log.debug(
             f"NoteableAuthPlugin.query_exchange - Got back {response_data} when listing courses"
         )
 

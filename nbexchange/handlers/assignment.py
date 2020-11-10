@@ -103,7 +103,7 @@ class Assignments(BaseHandler):
                             )
                             feedback_available = bool(feedback)
                             feedback_timestamp = (
-                                feedback.timestamp.isoformat()
+                                feedback.timestamp.strftime("%Y-%m-%d %H:%M:%S.%f %Z")
                                 if feedback_available
                                 else None
                             )
@@ -114,7 +114,7 @@ class Assignments(BaseHandler):
 
                         notebooks.append(
                             {
-                                "name": notebook.name,
+                                "notebook_id": notebook.name,
                                 "has_exchange_feedback": feedback_available,
                                 "feedback_updated": False,  # TODO: needs a real value
                                 "feedback_timestamp": feedback_timestamp,
@@ -298,8 +298,6 @@ class Assignment(BaseHandler):
                 assignment = nbexchange.models.assignments.Assignment.find_by_code(
                     db=session, code=assignment_code, course_id=course.id, active=False
                 )
-
-            self.log.warn(f"The value of assignment here is : {assignment}")
 
             if assignment is None:
                 self.log.info(

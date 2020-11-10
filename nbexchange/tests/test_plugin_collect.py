@@ -23,15 +23,22 @@ notebook1_filename = os.path.join(
 )
 notebook1_file = get_feedback_file(notebook1_filename)
 notebook2_filename = os.path.join(
-    os.path.dirname(__file__), "data", "assignment-0.6-wrong.ipynb"
+    os.path.dirname(__file__), "data", "assignment-0.6-2.ipynb"
 )
 notebook2_file = get_feedback_file(notebook2_filename)
+
+student_id = "1"
+ass_1_1 = "assign_1_1"
+ass_1_2 = "assign_1_2"
+ass_1_3 = "assign_1_3"
+ass_1_4 = "assign_1_4"
+ass_1_5 = "assign_1_5"
 
 
 @pytest.mark.gen_test
 def test_collect_normal(plugin_config, tmpdir):
     plugin_config.CourseDirectory.course_id = "no_course"
-    plugin_config.CourseDirectory.assignment_id = "assign_1_3"
+    plugin_config.CourseDirectory.assignment_id = ass_1_3
     plugin_config.CourseDirectory.submitted_directory = str(
         tmpdir.mkdir("submitted").realpath()
     )
@@ -48,7 +55,7 @@ def test_collect_normal(plugin_config, tmpdir):
             assert collections is False
             collections = True
             assert args[0] == (
-                f"collections?course_id=no_course&assignment_id=assign_1_3"
+                f"collections?course_id=no_course&assignment_id={ass_1_3}"
             )
             assert "method" not in kwargs or kwargs.get("method").lower() == "get"
             return type(
@@ -61,8 +68,8 @@ def test_collect_normal(plugin_config, tmpdir):
                         "success": True,
                         "value": [
                             {
-                                "path": "/submitted/no_course/assign_1_3/1/",
-                                "timestamp": "2020-01-01 00:00.0 UTC",
+                                "path": f"/submitted/no_course/{ass_1_3}/1/",
+                                "timestamp": "2020-01-01 00:00:00.0 UTC",
                             }
                         ],
                     },
@@ -72,7 +79,7 @@ def test_collect_normal(plugin_config, tmpdir):
             assert collection is False
             collection = True
             assert args[0] == (
-                f"collection?course_id=no_course&assignment_id=assign_1_3&path=%2Fsubmitted%2Fno_course%2Fassign_1_3%2F1%2F"
+                f"collection?course_id=no_course&assignment_id={ass_1_3}&path=%2Fsubmitted%2Fno_course%2F{ass_1_3}%2F1%2F"
             )
             assert "method" not in kwargs or kwargs.get("method").lower() == "get"
             with tarfile.open(fileobj=tar_file, mode="w:gz") as tar_handle:
@@ -98,7 +105,9 @@ def test_collect_normal(plugin_config, tmpdir):
         assert os.path.exists(
             os.path.join(
                 plugin.coursedir.format_path(
-                    plugin_config.CourseDirectory.submitted_directory, "1", "assign_1_3"
+                    plugin_config.CourseDirectory.submitted_directory,
+                    student_id,
+                    ass_1_3,
                 ),
                 os.path.basename(notebook1_filename),
             )
@@ -108,7 +117,7 @@ def test_collect_normal(plugin_config, tmpdir):
 @pytest.mark.gen_test
 def test_collect_normal_update(plugin_config, tmpdir):
     plugin_config.CourseDirectory.course_id = "no_course"
-    plugin_config.CourseDirectory.assignment_id = "assign_1_2"
+    plugin_config.CourseDirectory.assignment_id = ass_1_2
     plugin_config.ExchangeCollect.update = True
     plugin_config.CourseDirectory.submitted_directory = str(
         tmpdir.mkdir("submitted").realpath()
@@ -118,7 +127,7 @@ def test_collect_normal_update(plugin_config, tmpdir):
     )
     os.makedirs(
         os.path.join(
-            plugin_config.CourseDirectory.submitted_directory, "1", "assign_1_2"
+            plugin_config.CourseDirectory.submitted_directory, student_id, ass_1_2
         ),
         exist_ok=True,
     )
@@ -126,16 +135,16 @@ def test_collect_normal_update(plugin_config, tmpdir):
         notebook1_filename,
         os.path.join(
             plugin_config.CourseDirectory.submitted_directory,
-            "1",
-            "assign_1_2",
+            student_id,
+            ass_1_2,
             os.path.basename(notebook1_filename),
         ),
     )
     with open(
         os.path.join(
             plugin_config.CourseDirectory.submitted_directory,
-            "1",
-            "assign_1_2",
+            student_id,
+            ass_1_2,
             "timestamp.txt",
         ),
         "w",
@@ -152,7 +161,7 @@ def test_collect_normal_update(plugin_config, tmpdir):
             assert collections is False
             collections = True
             assert args[0] == (
-                f"collections?course_id=no_course&assignment_id=assign_1_2"
+                f"collections?course_id=no_course&assignment_id={ass_1_2}"
             )
             assert "method" not in kwargs or kwargs.get("method").lower() == "get"
             return type(
@@ -165,7 +174,7 @@ def test_collect_normal_update(plugin_config, tmpdir):
                         "success": True,
                         "value": [
                             {
-                                "path": "/submitted/no_course/assign_1_2/1/",
+                                "path": f"/submitted/no_course/{ass_1_2}/1/",
                                 "timestamp": "2020-02-01 00:00:00.100",
                             }
                         ],
@@ -176,7 +185,7 @@ def test_collect_normal_update(plugin_config, tmpdir):
             assert collection is False
             collection = True
             assert args[0] == (
-                f"collection?course_id=no_course&assignment_id=assign_1_2&path=%2Fsubmitted%2Fno_course%2Fassign_1_2%2F1%2F"
+                f"collection?course_id=no_course&assignment_id={ass_1_2}&path=%2Fsubmitted%2Fno_course%2F{ass_1_2}%2F1%2F"
             )
             assert "method" not in kwargs or kwargs.get("method").lower() == "get"
             with tarfile.open(fileobj=tar_file, mode="w:gz") as tar_handle:
@@ -202,7 +211,9 @@ def test_collect_normal_update(plugin_config, tmpdir):
         assert not os.path.exists(
             os.path.join(
                 plugin.coursedir.format_path(
-                    plugin_config.CourseDirectory.submitted_directory, "1", "assign_1_2"
+                    plugin_config.CourseDirectory.submitted_directory,
+                    student_id,
+                    ass_1_2,
                 ),
                 os.path.basename(notebook1_filename),
             )
@@ -210,7 +221,9 @@ def test_collect_normal_update(plugin_config, tmpdir):
         assert os.path.exists(
             os.path.join(
                 plugin.coursedir.format_path(
-                    plugin_config.CourseDirectory.submitted_directory, "1", "assign_1_2"
+                    plugin_config.CourseDirectory.submitted_directory,
+                    student_id,
+                    ass_1_2,
                 ),
                 os.path.basename(notebook2_filename),
             )
@@ -220,7 +233,7 @@ def test_collect_normal_update(plugin_config, tmpdir):
 @pytest.mark.gen_test
 def test_collect_normal_dont_update(plugin_config, tmpdir):
     plugin_config.CourseDirectory.course_id = "no_course"
-    plugin_config.CourseDirectory.assignment_id = "assign_1_4"
+    plugin_config.CourseDirectory.assignment_id = ass_1_4
     plugin_config.ExchangeCollect.update = False
     plugin_config.CourseDirectory.submitted_directory = str(
         tmpdir.mkdir("submitted").realpath()
@@ -230,7 +243,7 @@ def test_collect_normal_dont_update(plugin_config, tmpdir):
     )
     os.makedirs(
         os.path.join(
-            plugin_config.CourseDirectory.submitted_directory, "1", "assign_1_4"
+            plugin_config.CourseDirectory.submitted_directory, student_id, ass_1_4
         ),
         exist_ok=True,
     )
@@ -238,16 +251,16 @@ def test_collect_normal_dont_update(plugin_config, tmpdir):
         notebook1_filename,
         os.path.join(
             plugin_config.CourseDirectory.submitted_directory,
-            "1",
-            "assign_1_4",
+            student_id,
+            ass_1_4,
             os.path.basename(notebook1_filename),
         ),
     )
     with open(
         os.path.join(
             plugin_config.CourseDirectory.submitted_directory,
-            "1",
-            "assign_1_4",
+            student_id,
+            ass_1_4,
             "timestamp.txt",
         ),
         "w",
@@ -264,7 +277,7 @@ def test_collect_normal_dont_update(plugin_config, tmpdir):
             assert collections is False
             collections = True
             assert args[0] == (
-                f"collections?course_id=no_course&assignment_id=assign_1_4"
+                f"collections?course_id=no_course&assignment_id={ass_1_4}"
             )
             assert "method" not in kwargs or kwargs.get("method").lower() == "get"
             return type(
@@ -277,7 +290,7 @@ def test_collect_normal_dont_update(plugin_config, tmpdir):
                         "success": True,
                         "value": [
                             {
-                                "path": "/submitted/no_course/assign_1_4/1/",
+                                "path": f"/submitted/no_course/{ass_1_4}/1/",
                                 "timestamp": "2020-02-01 00:00:00.100",
                             }
                         ],
@@ -288,7 +301,7 @@ def test_collect_normal_dont_update(plugin_config, tmpdir):
             assert collection is False
             collection = True
             assert args[0] == (
-                f"collection?course_id=no_course&assignment_id=assign_1_4&path=%2Fsubmitted%2Fno_course%2Fassign_1_4%2F1%2F"
+                f"collection?course_id=no_course&assignment_id={ass_1_4}&path=%2Fsubmitted%2Fno_course%2F{ass_1_4}%2F1%2F"
             )
             assert "method" not in kwargs or kwargs.get("method").lower() == "get"
             with tarfile.open(fileobj=tar_file, mode="w:gz") as tar_handle:
@@ -314,7 +327,9 @@ def test_collect_normal_dont_update(plugin_config, tmpdir):
         assert os.path.exists(
             os.path.join(
                 plugin.coursedir.format_path(
-                    plugin_config.CourseDirectory.submitted_directory, "1", "assign_1_4"
+                    plugin_config.CourseDirectory.submitted_directory,
+                    student_id,
+                    ass_1_4,
                 ),
                 os.path.basename(notebook1_filename),
             )
@@ -322,7 +337,9 @@ def test_collect_normal_dont_update(plugin_config, tmpdir):
         assert not os.path.exists(
             os.path.join(
                 plugin.coursedir.format_path(
-                    plugin_config.CourseDirectory.submitted_directory, "1", "assign_1_4"
+                    plugin_config.CourseDirectory.submitted_directory,
+                    student_id,
+                    ass_1_4,
                 ),
                 os.path.basename(notebook2_filename),
             )
@@ -332,7 +349,7 @@ def test_collect_normal_dont_update(plugin_config, tmpdir):
 @pytest.mark.gen_test
 def test_collect_normal_dont_update_old(plugin_config, tmpdir):
     plugin_config.CourseDirectory.course_id = "no_course"
-    plugin_config.CourseDirectory.assignment_id = "assign_1_5"
+    plugin_config.CourseDirectory.assignment_id = ass_1_5
     plugin_config.ExchangeCollect.update = True
     plugin_config.CourseDirectory.submitted_directory = str(
         tmpdir.mkdir("submitted").realpath()
@@ -342,7 +359,7 @@ def test_collect_normal_dont_update_old(plugin_config, tmpdir):
     )
     os.makedirs(
         os.path.join(
-            plugin_config.CourseDirectory.submitted_directory, "1", "assign_1_5"
+            plugin_config.CourseDirectory.submitted_directory, student_id, ass_1_5
         ),
         exist_ok=True,
     )
@@ -350,16 +367,16 @@ def test_collect_normal_dont_update_old(plugin_config, tmpdir):
         notebook1_filename,
         os.path.join(
             plugin_config.CourseDirectory.submitted_directory,
-            "1",
-            "assign_1_5",
+            student_id,
+            ass_1_5,
             os.path.basename(notebook1_filename),
         ),
     )
     with open(
         os.path.join(
             plugin_config.CourseDirectory.submitted_directory,
-            "1",
-            "assign_1_5",
+            student_id,
+            ass_1_5,
             "timestamp.txt",
         ),
         "w",
@@ -376,7 +393,7 @@ def test_collect_normal_dont_update_old(plugin_config, tmpdir):
             assert collections is False
             collections = True
             assert args[0] == (
-                f"collections?course_id=no_course&assignment_id=assign_1_5"
+                f"collections?course_id=no_course&assignment_id={ass_1_5}"
             )
             assert "method" not in kwargs or kwargs.get("method").lower() == "get"
             return type(
@@ -389,7 +406,7 @@ def test_collect_normal_dont_update_old(plugin_config, tmpdir):
                         "success": True,
                         "value": [
                             {
-                                "path": "/submitted/no_course/assign_1_5/1/",
+                                "path": f"/submitted/no_course/{ass_1_5}/1/",
                                 "timestamp": "2020-01-01 00:00:00.100",
                             }
                         ],
@@ -400,7 +417,7 @@ def test_collect_normal_dont_update_old(plugin_config, tmpdir):
             assert collection is False
             collection = True
             assert args[0] == (
-                f"collection?course_id=no_course&assignment_id=assign_1_5&path=%2Fsubmitted%2Fno_course%2Fassign_1_5%2F1%2F"
+                f"collection?course_id=no_course&assignment_id={ass_1_5}&path=%2Fsubmitted%2Fno_course%2F{ass_1_5}%2F1%2F"
             )
             assert "method" not in kwargs or kwargs.get("method").lower() == "get"
             with tarfile.open(fileobj=tar_file, mode="w:gz") as tar_handle:
@@ -426,7 +443,9 @@ def test_collect_normal_dont_update_old(plugin_config, tmpdir):
         assert os.path.exists(
             os.path.join(
                 plugin.coursedir.format_path(
-                    plugin_config.CourseDirectory.submitted_directory, "1", "assign_1_5"
+                    plugin_config.CourseDirectory.submitted_directory,
+                    student_id,
+                    ass_1_5,
                 ),
                 os.path.basename(notebook1_filename),
             )
@@ -434,7 +453,9 @@ def test_collect_normal_dont_update_old(plugin_config, tmpdir):
         assert not os.path.exists(
             os.path.join(
                 plugin.coursedir.format_path(
-                    plugin_config.CourseDirectory.submitted_directory, "1", "assign_1_5"
+                    plugin_config.CourseDirectory.submitted_directory,
+                    student_id,
+                    ass_1_5,
                 ),
                 os.path.basename(notebook2_filename),
             )
@@ -444,7 +465,7 @@ def test_collect_normal_dont_update_old(plugin_config, tmpdir):
 @pytest.mark.gen_test
 def test_collect_normal_several(plugin_config, tmpdir):
     plugin_config.CourseDirectory.course_id = "no_course"
-    plugin_config.CourseDirectory.assignment_id = "assign_1_1"
+    plugin_config.CourseDirectory.assignment_id = ass_1_1
     plugin_config.CourseDirectory.submitted_directory = str(
         tmpdir.mkdir("submitted").realpath()
     )
@@ -461,7 +482,7 @@ def test_collect_normal_several(plugin_config, tmpdir):
             assert collections is False
             collections = True
             assert args[0] == (
-                f"collections?course_id=no_course&assignment_id=assign_1_1"
+                f"collections?course_id=no_course&assignment_id={ass_1_1}"
             )
             assert "method" not in kwargs or kwargs.get("method").lower() == "get"
             return type(
@@ -474,8 +495,8 @@ def test_collect_normal_several(plugin_config, tmpdir):
                         "success": True,
                         "value": [
                             {
-                                "path": "/submitted/no_course/assign_1_1/1/",
-                                "timestamp": "2020-01-01 00:00.0 UTC",
+                                "path": f"/submitted/no_course/{ass_1_1}/1/",
+                                "timestamp": "2020-01-01 00:00:00.0 UTC",
                             }
                         ],
                     },
@@ -485,7 +506,7 @@ def test_collect_normal_several(plugin_config, tmpdir):
             assert collection is False
             collection = True
             assert args[0] == (
-                f"collection?course_id=no_course&assignment_id=assign_1_1&path=%2Fsubmitted%2Fno_course%2Fassign_1_1%2F1%2F"
+                f"collection?course_id=no_course&assignment_id={ass_1_1}&path=%2Fsubmitted%2Fno_course%2F{ass_1_1}%2F1%2F"
             )
             assert "method" not in kwargs or kwargs.get("method").lower() == "get"
             with tarfile.open(fileobj=tar_file, mode="w:gz") as tar_handle:
@@ -513,7 +534,9 @@ def test_collect_normal_several(plugin_config, tmpdir):
         assert os.path.exists(
             os.path.join(
                 plugin.coursedir.format_path(
-                    plugin_config.CourseDirectory.submitted_directory, "1", "assign_1_1"
+                    plugin_config.CourseDirectory.submitted_directory,
+                    student_id,
+                    ass_1_1,
                 ),
                 os.path.basename(notebook1_filename),
             )
@@ -521,7 +544,9 @@ def test_collect_normal_several(plugin_config, tmpdir):
         assert os.path.exists(
             os.path.join(
                 plugin.coursedir.format_path(
-                    plugin_config.CourseDirectory.submitted_directory, "1", "assign_1_1"
+                    plugin_config.CourseDirectory.submitted_directory,
+                    student_id,
+                    ass_1_1,
                 ),
                 os.path.basename(notebook2_filename),
             )

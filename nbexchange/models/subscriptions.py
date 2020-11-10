@@ -37,7 +37,7 @@ class Subscription(Base):
         Returns None if not found.
         """
         if log:
-            log.info(f"Subscription.find_by_pk - pk:{pk}")
+            log.debug(f"Subscription.find_by_pk - pk:{pk}")
         if pk is None:
             raise ValueError(f"Primary Key needs to be defined")
         if isinstance(pk, int):
@@ -51,7 +51,7 @@ class Subscription(Base):
         Returns None if not found.
         """
         if log:
-            log.info(
+            log.debug(
                 f"Subscription.find_by_set - user_id:{user_id}, course_id:{course_id}, role:{role}"
             )
         return (

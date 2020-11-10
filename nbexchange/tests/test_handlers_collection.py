@@ -347,8 +347,7 @@ async def test_post_assignment9(app):
         assert response_data["success"] == True
         assert "note" not in response_data  # just that it's missing
         paths = list(map(lambda assignment: assignment["path"], response_data["value"]))
-        print(f"returned assignments list: {response_data['value']}")
-        print(f"list after submission paths: {paths}")
+
         assert len(paths) == 4  # the collections call only returns submitted items
         # path in submission contains org + course + assignment + user
         assert re.search("1/submitted/course_2/assign_a/1_kiz", paths[0])
@@ -375,9 +374,7 @@ async def test_post_assignment9(app):
         actions = list(
             map(lambda assignment: assignment["status"], response_data["value"])
         )
-        print(f"returned assignments list: {response_data['value']}")
-        print(f"fetch paths: {paths}")
-        print(f"fetch actions: {actions}")
+
         assert len(paths) == 8
         assert actions == [
             "released",
@@ -401,7 +398,6 @@ async def test_post_assignment9(app):
         actions = list(
             map(lambda assignment: assignment["status"], response_data["value"])
         )
-        print(f"returned assignments list: {response_data['value']}")
-        print(f"fetch actions: {actions}")
+
         assert len(actions) == 4
         assert actions == ["released", "fetched", "submitted", "submitted"]

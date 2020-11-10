@@ -38,7 +38,7 @@ class User(Base):
         Returns None if not found.
         """
         if log:
-            log.info(f"User.find_by_pk - pk:{pk}")
+            log.debug(f"User.find_by_pk - pk:{pk}")
 
         if pk is None:
             raise ValueError(f"Primary Key needs to be defined")
@@ -64,7 +64,7 @@ class User(Base):
         Returns None if not found.
         """
         if log:
-            log.info(f"User.find_by_org - id:{org_id}")
+            log.debug(f"User.find_by_org - id:{org_id}")
         org_id = int(float(org_id)) if org_id else None
         if org_id is None:
             raise ValueError(f"org_id needs to be defined, and a number")

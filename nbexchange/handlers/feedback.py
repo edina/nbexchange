@@ -51,7 +51,7 @@ class FeedbackHandler(BaseHandler):
             self.finish({"success": False, "note": note})
             return
 
-        self.log.info(f"checking for feedback for {assignment_id} on {course_id}")
+        self.log.debug(f"checking for feedback for {assignment_id} on {course_id}")
 
         this_user = self.nbex_user
 
@@ -67,8 +67,6 @@ class FeedbackHandler(BaseHandler):
                 .order_by(nbexchange.models.Assignment.id.desc())
                 .first()
             )
-            self.log.info(assignment)
-            self.log.info(this_user)
 
             if not assignment:
                 raise web.HTTPError(404, "Could not find requested resource")
@@ -102,7 +100,8 @@ class FeedbackHandler(BaseHandler):
                 with open(r.location, "r+b") as fp:
                     f["content"] = base64.b64encode(fp.read()).decode("utf-8")
                 f["filename"] = feedback_name
-                f["timestamp"] = r.timestamp.isoformat()
+                # This matches self.timestamp_format
+                f["timestamp"] = r.timestamp.strftime("%Y-%m-%d %H:%M:%S.%f %Z")
                 f["checksum"] = r.checksum
                 feedbacks.append(f)
 
@@ -113,7 +112,6 @@ class FeedbackHandler(BaseHandler):
                 action=nbexchange.models.actions.AssignmentActions.feedback_fetched,
             )
             session.add(action)
-
             self.finish({"success": True, "feedback": feedbacks})
 
     @authenticated
@@ -226,10 +224,10 @@ class FeedbackHandler(BaseHandler):
                     404, f"Could not find requested resource student {student_id}"
                 )
 
-            # raise Exception(f"{res}")
-            self.log.info(f"Notebook: {notebook}")
-            self.log.info(f"Student: {student}")
-            self.log.info(f"Instructor: {this_user}")
+            # # raise Exception(f"{res}")
+            # self.log.info(f"Notebook: {notebook}")
+            # self.log.info(f"Student: {student}")
+            # self.log.info(f"Instructor: {this_user}")
 
             # TODO: check access. Is the user an instructor on the course to which the notebook belongs
 

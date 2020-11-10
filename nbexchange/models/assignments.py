@@ -46,7 +46,7 @@ class Assignment(Base):
         Returns None if not found.
         """
         if log:
-            log.info(f"Assignmetn.find_by_pk - pk:{pk}")
+            log.debug(f"Assignmetn.find_by_pk - pk:{pk}")
         if pk is None:
             raise ValueError(f"Primary Key needs to be defined")
         if isinstance(pk, int):
@@ -70,7 +70,7 @@ class Assignment(Base):
         Returns None if not found.
         """
         if log:
-            log.info(
+            log.debug(
                 f"Assignment.find_by_code - code:{code} (course_id:{course_id}, active:{active}, action:{action})"
             )
         if code is None:

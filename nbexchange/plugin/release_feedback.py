@@ -34,9 +34,6 @@ class ExchangeReleaseFeedback(abc.ExchangeReleaseFeedback, Exchange):
     def init_dest(self):
         pass
 
-    def download(self):
-        pass
-
     def copy_if_missing(self, src, dest, ignore=None):
         pass
 
@@ -86,7 +83,6 @@ class ExchangeReleaseFeedback(abc.ExchangeReleaseFeedback, Exchange):
             )
 
             timestamp = open(os.path.join(feedback_dir, "timestamp.txt")).read().strip()
-
             nbfile = os.path.join(submission_dir, "{}.ipynb".format(notebook_id))
             unique_key = make_unique_key(
                 self.course_id,
@@ -99,7 +95,7 @@ class ExchangeReleaseFeedback(abc.ExchangeReleaseFeedback, Exchange):
             self.log.debug("Unique key is: {}".format(unique_key))
             checksum = notebook_hash(nbfile, unique_key)
 
-            timestamp = parser.parse(timestamp).strftime(self.timestamp_format)
+            timestamp = parser.parse(timestamp).strftime(self.timestamp_format).strip()
 
             self.log.info(
                 "Releasing feedback for student '{}' on assignment '{}/{}/{}' ({})".format(

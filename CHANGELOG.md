@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.1.0
+
+Update the exchange & plugin to use a fixed timestamp
+
 ## v1.0.1
 
 Fix timestamps

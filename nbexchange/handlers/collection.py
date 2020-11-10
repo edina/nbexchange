@@ -89,8 +89,10 @@ class Collections(BaseHandler):
                                 "course_id": assignment.course.course_code,
                                 "status": action.action.value,  # currently called 'action' in our db
                                 "path": action.location,
+                                # 'name' in db, 'notebook_id' id nbgrader
                                 "notebooks": [
-                                    {"name": x.name} for x in assignment.notebooks
+                                    {"notebook_id": x.name}
+                                    for x in assignment.notebooks
                                 ],
                                 "timestamp": action.timestamp.strftime(
                                     "%Y-%m-%d %H:%M:%S.%f %Z"
@@ -223,7 +225,6 @@ class Collection(BaseHandler):
                     )
                     session.add(action)
 
-                    self.log.info("record of fetch action committed")
                     self.finish(data)
 
     # This has no authentiction wrapper, so false implication os service

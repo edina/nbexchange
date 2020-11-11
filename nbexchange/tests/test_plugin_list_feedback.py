@@ -773,7 +773,7 @@ def test_list_feedback_available(plugin_config, tmpdir):
                                     "feedback_timestamp": "2020-01-01 00:02:00.2 00:00",
                                     "has_exchange_feedback": True,
                                     "has_local_feedback": True,
-                                    "local_feedback_path": f"{my_feedback_dir}/{root_notebook_name}.html",
+                                    "local_feedback_path": f"{assignment_id}/feedback/2020-01-01%2000%3A02%3A00.2%2000%3A00/{root_notebook_name}.html",
                                     "feedback_updated": False,
                                     "notebook_id": root_notebook_name,
                                 }
@@ -782,7 +782,7 @@ def test_list_feedback_available(plugin_config, tmpdir):
                             "feedback_updated": False,
                             "has_exchange_feedback": True,
                             "has_local_feedback": True,
-                            "local_feedback_path": my_feedback_dir,
+                            "local_feedback_path": f"{assignment_id}/feedback/2020-01-01%2000%3A02%3A00.2%2000%3A00",
                         }
                     ],
                 }
@@ -872,7 +872,7 @@ def test_list_feedback_available_with_path_includes_course(plugin_config, tmpdir
                                     "feedback_timestamp": "2020-01-01 00:02:00.2 00:00",
                                     "has_exchange_feedback": True,
                                     "has_local_feedback": True,
-                                    "local_feedback_path": f"{my_feedback_dir}/{root_notebook_name}.html",
+                                    "local_feedback_path": f"{course_code}/{assignment_id}/feedback/2020-01-01%2000%3A02%3A00.2%2000%3A00/{root_notebook_name}.html",
                                     "feedback_updated": False,
                                     "notebook_id": root_notebook_name,
                                 }
@@ -881,7 +881,7 @@ def test_list_feedback_available_with_path_includes_course(plugin_config, tmpdir
                             "feedback_updated": False,
                             "has_exchange_feedback": True,
                             "has_local_feedback": True,
-                            "local_feedback_path": my_feedback_dir,
+                            "local_feedback_path": f"{course_code}/{assignment_id}/feedback/2020-01-01%2000%3A02%3A00.2%2000%3A00",
                         }
                     ],
                 }

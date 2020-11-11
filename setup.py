@@ -31,6 +31,7 @@ REQUIRED = [
     "sentry-sdk==0.9.0",
     "sqlalchemy==1.3.20",
     "nbgrader==0.7.0.dev0",
+    "urllib3==1.25.11", # Pinned because of requests depdendency conflict
 ]
 
 # What packages are required for testing?

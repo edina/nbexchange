@@ -5,6 +5,7 @@ import sys
 import pytest
 
 from mock import patch
+from urllib.parse import quote
 
 from nbexchange.plugin import ExchangeFetchFeedback, Exchange
 from nbgrader.coursedir import CourseDirectory
@@ -22,7 +23,9 @@ student_id = "1"
 assignment_id = "assign_1"
 
 """
-Note that the directory created for feedback is "2020-01-01 00:00:00.100000", not "2020-01-01 00:00:00.10 00:00"
+Note that the directory created for feedback is "2020-01-01 00:00:00 00",
+but nbgrader creates an href of 2020-01-01%2000%3A00%3A00%2000%3A00 in the
+tree-view
 """
 
 
@@ -144,7 +147,7 @@ def test_fetch_feedback_fetch_normal(plugin_config, tmpdir):
         called = plugin.start()
         assert os.path.exists(
             os.path.join(
-                plugin.dest_path, "2020-01-01 00:00:00.100 00:00", "test_feedback.html"
+                plugin.dest_path, "2020-01-01%2000%3A00%3A00.100%2000%3A00", "test_feedback.html"
             )
         )
 
@@ -193,11 +196,11 @@ def test_fetch_feedback_fetch_several_normal(plugin_config, tmpdir):
 
         assert os.path.exists(
             os.path.join(
-                plugin.dest_path, "2020-01-01 00:00:01 00:00", "test_feedback1.html"
+                plugin.dest_path, "2020-01-01%2000%3A00%3A01%2000%3A00", "test_feedback1.html"
             )
         )
         assert os.path.exists(
             os.path.join(
-                plugin.dest_path, "2020-01-01 00:00:00 00:00", "test_feedback2.html"
+                plugin.dest_path, "2020-01-01%2000%3A00%3A00%2000%3A00", "test_feedback2.html"
             )
         )

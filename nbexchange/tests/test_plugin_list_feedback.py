@@ -705,7 +705,7 @@ def test_list_feedback_available(plugin_config, tmpdir):
 
         plugin_config.ExchangeList.inbound = True
 
-        my_feedback_dir = f"{assignment_id}/feedback/2020-01-01 00:02:00.2 00:00"
+        my_feedback_dir = f"{assignment_id}/feedback/2020-01-01%2000%3A02%3A00.2%2000%3A00"
         os.makedirs(my_feedback_dir, exist_ok=True)
         copyfile(
             feedback1_filename,
@@ -803,7 +803,7 @@ def test_list_feedback_available_with_path_includes_course(plugin_config, tmpdir
         plugin_config.Exchange.path_includes_course = True
 
         my_feedback_dir = (
-            f"{course_code}/{assignment_id}/feedback/2020-01-01 00:02:00.2 00:00"
+            f"{course_code}/{assignment_id}/feedback/2020-01-01%2000%3A02%3A00.2%2000%3A00"
         )
         os.makedirs(my_feedback_dir, exist_ok=True)
         copyfile(

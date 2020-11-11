@@ -7,7 +7,7 @@ import sys
 
 from dateutil import parser
 from traitlets import Bool, Unicode
-from urllib.parse import quote_plus
+from urllib.parse import quote, quote_plus
 
 from .exchange import Exchange
 
@@ -249,7 +249,7 @@ class ExchangeList(abc.ExchangeList, Exchange):
                             os.path.join(
                                 assignment_directory,
                                 "feedback",
-                                nb_timestamp,
+                                quote(nb_timestamp),
                             )
                         )
                         if os.path.isdir(local_feedback_dir):

@@ -11,7 +11,7 @@ import tempfile
 
 from nbgrader.api import new_uuid
 from traitlets import Bool
-from urllib.parse import quote_plus
+from urllib.parse import quote, quote_plus
 from dateutil import parser
 
 from .exchange import Exchange
@@ -61,8 +61,9 @@ class ExchangeFetchFeedback(abc.ExchangeFetchFeedback, Exchange):
                     #     .strftime(self.timestamp_format)
                     #     .strip()
                     # )
-                    timestamp = f["timestamp"]
+                    timestamp = quote(f["timestamp"])
                     os.makedirs(os.path.join(self.dest_path, timestamp), exist_ok=True)
+                    print(f"### dir: {os.path.join(self.dest_path, timestamp)}")
                     with open(
                         os.path.join(self.dest_path, timestamp, f["filename"]), "wb"
                     ) as handle:

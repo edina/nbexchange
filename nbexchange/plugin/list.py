@@ -7,7 +7,7 @@ import sys
 
 from dateutil import parser
 from traitlets import Bool, Unicode
-from urllib.parse import quote_plus
+from urllib.parse import quote, quote_plus
 
 from .exchange import Exchange
 
@@ -231,32 +231,46 @@ class ExchangeList(abc.ExchangeList, Exchange):
             # ("feedback-time" for all notebooks in one 'release' is the same)
             if assignment.get("status") == "submitted":
 
+                assignment_dir = os.path.join(
+                    assignment.get("assignment_id"), "feedback"
+                )
+                if self.path_includes_course:
+                    assignment_dir = os.path.join(
+                        self.course_id, assignment.get("assignment_id"), "feedback"
+                    )
+
                 local_feedback_dir = None
                 local_feedback_path = None
                 has_local_feedback = False
                 has_exchange_feedback = False
                 feedback_updated = False
+
                 for notebook in assignment["notebooks"]:
 
                     nb_timestamp = notebook["feedback_timestamp"]
 
                     # This has to match timestamp in fetch_feedback.download
                     if nb_timestamp:
-                        # nb_timestamp = parser.parse(nb_timestamp)
-                        # nb_timestamp = nb_timestamp.strftime(self.timestamp_format).strip()
 
-                        local_feedback_dir = os.path.relpath(
+                        # get the individual notebook details
+                        if os.path.isdir(
                             os.path.join(
-                                assignment_directory,
-                                "feedback",
+                                assignment_dir,
                                 nb_timestamp,
                             )
-                        )
-                        if os.path.isdir(local_feedback_dir):
+                        ):
                             local_feedback_path = os.path.join(
-                                local_feedback_dir, f"{notebook['notebook_id']}.html"
+                                assignment_dir,
+                                quote(nb_timestamp),
+                                f"{notebook['notebook_id']}.html",
                             )
-                            has_local_feedback = os.path.isfile(local_feedback_path)
+                            has_local_feedback = os.path.isfile(
+                                os.path.join(
+                                    assignment_dir,
+                                    nb_timestamp,
+                                    f"{notebook['notebook_id']}.html",
+                                )
+                            )
 
                     notebook["has_local_feedback"] = has_local_feedback
                     notebook["local_feedback_path"] = local_feedback_path
@@ -281,7 +295,14 @@ class ExchangeList(abc.ExchangeList, Exchange):
                 assignment["has_local_feedback"] = has_local_feedback
                 assignment["has_exchange_feedback"] = has_exchange_feedback
                 assignment["feedback_updated"] = feedback_updated
-                assignment["local_feedback_path"] = local_feedback_dir
+                if has_local_feedback:
+                    assignment["local_feedback_path"] = os.path.join(
+                        assignment_dir,
+                        quote(nb_timestamp),
+                    )
+                else:
+                    assignment["local_feedback_path"] = None
+
                 # We keep everything we've not filtered out
             my_assignments.append(assignment)
 

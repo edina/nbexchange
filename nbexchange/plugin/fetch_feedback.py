@@ -63,6 +63,9 @@ class ExchangeFetchFeedback(abc.ExchangeFetchFeedback, Exchange):
                     # )
                     timestamp = f["timestamp"]
                     os.makedirs(os.path.join(self.dest_path, timestamp), exist_ok=True)
+                    self.log.debug(
+                        f"##### fetch-feedback.download writing to {os.path.join(self.dest_path, timestamp)}"
+                    )
                     with open(
                         os.path.join(self.dest_path, timestamp, f["filename"]), "wb"
                     ) as handle:

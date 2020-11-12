@@ -1,4 +1,4 @@
-from sqlalchemy import UniqueConstraint, Column, Integer, Unicode, Boolean, ForeignKey
+from sqlalchemy import UniqueConstraint, Column, Integer, Unicode, Boolean, ForeignKey, Text
 from sqlalchemy.orm import relationship
 
 from nbexchange.models.actions import Action
@@ -25,7 +25,7 @@ class Assignment(Base):
     __table_args__ = (UniqueConstraint("course_id", "assignment_code", "active"),)
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    assignment_code = Column(Unicode(50), nullable=False, index=True)
+    assignment_code = Column(Text(), nullable=False, index=True)
     active = Column(Boolean, default=True, nullable=False)
 
     ## course <-> assignment mappings

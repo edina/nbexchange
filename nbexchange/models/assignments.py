@@ -1,4 +1,12 @@
-from sqlalchemy import UniqueConstraint, Column, Integer, Unicode, Boolean, ForeignKey, Text
+from sqlalchemy import (
+    UniqueConstraint,
+    Column,
+    Integer,
+    Unicode,
+    Boolean,
+    ForeignKey,
+    Text,
+)
 from sqlalchemy.orm import relationship
 
 from nbexchange.models.actions import Action

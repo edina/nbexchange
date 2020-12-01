@@ -900,9 +900,7 @@ def test_list_feedback_available_with_missing_timestamp_last(plugin_config, tmpd
 
         plugin_config.ExchangeList.inbound = True
 
-        my_feedback_dir = (
-            f"{assignment_id}/feedback/2020-01-01 00:02:00.2 00:00"
-        )
+        my_feedback_dir = f"{assignment_id}/feedback/2020-01-01 00:02:00.2 00:00"
 
         plugin = ExchangeList(
             coursedir=CourseDirectory(config=plugin_config), config=plugin_config
@@ -944,7 +942,7 @@ def test_list_feedback_available_with_missing_timestamp_last(plugin_config, tmpd
                                             "has_exchange_feedback": False,
                                             "feedback_updated": False,
                                             "feedback_timestamp": None,
-                                        }
+                                        },
                                     ],
                                     "timestamp": "2020-01-01 00:00:00.2 00:00",
                                 },
@@ -1007,6 +1005,7 @@ def test_list_feedback_available_with_missing_timestamp_last(plugin_config, tmpd
     finally:
         pass
 
+
 @pytest.mark.gen_test
 def test_list_feedback_available_with_missing_timestamp_first(plugin_config, tmpdir):
     try:
@@ -1017,9 +1016,7 @@ def test_list_feedback_available_with_missing_timestamp_first(plugin_config, tmp
 
         plugin_config.ExchangeList.inbound = True
 
-        my_feedback_dir = (
-            f"{assignment_id}/feedback/2020-01-01 00:02:00.2 00:00"
-        )
+        my_feedback_dir = f"{assignment_id}/feedback/2020-01-01 00:02:00.2 00:00"
 
         plugin = ExchangeList(
             coursedir=CourseDirectory(config=plugin_config), config=plugin_config
@@ -1061,7 +1058,7 @@ def test_list_feedback_available_with_missing_timestamp_first(plugin_config, tmp
                                             "has_exchange_feedback": True,
                                             "feedback_updated": False,
                                             "feedback_timestamp": "2020-01-01 00:02:00.4 00:00",
-                                        }
+                                        },
                                     ],
                                     "timestamp": "2020-01-01 00:00:00.2 00:00",
                                 },

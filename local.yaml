@@ -1,0 +1,23 @@
+version: '3'
+
+services:
+  notebook:
+    build:
+        dockerfile: notebook/Dockerfile
+        context: .
+    ports:
+      - 8888:8888
+    environment:
+      NAAS_COURSE_ID: "cool_course_id"
+      NAAS_JWT: "blah"
+      NAAS_BASE_URL: "http://nbexchange:9000"
+
+
+  nbexchange:
+    build:
+      dockerfile: demo_exchange_server/Dockerfile
+      context: .
+    ports:
+    - 9000:9000
+    environment:
+      DEBUG: 1

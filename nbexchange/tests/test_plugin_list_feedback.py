@@ -888,3 +888,238 @@ def test_list_feedback_available_with_path_includes_course(plugin_config, tmpdir
             ]
     finally:
         shutil.rmtree(course_code)
+
+
+@pytest.mark.gen_test
+def test_list_feedback_available_with_missing_timestamp_last(plugin_config, tmpdir):
+    try:
+        course_code = "no_course"
+        assignment_id = "assign_1_1"
+        plugin_config.CourseDirectory.course_id = course_code
+        plugin_config.CourseDirectory.assignment_id = assignment_id
+
+        plugin_config.ExchangeList.inbound = True
+
+        my_feedback_dir = (
+            f"{assignment_id}/feedback/2020-01-01 00:02:00.2 00:00"
+        )
+
+        plugin = ExchangeList(
+            coursedir=CourseDirectory(config=plugin_config), config=plugin_config
+        )
+
+        def api_request(*args, **kwargs):
+            assert args[0] == ("assignments?course_id=no_course")
+            assert "method" not in kwargs or kwargs.get("method").lower() == "get"
+            return type(
+                "Request",
+                (object,),
+                {
+                    "status_code": 200,
+                    "json": (
+                        lambda: {
+                            "success": True,
+                            "value": [
+                                {
+                                    "assignment_id": assignment_id,
+                                    "student_id": 1,
+                                    "course_id": course_code,
+                                    "status": "submitted",
+                                    "path": "",
+                                    "notebooks": [
+                                        {
+                                            "notebook_id": root_notebook_name,
+                                            "has_exchange_feedback": True,
+                                            "feedback_updated": False,
+                                            "feedback_timestamp": "2020-01-01 00:02:00.2 00:00",
+                                        },
+                                        {
+                                            "notebook_id": f"{root_notebook_name}-1",
+                                            "has_exchange_feedback": True,
+                                            "feedback_updated": False,
+                                            "feedback_timestamp": "2020-01-01 00:02:00.3 00:00",
+                                        },
+                                        {
+                                            "notebook_id": f"{root_notebook_name}-2",
+                                            "has_exchange_feedback": False,
+                                            "feedback_updated": False,
+                                            "feedback_timestamp": None,
+                                        }
+                                    ],
+                                    "timestamp": "2020-01-01 00:00:00.2 00:00",
+                                },
+                            ],
+                        }
+                    ),
+                },
+            )
+
+        with patch.object(Exchange, "api_request", side_effect=api_request):
+            called = plugin.start()
+            assert called == [
+                {
+                    "assignment_id": assignment_id,
+                    "course_id": course_code,
+                    "student_id": 1,
+                    "status": "submitted",
+                    "submissions": [
+                        {
+                            "assignment_id": assignment_id,
+                            "course_id": course_code,
+                            "path": "",
+                            "status": "submitted",
+                            "student_id": 1,
+                            "notebooks": [
+                                {
+                                    "feedback_timestamp": "2020-01-01 00:02:00.2 00:00",
+                                    "has_exchange_feedback": True,
+                                    "has_local_feedback": False,
+                                    "local_feedback_path": None,
+                                    "feedback_updated": False,
+                                    "notebook_id": root_notebook_name,
+                                },
+                                {
+                                    "feedback_timestamp": "2020-01-01 00:02:00.3 00:00",
+                                    "has_exchange_feedback": True,
+                                    "has_local_feedback": False,
+                                    "local_feedback_path": None,
+                                    "feedback_updated": False,
+                                    "notebook_id": f"{root_notebook_name}-1",
+                                },
+                                {
+                                    "feedback_timestamp": None,
+                                    "has_exchange_feedback": False,
+                                    "has_local_feedback": False,
+                                    "local_feedback_path": None,
+                                    "feedback_updated": False,
+                                    "notebook_id": f"{root_notebook_name}-2",
+                                },
+                            ],
+                            "timestamp": "2020-01-01 00:00:00.2 00:00",
+                            "feedback_updated": False,
+                            "has_exchange_feedback": True,
+                            "has_local_feedback": False,
+                            "local_feedback_path": None,
+                        }
+                    ],
+                }
+            ]
+    finally:
+        pass
+
+@pytest.mark.gen_test
+def test_list_feedback_available_with_missing_timestamp_first(plugin_config, tmpdir):
+    try:
+        course_code = "no_course"
+        assignment_id = "assign_1_1"
+        plugin_config.CourseDirectory.course_id = course_code
+        plugin_config.CourseDirectory.assignment_id = assignment_id
+
+        plugin_config.ExchangeList.inbound = True
+
+        my_feedback_dir = (
+            f"{assignment_id}/feedback/2020-01-01 00:02:00.2 00:00"
+        )
+
+        plugin = ExchangeList(
+            coursedir=CourseDirectory(config=plugin_config), config=plugin_config
+        )
+
+        def api_request(*args, **kwargs):
+            assert args[0] == ("assignments?course_id=no_course")
+            assert "method" not in kwargs or kwargs.get("method").lower() == "get"
+            return type(
+                "Request",
+                (object,),
+                {
+                    "status_code": 200,
+                    "json": (
+                        lambda: {
+                            "success": True,
+                            "value": [
+                                {
+                                    "assignment_id": assignment_id,
+                                    "student_id": 1,
+                                    "course_id": course_code,
+                                    "status": "submitted",
+                                    "path": "",
+                                    "notebooks": [
+                                        {
+                                            "notebook_id": root_notebook_name,
+                                            "has_exchange_feedback": False,
+                                            "feedback_updated": False,
+                                            "feedback_timestamp": None,
+                                        },
+                                        {
+                                            "notebook_id": f"{root_notebook_name}-1",
+                                            "has_exchange_feedback": True,
+                                            "feedback_updated": False,
+                                            "feedback_timestamp": "2020-01-01 00:02:00.3 00:00",
+                                        },
+                                        {
+                                            "notebook_id": f"{root_notebook_name}-2",
+                                            "has_exchange_feedback": True,
+                                            "feedback_updated": False,
+                                            "feedback_timestamp": "2020-01-01 00:02:00.4 00:00",
+                                        }
+                                    ],
+                                    "timestamp": "2020-01-01 00:00:00.2 00:00",
+                                },
+                            ],
+                        }
+                    ),
+                },
+            )
+
+        with patch.object(Exchange, "api_request", side_effect=api_request):
+            called = plugin.start()
+            assert called == [
+                {
+                    "assignment_id": assignment_id,
+                    "course_id": course_code,
+                    "student_id": 1,
+                    "status": "submitted",
+                    "submissions": [
+                        {
+                            "assignment_id": assignment_id,
+                            "course_id": course_code,
+                            "path": "",
+                            "status": "submitted",
+                            "student_id": 1,
+                            "notebooks": [
+                                {
+                                    "feedback_timestamp": None,
+                                    "has_exchange_feedback": False,
+                                    "has_local_feedback": False,
+                                    "local_feedback_path": None,
+                                    "feedback_updated": False,
+                                    "notebook_id": root_notebook_name,
+                                },
+                                {
+                                    "feedback_timestamp": "2020-01-01 00:02:00.3 00:00",
+                                    "has_exchange_feedback": True,
+                                    "has_local_feedback": False,
+                                    "local_feedback_path": None,
+                                    "feedback_updated": False,
+                                    "notebook_id": f"{root_notebook_name}-1",
+                                },
+                                {
+                                    "feedback_timestamp": "2020-01-01 00:02:00.4 00:00",
+                                    "has_exchange_feedback": True,
+                                    "has_local_feedback": False,
+                                    "local_feedback_path": None,
+                                    "feedback_updated": False,
+                                    "notebook_id": f"{root_notebook_name}-2",
+                                },
+                            ],
+                            "timestamp": "2020-01-01 00:00:00.2 00:00",
+                            "feedback_updated": False,
+                            "has_exchange_feedback": True,
+                            "has_local_feedback": False,
+                            "local_feedback_path": None,
+                        }
+                    ],
+                }
+            ]
+    finally:
+        pass

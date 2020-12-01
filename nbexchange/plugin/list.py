@@ -239,7 +239,7 @@ class ExchangeList(abc.ExchangeList, Exchange):
                         self.course_id, assignment.get("assignment_id"), "feedback"
                     )
 
-                local_feedback_dir = None
+                last_seen_feedback_timestamp = None
                 local_feedback_path = None
                 has_local_feedback = False
                 has_exchange_feedback = False
@@ -251,6 +251,7 @@ class ExchangeList(abc.ExchangeList, Exchange):
 
                     # This has to match timestamp in fetch_feedback.download
                     if nb_timestamp:
+                        last_seen_feedback_timestamp = nb_timestamp
 
                         # get the individual notebook details
                         if os.path.isdir(
@@ -298,7 +299,7 @@ class ExchangeList(abc.ExchangeList, Exchange):
                 if has_local_feedback:
                     assignment["local_feedback_path"] = os.path.join(
                         assignment_dir,
-                        quote(nb_timestamp),
+                        quote(last_seen_feedback_timestamp),
                     )
                 else:
                     assignment["local_feedback_path"] = None

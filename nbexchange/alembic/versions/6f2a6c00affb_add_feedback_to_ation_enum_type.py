@@ -43,10 +43,10 @@ def upgrade():
     if connection.dialect.name == "postgresql":
 
         op.execute(
-            "ALTER TYPE assignmentactions ADD VALUE IF NOT EXISTS feedback_released"
+            "ALTER TYPE assignmentactions ADD VALUE IF NOT EXISTS 'feedback_released'"
         )
         op.execute(
-            "ALTER TYPE assignmentactions ADD VALUE IF NOT EXISTS feedback_fetched"
+            "ALTER TYPE assignmentactions ADD VALUE IF NOT EXISTS 'feedback_fetched'"
         )
 
     else:

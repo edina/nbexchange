@@ -38,22 +38,38 @@ class OldAssignmentActions(Enum):
 
 def upgrade():
 
-    with op.batch_alter_table("action") as batch_op:
+    connection = op.get_bind()
 
-        batch_op.alter_column(
-            "action",
-            "action",
-            existing_type=sa.Enum(OldAssignmentActions, name="assignmentactions"),
-            type_=sa.Enum(NewAssignmentActions, name="assignmentactions"),
+    if connection.dialect.name == "postgresql":
+
+        op.execute(
+            "ALTER TYPE assignmentactions ADD VALUE IF NOT EXISTS 'feedback_released'"
         )
+        op.execute(
+            "ALTER TYPE assignmentactions ADD VALUE IF NOT EXISTS 'feedback_fetched'"
+        )
+
+    else:
+
+        with op.batch_alter_table("action") as batch_op:
+
+            batch_op.alter_column(
+                "action",
+                "action",
+                existing_type=sa.Enum(OldAssignmentActions, name="assignmentactions"),
+                type_=sa.Enum(NewAssignmentActions, name="assignmentactions"),
+            )
 
 
 def downgrade():
 
-    with op.batch_alter_table("action") as batch_op:
-        batch_op.alter_column(
-            "action",
-            "action",
-            existing_type=sa.Enum(NewAssignmentActions, name="assignmentactions"),
-            type_=sa.Enum(OldAssignmentActions, name="assignmentactions"),
-        )
+    if connection.dialect.name == "postgresql":
+        pass
+    else:
+        with op.batch_alter_table("action") as batch_op:
+            batch_op.alter_column(
+                "action",
+                "action",
+                existing_type=sa.Enum(NewAssignmentActions, name="assignmentactions"),
+                type_=sa.Enum(OldAssignmentActions, name="assignmentactions"),
+            )

@@ -42,6 +42,10 @@ def upgrade():
 
     if connection.dialect.name == "postgresql":
 
+        # This commit is required because postgres can't alter type during a transaction
+        # Alembic runs these by default in a transaction so will fail without it
+        # https://stackoverflow.com/questions/14845203/altering-an-enum-field-using-alembic
+        op.execute("COMMIT")
         op.execute(
             "ALTER TYPE assignmentactions ADD VALUE IF NOT EXISTS 'feedback_released'"
         )

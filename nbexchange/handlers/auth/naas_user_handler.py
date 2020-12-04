@@ -31,20 +31,10 @@ class NaasUserHandler(BaseUserHandler):
         if r.status_code == 401:
             return None
 
-        # TODO: this puts a hard restriction on the usernames having an underscore in them, which we do not want
-        # THe solution is to get the organisation id from the user state stored in django instead of deriving it
-        # from the username
-        try:
-            org_id, name = result.get("username").split(
-                "_", 1
-            )  # we only want the first part
-        except ValueError:
-            org_id = 1
-
         return {
             "name": result["username"],
             "course_id": result["course_code"],
             "course_title": result["course_title"],
             "course_role": result["role"],
-            "org_id": org_id,
+            "org_id": result["organisation_id"],
         }

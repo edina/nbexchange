@@ -7,5 +7,4 @@ class HomeHandler(BaseHandler):
     urls = ["/"]
 
     def get(self):
-        self.log.info(f"NbExchange {__version__}")
         self.finish(f"NbExchange {__version__}")

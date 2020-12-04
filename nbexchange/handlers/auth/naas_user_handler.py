@@ -1,6 +1,7 @@
 import os
 
 import requests
+import logging
 
 from nbexchange.handlers.auth.user_handler import BaseUserHandler
 
@@ -20,6 +21,7 @@ class NaasUserHandler(BaseUserHandler):
         try:
             r = requests.get(api_endpoint, cookies=cookies)
         except requests.exceptions.ConnectionError:
+            logging.exception(f"Error connecting to {self.naas_url}")
             return None
 
         result = r.json()

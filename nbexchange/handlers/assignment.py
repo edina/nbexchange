@@ -93,12 +93,15 @@ class Assignments(BaseHandler):
                             action.action
                             == nbexchange.models.actions.AssignmentActions.submitted
                         ):
+                            # We want the _last_ piece of feedback, for this student
+                            # (so last == descending id order & take the first one)
                             feedback = (
                                 session.query(nbexchange.models.feedback.Feedback)
                                 .filter_by(
                                     notebook_id=notebook.id,
                                     student_id=this_user.get("id"),
                                 )
+                                .order_by(desc(nbexchange.models.feedback.Feedback.id))
                                 .first()
                             )
                             feedback_available = bool(feedback)

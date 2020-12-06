@@ -6,20 +6,25 @@ A Jupyterhub service that replaces the nbgrader Exchange.
 
 <!-- TOC -->
 
-- [Highlights of nbexchange](#highlights-of-nbexchange)
-  - [Compatibility](#compatibility)
-- [Documentation](#documentation)
-  - [Database relationships](#database-relationships)
-- [Installing](#installing)
-- [Contributing](#contributing)
-- [Configuration](#configuration)
-  - [Configuring `nbexchange`](#configuring-nbexchange)
-  - [Configuring `nbgrader`](#configuring-nbgrader)
-- [Know To-Do stuff](#know-to-do-stuff)
+- [1. Highlights of nbexchange](#1-highlights-of-nbexchange)
+    - [1.1. Compatibility](#11-compatibility)
+- [2. Documentation](#2-documentation)
+    - [2.1. Database relationships](#21-database-relationships)
+- [3. Installing](#3-installing)
+    - [3.1. Configuration](#31-configuration)
+    - [3.2. How to](#32-how-to)
+- [4. Contributing](#4-contributing)
+- [5. Configuration](#5-configuration)
+    - [5.1. Configuring `nbexchange`](#51-configuring-nbexchange)
+    - [5.2. Configuring `nbgrader`](#52-configuring-nbgrader)
+- [Running a demo, locally](#running-a-demo-locally)
+    - [looking at the configuration](#looking-at-the-configuration)
+        - [nbexchange](#nbexchange)
+        - [notebook](#notebook)
 
 <!-- /TOC -->
 
-# Highlights of nbexchange
+# 1. Highlights of nbexchange
 
 From [nbgrader](https://github.com/jupyter/nbgrader): _Assignments_ are `created`, `generated`, `released`, `fetched`, `submitted`, `collected`, `graded`. Then `feedback` can be `generated`, `released`, and `fetched`.
 
@@ -33,11 +38,11 @@ It's provides an external store for released & submitted assignments, and [soon]
 
 Following the lead of other Jupyter services, it is a `tornado` application.
 
-## Compatibility
+## 1.1. Compatibility
 
-This version is compatible with `nbgrader` 0.5
+This version is compatible with `nbgrader` 0.7-dev
 
-# Documentation
+# 2. Documentation
 
 This exchange has some fundamental design decisions driven by the environment which drove its creation.
 
@@ -60,15 +65,15 @@ All code should have `docstrings`.
 
 Documentation currently in [docs/](docs/) - should be in readthedocs
 
-## Database relationships
+## 2.1. Database relationships
 
 ![Diagram of table relationships](table_relationships.png)
 
-# Installing
+# 3. Installing
 
 Nbexchange can be installed as a Helm chart
 
-## Configuration
+## 3.1. Configuration
 
 | Parameter                                                     | Description                                                                                                                                                                  | Default                                                                                                   |
 | ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
@@ -85,24 +90,24 @@ Nbexchange can be installed as a Helm chart
 | `nodeSelector`                                                | Pod node selector for deployment                                                                                                                                               | `{}`                                                                                                      |
 
 
-## How to
+## 3.2. How to
 
 ```
 helm install --name nbexchange --namespace default ./chart -f myconfiguration.yaml
 ```
 
-# Contributing
+# 4. Contributing
 
 See [Contributing.md](CONTRIBUTING.md)
 
-# Configuration
+# 5. Configuration
 
 There are two parts to configuring `nbexchange`:
 
 - Configure `nbexchange` itself
 - Configure `nbgrader` to use `nbexchange`
 
-## Configuring `nbexchange`
+## 5.1. Configuring `nbexchange`
 
 The exchange uses `nbexchange_config.py` for configuration.
 
@@ -158,7 +163,7 @@ For the exchange to work, it needs some details about the user connecting to it 
 - `course_role`: The role of the user, normally `Student` or `Instructor`. (currently only `Instructor` get privilaged actions),
 - `org_id`: As mentioned above, nbexchange divides courses and users across organisations. This is an id (numeric) for the org_id for the user.
 
-## Configuring `nbgrader`
+## 5.2. Configuring `nbgrader`
 
 The primary reference for this should be the `nbgrader` documentation - but in short:
 
@@ -185,10 +190,56 @@ c.ExchangeFactory.release_feedback = 'nbexchange.plugin.ExchangeReleaseFeedback'
 c.ExchangeFactory.submit = 'nbexchange.plugin.ExchangeSubmit'
 ```
 
-# Know To-Do stuff
+# Running a demo, locally
 
-- ~~Get the initial code up~~
-- Get a master-branch established
-- Get a `handlers/auth/user_handler` to get details from jupyterhub (users, courses, and assignments should all be in the config file)
-- Get an external sanity-check for the code
-- Get docs to ReadTheDocs
+You can run a notebook, and talk to a local nbexchange service with this simple example:
+
+1. Build the docker images:
+
+```
+docker-compose -f local.yaml build
+```
+
+2. Start up the stack:
+
+```
+docker-compose -f local.yaml up
+```
+
+3. Connect to the notebook:
+
+[http://localhost:8888/?token=secret-token](http://localhost:8888/?token=secret-token) - we cheat: the token is specified in `jupyter_notebook_config.py`
+
+## looking at the configuration
+
+### nbexchange
+
+In `nbexchange_config.py` we have a faked authentication routine:
+
+```
+class MyUserHandler(BaseUserHandler):
+    def get_current_user(self, request):
+        return {
+            "name": "myname",
+            "course_id": "cool_course_id",
+            "course_title": "cool course",
+            "course_role": "Instructor",
+            "org_id": 1,
+        }
+
+
+c.NbExchange.user_plugin_class = MyUserHandler
+```
+.... you will need to write your own `c.NbExchange.user_plugin_class` with a `get_current_user` that returns a `dict` as shown
+
+- Note that the database is an sqlite database in the docker image, and you can poke at it with `sqlite3 ????`
+- The exchange is saving files in ` /tmp/courses/1/*` (the `1` is the `org-id` code)
+
+You can now use `Formgrader` to create an assignment (there's even a demo notebook included in the `notebook` sub-directory) and `Assignment list` to fetch & submit it.
+
+### notebook
+
+The configuration for the notebook is in two parts: `jupyter_notebook_config.py` is for the main notebook, and `nbgrader_config.py` for nbgrader (and defined the nbexchange plugin modules for the exchange services)
+
+You should be able to run through the complete `create assignment` right through to `read feedback`
+

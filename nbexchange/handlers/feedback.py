@@ -25,6 +25,24 @@ This relys on users being logged in, and the user-object having additional data:
 'role' (as per LTI)
 """
 
+# A catcher for these calls
+class FeedbacksHandler(BaseHandler):
+    """
+    There are no feedbacks (plural), unlike assignmetn/assignments
+
+    These are here simply to sensibly catch mistaken calls
+    """
+
+    urls = ["feedbacks"]
+
+    # This has no authentiction wrapper, so false implication of service
+    def post(self):
+        raise web.HTTPError(501)
+
+    # This has no authentiction wrapper, so false implication of service
+    def get(self):
+        raise web.HTTPError(501)
+
 
 class FeedbackHandler(BaseHandler):
     """.../feedback/
@@ -38,6 +56,10 @@ class FeedbackHandler(BaseHandler):
     """
 
     urls = ["feedback"]
+
+    # This has no authentiction wrapper, so false implication of service
+    def get(self):
+        raise web.HTTPError(501)
 
     # Fetch feedback
     @authenticated
@@ -118,39 +140,27 @@ class FeedbackHandler(BaseHandler):
     def post(self):
         """
         This endpoint accepts feedback files for a notebook.
-        It requires a notebook id, student id, feedback timestamp and
-        a checksum.
+
+        parmas:
+            course_id: course_code
+            assignment_id: assignment_code
+            user_id: user_id (optional)
 
         The endpoint return {'success': true} for all successful feedback releases.
         """
 
-        [
-            course_id,
-            assignment_id,
-            notebook_id,
-            student_id,
-            timestamp,
-            checksum,
-        ] = self.get_params(
+        [course_id, assignment_id, student_id,] = self.get_params(
             [
                 "course_id",
                 "assignment_id",
-                "notebook",
-                "student",
-                "timestamp",
-                "checksum",
+                "user_id",
             ]
         )
 
-        if not (
-            course_id
-            and assignment_id
-            and notebook_id
-            and student_id
-            and timestamp
-            and checksum
-        ):
-            note = "Feedback call requires a course id, assignment id, notebook name, student id, checksum and timestamp."
+        if not (course_id and assignment_id and student_id):
+            note = (
+                "Feedback call requires a course id, assignment id, and a student id."
+            )
             self.log.debug(note)
             self.finish({"success": False, "note": note})
             return

@@ -140,7 +140,7 @@ class Assignments(BaseHandler):
         self.log.debug(f"Assignments: {models}")
         self.finish({"success": True, "value": models})
 
-    # This has no authentiction wrapper, so false implication os service
+    # This has no authentiction wrapper, so false implication of service
     def post(self):
         raise web.HTTPError(501)
 
@@ -153,6 +153,8 @@ class Assignment(BaseHandler):
 
     GET: downloads assignment
     POST: (role=instructor, with file): Add ("release") an assignment
+    DELETE: (role=instructor): marks the assignment as "not active".
+        Does *not* delete anything from the database!
     """
 
     # urls = ["assignment/([^/]+)(?:/?([^/]+))?"]

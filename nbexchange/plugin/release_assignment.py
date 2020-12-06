@@ -10,6 +10,16 @@ from .exchange import Exchange
 
 
 class ExchangeReleaseAssignment(abc.ExchangeReleaseAssignment, Exchange):
+    """
+    self_copy_files is the main entry point for this implimentation
+    self.src is where the instructors assignmetn file(s) are stored
+    self.dest is moot, we're uploading to the exchange
+    self.notebooks is the list of notebooks in the released assignment
+      (which is then used everywhere to compare what should be submitted
+      or included in feedback)
+    self.upload pushes a gzipped file to the exchange
+    """
+
     def do_copy(self, src, dest):
         pass
 
@@ -56,7 +66,9 @@ class ExchangeReleaseAssignment(abc.ExchangeReleaseAssignment, Exchange):
         pass
 
     def tar_source(self):
-
+        """
+        Creates an in-memory tar-ball of all the files in self.src_path
+        """
         import tarfile
 
         tar_file = io.BytesIO()

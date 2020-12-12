@@ -12,7 +12,7 @@ from .exchange import Exchange
 class ExchangeReleaseAssignment(abc.ExchangeReleaseAssignment, Exchange):
     """
     self_copy_files is the main entry point for this implimentation
-    self.src is where the instructors assignmetn file(s) are stored
+    self.src is where the instructors assignment file(s) are stored
     self.dest is moot, we're uploading to the exchange
     self.notebooks is the list of notebooks in the released assignment
       (which is then used everywhere to compare what should be submitted
@@ -40,14 +40,47 @@ class ExchangeReleaseAssignment(abc.ExchangeReleaseAssignment, Exchange):
 
         super(ExchangeReleaseAssignment, self)._load_config(cfg, **kwargs)
 
+    # Everything works relative to "current working directory", so $HOME for
+    # the web UI
     def init_src(self):
+        if not self.coursedir.course_id:
+            self.fail(
+                    f"No course id specified. Re-run with --course flag."
+                )
+        # This is "normal" behaviour
         self.src_path = self.coursedir.format_path(
             self.coursedir.release_directory, ".", self.coursedir.assignment_id
         )
+
+        # 'use_1_2_behaviour' is "normal" nbgrader behaviour, but trumps
+        #  `use_course_path_everywhere`
+        old_root = self.coursedir.root
+        if not self.use_1_2_behaviour:
+
+            # if use_course_path_everywhere & check_for_old_formgrader_paths finds nothing
+            # make append <course_code> to self.coursedir.root
+            if self.use_course_path_everywhere:
+                if not( self.check_for_old_formgrader_paths  and os.path.isdir(self.src_path)):
+                    self.coursedir.root = os.path.join(self.coursedir.root, self.course_id)
+                    self.src_path = self.coursedir.format_path(
+                        self.coursedir.release_directory, ".", self.coursedir.assignment_id
+                    )
+
+        # Quick check: has it been generated?
         if not os.path.isdir(self.src_path):
+
+            # If not - assignment typo, is it even in source?
+            # At this point, we know if we're using $HOME/release or $HOME/<course>/release
             source = self.coursedir.format_path(
                 self.coursedir.source_directory, ".", self.coursedir.assignment_id
             )
+            if not self.use_1_2_behaviour:
+                if self.use_course_path_everywhere and self.check_for_old_formgrader_paths:
+                    self.coursedir.root = old_root
+                    source = self.coursedir.format_path(
+                        self.coursedir.source_directory, ".", self.coursedir.assignment_id
+                    )
+
             if os.path.isdir(source):
                 # Looks like the instructor forgot to assign
                 self.fail(
@@ -55,7 +88,7 @@ class ExchangeReleaseAssignment(abc.ExchangeReleaseAssignment, Exchange):
                 )
             else:
                 self._assignment_not_found(
-                    self.src_path,
+                    source,
                     self.coursedir.format_path(
                         self.coursedir.release_directory, ".", "*"
                     ),

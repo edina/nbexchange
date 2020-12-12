@@ -16,24 +16,67 @@ from urllib.parse import urljoin
 
 class Exchange(abc.Exchange):
 
-    #     # Code where this is happening is clearly marked
-    #     support_old_path_includes_course_behaviour = Bool(
-    #         True,
-    #         help="""
-    # To enable old bad coding to be corrected, some old behaviour needs to
-    # be supported for a time.
+    # Temporary configuration to transition from 1.1 to 1.3
+    use_1_2_behaviour = Bool(
+        False,
+        help="""
+Defines which mode of code is used (defaults to false)
+If this is False (or does not exist), everything uses the old paths &
+methods (pre version 1.2.0).
+If it's True, it allows 'check_for_old_formgrader_paths' &
+'support_old_feedback' (version 1.2.x)
+This flag (and it's sub flags) will disappear for version 1.3+
+"""
+    ).tag(config=True)
 
-    # eg: 'source' & 'release' started off not recognising the config option
-    # 'path_includes_course' - so there will be a period of time where existing
-    # course-work needs to check whether things should be found (and
-    # continue to be filed) using the old system or move to the new.
+    use_course_path_everywhere = Bool(
+        False,
+        help="""
+This switches the code to put *all* nbgrader _step_ folders inside
+the course_code directory.
+This is useful as it creates separate islands for each course.
 
-    # If this flag is true, then the code will check if '$HOME/source/assignment_id'
-    # exists, and if it does the code will *not* honour the 'path_includes_course'
-    # config. If the directory is not present, then the code will honour
-    # the 'path_includes_course' config.
-    #         """,
-    #     ).tag(config=True)
+This defaults to False, which means the plugin emulates the standard
+nbgrader and puts all directorys in the current directory (or $HOME
+in the web UI)
+
+This flag is primarily used for Instructors. If you are configuring
+students, then 'path_includes_course' is perfectly valid.
+        """
+    ).tag(config=True)
+
+    check_for_old_formgrader_paths = Bool(
+        False,
+        help="""
+To enable old bad coding to be corrected, some old behaviour needs to
+be supported for a time.
+
+eg: 'source' & 'release' started off not recognising the config option
+'path_includes_course' - so there will be a period of time where existing
+course-work needs to check whether things should be found (and
+continue to be filed) using the old system or move to the new.
+
+If this flag is 'true', then the code will check if
+'$HOME/source/assignment_id' exists
+
+* If it does the code will *not* honour the 'path_includes_course' config.
+* If not, then the code *will* honour the 'path_includes_course' config.
+        """,
+    ).tag(config=True)
+
+    support_old_feedback = Bool(
+        True,
+        help="""
+Toggles between per file feedback (<1.2), and gzipped feedback (which is what
+everything else does)
+
+If True, it will check if the `assignment_list` return `feedback_xxx` keys for
+notebook dicts
+
+* If it does, we use the old per file and summerize system
+* If not, we use the new ungzip into folder system
+        """,
+    ).tag(config=True)
 
     path_includes_course = Bool(
         False,
@@ -42,6 +85,9 @@ Whether the path for fetching/submitting  assignments should be
 prefixed with the course name. If this is `False`, then the path
 will be something like `./ps1`. If this is `True`, then the path
 will be something like `./course123/ps1`.
+
+Note: this _only_ changes fetching/submitting  assignments, it
+has no impact on the Formgrade paths.
 """,
     ).tag(config=True)
 

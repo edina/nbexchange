@@ -1,3 +1,16 @@
+# From setup.py
+alembic
+aiocontextvars
+fuzzywuzzy
+ipykernel==5.3.1
+jupyterhub
+nbgrader==0.7.0.dev0
+psycopg2-binary
+sentry-sdk==0.19.1
+sqlalchemy==1.3.20
+tornado
+urllib3==1.25.11 # Pinned because of requests depdendency conflict
+
 pytest
 pytest-cov
 pytest-tornado

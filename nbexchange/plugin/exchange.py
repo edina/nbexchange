@@ -26,7 +26,7 @@ methods (pre version 1.2.0).
 If it's True, it allows 'check_for_old_formgrader_paths' &
 'support_old_feedback' (version 1.2.x)
 This flag (and it's sub flags) will disappear for version 1.3+
-"""
+""",
     ).tag(config=True)
 
     use_course_path_everywhere = Bool(
@@ -42,7 +42,7 @@ in the web UI)
 
 This flag is primarily used for Instructors. If you are configuring
 students, then 'path_includes_course' is perfectly valid.
-        """
+        """,
     ).tag(config=True)
 
     check_for_old_formgrader_paths = Bool(

@@ -42,6 +42,11 @@ class BaseHandler(web.RequestHandler):
         super(BaseHandler, self).__init__(application, request, **kwargs)
         self.set_header("Content-type", "application/json")
 
+    # See 'plugin/exchange' for details on this property
+    @property
+    def support_old_feedback(self):
+        return self.settings["support_old_feedback"]
+
     # Root location for data to be written to
     @property
     def base_storage_location(self):

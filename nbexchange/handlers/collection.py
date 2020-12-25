@@ -93,7 +93,6 @@ class Collections(BaseHandler):
                     continue
                 self.log.debug(f"Assignment Actions: {assignment.actions}")
                 for action in assignment.actions:
-                    print(f"action: {action}")
                     if re.search(
                         fr"/{re_action}/{re_course}/{re_assignment}/{re_user}/",
                         action.location,

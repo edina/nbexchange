@@ -293,7 +293,6 @@ def test_submit_multiple_notebooks_in_assignment(plugin_config, tmpdir):
 
         def api_request(*args, **kwargs):
             if args[0].startswith("assignments"):
-                print("Returning mock api response")
                 return type(
                     "Request",
                     (object,),
@@ -331,7 +330,6 @@ def test_submit_multiple_notebooks_in_assignment(plugin_config, tmpdir):
                     },
                 )
             else:
-                print("checking for what's in the tarball")
                 pth = str(tmpdir.mkdir("submit_several").realpath())
                 assert args[0] == (
                     f"submission?course_id={course_id}&assignment_id={assignment_id3}"

@@ -1,3 +1,4 @@
+import re
 import time
 
 from tornado import web, httputil
@@ -21,6 +22,7 @@ class Collections(BaseHandler):
     parmas:
         course_id: course_code
         assignment_id: assignment_code
+        user_id: user_id - optional
 
     GET: gets list of actions for the assignment
     """
@@ -32,13 +34,22 @@ class Collections(BaseHandler):
 
         models = []
 
-        [course_code, assignment_code] = self.get_params(["course_id", "assignment_id"])
+        [course_code, assignment_code, user_id] = self.get_params(
+            ["course_id", "assignment_id", "user_id"]
+        )
 
         if not (course_code and assignment_code):
             note = "Collections call requires both a course code and an assignment code"
             self.log.info(note)
             self.finish({"success": False, "note": note})
             return
+
+        # set up some regex segments for use later on
+        # fr is combining f-string substitution with re's raw-string
+        re_action = r"submitted"
+        re_course = fr"{course_code}"
+        re_assignment = fr"{assignment_code}"
+        re_user = fr"{user_id}" if user_id else r"[^/]+"
 
         # Who is my user?
         this_user = self.nbex_user
@@ -76,12 +87,15 @@ class Collections(BaseHandler):
 
             for assignment in assignments:
                 self.log.debug(f"Assignment: {assignment}")
+
+                # if an assignment code is given, filter off everything else
+                if assignment.assignment_code != assignment_code:
+                    continue
                 self.log.debug(f"Assignment Actions: {assignment.actions}")
                 for action in assignment.actions:
-                    # For every action that is not "released" checked if the user id matches
-                    if (
-                        action.action
-                        == nbexchange.models.actions.AssignmentActions.submitted
+                    if re.search(
+                        fr"/{re_action}/{re_course}/{re_assignment}/{re_user}/",
+                        action.location,
                     ):
                         models.append(
                             {
@@ -123,8 +137,6 @@ class Collection(BaseHandler):
 
     @authenticated
     def get(self):
-
-        models = []
 
         [course_code, assignment_code, path] = self.get_params(
             ["course_id", "assignment_id", "path"]

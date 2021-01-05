@@ -12,45 +12,45 @@ from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 from urllib.parse import urljoin
 
-user_kiz = {"name": "1_kiz"}
-user_bert = {"name": "1_bert"}
+user_kiz = {"name": "1-kiz"}
+user_bert = {"name": "1-bert"}
 
 user_kiz_instructor = {
-    "name": "1_kiz",
+    "name": "1-kiz",
     "course_id": "course_2",
     "course_role": "Instructor",
     "course_title": "A title",
 }
 
 user_kiz_student = {
-    "name": "1_kiz",
+    "name": "1-kiz",
     "course_id": "course_2",
     "course_role": "Student",
     "course_title": "A title",
 }
 
 user_brobbere_instructor = {
-    "name": "1_brobbere",
+    "name": "1-brobbere",
     "course_id": "course_2",
     "course_role": "Instructor",
     "course_title": "A title",
 }
 
 user_brobbere_student = {
-    "name": "1_brobbere",
+    "name": "1-brobbere",
     "course_id": "course_2",
     "course_role": "Student",
 }
 
 user_lkihlman_instructor = {
-    "name": "1_lkihlman",
+    "name": "1-lkihlman",
     "course_id": "course_1",
     "course_role": "Instructor",
     "course_title": "A title",
 }
 
 user_lkihlman_student = {
-    "name": "1_lkihlman",
+    "name": "1-lkihlman",
     "course_id": "course_1",
     "course_role": "Student",
 }

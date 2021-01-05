@@ -350,10 +350,10 @@ async def test_post_assignment9(app):
 
         assert len(paths) == 4  # the collections call only returns submitted items
         # path in submission contains org + course + assignment + user
-        assert re.search("1/submitted/course_2/assign_a/1_kiz", paths[0])
-        assert re.search("1/submitted/course_2/assign_a/1_kiz", paths[1])
-        assert re.search("1/submitted/course_2/assign_a/1_brobbere", paths[2])
-        assert re.search("1/submitted/course_2/assign_a/1_brobbere", paths[3])
+        assert re.search("1/submitted/course_2/assign_a/1-kiz", paths[0])
+        assert re.search("1/submitted/course_2/assign_a/1-kiz", paths[1])
+        assert re.search("1/submitted/course_2/assign_a/1-brobbere", paths[2])
+        assert re.search("1/submitted/course_2/assign_a/1-brobbere", paths[3])
 
         collected_items = response_data["value"]
         for collected_data in collected_items:

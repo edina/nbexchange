@@ -16,25 +16,6 @@ from urllib.parse import urljoin
 
 class Exchange(abc.Exchange):
 
-#     # Code where this is happening is clearly marked
-#     support_old_path_includes_course_behaviour = Bool(
-#         True,
-#         help="""
-# To enable old bad coding to be corrected, some old behaviour needs to
-# be supported for a time.
-
-# eg: 'source' & 'release' started off not recognising the config option
-# 'path_includes_course' - so there will be a period of time where existing
-# course-work needs to check whether things should be found (and
-# continue to be filed) using the old system or move to the new.
-
-# If this flag is true, then the code will check if '$HOME/source/assignment_id'
-# exists, and if it does the code will *not* honour the 'path_includes_course'
-# config. If the directory is not present, then the code will honour
-# the 'path_includes_course' config.
-#         """,
-#     ).tag(config=True)
-
     path_includes_course = Bool(
         False,
         help="""

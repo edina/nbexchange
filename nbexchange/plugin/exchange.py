@@ -15,6 +15,7 @@ from urllib.parse import urljoin
 
 
 class Exchange(abc.Exchange):
+
     path_includes_course = Bool(
         False,
         help="""

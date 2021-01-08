@@ -43,12 +43,15 @@ it might be necessary to manually install nbgrader from github:
 ```bash
 pip install -e git+https://github.com/jupyter/nbgrader#egg=nbgrader-0.7.0.dev0
 ```
-
+When writing code, please don't rely on _code is its own documentation_ - particularly if you're doing anything remotely complicated.
+A simple comment at the top is useful for future developers to know _why_ the code is doing something.
 ## Running Tests
 
 Tests should be run locally before final commit & Pull Request is made.
 
-Tests include checking that files are _linted_ to our preferred style: [black](https://github.com/psf/black)
+GitHub `Actions` run Tests. These teste include checking that files are _linted_ to our preferred style: [black](https://github.com/psf/black)
+
+When you add/change/improve functionality, please _please_ **please** write tests as well.
 
 Tests should check that error cases are handled, and that [where applicable] both singular & multiple actions are handled correctly.
 
@@ -58,23 +61,7 @@ There is no such thing as _too many tests_
 
 This is how I test, using a virtual environment
 
-To set up a virtual environment:
-
 ```sh
-python3 -m venv venv
-source venv/bin/activate
-```
-
-Not that this might require the install of python3-venv (or equivalent package). On Ubuntu:
-
-```sh
-sudo apt-get install python3-venv
-```
-
-When the virtual environment is installed:
-
-```sh
-pip install -r requirements.txt
 pip install -r requirements-dev.txt
 pytest nbexchange
 ```

@@ -10,6 +10,14 @@ import sys
 from shutil import rmtree
 
 from setuptools import find_packages, setup, Command
+# get paths to all the extension files
+extension_files = ["alembic.ini", "alembic/*", "alembic/versions/*"]
+for (dirname, dirnames, filenames) in os.walk("nbgrader/nbextensions"):
+    root = os.path.relpath(dirname, "nbgrader")
+    for filename in filenames:
+        if filename.endswith(".pyc"):
+            continue
+        extension_files.append(os.path.join(root, filename))
 
 # Package meta-data.
 NAME = "nbexchange"
@@ -58,7 +66,7 @@ def get_package_data():
     (mostly alembic config)
     """
     package_data = {}
-    package_data["nbexchange"] = ["alembic.ini", "alembic/*", "alembic/versions/*"]
+    package_data["nbexchange"] = extension_files
     return package_data
 
 

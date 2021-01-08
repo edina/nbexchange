@@ -1,0 +1,90 @@
+define([
+    'base/js/namespace',
+    'jquery',
+    'base/js/utils',
+    './nbexchange_history'
+], function(Jupyter, $, utils, HistoryList) {
+    "use strict";
+
+    var nbgrader_version = "0.7.0.dev";
+
+    var ajax = utils.ajax || $.ajax;
+    // Notebook v4.3.1 enabled xsrf so use notebooks ajax that includes the
+    // xsrf token in the header data
+
+    var history_html = $([
+        '<div id="history" class="tab-pane">',
+        '  <div id="history_toolbar" class="row list_toolbar">',
+        '    <div class="col-sm-8 no-padding">',
+        '      <span id="history_list_info" class="toolbar_info">History of Exchange interactions</span>',
+        '    <div class="col-sm-4 no-padding tree-buttons">',
+        '      <span id="history_buttons" class="pull-right toolbar_buttons">',
+        '      <button id="refresh_history_list" title="Refresh history list" class="btn btn-default btn-xs"><i class="fa fa-refresh"></i></button>',
+        '      </span>',
+        '    </div>',
+        '  </div>',
+        '  <div class="alert alert-danger version_error">',
+        '  </div>',
+        '  <div id="history_list" class="panel-group">',
+        '  </div>',
+        '</div>'
+    ].join('\n'));
+
+    function checkNbGraderVersion(base_url) {
+        var settings = {
+            cache : false,
+            type : "GET",
+            dataType : "json",
+            data : {
+                version: nbgrader_version
+            },
+            success : function (response) {
+                if (!response['success']) {
+                    var err = $("#history .version_error");
+                    err.text(response['message']);
+                    err.show();
+                }
+            },
+            error : utils.log_ajax_error,
+        };
+        var url = utils.url_path_join(base_url, 'nbgrader_version');
+        ajax(url, settings);
+    }
+
+    function load() {
+        if (!Jupyter.notebook_list) return;
+        var base_url = Jupyter.notebook_list.base_url;
+        $('head').append(
+            $('<link>')
+            .attr('rel', 'stylesheet')
+            .attr('type', 'text/css')
+            .attr('href', base_url + 'nbextensions/history/nbexchange_history.css')
+        );
+        $(".tab-content").append(history_html);
+        $("#tabs").append(
+            $('<li>')
+            .append(
+                $('<a>')
+                .attr('href', '#history')
+                .attr('data-toggle', 'tab')
+                .text('History')
+                .click(function (e) {
+                    window.history.pushState(null, null, '#history');
+                    course_list.load_list();
+                })
+            )
+        );
+        var history_list = new HistoryList.AssignmentList(
+            '#history_list',
+            '#refresh_history_list',
+            {
+                base_url: Jupyter.notebook_list.base_url,
+            }
+        );
+
+        checkNbGraderVersion(base_url);
+    }
+    return {
+        load_ipython_extension: load
+    };
+});

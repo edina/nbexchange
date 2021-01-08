@@ -17,6 +17,7 @@ from .fetch import ExchangeFetch
 from .fetch_assignment import ExchangeFetchAssignment
 from .collect import ExchangeCollect
 from .list import ExchangeList
+from .history import ExchangeHistory
 
 __all__ = [
     "Exchange",
@@ -25,6 +26,7 @@ __all__ = [
     "ExchangeFetch",
     "ExchangeFetchAssignment",
     "ExchangeFetchFeedback",
+    "ExchangeHistory",
     "ExchangeList",
     "ExchangeRelease",
     "ExchangeReleaseAssignment",

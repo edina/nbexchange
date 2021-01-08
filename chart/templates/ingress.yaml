@@ -1,0 +1,20 @@
+{{- if .Values.ingress.enable -}}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ include "nbexchange.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "nbexchange.name" . }}
+    helm.sh/chart: {{ include "nbexchange.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  rules:
+  - host: {{ .Values.ingress.url }}
+    http:
+      paths:
+      - backend:
+          serviceName: {{ include "nbexchange.fullname" . }}
+          servicePort: http
+        path: /
+{{- end }}

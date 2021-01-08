@@ -307,8 +307,6 @@ def test_post_assignment16(app):
     assert "note" not in response_data  # just that it's missing
     paths = list(map(lambda assignment: assignment["path"], response_data["value"]))
     actions = list(map(lambda assignment: assignment["status"], response_data["value"]))
-    print(f"paths {paths}")
-    print(f"actions {actions}")
     assert len(paths) == 7  # 6
     assert actions == [
         "released",

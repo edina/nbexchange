@@ -39,10 +39,16 @@ class ExchangeCollect(abc.ExchangeCollect, Exchange):
             self.fail(e.message)
 
     def do_collect(self):
-        """Downloads multiple submitted files"""
-        r = self.api_request(
-            f"collections?course_id={quote_plus(self.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}"
-        )
+        """
+        Downloads submitted files
+
+        If coursedir.student_id, then we're only looking for that user"""
+
+        # Get a list of submissions
+        url = f"collections?course_id={quote_plus(self.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}"
+        if self.coursedir.student_id != "*":
+            url = url + f"&user_id={quote_plus(self.coursedir.student_id)}"
+        r = self.api_request(url)
 
         self.log.debug(f"Got back {r} when listing collectable assignments")
 

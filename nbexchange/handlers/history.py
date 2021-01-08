@@ -64,7 +64,6 @@ class History(BaseHandler):
     ]
 
 
-
     """
 
     urls = ["history"]

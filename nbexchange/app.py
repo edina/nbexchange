@@ -145,6 +145,13 @@ class NbExchange(Application):
         logger.parent = self.log
         logger.setLevel(self.log.level)
 
+        access_log = logging.getLogger('tornado.access')
+        access_log.propagate = False
+        # make sure access log is enabled even if error level is WARNING|ERROR
+        access_log.setLevel(logging.INFO)
+        stdout_handler = logging.StreamHandler(sys.stdout)
+        access_log.addHandler(stdout_handler)
+
     db_url = os.environ.get("NBEX_DB_URL", "sqlite:///:memory:")  # nbexchange2.sqlite")
 
     db_kwargs = Dict(

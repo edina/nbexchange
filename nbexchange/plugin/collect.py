@@ -36,7 +36,10 @@ class ExchangeCollect(abc.ExchangeCollect, Exchange):
             with tarfile.open(fileobj=tar_file) as handle:
                 handle.extractall(path=dest_path)
         except Exception as e:  # TODO: exception handling
-            self.fail(e.message)
+            if hasattr(e, "message"):
+                self.fail(e.message)
+            else:
+                self.fail(e)
 
     def do_collect(self):
         """Downloads multiple submitted files"""

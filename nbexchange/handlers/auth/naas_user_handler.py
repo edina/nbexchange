@@ -1,40 +1,31 @@
 import os
 
-import requests
+import jwt
 import logging
 
 from nbexchange.handlers.auth.user_handler import BaseUserHandler
 
 
 class NaasUserHandler(BaseUserHandler):
-    naas_url = os.environ.get("NAAS_URL", "https://127.0.0.1:8080")
+    jwt_key = os.environ.get("SECRET_KEY")
 
     def get_current_user(self, request):
-        # Call Django to Authenticate Our User
-        api_endpoint = f"{self.naas_url}/api/users/current/"
-
         cookies = dict()
         # Pass through cookies
         for name in request.request.cookies:
             cookies[name] = request.get_cookie(name)
 
-        try:
-            r = requests.get(api_endpoint, cookies=cookies)
-        except requests.exceptions.ConnectionError:
-            logging.exception(f"Error connecting to {self.naas_url}")
+        if "noteable_auth" not in cookies:
+            logging.debug(f"No noteable_auth cookie found - got {','.join(request.request.cookies)}")
             return None
 
-        result = r.json()
-
-        # self.log.debug("CODE: {} \nRESULT: {}".format(r.status_code, result))
-
-        if r.status_code == 401:
-            return None
+        encoded = cookies["noteable_auth"]
+        result = jwt.decode(encoded, self.jwt_key, algorithms=["HS256"])
 
         return {
             "name": result["username"],
-            "course_id": result["course_code"],
-            "course_title": result["course_title"],
-            "course_role": result["role"],
-            "org_id": result["organisation_id"],
+            "course_id": result["n_cid"],
+            "course_title": result["n_cnm"],
+            "course_role": result["n_rl"],
+            "org_id": result["n_oid"],
         }

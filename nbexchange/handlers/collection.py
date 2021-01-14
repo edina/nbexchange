@@ -204,9 +204,8 @@ class Collection(BaseHandler):
 
                 if release_file:
                     try:
-                        handle = open(path, "r+b")
-                        data = handle.read()
-                        handle.close
+                        with open(path, "r+b") as handle:
+                            data = handle.read()
                     except Exception as e:  # TODO: exception handling
                         self.log.warning(f"Error: {e}")  # TODO: improve error message
                         self.log.info("Recovery failed")

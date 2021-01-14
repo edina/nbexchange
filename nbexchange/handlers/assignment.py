@@ -226,9 +226,8 @@ class Assignment(BaseHandler):
 
             if release_file:
                 try:
-                    handle = open(release_file, "r+b")
-                    data = handle.read()
-                    handle.close()
+                    with open(release_file, "r+b") as handle:
+                        data = handle.read()
                 except Exception as e:  # TODO: exception handling
                     self.log.warning(f"Error: {e}")  # TODO: improve error message
                     self.log.info(f"Unable to open file")
@@ -350,9 +349,8 @@ class Assignment(BaseHandler):
                 release_file = release_file + "/" + cname
                 # Ensure the directory exists
                 os.makedirs(os.path.dirname(release_file), exist_ok=True)
-                handle = open(release_file, "w+b")
-                handle.write(file_info["body"])
-                handle.close()
+                with open(release_file, "w+b") as handle:
+                    handle.write(file_info["body"])
 
             except Exception as e:  # TODO: exception handling
                 self.log.warning(f"Error: {e}")  # TODO: improve error message

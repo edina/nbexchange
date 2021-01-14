@@ -16,7 +16,9 @@ class NaasUserHandler(BaseUserHandler):
             cookies[name] = request.get_cookie(name)
 
         if "noteable_auth" not in cookies:
-            logging.debug(f"No noteable_auth cookie found - got {','.join(request.request.cookies)}")
+            logging.debug(
+                f"No noteable_auth cookie found - got {','.join(request.request.cookies)}"
+            )
             return None
 
         encoded = cookies["noteable_auth"]

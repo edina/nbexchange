@@ -47,7 +47,11 @@ def upgrade():
         sa.Column("org_id", sa.Integer, nullable=False, index=True),
         sa.Column("course_code", sa.Unicode(200), nullable=False, index=True),
     )
+<<<<<<< HEAD
     op.create_unique_constraint("uq_courses", "course", ["course_code", "org_id"])
+=======
+    op.create_unique_constraint("uq_courses", 'course"', ["course_code", "org_id"])
+>>>>>>> min-work stash to go bug-hunting
 
     # user -> course_code, with role
     # Unique across all three, however a user can have multiple roles on a course.

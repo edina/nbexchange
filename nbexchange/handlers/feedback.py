@@ -294,9 +294,8 @@ class FeedbackHandler(BaseHandler):
             try:
                 # Ensure the directory exists
                 os.makedirs(os.path.dirname(feedback_file), exist_ok=True)
-                handle = open(feedback_file, "w+b")
-                handle.write(file_info["body"])
-                handle.close()
+                with open(feedback_file, "w+b") as handle:
+                    handle.write(file_info["body"])
             except Exception as e:
                 self.log.error(f"Could not save file. \n {e}")
                 raise web.HTTPError(500)

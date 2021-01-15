@@ -70,8 +70,9 @@ class Collections(BaseHandler):
                 self.finish({"success": False, "note": note})
                 return
 
-            assignments = nbexchange.models.assignments.Assignment.find_for_course(
-                db=session, course_id=course.id, log=self.log
+            assignments = nbexchange.models.assignments.Assignment.find_by_code(
+                db=session, course_id=course.id, log=self.log, code=assignment_code,
+                action=nbexchange.models.actions.AssignmentActions.submitted.value,
             )
 
             for assignment in assignments:

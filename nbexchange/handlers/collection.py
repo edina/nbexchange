@@ -69,7 +69,10 @@ class Collections(BaseHandler):
                 return
 
             assignments = nbexchange.models.assignments.Assignment.find_by_code(
-                db=session, course_id=course.id, log=self.log, code=assignment_code,
+                db=session,
+                course_id=course.id,
+                log=self.log,
+                code=assignment_code,
                 action=nbexchange.models.actions.AssignmentActions.submitted.value,
             )
 
@@ -85,8 +88,7 @@ class Collections(BaseHandler):
                             "path": action.location,
                             # 'name' in db, 'notebook_id' id nbgrader
                             "notebooks": [
-                                {"notebook_id": x.name}
-                                for x in assignment.notebooks
+                                {"notebook_id": x.name} for x in assignment.notebooks
                             ],
                             "timestamp": action.timestamp.strftime(
                                 "%Y-%m-%d %H:%M:%S.%f %Z"

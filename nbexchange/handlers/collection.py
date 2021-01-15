@@ -68,7 +68,7 @@ class Collections(BaseHandler):
                 self.finish({"success": False, "note": note})
                 return
 
-            assignments = nbexchange.models.assignments.Assignment.find_by_code(
+            assignment = nbexchange.models.assignments.Assignment.find_by_code(
                 db=session,
                 course_id=course.id,
                 log=self.log,
@@ -76,25 +76,29 @@ class Collections(BaseHandler):
                 action=nbexchange.models.actions.AssignmentActions.submitted.value,
             )
 
-            for assignment in assignments:
-                self.log.debug(f"Assignment: {assignment}")
-                self.log.debug(f"Assignment Actions: {assignment.actions}")
-                for action in assignment.actions:
-                    models.append(
-                        {
-                            "assignment_id": assignment.assignment_code,
-                            "course_id": assignment.course.course_code,
-                            "status": action.action.value,  # currently called 'action' in our db
-                            "path": action.location,
-                            # 'name' in db, 'notebook_id' id nbgrader
-                            "notebooks": [
-                                {"notebook_id": x.name} for x in assignment.notebooks
-                            ],
-                            "timestamp": action.timestamp.strftime(
-                                "%Y-%m-%d %H:%M:%S.%f %Z"
-                            ),
-                        }
-                    )
+            if not assignment:
+                note = f"Assignment {assignment_code} does not exist"
+                self.log.info(note)
+                self.finish({"success": True, "value": None})
+                return
+
+            self.log.debug(f"Assignment: {assignment}")
+            for action in assignment.actions:
+                models.append(
+                    {
+                        "assignment_id": assignment.assignment_code,
+                        "course_id": assignment.course.course_code,
+                        "status": action.action.value,  # currently called 'action' in our db
+                        "path": action.location,
+                        # 'name' in db, 'notebook_id' id nbgrader
+                        "notebooks": [
+                            {"notebook_id": x.name} for x in assignment.notebooks
+                        ],
+                        "timestamp": action.timestamp.strftime(
+                            "%Y-%m-%d %H:%M:%S.%f %Z"
+                        ),
+                    }
+                )
 
             self.log.debug(f"Assignments: {models}")
         self.finish({"success": True, "value": models})

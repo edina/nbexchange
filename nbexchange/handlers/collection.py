@@ -91,7 +91,7 @@ class Collections(BaseHandler):
             if not assignment:
                 note = f"Assignment {assignment_code} does not exist"
                 self.log.info(note)
-                self.finish({"success": True, "value": None})
+                self.finish({"success": True, "value": []})
                 return
 
             self.log.debug(f"Assignment: {assignment}")

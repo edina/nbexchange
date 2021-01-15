@@ -1,6 +1,4 @@
-import time
-
-from tornado import web, httputil
+from tornado import web
 
 import nbexchange.models.actions
 import nbexchange.models.assignments
@@ -79,27 +77,22 @@ class Collections(BaseHandler):
                 self.log.debug(f"Assignment: {assignment}")
                 self.log.debug(f"Assignment Actions: {assignment.actions}")
                 for action in assignment.actions:
-                    # For every action that is not "released" checked if the user id matches
-                    if (
-                        action.action
-                        == nbexchange.models.actions.AssignmentActions.submitted
-                    ):
-                        models.append(
-                            {
-                                "assignment_id": assignment.assignment_code,
-                                "course_id": assignment.course.course_code,
-                                "status": action.action.value,  # currently called 'action' in our db
-                                "path": action.location,
-                                # 'name' in db, 'notebook_id' id nbgrader
-                                "notebooks": [
-                                    {"notebook_id": x.name}
-                                    for x in assignment.notebooks
-                                ],
-                                "timestamp": action.timestamp.strftime(
-                                    "%Y-%m-%d %H:%M:%S.%f %Z"
-                                ),
-                            }
-                        )
+                    models.append(
+                        {
+                            "assignment_id": assignment.assignment_code,
+                            "course_id": assignment.course.course_code,
+                            "status": action.action.value,  # currently called 'action' in our db
+                            "path": action.location,
+                            # 'name' in db, 'notebook_id' id nbgrader
+                            "notebooks": [
+                                {"notebook_id": x.name}
+                                for x in assignment.notebooks
+                            ],
+                            "timestamp": action.timestamp.strftime(
+                                "%Y-%m-%d %H:%M:%S.%f %Z"
+                            ),
+                        }
+                    )
 
             self.log.debug(f"Assignments: {models}")
         self.finish({"success": True, "value": models})
@@ -124,8 +117,6 @@ class Collection(BaseHandler):
 
     @authenticated
     def get(self):
-
-        models = []
 
         [course_code, assignment_code, path] = self.get_params(
             ["course_id", "assignment_id", "path"]
@@ -181,51 +172,34 @@ class Collection(BaseHandler):
                 path=path,
             )
 
-            data = b""
-            self._headers = httputil.HTTPHeaders(
-                {
-                    "Content-Type": "application/gzip",
-                    "Date": httputil.format_timestamp(time.time()),
-                }
-            )
+            self.set_header("Content-Type", "application/gzip")
 
             # I do not want to assume there will just be one.
             for assignment in assignments:
                 self.log.debug(f"Assignment: {assignment}")
-                self.log.debug(f"Assignment Actions: {assignment.actions}")
 
-                release_file = None
+                try:
+                    with open(path, "r+b") as handle:
+                        data = handle.read()
+                except Exception as e:  # TODO: exception handling
+                    self.log.warning(f"Error: {e}")  # TODO: improve error message
 
-                # We will get 0-n submit actions for this path (where n should be 1),
-                # we just want the last one
-                # Using a reversed for loop as there may be 0 elements :)
-                for action in assignment.actions:
-                    release_file = action.location
-                    break
+                    # error 500??
+                    raise Exception
 
-                if release_file:
-                    try:
-                        with open(path, "r+b") as handle:
-                            data = handle.read()
-                    except Exception as e:  # TODO: exception handling
-                        self.log.warning(f"Error: {e}")  # TODO: improve error message
-                        self.log.info("Recovery failed")
+                self.log.info(
+                    f"Adding action {nbexchange.models.actions.AssignmentActions.collected.value} for user {this_user['id']} against assignment {assignment.id}"
+                )
+                action = nbexchange.models.actions.Action(
+                    user_id=this_user["id"],
+                    assignment_id=assignment.id,
+                    action=nbexchange.models.actions.AssignmentActions.collected,
+                    location=path,
+                )
+                session.add(action)
 
-                        # error 500??
-                        raise Exception
-
-                    self.log.info(
-                        f"Adding action {nbexchange.models.actions.AssignmentActions.collected.value} for user {this_user['id']} against assignment {assignment.id}"
-                    )
-                    action = nbexchange.models.actions.Action(
-                        user_id=this_user["id"],
-                        assignment_id=assignment.id,
-                        action=nbexchange.models.actions.AssignmentActions.collected,
-                        location=path,
-                    )
-                    session.add(action)
-
-                    self.finish(data)
+                self.finish(data)
+                return
 
     # This has no authentiction wrapper, so false implication os service
     def post(self):

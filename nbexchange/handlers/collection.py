@@ -84,21 +84,25 @@ class Collections(BaseHandler):
 
             self.log.debug(f"Assignment: {assignment}")
             for action in assignment.actions:
-                models.append(
-                    {
-                        "assignment_id": assignment.assignment_code,
-                        "course_id": assignment.course.course_code,
-                        "status": action.action.value,  # currently called 'action' in our db
-                        "path": action.location,
-                        # 'name' in db, 'notebook_id' id nbgrader
-                        "notebooks": [
-                            {"notebook_id": x.name} for x in assignment.notebooks
-                        ],
-                        "timestamp": action.timestamp.strftime(
-                            "%Y-%m-%d %H:%M:%S.%f %Z"
-                        ),
-                    }
-                )
+                if (
+                    action.action
+                    == nbexchange.models.actions.AssignmentActions.submitted
+                ):
+                    models.append(
+                        {
+                            "assignment_id": assignment.assignment_code,
+                            "course_id": assignment.course.course_code,
+                            "status": action.action.value,  # currently called 'action' in our db
+                            "path": action.location,
+                            # 'name' in db, 'notebook_id' id nbgrader
+                            "notebooks": [
+                                {"notebook_id": x.name} for x in assignment.notebooks
+                            ],
+                            "timestamp": action.timestamp.strftime(
+                                "%Y-%m-%d %H:%M:%S.%f %Z"
+                            ),
+                        }
+                    )
 
             self.log.debug(f"Assignments: {models}")
         self.finish({"success": True, "value": models})

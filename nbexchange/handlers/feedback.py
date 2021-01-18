@@ -105,13 +105,14 @@ class FeedbackHandler(BaseHandler):
                 f["checksum"] = r.checksum
                 feedbacks.append(f)
 
-            # Add action
-            action = nbexchange.models.actions.Action(
-                user_id=this_user["id"],
-                assignment_id=assignment.id,
-                action=nbexchange.models.actions.AssignmentActions.feedback_fetched,
-            )
-            session.add(action)
+                # Add action
+                action = nbexchange.models.actions.Action(
+                    user_id=this_user["id"],
+                    assignment_id=assignment.id,
+                    action=nbexchange.models.actions.AssignmentActions.feedback_fetched,
+                    location=r.location
+                )
+                session.add(action)
             self.finish({"success": True, "feedback": feedbacks})
 
     @authenticated

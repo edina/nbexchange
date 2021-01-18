@@ -110,7 +110,7 @@ class FeedbackHandler(BaseHandler):
                     user_id=this_user["id"],
                     assignment_id=assignment.id,
                     action=nbexchange.models.actions.AssignmentActions.feedback_fetched,
-                    location=r.location
+                    location=r.location,
                 )
                 session.add(action)
             self.finish({"success": True, "feedback": feedbacks})

@@ -15,7 +15,6 @@ define([
 
     // This is the overarching "course per block" bit
     // each block then calls a routine to make the assignments & actions
-    // history_root_selector == <div id="history_list" class="panel-group"></div>
     var CourseList = function (history_root_selector, refresh_selector, options) {
         this.history_root_selector = history_root_selector;
         this.refresh_selector = refresh_selector;
@@ -35,7 +34,6 @@ define([
     CourseList.prototype.bind_events = function () {
         var that = this;
         this.refresh_element.click(function () {
-            // that.load_list();
             this.clear_list(true);
             var settings = {
                 cache : false,
@@ -73,12 +71,16 @@ define([
         ajax(url, settings);
     };
 
+    // Not sure what to do with these yet - but I should delete all
+    // the #history_list .panel-default divs
     CourseList.prototype.clear_list = function (loading) {
         var elems = [this.assignment_element];
         var i;
 
     };
 
+    // Not sure what to do with this yet - I need to consider
+    // showing errors
     CourseList.prototype.show_error = function (error) {
         var elems = [this.assignment_element];
         var i;
@@ -97,6 +99,7 @@ define([
         this.clear_list();
         $('#nbexchange-history_box_loading').attr("style", "display: none;");
         var len = data.length;
+
         // make the list of course boxes
         if (len==0) {
             $('#nbexchange-history_box_placeholder').attr("style", "");
@@ -123,6 +126,7 @@ define([
             $link.click(function () {
                 if ($link.down) {
                     $link.down = false;
+
                     // jQeury doesn't know how to animate rotations.  Abuse
                     // jQueries animate function by using an unused css attribute
                     // to do the animation (borderSpacing).
@@ -178,15 +182,6 @@ define([
         return id;
     };
 
-    // <div class="panel panel-default">
-    //   <div class="panel-heading">
-    //     Downloaded assignments
-    //   </div>
-    //   <div class="panel-body">
-    //     <div id="nbexchange-$course_code_history_box" class="list_container" role="tablist" aria-multiselectable="true">
-    //       <!-- assignment row -->
-    //   </div>
-    // </div>
     Course.prototype.make_box = function (element) {
         var title_text = this.data.course_title;
         if (this.data.isInstructor) {
@@ -198,9 +193,7 @@ define([
         var title = $('<div/>')
             .addClass('panel-heading')
             .text(title_text);
-        // <div class="panel-body">
-        //   <div id="$course_code_history_box" class="list_container" role="tablist" aria-multiselectable="true">
-        // </div>
+
         var panel_body = $('<div/>')
             .addClass('panel-body');
         
@@ -259,44 +252,6 @@ define([
         return id;
     };
 
-    // <div class="list_item row">
-    //     <!-- make_row kicks in here -->
-    //     <!-- This is normally-displayed div: assignment-name arrow <-> assignment <-> [submit] -->
-    //     <div class="col-md-12">
-    //         <span class="item_name col-sm-6">
-    //             <!-- parent is div inside div#body-panel -->
-    //             <!-- aria-controls is id of folded-open div -->
-    //             <!-- href is id selector that aria-controls refers to -->
-    //             <a class="collapsed assignment-notebooks-link" role="button" data-toggle="collapse" data-parent="#fetched_assignments_list" href="#nbgrader-made_up-1501-ref2" aria-expanded="false" aria-controls="nbgrader-made_up-1501-ref2">
-    //               1501-ref2
-    //               <!-- i is added by external function -->
-    //               <i class="fa fa-caret-down" style="transform: rotate(-90deg); margin-left: 3px;"></i>
-    //             </a>
-    //         </span>
-    //         <span class="item_course col-sm-2">made up</span>
-    //         <span class="item_status col-sm-4">
-    //             <button class="btn btn-primary btn-xs">Submit</button>
-    //         </span>
-    //     </div>
-    //     <!-- This is the normally hidden bit, listing the notebooks -->
-    //     <!-- id is referred to from aria-controls & href above -->
-    //     <div id="nbgrader-made_up-1501-ref2" class="panel-collapse collapse list_container assignment-notebooks" role="tabpanel">
-    //         <!-- first row is always blank -->
-    //         <div class="list_item row"></div>
-    //         <!-- This section is repeated for each notebook -->
-    //         <div class="list_item row">
-    //             <div class="col-md-12">
-    //                 <span class="item_name col-sm-6">
-    //                     <a href="/user/1-kiz/tree/made%20up/1501-ref2/python_squares_assessment%201.ipynb" target="_blank">python_squares_assessment 1</a>
-    //                 </span>
-    //                 <span class="item_course col-sm-2"></span>
-    //                 <span class="item_status col-sm-4">
-    //                     <button class="btn btn-default btn-xs">Validate</button>
-    //                 </span>
-    //             </div>
-    //         </div>
-    //     </div>
-    // </div>
     History.prototype.make_row = function () {
 
         var row = $('<div/>').addClass('col-md-12');
@@ -330,7 +285,7 @@ define([
         );
 
         var id, children;
-        // "nbexchange-assignment-" + this.assignment_data.assignment_id;
+
         id = this.escape_id();
         children = $('<div/>')
             .attr("id", id)
@@ -362,7 +317,6 @@ define([
     History.prototype.make_link = function () {
         var container = $('<span/>').addClass('item_name col-sm-6');
 
-        // "nbexchange-assignment-" + this.assignment_data.assignment_id;
         var id = this.escape_id();
         var link = $('<a/>')
             .addClass("collapsed history-assignment-link")
@@ -379,65 +333,9 @@ define([
         return container;
     };
 
-    var Action = function (element, data, options) {
-        this.element = $(element);
-        this.data = data;
-        this.options = options;
-        this.base_url = options.base_url || utils.get_body_data("baseUrl");
-        this.style();
-        this.make_row();
-    };
-
-    Action.prototype.style = function () {
-        this.element.addClass('list_item').addClass("row");
-    };
-
-    Action.prototype.escape_id = function () {
-        // construct the id from the course code and the assignment id, and also
-        // prepend the id with "nbgrader" (this also ensures that the first
-        // character is always a letter, as required by HTML 4)
-        var id = "nbgrader-" + this.data.course_id + "-" + this.data.assignment_id;
-
-        // replace spaces with '_'
-        id = id.replace(/ /g, "_");
-
-        // remove any characters that are invalid in HTML div ids
-        id = id.replace(/[^A-Za-z0-9\-_]/g, "");
-
-        return id;
-    };
-
-    Action.prototype.make_row = function () {
-        var row = $('<div/>').addClass('col-md-12');
-        var link = this.make_link();
-        row.append(link);
-        row.append($('<span/>').addClass('item_course col-sm-2').text(this.data.course_code));
-
-        var id, children, element, child;
-        id = this.escape_id();
-        children = $('<div/>')
-            .attr("id", id)
-            .addClass("panel-collapse collapse list_container assignment-notebooks")
-            .attr("role", "tabpanel");
-
-        children.append($('<div/>').addClass('list_item row'));
-        for (var i=0; i<this.data.notebooks.length; i++) {
-            element = $('<div/>');
-            this.data.notebooks[i].course_id = this.data.course_id;
-            this.data.notebooks[i].assignment_id = this.data.assignment_id;
-            child = new Notebook(element, this.data.notebooks[i], this.options);
-            children.append(element);
-        }
-
-        row.append(this.make_button());
-        this.element.empty().append(row).append(children);
-
-    };
-
     return {
         'Course' : Course,
         'CourseList': CourseList,
         'History': History,
-        'Action': Action,
     };
 });

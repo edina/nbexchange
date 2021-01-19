@@ -89,48 +89,57 @@ with scoped_session() as session:
     @authenticated
     def get(self):
 
-        models = []
+        models = {}
 
         # Who is my user?
         this_user = self.nbex_user
-        self.log.debug(f"User: {this_user.get('name')}")
+        self.log.debug(f"History authenticated User: {this_user.get('name')}")
 
         # Find all the assignments this user should be able to see
         with scoped_session() as session:
             rows = session.query(nbexchange.models.Subscription).filter_by(user_id=this_user["id"]).all()
-            for row in rows:
-                data = dict()
-                data['role'] = dict()
-                data['user_id'] = dict()
-                data['assignments'] = list()
-                data['isInstructor'] = False
 
-                data['course_id'] = row.course.id
-                data['course_code'] = row.course.course_code
-                data['course_title'] = row.course.course_title
-                data['role'][row.role] = 1
-                data['user_id'][row.user_id] = 1
+            for row in rows:
+                if not row.course.id in models:
+                    models[row.course.id] = {}
+                data = dict()
+                models[row.course.id]['role'] = dict()
+                models[row.course.id]['user_id'] = dict()
+                models[row.course.id]['assignments'] = list()
+                models[row.course.id]['isInstructor'] = False
+
+                models[row.course.id]['course_id'] = row.course.id
+                models[row.course.id]['course_code'] = row.course.course_code
+                models[row.course.id]['course_title'] = row.course.course_title
+                models[row.course.id]['role'][row.role] = 1
+                models[row.course.id]['user_id'][row.user_id] = 1
                 if row.role == 'Instructor':
-                    data['isInstructor'] = True
+                    models[row.course.id]['isInstructor'] = True
+                self.log.debug(f"       ... course: {models[row.course.id]['course_id']} | {models[row.course.id]['course_code']}")
                 for assignment in row.course.assignments:
+                    self.log.debug(f"           ... assignment: {assignment}")
+
                     if assignment.active:
                         a = dict()
                         a['assignment_id'] = assignment.id
                         a['assignment_code'] = assignment.assignment_code
                         a['actions'] = list()
+                        a['action_summary'] = dict()
                         for action in assignment.actions:
                             if action.action == 'released' or action.user_id == this_user["id"] or row.role == 'Instructor':
                                 b = dict()
+                                action_string = str(action.action).replace('AssignmentActions.', '')
+                                if not action_string in a['action_summary']:
+                                    a['action_summary'][action_string] = 0
+                                a['action_summary'][action_string] += 1
                                 b['action'] = str(action.action)
                                 b['timestamp'] = action.timestamp.strftime("%Y-%m-%d %H:%M:%S.%f %Z")
                                 user = nbexchange.models.users.User.find_by_pk(db=session, pk=action.user_id)
                                 b['user'] = user.name
                                 a['actions'].append(b)
-                        data['assignments'].append(a)
-                    models.append(data)
+                        models[row.course.id]['assignments'].append(a)
 
-        self.log.debug(f"History: {models}")
-        self.finish({"success": True, "value": models})
+        self.finish({"success": True, "value": sorted(models.values(), key=lambda x: (x["course_id"]))})
 
     # This has no authentiction wrapper, so false implication os service
     def post(self):

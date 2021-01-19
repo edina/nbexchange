@@ -11,7 +11,6 @@ from urllib.parse import quote, quote_plus
 
 from .exchange import Exchange
 
-
 class ExchangeHistory(Exchange):
     def do_copy(self, src, dest):
         pass

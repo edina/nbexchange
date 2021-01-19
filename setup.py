@@ -39,12 +39,8 @@ REQUIRED = [
     "sentry-sdk==0.19.1",
     "sqlalchemy==1.3.20",
     "nbgrader==0.7.0.dev0",
-<<<<<<< HEAD
     "urllib3==1.25.11", # Pinned because of requests depdendency conflict
     "pyjwt",
-=======
-    "urllib3", # Pinned because of requests depdendency conflict
->>>>>>> min-work stash to go bug-hunting
 ]
 
 # What packages are required for testing?

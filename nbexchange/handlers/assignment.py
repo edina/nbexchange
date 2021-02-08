@@ -393,10 +393,10 @@ class Assignment(BaseHandler):
     @authenticated
     def delete(self):
 
-        [course_code, assignment_code] = self.get_params(["course_id", "assignment_id"])
+        [course_code, assignment_code, purge] = self.get_params(["course_id", "assignment_id", "purge"])
 
         self.log.debug(
-            f"Called DELETE /assignment with arguments: course {course_code} and  assignment {assignment_code}"
+            f"Called DELETE /assignment with arguments: course {course_code}, assignment {assignment_code}, and purge {purge}"
         )
         if not (course_code and assignment_code):
             note = f"Unreleasing an Assigment requires a course code and an assignment code"
@@ -405,18 +405,19 @@ class Assignment(BaseHandler):
             return
 
         this_user = self.nbex_user
-
         if not course_code in this_user["courses"]:
             note = f"User not subscribed to course {course_code}"
             self.log.info(note)
             self.finish({"success": False, "note": note})
             return
+
         if not "instructor" in map(str.casefold, this_user["courses"][course_code]):
             note = f"User not an instructor to course {course_code}"
             self.log.info(note)
             self.finish({"success": False, "note": note})
             return
 
+        note = "Assignment unreleased"
         with scoped_session() as session:
             course = nbexchange.models.courses.Course.find_by_code(
                 db=session, code=course_code, org_id=this_user["org_id"], log=self.log
@@ -432,4 +433,10 @@ class Assignment(BaseHandler):
             for notebook in assignment.notebooks:
                 session.delete(notebook)
 
-        self.finish({"success": True, "note": "Assignment deleted"})
+            # If we have the purge parameter, we actually delete the data
+            # The various 'cascade on delete' settings should clear all the sub-tables
+            if purge:
+                print(f"assignment id = {assignment.id}")
+                session.delete(assignment)
+                note = "Assignment deleted and purged from the database"
+        self.finish({"success": True, "note": note})

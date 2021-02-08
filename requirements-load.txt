@@ -1,5 +1,6 @@
 argparse
+kubernetes
 PyJWT
-# requests
-# tarfile
+requests
+tarfile
 # datetime

@@ -90,6 +90,7 @@ def test_delete_student_blocked(app):
     assert response_data["success"] == False
     assert response_data["note"] == "User not an instructor to course course_2"
 
+
 # Instructor, wrong course, cannot release
 @pytest.mark.gen_test
 def test_delete_wrong_course_blocked(app):
@@ -103,6 +104,7 @@ def test_delete_wrong_course_blocked(app):
     response_data = r.json()
     assert response_data["success"] == False
     assert response_data["note"] == "User not subscribed to course course_1"
+
 
 # instructor can delete
 @pytest.mark.gen_test
@@ -123,6 +125,7 @@ def test_delete_instructor_delete(app):
     assert response_data["success"] == True
     assert response_data["note"] == "Assignment unreleased"
 
+
 # instructor can purge
 @pytest.mark.gen_test
 def test_delete_instructor_purge(app):
@@ -134,7 +137,8 @@ def test_delete_instructor_purge(app):
             files=files,
         )
         r = yield async_requests.delete(
-            app.url + "/assignment?course_id=course_2&assignment_id=assign_b&purge=True",
+            app.url
+            + "/assignment?course_id=course_2&assignment_id=assign_b&purge=True",
             files=files,
         )
     assert r.status_code == 200
@@ -169,12 +173,12 @@ def test_delete_multiple_courses_listed_first_wrong_blocked(app):
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):
         r = yield async_requests.post(
-            app.url
-            + "/assignment?course_id=course_2&assignment_id=assign_a",
+            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
             files=files,
         )
         r = yield async_requests.delete(
-            app.url + "/assignment?course_id=course_1&course_id=course_2&assignment_id=assign_a",
+            app.url
+            + "/assignment?course_id=course_1&course_id=course_2&assignment_id=assign_a",
             files=files,
         )
     assert r.status_code == 200
@@ -190,18 +194,19 @@ def test_delete_multiple_courses_listed_first_right_passes(app):
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):
         r = yield async_requests.post(
-            app.url
-            + "/assignment?course_id=course_2&assignment_id=assign_a",
+            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
             files=files,
         )
         r = yield async_requests.delete(
-            app.url + "/assignment?course_id=course_2&course_id=course_1&assignment_id=assign_a",
+            app.url
+            + "/assignment?course_id=course_2&course_id=course_1&assignment_id=assign_a",
             files=files,
         )
     assert r.status_code == 200
     response_data = r.json()
     assert response_data["success"] == True
     assert response_data["note"] == "Assignment unreleased"
+
 
 # confirm unreleased does not show in list
 @pytest.mark.skip

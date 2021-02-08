@@ -393,7 +393,9 @@ class Assignment(BaseHandler):
     @authenticated
     def delete(self):
 
-        [course_code, assignment_code, purge] = self.get_params(["course_id", "assignment_id", "purge"])
+        [course_code, assignment_code, purge] = self.get_params(
+            ["course_id", "assignment_id", "purge"]
+        )
 
         self.log.debug(
             f"Called DELETE /assignment with arguments: course {course_code}, assignment {assignment_code}, and purge {purge}"

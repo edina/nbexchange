@@ -191,24 +191,34 @@ class nbexchangeSoakTest:
             self.student_list.append(f"1-s{i:06}")
         self.log.debug(f"created students: {self.student_list}")
 
-        self.log.debug(f"setting up the port forwarding magick")
-        # lifted from https://github.com/kubernetes-client/python/blob/master/examples/pod_portforward.py
-        # Monkey patch urllib3.util.connection.create_connection
-        def kubernetes_create_connection(*args, **kwargs):
-            pf = portforward(
-                self.k8_api.connect_get_namespaced_pod_portforward,
-                self.exchange_server,
-                self.args.namespace,
-                ports="9000",
-            )
-            return pf.socket(9000)
-
-        urllib3_connection.create_connection = kubernetes_create_connection
-        self.log.debug(f"... done")
-
         self.log.warning(
-            f"All good: Going to test {self.args.student_count} students in cluster '{self.args.cluster}', using nbexchange '{self.exchange_server}'",
+            f"Looking good: Going to test {self.args.student_count} students in cluster '{self.args.cluster}', using nbexchange '{self.exchange_server}'",
         )
+        print("\n## Set up port forwarding")
+        print("Please open a new terminal and run the following command(s):\n")
+        if active_context["name"] != self.args.cluster:
+            print(f"    kubectl config use-context {self.args.cluster}")
+        print(f"    kubectl port-forward pod/{self.exchange_server}  9000:9000\n")
+        input(
+            ".... and wait for the commadn to say it's forwarding - then press enter here to continue"
+        )
+
+        # I really wish this had worked..... but it just times out.
+        # self.log.debug(f"setting up the port forwarding magick")
+        # # lifted from https://github.com/kubernetes-client/python/blob/master/examples/pod_portforward.py
+        # # Monkey patch urllib3.util.connection.create_connection
+        # def kubernetes_create_connection(*args, **kwargs):
+        #     pf = portforward(
+        #         self.k8_api.connect_get_namespaced_pod_portforward,
+        #         self.exchange_server,
+        #         self.args.namespace,
+        #         ports="9000",
+        #     )
+        #     return pf.socket(9000)
+
+        # urllib3_connection.create_connection = kubernetes_create_connection
+        # self.log.debug(f"... done")
+
         self.log.info(f"End of setup phase")
 
     def make_jwt_token(self, username, role):
@@ -475,6 +485,8 @@ class nbexchangeSoakTest:
                             self.log.warning(
                                 f"Instructor {username} failed to unpack assignment {self.assignment_code} for {student_id} into {local_dest_path} - seeing {found_files}"
                             )
+                        else:
+                            self.log.warning(f"collected {student_id}")
 
                         # collect also fakes the autograde & generate feedback, so
                         # needs to get the timestamp from the appropriate student
@@ -642,7 +654,7 @@ class nbexchangeSoakTest:
                         f"Release response not as expects: {data} != {{'success': True, 'note': 'Feedback released'}}"
                     )
 
-                self.log.debug(
+                self.log.warning(
                     f"Uploaded feedback for {student_id} on assignment {self.assignment_code}."
                 )
 

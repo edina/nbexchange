@@ -91,7 +91,7 @@ class nbexchangeSoakTest:
             "--jwt_secret",
             type=str,
             default="asecretkey",
-            help="The JWT token is encoded with a specific SECRET_KEY. This must match the environment you are testing. Defaults to the string 'asecretkey'",
+            help="The JWT token is encoded with a specific SECRET_KEY. This must match the environment you are testing. Defaults to the highly imaginative 'asecretkey'",
         )
         parser.add_argument(
             "-k",
@@ -210,20 +210,24 @@ class nbexchangeSoakTest:
         ####
         ### port forwarding, the hack
         print("\nSet up port forwarding")
-        url = ""
-        self.log.debug(f"call self.api_request")
-
-        r = self.api_request(
-            url,
-            method="GET",
-        )
-        if r.status_code == 200:
-            print(
-                "## *NOTE*: Got a response from *something* on port 9000, please confirm it's the Kubernetes proxy we want ##"
+        try:
+            url = ""
+            self.log.debug(f"call self.api_request")
+            self.log.disabled = True
+            r = self.api_request(
+                url,
+                method="GET",
             )
-            print(
-                "##         If not, remove it... and follow the commands below..                                           ##"
-            )
+            self.log.disabled = False
+            if r.status_code == 200:
+                print(
+                    "## *NOTE*: Got a response from *something* on port 9000, please confirm it's the Kubernetes proxy we want ##"
+                )
+                print(
+                    "##         If not, remove it... and follow the commands below..                                           ##"
+                )
+        except:
+            pass
         print("Please open a new terminal and run the following command(s):\n")
         if active_context["name"] != self.args.cluster:
             print(f"    kubectl config use-context {self.args.cluster}")

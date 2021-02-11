@@ -61,6 +61,7 @@ class nbexchangeSoakTest:
     service_url = "http://localhost:9000/services/nbexchange/"
     feedback_name = "test_1.html"
     notebook_name = "test_1.ipynb"
+    data_file = "sample_data.csv"
     notebooks = ["test_1"]
 
     # These change each run
@@ -191,19 +192,8 @@ class nbexchangeSoakTest:
             self.student_list.append(f"1-s{i:06}")
         self.log.debug(f"created students: {self.student_list}")
 
-        self.log.warning(
-            f"Looking good: Going to test {self.args.student_count} students in cluster '{self.args.cluster}', using nbexchange '{self.exchange_server}'",
-        )
-        print("\n## Set up port forwarding")
-        print("Please open a new terminal and run the following command(s):\n")
-        if active_context["name"] != self.args.cluster:
-            print(f"    kubectl config use-context {self.args.cluster}")
-        print(f"    kubectl port-forward pod/{self.exchange_server}  9000:9000\n")
-        input(
-            ".... and wait for the commadn to say it's forwarding - then press enter here to continue"
-        )
-
-        # I really wish this had worked..... but it just times out.
+        # Check for k8 port-forwarding, and ask for it to be set up if needed
+        #### I really wish this had worked..... but it just times out.
         # self.log.debug(f"setting up the port forwarding magick")
         # # lifted from https://github.com/kubernetes-client/python/blob/master/examples/pod_portforward.py
         # # Monkey patch urllib3.util.connection.create_connection
@@ -215,10 +205,37 @@ class nbexchangeSoakTest:
         #         ports="9000",
         #     )
         #     return pf.socket(9000)
-
         # urllib3_connection.create_connection = kubernetes_create_connection
         # self.log.debug(f"... done")
+        ####
+        ### port forwarding, the hack
+        print("\nSet up port forwarding")
+        url = ""
+        self.log.debug(f"call self.api_request")
 
+        r = self.api_request(
+            url,
+            method="GET",
+        )
+        if r.status_code == 200:
+            print(
+                "## *NOTE*: Got a response from *something* on port 9000, please confirm it's the Kubernetes proxy we want ##"
+            )
+            print(
+                "##         If not, remove it... and follow the commands below..                                           ##"
+            )
+        print("Please open a new terminal and run the following command(s):\n")
+        if active_context["name"] != self.args.cluster:
+            print(f"    kubectl config use-context {self.args.cluster}")
+        print(f"    kubectl port-forward pod/{self.exchange_server}  9000:9000\n")
+        input(
+            ".... and wait for the command to say it's forwarding - then press enter here to continue"
+        )
+        ### port forwarding, hack ends
+
+        self.log.warning(
+            f"Looking good: Going to test {self.args.student_count} students in cluster '{self.args.cluster}', using nbexchange '{self.exchange_server}'",
+        )
         self.log.info(f"End of setup phase")
 
     def make_jwt_token(self, username, role):
@@ -282,7 +299,7 @@ class nbexchangeSoakTest:
             tar_file = io.BytesIO()
 
             with tarfile.open(fileobj=tar_file, mode="w:gz") as tar_handle:
-                tar_handle.add("load_test_data/released", arcname=".")
+                tar_handle.add("soak_trial_data/released", arcname=".")
             tar_file.seek(0)
 
             files = {"assignment": ("assignment.tar.gz", tar_file)}
@@ -341,7 +358,7 @@ class nbexchangeSoakTest:
                 self.log.debug(f"data unpacked")
 
                 found_files = os.listdir(str(unpack_dir))
-                if found_files != [self.notebook_name]:
+                if sorted(found_files) != sorted([self.notebook_name, self.data_file]):
                     self.log.warning(
                         f"Student {username} failed to unpack assignment {self.assignment_code} into {unpack_dir} - seeing {found_files}"
                     )
@@ -441,7 +458,8 @@ class nbexchangeSoakTest:
 
             for submission in submissions:
 
-                # Work out the user-name from the path: '/some/path/submitted/course_2/tree 1/1_kiz/1544109991/fdc8c4ae-b3e0-4db6-859d-17852d65ec08.gz'
+                # Work out the user-name from the path:
+                # '/some/path/submitted/course_2/tree 1/1_kiz/1544109991/fdc8c4ae-b3e0-4db6-859d-17852d65ec08.gz'
                 regex = (
                     f"/submitted/"
                     + re.escape(self.course_code)
@@ -481,7 +499,9 @@ class nbexchangeSoakTest:
                             else:
                                 self.log.warning(e)
                         found_files = os.listdir(str(local_dest_path))
-                        if found_files != [self.notebook_name, "timestamp.txt"]:
+                        if sorted(found_files) != sorted(
+                            [self.notebook_name, self.data_file, "timestamp.txt"]
+                        ):
                             self.log.warning(
                                 f"Instructor {username} failed to unpack assignment {self.assignment_code} for {student_id} into {local_dest_path} - seeing {found_files}"
                             )
@@ -491,7 +511,7 @@ class nbexchangeSoakTest:
                         # collect also fakes the autograde & generate feedback, so
                         # needs to get the timestamp from the appropriate student
                         # under 'collected' the test_1.html demo file from
-                        # 'load_test_data/feedback and put them in an individual
+                        # 'soak_trial_data/feedback and put them in an individual
                         # student directory under 'feedback'
                         self.log.debug(
                             "Now to mock the result of 'authgrade' and 'generate_feedback' for the student"
@@ -516,7 +536,7 @@ class nbexchangeSoakTest:
                         self.log.debug("copy html file")
                         try:
                             src = os.path.join(
-                                "load_test_data/feedback", self.feedback_name
+                                "soak_trial_data/feedback", self.feedback_name
                             )
                             dest = os.path.join(local_feedback_path, self.feedback_name)
                             self.log.debug(f"copy {src} to {dest}")
@@ -746,8 +766,10 @@ class nbexchangeSoakTest:
             self.log.warning("Instructor Release")
             self.instructor_release(username="1-instructor")
 
-            # In the simple model, everyone fetches then everyone submits
-            # In a more complex model, fetches, submissions, and even collections, could be interleaved
+            # In the simple model, everyone these all run sequentially
+            # In a more complex [ie, real-file] model, fetches, submissions,
+            # collections, and the feedback cycle all happen in an
+            # interleaved manner.
             self.log.warning("Students fetch and submit")
             for student in self.student_list:
                 self.student_fetch(username=student)
@@ -758,6 +780,9 @@ class nbexchangeSoakTest:
             # In the simple model, everyone fetches feedback after it's been released for everyone
             for student in self.student_list:
                 self.student_fetch_feedback(username=student)
+            self.log.warning(
+                f"Finished: An assignment with {self.args.student_count} students has done 'release_assignment', 'fetch_assignment', 'submit', 'collect', 'release_feedback', and 'fetch_assignment'.",
+            )
         except:
             self.log.warning("Something went wrong... still tidying up though")
         self.tidy_up(username="1-instructor")
@@ -765,11 +790,8 @@ class nbexchangeSoakTest:
             f"""
         SQL Tidy-up instructions, until the new 'purge' code is in the exchange
 
-            select * from assignment where assignment_code = '{self.assignment_code}';
+            delete from from assignment where assignment_code = '{self.assignment_code}';
         
-        note the assignment id (xx in the examples below)
-
-            delete from assignment where id = xx;
         """
         )
 

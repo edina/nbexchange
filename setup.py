@@ -26,7 +26,7 @@ REQUIRED = [
     "aiocontextvars",
     "tornado",
     "psycopg2-binary",
-    "ipykernel==5.3.1",
+    "ipykernel==5.4.3",
     "jupyterhub",
     "sentry-sdk==0.20.2",
     "sqlalchemy==1.3.20",

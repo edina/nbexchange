@@ -28,7 +28,7 @@ REQUIRED = [
     "psycopg2-binary",
     "ipykernel==5.4.3",
     "jupyterhub",
-    "sentry-sdk==0.20.2",
+    "sentry-sdk==0.20.3",
     "sqlalchemy==1.3.23",
     "nbgrader==0.7.0.dev0",
     "urllib3==1.25.11", # Pinned because of requests depdendency conflict

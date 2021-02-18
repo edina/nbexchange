@@ -4,9 +4,11 @@ import glob
 import hashlib
 import io
 import json
+import jwt
 import logging
 import os
 import re
+import requests
 import shutil
 import sys
 import tarfile
@@ -17,35 +19,7 @@ from datetime import datetime
 from functools import partial
 from urllib.parse import quote_plus
 
-import jwt
-import requests
 from kubernetes import client, config
-
-"""
-Workflow:
-
-* set up a bunch of parameters for the run
-  * get SECRET_KEY to match environment
-  * get number of students to 
-  * make random course_code
-  * made random assignment_code
-
-* create instructor identity
-  * list assignments (needed to subscribe to course)
-* instructor release assignment
-* for each student identity
-  * list assignments (needed to subscribe to course)
-  * fetch assignment
-  * submit assignment
-* instructor collect assignments
-* for each student identity
-  * instructor releases feedback
-* for each student identity
-  * student collects feedback
-* clear everything from the DB
-
-Exchange-url defaults to dev, but can work in other clusters/namespaces
-"""
 
 
 class nbexchangeSoakTest:
@@ -128,13 +102,15 @@ class nbexchangeSoakTest:
             "info": logging.INFO,
             "debug": logging.DEBUG,
         }
-        logging.basicConfig(level=levels[self.args.log.lower()],
-                            format='%(asctime)s,%(msecs)d %(levelname)-8s [%(pathname)s:%(lineno)d in function %(funcName)s] %(message)s',
-                            datefmt='%Y-%m-%d:%H:%M:%S', )
+        logging.basicConfig(
+            level=levels[self.args.log.lower()],
+            format="%(asctime)s,%(msecs)d %(levelname)-8s [%(pathname)s:%(lineno)d in function %(funcName)s] %(message)s",
+            datefmt="%Y-%m-%d:%H:%M:%S",
+        )
         self.log = logging.getLogger(__name__)
 
         self.log.debug(f"args: {self.args}")
-        self.course_code = str(uuid.uuid4())  # "made-up"
+        self.course_code = str(uuid.uuid4())
         self.assignment_code = str(uuid.uuid4())
 
         self.log.debug(
@@ -253,7 +229,9 @@ class nbexchangeSoakTest:
         self.log.debug(
             f"making jwt - payload: {payload}, secret: {self.args.jwt_secret}"
         )
-        this_jwt_token = jwt.encode(payload, self.args.jwt_secret, algorithm="HS256").decode('UTF-8')
+        this_jwt_token = jwt.encode(
+            payload, self.args.jwt_secret, algorithm="HS256"
+        ).decode("UTF-8")
         self.log.debug(f"make_jwt_token returning token {this_jwt_token}")
         return this_jwt_token
 
@@ -354,7 +332,7 @@ class nbexchangeSoakTest:
                 tar_file = io.BytesIO(tgz)
                 with tarfile.open(fileobj=tar_file) as handle:
                     handle.extractall(path=unpack_dir)
-            except Exception as e:  # TODO: exception handling
+            except Exception as e:
                 self.log.exception(e)
             else:
                 self.log.debug(f"data unpacked")
@@ -496,7 +474,7 @@ class nbexchangeSoakTest:
                             tar_file = io.BytesIO(tgz)
                             with tarfile.open(fileobj=tar_file) as handle:
                                 handle.extractall(path=local_dest_path)
-                        except Exception as e:  # TODO: exception handling
+                        except Exception as e:
                             if hasattr(e, "message"):
                                 self.log.warning(e.message)
                             else:
@@ -531,7 +509,7 @@ class nbexchangeSoakTest:
                             dest = os.path.join(local_feedback_path, "timestamp.txt")
                             self.log.debug(f"copy {src} to {local_feedback_path}")
                             shutil.copyfile(src, dest)
-                        except Exception as e:  # TODO: exception handling
+                        except Exception as e:
                             if hasattr(e, "message"):
                                 self.log.warning(e.message)
                             else:
@@ -544,7 +522,7 @@ class nbexchangeSoakTest:
                             dest = os.path.join(local_feedback_path, self.feedback_name)
                             self.log.debug(f"copy {src} to {dest}")
                             shutil.copyfile(src, dest)
-                        except Exception as e:  # TODO: exception handling
+                        except Exception as e:
                             if hasattr(e, "message"):
                                 self.log.warning(e.message)
                             else:
@@ -725,7 +703,7 @@ class nbexchangeSoakTest:
                             os.path.join(student_feedback_dir, f["filename"]), "wb"
                         ) as handle:
                             handle.write(base64.b64decode(f["content"]))
-                    except Exception as e:  # TODO: exception handling
+                    except Exception as e:
                         self.log.debug(str(e))
                     found_files = os.listdir(str(student_feedback_dir))
                     if found_files != [self.feedback_name]:
@@ -767,7 +745,6 @@ class nbexchangeSoakTest:
         self.setup()
 
         try:
-            # This will be the real start point
             self.log.info("Instructor Release")
             self.instructor_release(username="1-instructor")
 

@@ -4,27 +4,22 @@ import glob
 import hashlib
 import io
 import json
-import jwt
 import logging
 import os
-import random
 import re
-import requests
 import shutil
 import sys
-import time
 import tarfile
+import time
 import uuid
-
-from datetime import datetime
 from contextlib import closing
+from datetime import datetime
 from functools import partial
-from kubernetes import client, config
-from kubernetes.stream import portforward
-
-from os import path
 from urllib.parse import quote_plus
-from urllib3.util import connection as urllib3_connection
+
+import jwt
+import requests
+from kubernetes import client, config
 
 """
 Workflow:
@@ -104,8 +99,8 @@ class nbexchangeSoakTest:
             "--log",
             type=str,
             choices=["info", "warn", "warning", "error", "debug", "critical"],
-            default="warning",
-            help="Logging level, defaults to 'warning'",
+            default="info",
+            help="Logging level, defaults to 'info'",
         )
         parser.add_argument(
             "-n",
@@ -133,8 +128,11 @@ class nbexchangeSoakTest:
             "info": logging.INFO,
             "debug": logging.DEBUG,
         }
-        logging.basicConfig(level=levels[self.args.log.lower()])
+        logging.basicConfig(level=levels[self.args.log.lower()],
+                            format='%(asctime)s,%(msecs)d %(levelname)-8s [%(pathname)s:%(lineno)d in function %(funcName)s] %(message)s',
+                            datefmt='%Y-%m-%d:%H:%M:%S', )
         self.log = logging.getLogger(__name__)
+
         self.log.debug(f"args: {self.args}")
         self.course_code = str(uuid.uuid4())  # "made-up"
         self.assignment_code = str(uuid.uuid4())
@@ -174,7 +172,7 @@ class nbexchangeSoakTest:
 
         config.load_kube_config(context=self.args.cluster)
         self.k8_api = client.CoreV1Api()
-        pods = self.k8_api.list_namespaced_pod("default")
+        pods = self.k8_api.list_namespaced_pod(self.args.namespace)
         self.log.debug(f"found pods: {pods}")
         items = list()
         for item in pods.items:
@@ -237,7 +235,7 @@ class nbexchangeSoakTest:
         )
         ### port forwarding, hack ends
 
-        self.log.warning(
+        self.log.info(
             f"Looking good: Going to test {self.args.student_count} students in cluster '{self.args.cluster}', using nbexchange '{self.exchange_server}'",
         )
         self.log.info(f"End of setup phase")
@@ -255,7 +253,7 @@ class nbexchangeSoakTest:
         self.log.debug(
             f"making jwt - payload: {payload}, secret: {self.args.jwt_secret}"
         )
-        this_jwt_token = jwt.encode(payload, self.args.jwt_secret, algorithm="HS256")
+        this_jwt_token = jwt.encode(payload, self.args.jwt_secret, algorithm="HS256").decode('UTF-8')
         self.log.debug(f"make_jwt_token returning token {this_jwt_token}")
         return this_jwt_token
 
@@ -290,7 +288,7 @@ class nbexchangeSoakTest:
             else:
                 raise NotImplementedError(f"HTTP Method {method} is not implemented")
         except Exception as e:  # TODO: exception handling
-            self.log.warning(str(e))
+            self.log.exception(e)
 
     def instructor_release(self, username=None):
         self.log.info(f"instructor_release called - username: {username}")
@@ -331,7 +329,7 @@ class nbexchangeSoakTest:
         self.log.info(f"Assignment released")
 
     def student_fetch(self, username=None):
-        self.log.warning(f"student_fetch called - username: {username}")
+        self.log.info(f"student_fetch called - username: {username}")
         if username:
             unpack_dir = os.path.join(
                 "/tmp/load_test/students",
@@ -357,7 +355,7 @@ class nbexchangeSoakTest:
                 with tarfile.open(fileobj=tar_file) as handle:
                     handle.extractall(path=unpack_dir)
             except Exception as e:  # TODO: exception handling
-                self.log.warning(str(e))
+                self.log.exception(e)
             else:
                 self.log.debug(f"data unpacked")
 
@@ -369,7 +367,7 @@ class nbexchangeSoakTest:
         self.log.info(f"student_fetch done")
 
     def student_submit(self, username=None):
-        self.log.warning(f"student_submit called - username: {username}")
+        self.log.info(f"student_submit called - username: {username}")
         if username:
 
             unpack_dir = os.path.join(
@@ -427,7 +425,7 @@ class nbexchangeSoakTest:
     # This is a tad complex: it has to get the list of submissions, and then
     # loop over them, downloading each one in turn
     def instructor_collect(self, username=None):
-        self.log.warning(f"instructor_collect called - username: {username}")
+        self.log.info(f"instructor_collect called - username: {username}")
         if username:
             user_jwt_token = self.make_jwt_token(username, "Instructor")
             self.log.debug(f"user_token: {user_jwt_token}")
@@ -445,7 +443,8 @@ class nbexchangeSoakTest:
                 return []
 
             if not data["success"]:
-                self.fail("Error looking for assignments to collect")
+                self.log.error("Error looking for assignments to collect")
+                return []
 
             submissions = data["value"]
 
@@ -510,7 +509,7 @@ class nbexchangeSoakTest:
                                 f"Instructor {username} failed to unpack assignment {self.assignment_code} for {student_id} into {local_dest_path} - seeing {found_files}"
                             )
                         else:
-                            self.log.warning(f"collected {student_id}")
+                            self.log.info(f"collected {student_id}")
 
                         # collect also fakes the autograde & generate feedback, so
                         # needs to get the timestamp from the appropriate student
@@ -551,8 +550,8 @@ class nbexchangeSoakTest:
                             else:
                                 self.log.warning(e)
                         self.log.debug("check files were copied..")
-                        found_files = os.listdir(str(local_feedback_path))
-                        if found_files != [self.feedback_name, "timestamp.txt"]:
+                        found_files = os.listdir(str(local_feedback_path)).sort()
+                        if found_files != [self.feedback_name, "timestamp.txt"].sort():
                             self.log.warning(
                                 f"Failed to fake feedback into {local_feedback_path} - seeing {found_files}"
                             )
@@ -561,7 +560,7 @@ class nbexchangeSoakTest:
 
     # feedback was generated by the collect process
     def instructor_release_feedback(self, username=None):
-        self.log.warning(f"instructor_release_feedback called - username: {username}")
+        self.log.info(f"instructor_release_feedback called - username: {username}")
         if username:
 
             local_feedback_path = os.path.join(
@@ -678,14 +677,14 @@ class nbexchangeSoakTest:
                         f"Release response not as expects: {data} != {{'success': True, 'note': 'Feedback released'}}"
                     )
 
-                self.log.warning(
+                self.log.info(
                     f"Uploaded feedback for {student_id} on assignment {self.assignment_code}."
                 )
 
         self.log.info(f"instructor_release_feedback done")
 
     def student_fetch_feedback(self, username=None):
-        self.log.warning(f"student_fetch_feedback called - username: {username}")
+        self.log.info(f"student_fetch_feedback called - username: {username}")
 
         if username:
 
@@ -740,7 +739,7 @@ class nbexchangeSoakTest:
 
     # This requires additional code in the handlers
     def tidy_up(self, username=None):
-        self.log.warning(
+        self.log.info(
             f"Tidy_up called: assignment_id={self.assignment_code} (keep_data?: {self.args.keep_data})"
         )
         if username:
@@ -749,9 +748,11 @@ class nbexchangeSoakTest:
 
             url = f"assignment?course_id={quote_plus(self.course_code)}&assignment_id={quote_plus(self.assignment_code)}"
             if not self.args.keep_data:
-                self.log.warning(f"We're purging the data.... so deleting files too")
+                self.log.info(f"We're purging the data.... so deleting files too")
                 url += "&purge=True"
-                shutil.rmtree("/tmp/load_test")
+                path = "/tmp/load_test"
+                if os.path.isdir(path):
+                    shutil.rmtree(path)
 
             self.log.debug(f"call self.api_request with url: {url}")
 
@@ -767,14 +768,14 @@ class nbexchangeSoakTest:
 
         try:
             # This will be the real start point
-            self.log.warning("Instructor Release")
+            self.log.info("Instructor Release")
             self.instructor_release(username="1-instructor")
 
             # In the simple model, everyone these all run sequentially
             # In a more complex [ie, real-file] model, fetches, submissions,
             # collections, and the feedback cycle all happen in an
             # interleaved manner.
-            self.log.warning("Students fetch and submit")
+            self.log.info("Students fetch and submit")
             for student in self.student_list:
                 self.student_fetch(username=student)
                 self.student_submit(username=student)
@@ -784,7 +785,7 @@ class nbexchangeSoakTest:
             # In the simple model, everyone fetches feedback after it's been released for everyone
             for student in self.student_list:
                 self.student_fetch_feedback(username=student)
-            self.log.warning(
+            self.log.info(
                 f"Finished: An assignment with {self.args.student_count} students has done 'release_assignment', 'fetch_assignment', 'submit', 'collect', 'release_feedback', and 'fetch_assignment'.",
             )
         except:

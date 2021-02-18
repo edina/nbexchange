@@ -65,3 +65,58 @@ This is how I test, using a virtual environment
 pip install -r requirements-dev.txt
 pytest nbexchange
 ```
+
+## Soak testing the exchange
+
+Unit tests check methods and end-points, on an individual and singular level
+
+To test that the exchange is happily handling large classes, we've included a script called `soak_trial.py`
+(not `soak_test`, as the GitHub auto-testing routines assume any file with `test` in the name should be run... oops)
+
+**This script is designed for EDINA's Noteable service - you will probably need to copy & edit for your own environment**
+
+* The script assumes that the exchange is being run in a kubernetes cluster, and the tests are happening fromm a developers workstation.
+    * This means the developer needs an accessible `kube-config` for that cluster
+* By default, it wants to connect to the `default` namespace in EDINA's `dev` cluster - but these can be changed with command-line parameters.
+* Noteable uses JWT tokens for authentication, so you'll need to edit the code to set up user authentication to match whatever you're using (ie, whatever you've got in `nbexchange/handlers/auth/????`)
+
+### Usage
+
+The script will auto-find the exchange server, and prompt for the magick to allow the script to connect.
+
+The script is designed around reasonable higher-end numbers, based on what our customers are doing
+* The Course & Assignment codes are randomely generated to avoid interacting with existing data
+* The script defaults to 250 students
+* The script has a single assignment file (4.3MB) plus an accompanying data-file (42KB)
+* The script deletes records of it's run (as far as possible)
+* Use `python soak_trial.py -h` for the list of parameters
+
+Sample run (a single student):
+```
+❯ python soak_trial.py -s 1
+
+Set up port forwarding
+Please open a new terminal and run the following command(s):
+
+    kubectl port-forward pod/naas-dev-nbexchange-5b67cc5759-m2mvv  9000:9000
+
+.... and wait for the command to say it's forwarding - then press enter here to continue
+WARNING:__main__:Looking good: Going to test 1 students in cluster 'noteable-dev', using nbexchange 'naas-dev-nbexchange-5b67cc5759-m2mvv'
+WARNING:__main__:Instructor Release
+WARNING:__main__:Students fetch and submit
+WARNING:__main__:student_fetch called - username: 1-s000001
+WARNING:__main__:student_submit called - username: 1-s000001
+WARNING:__main__:instructor_collect called - username: 1-instructor
+WARNING:__main__:collected 1-s000001
+WARNING:__main__:instructor_release_feedback called - username: 1-instructor
+WARNING:__main__:Uploaded feedback for 1-s000001 on assignment 1d9ac160-3400-470f-894d-90c245284b8a.
+WARNING:__main__:student_fetch_feedback called - username: 1-s000001
+WARNING:__main__:Finished: An assignment with 1 students has done 'release_assignment', 'fetch_assignment', 'submit', 'collect', 'release_feedback', and 'fetch_assignment'.
+WARNING:__main__:Tidy_up called: assignment_id=1d9ac160-3400-470f-894d-90c245284b8a (keep_data?: False)
+WARNING:__main__:We're purging the data.... so deleting files too
+WARNING:__main__:
+        SQL Tidy-up instructions, until the new 'purge' code is in the exchange
+
+            delete from from assignment where assignment_code = '1d9ac160-3400-470f-894d-90c245284b8a';
+        
+```

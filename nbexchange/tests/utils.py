@@ -29,6 +29,13 @@ user_kiz_student = {
     "course_title": "A title",
 }
 
+user_zik_student = {
+    "name": "1-zik",
+    "course_id": "course_2",
+    "course_role": "Student",
+    "course_title": "A title",
+}
+
 user_brobbere_instructor = {
     "name": "1-brobbere",
     "course_id": "course_2",

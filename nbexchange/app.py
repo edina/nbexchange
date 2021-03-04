@@ -145,7 +145,6 @@ class NbExchange(Application):
         logger.parent = self.log
         logger.setLevel(self.log.level)
 
-        access_log = logging.getLogger("tornado.access")
         access_log.propagate = False
         # make sure access log is enabled even if error level is WARNING|ERROR
         access_log.setLevel(logging.INFO)

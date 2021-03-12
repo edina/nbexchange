@@ -58,8 +58,8 @@ class BaseHandler(web.RequestHandler):
     def nbex_user(self):
 
         hub_user = self.get_current_user()
-        hub_username = hub_user.get("name")
-
+        hub_username = hub_user.get("username")
+        hub_user_id = hub_user["ext_id"]
         current_course = hub_user.get("course_id")
         current_role = hub_user.get("course_role")
         course_title = hub_user.get("course_title", "no_title")
@@ -71,14 +71,14 @@ class BaseHandler(web.RequestHandler):
         self.org_id = org_id
 
         with scoped_session() as session:
-            user = nbexchange.models.users.User.find_by_name(
-                db=session, name=hub_username, log=self.log
+            user = nbexchange.models.users.User.find_by_ext_id(
+                db=session, ext_id=hub_user_id, log=self.log
             )
             if user is None:
                 self.log.debug(
-                    f"New user details: name:{hub_username}, org_id:{org_id}"
+                    f"New user details: external id:{hub_user_id}, org_id:{org_id}"
                 )
-                user = nbexchange.models.users.User(name=hub_username, org_id=org_id)
+                user = nbexchange.models.users.User(name=hub_username, ext_id=hub_user_id, org_id=org_id)
                 session.add(user)
 
             course = nbexchange.models.courses.Course.find_by_code(

@@ -21,6 +21,8 @@ class User(Base):
     __table_args__ = (UniqueConstraint("name", "org_id"),)
 
     id = Column(Integer, primary_key=True, autoincrement=True)
+    # External ID
+    ext_id = Column(Integer, index=True, unique=True)
     name = Column(Unicode(200), nullable=False, index=True)
     org_id = Column(Integer, nullable=False, index=True)
 
@@ -34,7 +36,7 @@ class User(Base):
 
     @classmethod
     def find_by_pk(cls, db, pk, log=None):
-        """Find a course by Primary Key.
+        """Find a user by Primary Key.
         Returns None if not found.
         """
         if log:
@@ -46,6 +48,21 @@ class User(Base):
             return db.query(cls).filter(cls.id == pk).first()
         else:
             raise TypeError(f"Primary Keys are required to be Ints")
+
+    @classmethod
+    def find_by_ext_id(cls, db, ext_id, log=None):
+        """Find a user by Primary Key.
+        Returns None if not found.
+        """
+        if log:
+            log.debug(f"User.find_by_ext_id - ext_id:{ext_id}")
+
+        if ext_id is None:
+            raise ValueError(f"External key needs to be defined")
+        if isinstance(ext_id, int):
+            return db.query(cls).filter(cls.ext_id == ext_id).first()
+        else:
+            raise TypeError(f"External IDs are required to be Ints")
 
     @classmethod
     def find_by_name(cls, db, name, log=None):

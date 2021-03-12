@@ -12,52 +12,59 @@ from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 from urllib.parse import urljoin
 
-user_kiz = {"name": "1-kiz"}
-user_bert = {"name": "1-bert"}
+user_kiz = {"username": "1-kiz"}
+user_bert = {"username": "1-bert"}
 
 user_kiz_instructor = {
-    "name": "1-kiz",
+    "username": "1-kiz",
+    "ext_id": 1,
     "course_id": "course_2",
     "course_role": "Instructor",
     "course_title": "A title",
 }
 
 user_kiz_student = {
-    "name": "1-kiz",
+    "username": "1-kiz",
+    "ext_id": 1,
     "course_id": "course_2",
     "course_role": "Student",
     "course_title": "A title",
 }
 
 user_zik_student = {
-    "name": "1-zik",
+    "username": "1-zik",
+    "ext_id": 2,
     "course_id": "course_2",
     "course_role": "Student",
     "course_title": "A title",
 }
 
 user_brobbere_instructor = {
-    "name": "1-brobbere",
+    "username": "1-brobbere",
+    "ext_id": 3,
     "course_id": "course_2",
     "course_role": "Instructor",
     "course_title": "A title",
 }
 
 user_brobbere_student = {
-    "name": "1-brobbere",
+    "username": "1-brobbere",
+    "ext_id": 3,
     "course_id": "course_2",
     "course_role": "Student",
 }
 
 user_lkihlman_instructor = {
-    "name": "1-lkihlman",
+    "username": "1-lkihlman",
+    "ext_id": 4,
     "course_id": "course_1",
     "course_role": "Instructor",
     "course_title": "A title",
 }
 
 user_lkihlman_student = {
-    "name": "1-lkihlman",
+    "username": "1-lkihlman",
+    "ext_id": 4,
     "course_id": "course_1",
     "course_role": "Student",
 }

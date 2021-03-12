@@ -217,7 +217,7 @@ def test_feedback_post_authenticated_with_incorrect_assignment_id(app):
     timestamp = datetime.datetime.utcnow().isoformat(" ")
     checksum = notebook_hash(
         feedback_filename,
-        make_unique_key(course_id, assignment_id, notebook, student["name"], timestamp),
+        make_unique_key(course_id, assignment_id, notebook, student["username"], timestamp),
     )
     # XXX: Doing this in a separate function doesn't work for some reason (Exchange doesn't get called)
     kwargs = {"data": {"notebooks": [notebook]}}
@@ -245,7 +245,7 @@ def test_feedback_post_authenticated_with_incorrect_assignment_id(app):
         f"/feedback?assignment_id=faked"
         f"&course_id={course_id}"
         f"&notebook={notebook}"
-        f"&student={student['name']}"
+        f"&student={student['username']}"
         f"&timestamp={timestamp}"
         f"&checksum={checksum}"
     )
@@ -266,7 +266,7 @@ def test_feedback_post_authenticated_with_incorrect_notebook_id(app):
     timestamp = datetime.datetime.utcnow().isoformat(" ")
     checksum = notebook_hash(
         feedback_filename,
-        make_unique_key(course_id, assignment_id, notebook, student["name"], timestamp),
+        make_unique_key(course_id, assignment_id, notebook, student["username"], timestamp),
     )
 
     # XXX: Doing this in a separate function doesn't work for some reason (Exchange doesn't get called)
@@ -295,7 +295,7 @@ def test_feedback_post_authenticated_with_incorrect_notebook_id(app):
         f"/feedback?assignment_id={course_id}"
         f"&course_id={course_id}"
         f"&notebook=faked"
-        f"&student={student['name']}"
+        f"&student={student['username']}"
         f"&timestamp={timestamp}"
         f"&checksum={checksum}"
     )
@@ -316,7 +316,7 @@ def test_feedback_post_authenticated_with_incorrect_student_id(app):
     timestamp = datetime.datetime.utcnow().isoformat(" ")
     checksum = notebook_hash(
         feedback_filename,
-        make_unique_key(course_id, assignment_id, notebook, student["name"], timestamp),
+        make_unique_key(course_id, assignment_id, notebook, student["username"], timestamp),
     )
 
     # XXX: Doing this in a separate function doesn't work for some reason (Exchange doesn't get called)
@@ -345,7 +345,7 @@ def test_feedback_post_authenticated_with_incorrect_student_id(app):
         f"/feedback?assignment_id={course_id}"
         f"&course_id={course_id}"
         f"&notebook={notebook}"
-        f"&student={student['name']}"
+        f"&student={student['username']}"
         f"&timestamp={timestamp}"
         f"&checksum={checksum}"
     )
@@ -417,7 +417,7 @@ def test_feedback_post_authenticated_with_correct_params(app):
     timestamp = datetime.datetime.utcnow().isoformat(" ")
     checksum = notebook_hash(
         feedback_filename,
-        make_unique_key(course_id, assignment_id, notebook, student["name"], timestamp),
+        make_unique_key(course_id, assignment_id, notebook, student["username"], timestamp),
     )
 
     # XXX: Doing this in a separate function doesn't work for some reason (Exchange doesn't get called)
@@ -446,7 +446,7 @@ def test_feedback_post_authenticated_with_correct_params(app):
         f"/feedback?assignment_id={assignment_id}"
         f"&course_id={course_id}"
         f"&notebook={notebook}"
-        f"&student={student['name']}"
+        f"&student={student['username']}"
         f"&timestamp={timestamp}"
         f"&checksum={checksum}"
     )
@@ -469,7 +469,7 @@ def test_feedback_post_authenticated_with_correct_params_incorrect_instructor(ap
     timestamp = datetime.datetime.utcnow().isoformat(" ")
     checksum = notebook_hash(
         feedback_filename,
-        make_unique_key(course_id, assignment_id, notebook, student["name"], timestamp),
+        make_unique_key(course_id, assignment_id, notebook, student["username"], timestamp),
     )
 
     # XXX: Doing this in a separate function doesn't work for some reason (Exchange doesn't get called)
@@ -498,7 +498,7 @@ def test_feedback_post_authenticated_with_correct_params_incorrect_instructor(ap
         f"/feedback?assignment_id={assignment_id}"
         f"&course_id={course_id}"
         f"&notebook={notebook}"
-        f"&student={student['name']}"
+        f"&student={student['username']}"
         f"&timestamp={timestamp}"
         f"&checksum={checksum}"
     )
@@ -522,7 +522,7 @@ def test_feedback_post_authenticated_with_correct_params_student_submitter(app):
     timestamp = datetime.datetime.utcnow().isoformat(" ")
     checksum = notebook_hash(
         feedback_filename,
-        make_unique_key(course_id, assignment_id, notebook, student["name"], timestamp),
+        make_unique_key(course_id, assignment_id, notebook, student["username"], timestamp),
     )
 
     # XXX: Doing this in a separate function doesn't work for some reason (Exchange doesn't get called)
@@ -551,7 +551,7 @@ def test_feedback_post_authenticated_with_correct_params_student_submitter(app):
         f"/feedback?assignment_id={assignment_id}"
         f"&course_id={course_id}"
         f"&notebook={notebook}"
-        f"&student={student['name']}"
+        f"&student={student['username']}"
         f"&timestamp={timestamp}"
         f"&checksum={checksum}"
     )
@@ -573,7 +573,7 @@ def test_feedback_get_authenticated_with_incorrect_student(app):
     timestamp = datetime.datetime.utcnow().isoformat(" ")
     checksum = notebook_hash(
         feedback_filename,
-        make_unique_key(course_id, assignment_id, notebook, student["name"], timestamp),
+        make_unique_key(course_id, assignment_id, notebook, student["username"], timestamp),
     )
 
     # XXX: Doing this in a separate function doesn't work for some reason (Exchange doesn't get called)
@@ -602,7 +602,7 @@ def test_feedback_get_authenticated_with_incorrect_student(app):
         f"/feedback?assignment_id={assignment_id}"
         f"&course_id={course_id}"
         f"&notebook={notebook}"
-        f"&student={student['name']}"
+        f"&student={student['username']}"
         f"&timestamp={timestamp}"
         f"&checksum={checksum}"
     )
@@ -635,7 +635,7 @@ def test_feedback_get_authenticated_with_correct_params(app):
     timestamp = datetime.datetime.utcnow().isoformat(" ")
     checksum = notebook_hash(
         feedback_filename,
-        make_unique_key(course_id, assignment_id, notebook, student["name"], timestamp),
+        make_unique_key(course_id, assignment_id, notebook, student["username"], timestamp),
     )
 
     # XXX: Doing this in a separate function doesn't work for some reason (Exchange doesn't get called)
@@ -664,7 +664,7 @@ def test_feedback_get_authenticated_with_correct_params(app):
         f"/feedback?assignment_id={assignment_id}"
         f"&course_id={course_id}"
         f"&notebook={notebook}"
-        f"&student={student['name']}"
+        f"&student={student['username']}"
         f"&timestamp={timestamp}"
         f"&checksum={checksum}"
     )
@@ -701,7 +701,7 @@ def test_feedback_get_correct_assignment_across_courses(app):
     timestamp = datetime.datetime.utcnow().isoformat(" ")
     checksum = notebook_hash(
         feedback_filename,
-        make_unique_key(course_2, assignment_id, notebook, student["name"], timestamp),
+        make_unique_key(course_2, assignment_id, notebook, student["username"], timestamp),
     )
     # XXX: Doing this in a separate function doesn't work for some reason (Exchange doesn't get called)
     kwargs = {"data": {"notebooks": [notebook]}}
@@ -740,7 +740,7 @@ def test_feedback_get_correct_assignment_across_courses(app):
         f"/feedback?assignment_id={assignment_id}"
         f"&course_id={course_2}"
         f"&notebook={notebook}"
-        f"&student={student['name']}"
+        f"&student={student['username']}"
         f"&timestamp={timestamp}"
         f"&checksum={checksum}"
     )

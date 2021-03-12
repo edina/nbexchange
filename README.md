@@ -113,7 +113,8 @@ class MyUserHandler(BaseUserHandler):
 
     def get_current_user(self, request):
         return {
-          "name": "myname",
+          "username": "myname",
+          "ext_id": result["user_id"], 
           "course_id": "cool_course_id",
           "course_title": "cool course",
           "course_role": "Student",

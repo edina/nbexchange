@@ -35,7 +35,8 @@ class NaasUserHandler(BaseUserHandler):
         transformed_username = result["username"].replace("_", "-", 1)
 
         return {
-            "name": transformed_username,
+            "username": transformed_username,
+            "ext_id": result["user_id"],
             "course_id": result["n_cid"],
             "course_title": result["n_cnm"],
             "course_role": result["n_rl"],

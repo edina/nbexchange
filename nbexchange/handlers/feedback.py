@@ -61,10 +61,10 @@ class FeedbackHandler(BaseHandler):
             assignment = (
                 session.query(Assignment)
                 .join(Course)
-                .filter(Assignment.assignment_code==assignment_id)
-                .filter(Assignment.active==True)
-                .filter(Course.course_code==course_id)
-                .filter(Course.org_id==this_user["org_id"])
+                .filter(Assignment.assignment_code == assignment_id)
+                .filter(Assignment.active == True)
+                .filter(Course.course_code == course_id)
+                .filter(Course.org_id == this_user["org_id"])
                 .order_by(Assignment.id.desc())
                 .first()
             )
@@ -72,28 +72,20 @@ class FeedbackHandler(BaseHandler):
             if not assignment:
                 raise web.HTTPError(404, "Could not find requested resource")
 
-            student = (
-                session.query(User)
-                .filter_by(name=this_user["name"])
-                .first()
-            )
+            student = session.query(User).filter_by(name=this_user["name"]).first()
 
             # Find feedback for this notebook
             res = (
                 session.query(Feedback)
                 .join(Notebook)
-                .filter(Feedback.student_id==student.id)
-                .filter(Notebook.assignment_id==assignment.id)
+                .filter(Feedback.student_id == student.id)
+                .filter(Notebook.assignment_id == assignment.id)
                 .all()
             )
             feedbacks = []
             for r in res:
                 f = {}
-                notebook = (
-                    session.query(Notebook)
-                    .filter_by(id=r.notebook_id)
-                    .first()
-                )
+                notebook = session.query(Notebook).filter_by(id=r.notebook_id).first()
                 if notebook is not None:
                     feedback_name = "{0}.html".format(notebook.name)
                 else:
@@ -214,11 +206,7 @@ class FeedbackHandler(BaseHandler):
                     404, f"Could not find requested resource notebook {notebook_id}"
                 )
 
-            student = (
-                session.query(User)
-                .filter_by(name=student_id)
-                .first()
-            )
+            student = session.query(User).filter_by(name=student_id).first()
 
             if not student:
                 self.log.info(f"Could not find requested resource student {student_id}")

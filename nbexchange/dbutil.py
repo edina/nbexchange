@@ -167,8 +167,6 @@ class DatabaseSchemaMismatch(Exception):
     """
 
 
-
-
 def _expire_relationship(target, relationship_prop):
     """Expire relationship backrefs
 

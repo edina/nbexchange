@@ -12,7 +12,6 @@ import alembic.command
 import alembic.config
 from alembic.script import ScriptDirectory
 from sqlalchemy import create_engine, inspect, event, select, exc
-from sqlalchemy.interfaces import PoolListener
 from sqlalchemy.orm import object_session, interfaces, Session
 from sqlalchemy.pool import StaticPool
 
@@ -168,11 +167,6 @@ class DatabaseSchemaMismatch(Exception):
     """
 
 
-class ForeignKeysListener(PoolListener):
-    """Enable foreign keys on sqlite"""
-
-    def connect(self, dbapi_con, con_record):
-        dbapi_con.execute("pragma foreign_keys=ON")
 
 
 def _expire_relationship(target, relationship_prop):
@@ -339,8 +333,6 @@ def setup_db(url="sqlite:///:memory:", reset=False, log=None, **kwargs):
     log.info(f"dbutil.setup_db: db_url:{url}, reset:{reset}")
     if url.startswith("sqlite"):
         kwargs.setdefault("connect_args", {"check_same_thread": False})
-        listeners = kwargs.setdefault("listeners", [])
-        listeners.append(ForeignKeysListener())
 
     elif url.startswith("mysql"):
         kwargs.setdefault("pool_recycle", 60)

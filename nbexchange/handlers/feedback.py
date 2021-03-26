@@ -9,11 +9,12 @@ from sqlalchemy import desc
 from tornado import web, httputil
 from dateutil import parser
 
-import nbexchange.models.actions
-import nbexchange.models.assignments
-import nbexchange.models.courses
-import nbexchange.models.notebooks
-import nbexchange.models.feedback
+from nbexchange.models.actions import Action, AssignmentActions
+from nbexchange.models.assignments import Assignment
+from nbexchange.models.courses import Course
+from nbexchange.models.notebooks import Notebook
+from nbexchange.models.feedback import Feedback
+from nbexchange.models.users import User
 from nbexchange.database import scoped_session
 from nbexchange.handlers.base import BaseHandler, authenticated
 from nbgrader.utils import notebook_hash, make_unique_key
@@ -58,13 +59,13 @@ class FeedbackHandler(BaseHandler):
         with scoped_session() as session:
 
             assignment = (
-                session.query(nbexchange.models.Assignment)
-                .filter_by(assignment_code=assignment_id)
-                .filter_by(active=True)
-                .join(nbexchange.models.courses.Course)
-                .filter_by(course_code=course_id)
-                .filter_by(org_id=this_user["org_id"])
-                .order_by(nbexchange.models.Assignment.id.desc())
+                session.query(Assignment)
+                .join(Course)
+                .filter(Assignment.assignment_code==assignment_id)
+                .filter(Assignment.active==True)
+                .filter(Course.course_code==course_id)
+                .filter(Course.org_id==this_user["org_id"])
+                .order_by(Assignment.id.desc())
                 .first()
             )
 
@@ -72,24 +73,24 @@ class FeedbackHandler(BaseHandler):
                 raise web.HTTPError(404, "Could not find requested resource")
 
             student = (
-                session.query(nbexchange.models.users.User)
+                session.query(User)
                 .filter_by(name=this_user["name"])
                 .first()
             )
 
             # Find feedback for this notebook
             res = (
-                session.query(nbexchange.models.feedback.Feedback)
-                .filter_by(student_id=student.id)
-                .join(nbexchange.models.notebooks.Notebook)
-                .filter_by(assignment_id=assignment.id)
+                session.query(Feedback)
+                .join(Notebook)
+                .filter(Feedback.student_id==student.id)
+                .filter(Notebook.assignment_id==assignment.id)
                 .all()
             )
             feedbacks = []
             for r in res:
                 f = {}
                 notebook = (
-                    session.query(nbexchange.models.notebooks.Notebook)
+                    session.query(Notebook)
                     .filter_by(id=r.notebook_id)
                     .first()
                 )
@@ -106,10 +107,10 @@ class FeedbackHandler(BaseHandler):
                 feedbacks.append(f)
 
                 # Add action
-                action = nbexchange.models.actions.Action(
+                action = Action(
                     user_id=this_user["id"],
                     assignment_id=assignment.id,
-                    action=nbexchange.models.actions.AssignmentActions.feedback_fetched,
+                    action=AssignmentActions.feedback_fetched,
                     location=r.location,
                 )
                 session.add(action)
@@ -175,7 +176,7 @@ class FeedbackHandler(BaseHandler):
 
             # Start building feedback object
 
-            course = nbexchange.models.courses.Course.find_by_code(
+            course = Course.find_by_code(
                 db=session, code=course_id, org_id=this_user["org_id"], log=self.log
             )
 
@@ -186,7 +187,7 @@ class FeedbackHandler(BaseHandler):
                 )
 
             assignment = (
-                session.query(nbexchange.models.assignments.Assignment)
+                session.query(Assignment)
                 .filter_by(assignment_code=assignment_id, course_id=course.id)
                 .first()
             )
@@ -200,7 +201,7 @@ class FeedbackHandler(BaseHandler):
                 )
 
             notebook = (
-                session.query(nbexchange.models.notebooks.Notebook)
+                session.query(Notebook)
                 .filter_by(name=notebook_id, assignment_id=assignment.id)
                 .first()
             )
@@ -214,7 +215,7 @@ class FeedbackHandler(BaseHandler):
                 )
 
             student = (
-                session.query(nbexchange.models.users.User)
+                session.query(User)
                 .filter_by(name=student_id)
                 .first()
             )
@@ -301,7 +302,7 @@ class FeedbackHandler(BaseHandler):
                 self.log.error(f"Could not save file. \n {e}")
                 raise web.HTTPError(500)
 
-            feedback = nbexchange.models.feedback.Feedback(
+            feedback = Feedback(
                 notebook_id=notebook.id,
                 checksum=checksum,
                 location=feedback_file,
@@ -313,10 +314,10 @@ class FeedbackHandler(BaseHandler):
             session.add(feedback)
 
             # Add action
-            action = nbexchange.models.actions.Action(
+            action = Action(
                 user_id=this_user["id"],
                 assignment_id=notebook.assignment.id,
-                action=nbexchange.models.actions.AssignmentActions.feedback_released,
+                action=AssignmentActions.feedback_released,
                 location=feedback_file,
             )
             session.add(action)

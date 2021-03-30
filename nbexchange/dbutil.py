@@ -188,6 +188,16 @@ def _expire_relationship(target, relationship_prop):
             session.expire(obj, [relationship_prop.back_populates])
 
 
+def register_foreign_keys(engine):
+    """register PRAGMA foreign_keys=on on connection"""
+
+    @event.listens_for(engine, "connect")
+    def connect(dbapi_con, con_record):
+        cursor = dbapi_con.cursor()
+        cursor.execute("PRAGMA foreign_keys=ON")
+        cursor.close()
+
+
 @event.listens_for(Session, "persistent_to_deleted")
 def _notify_deleted_relationships(session, obj):
     """Expire relationships when an object becomes deleted
@@ -341,6 +351,10 @@ def setup_db(url="sqlite:///:memory:", reset=False, log=None, **kwargs):
         kwargs.setdefault("poolclass", StaticPool)
 
     engine = create_engine(url, **kwargs)
+
+    if url.startswith("sqlite"):
+        register_foreign_keys(engine)
+
     # enable pessimistic disconnect handling
     register_ping_connection(engine)
 

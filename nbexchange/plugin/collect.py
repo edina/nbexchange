@@ -92,6 +92,7 @@ class ExchangeCollect(abc.ExchangeCollect, Exchange):
             m = re.search(regex, submission["path"])
             if m:
                 student_id = m.group(1)  # m.group(0) is the whole regex match
+                raise Exception("Student display name {}".format(submission["display_name"]))
 
                 if student_id:
                     local_dest_path = self.coursedir.format_path(

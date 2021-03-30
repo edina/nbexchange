@@ -5,6 +5,7 @@ from tornado import web
 import nbexchange.models.actions
 import nbexchange.models.assignments
 import nbexchange.models.courses
+from models import User
 from nbexchange.database import scoped_session
 from nbexchange.handlers.base import BaseHandler, authenticated
 
@@ -62,7 +63,7 @@ class Collections(BaseHandler):
             self.finish({"success": False, "note": note})
             return
         if (
-            not "instructor" == this_user["current_role"].casefold()
+                not "instructor" == this_user["current_role"].casefold()
         ):  # we may need to revisit this
             note = f"User not an instructor to course {course_code}"
             self.log.info(note)
@@ -96,9 +97,12 @@ class Collections(BaseHandler):
 
             self.log.debug(f"Assignment: {assignment}")
             for action in assignment.actions:
+                # get user name
+                user: User = session.query(User).filter(id=assignment.user_id).first()
+
                 if re.search(
-                    fr"/{re_action}/{re_course}/{re_assignment}/{re_user}/",
-                    action.location,
+                        fr"/{re_action}/{re_course}/{re_assignment}/{re_user}/",
+                        action.location,
                 ):
                     models.append(
                         {
@@ -106,6 +110,7 @@ class Collections(BaseHandler):
                             "course_id": assignment.course.course_code,
                             "status": action.action.value,  # currently called 'action' in our db
                             "path": action.location,
+                            "display_name": user.name,
                             # 'name' in db, 'notebook_id' id nbgrader
                             "notebooks": [
                                 {"notebook_id": x.name} for x in assignment.notebooks
@@ -166,7 +171,7 @@ class Collection(BaseHandler):
         self.log.info(f"user: {this_user}")
 
         if (
-            not "instructor" == this_user["current_role"].casefold()
+                not "instructor" == this_user["current_role"].casefold()
         ):  # we may need to revisit this
             note = f"User not an instructor to course {course_code}"
             self.log.info(note)

@@ -291,7 +291,7 @@ def test_collect_normal_dont_update(plugin_config, tmpdir):
                     "json": lambda: {
                         "success": True,
                         "value": [
-                            {   
+                            {
                                 "student_id": student_id,
                                 "path": f"/submitted/no_course/{ass_1_4}/1/",
                                 "timestamp": "2020-02-01 00:00:00.100",

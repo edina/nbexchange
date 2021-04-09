@@ -88,6 +88,7 @@ class ExchangeCollect(abc.ExchangeCollect, Exchange):
                     self.coursedir.submitted_directory,
                     student_id,
                     self.coursedir.assignment_id,
+                    escape=True,
                 )
                 if not os.path.exists(os.path.dirname(local_dest_path)):
                     os.makedirs(os.path.dirname(local_dest_path))

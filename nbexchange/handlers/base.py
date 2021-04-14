@@ -60,6 +60,7 @@ class BaseHandler(web.RequestHandler):
         hub_user = self.get_current_user()
         hub_username = hub_user.get("name")
 
+        full_name = hub_user.get("full_name")
         current_course = hub_user.get("course_id")
         current_role = hub_user.get("course_role")
         course_title = hub_user.get("course_title", "no_title")
@@ -80,6 +81,8 @@ class BaseHandler(web.RequestHandler):
                 )
                 user = nbexchange.models.users.User(name=hub_username, org_id=org_id)
                 session.add(user)
+            if user.full_name != full_name:
+                user.full_name = full_name
 
             course = nbexchange.models.courses.Course.find_by_code(
                 db=session, code=current_course, org_id=org_id, log=self.log

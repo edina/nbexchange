@@ -1,5 +1,11 @@
 # Changelog
 
+
+## v1.2.0
+
+Add full names to gradebook when available
+
+
 ## v1.1.0
 
 Update the exchange & plugin to use a fixed timestamp

@@ -1,6 +1,6 @@
 {
   "name": "nbgrader-exchange-service",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Jupyterhub extension that provides an exchange service for nbgrader.",
   "author": "Ludvig Kihlman, Bert Robberechts, Ian Stuart",
   "license": "BSD-3-Clause",

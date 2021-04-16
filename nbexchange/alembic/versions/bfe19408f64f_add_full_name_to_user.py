@@ -23,4 +23,4 @@ def upgrade():
 
 def downgrade():
     with op.batch_alter_table("user") as batch_op:
-        batch_op.drop_column("user")
+        batch_op.drop_column("full_name")

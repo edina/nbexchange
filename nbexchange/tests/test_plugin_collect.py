@@ -8,6 +8,7 @@ from shutil import copyfile
 import pytest
 
 from mock import patch
+from nbgrader.api import Gradebook
 
 from nbexchange.plugin import ExchangeCollect, Exchange
 from nbgrader.coursedir import CourseDirectory
@@ -556,3 +557,370 @@ def test_collect_normal_several(plugin_config, tmpdir):
                 os.path.basename(notebook2_filename),
             )
         )
+
+
+@pytest.mark.gen_test
+def test_collect_normal_gradebook_called(plugin_config, tmpdir):
+    plugin_config.CourseDirectory.course_id = "no_course"
+    plugin_config.CourseDirectory.assignment_id = ass_1_3
+    plugin_config.CourseDirectory.submitted_directory = str(
+        tmpdir.mkdir("submitted").realpath()
+    )
+    plugin = ExchangeCollect(
+        coursedir=CourseDirectory(config=plugin_config), config=plugin_config
+    )
+    collections = False
+    collection = False
+    gradebook_called = False
+
+    def gradebook_update(*args, **kwargs):
+        nonlocal gradebook_called
+        gradebook_called = True
+        assert kwargs.get("first_name") == "First"
+        assert kwargs.get("last_name") == "Surname"
+        assert args[0] == student_id
+
+    def api_request(*args, **kwargs):
+        nonlocal collections, collection
+        tar_file = io.BytesIO()
+        if "collections" in args[0]:
+            assert collections is False
+            collections = True
+            assert args[0] == (
+                f"collections?course_id=no_course&assignment_id={ass_1_3}"
+            )
+            assert "method" not in kwargs or kwargs.get("method").lower() == "get"
+            return type(
+                "Response",
+                (object,),
+                {
+                    "status_code": 200,
+                    "headers": {"content-type": "application/x-tar"},
+                    "json": lambda: {
+                        "success": True,
+                        "value": [
+                            {
+                                "student_id": student_id,
+                                "full_name": "First Surname",
+                                "path": f"/submitted/no_course/{ass_1_3}/1/",
+                                "timestamp": "2020-01-01 00:00:00.0 UTC",
+                            }
+                        ],
+                    },
+                },
+            )
+        else:
+            assert collection is False
+            collection = True
+            assert args[0] == (
+                f"collection?course_id=no_course&assignment_id={ass_1_3}&path=%2Fsubmitted%2Fno_course%2F{ass_1_3}%2F1%2F"
+            )
+            assert "method" not in kwargs or kwargs.get("method").lower() == "get"
+            with tarfile.open(fileobj=tar_file, mode="w:gz") as tar_handle:
+                tar_handle.add(
+                    notebook1_filename, arcname=os.path.basename(notebook1_filename)
+                )
+                # tar_handle.add(notebook2_filename, arcname=os.path.basename(notebook2_filename))
+            tar_file.seek(0)
+
+            return type(
+                "Response",
+                (object,),
+                {
+                    "status_code": 200,
+                    "headers": {"content-type": "application/x-tar"},
+                    "content": tar_file.read(),
+                },
+            )
+
+    with patch.object(Exchange, "api_request", side_effect=api_request), patch.object(
+        Gradebook, "update_or_create_student", side_effect=gradebook_update
+    ):
+        plugin.start()
+        assert gradebook_called
+        assert collections and collection
+        assert os.path.exists(
+            os.path.join(
+                plugin.coursedir.format_path(
+                    plugin_config.CourseDirectory.submitted_directory,
+                    student_id,
+                    ass_1_3,
+                ),
+                os.path.basename(notebook1_filename),
+            )
+        )
+
+
+@pytest.mark.gen_test
+def test_collect_normal_gradebook_called_no_space(plugin_config, tmpdir):
+    plugin_config.CourseDirectory.course_id = "no_course"
+    plugin_config.CourseDirectory.assignment_id = ass_1_3
+    plugin_config.CourseDirectory.submitted_directory = str(
+        tmpdir.mkdir("submitted").realpath()
+    )
+    plugin = ExchangeCollect(
+        coursedir=CourseDirectory(config=plugin_config), config=plugin_config
+    )
+    collections = False
+    collection = False
+    gradebook_called = False
+
+    def gradebook_update(*args, **kwargs):
+        nonlocal gradebook_called
+        gradebook_called = True
+        assert kwargs.get("first_name") == "First"
+        assert kwargs.get("last_name") == ""
+        assert args[0] == student_id
+
+    def api_request(*args, **kwargs):
+        nonlocal collections, collection
+        tar_file = io.BytesIO()
+        if "collections" in args[0]:
+            assert collections is False
+            collections = True
+            assert args[0] == (
+                f"collections?course_id=no_course&assignment_id={ass_1_3}"
+            )
+            assert "method" not in kwargs or kwargs.get("method").lower() == "get"
+            return type(
+                "Response",
+                (object,),
+                {
+                    "status_code": 200,
+                    "headers": {"content-type": "application/x-tar"},
+                    "json": lambda: {
+                        "success": True,
+                        "value": [
+                            {
+                                "student_id": student_id,
+                                "full_name": "First",
+                                "path": f"/submitted/no_course/{ass_1_3}/1/",
+                                "timestamp": "2020-01-01 00:00:00.0 UTC",
+                            }
+                        ],
+                    },
+                },
+            )
+        else:
+            assert collection is False
+            collection = True
+            assert args[0] == (
+                f"collection?course_id=no_course&assignment_id={ass_1_3}&path=%2Fsubmitted%2Fno_course%2F{ass_1_3}%2F1%2F"
+            )
+            assert "method" not in kwargs or kwargs.get("method").lower() == "get"
+            with tarfile.open(fileobj=tar_file, mode="w:gz") as tar_handle:
+                tar_handle.add(
+                    notebook1_filename, arcname=os.path.basename(notebook1_filename)
+                )
+                # tar_handle.add(notebook2_filename, arcname=os.path.basename(notebook2_filename))
+            tar_file.seek(0)
+
+            return type(
+                "Response",
+                (object,),
+                {
+                    "status_code": 200,
+                    "headers": {"content-type": "application/x-tar"},
+                    "content": tar_file.read(),
+                },
+            )
+
+    with patch.object(Exchange, "api_request", side_effect=api_request), patch.object(
+        Gradebook, "update_or_create_student", side_effect=gradebook_update
+    ):
+        plugin.start()
+        assert gradebook_called
+        assert collections and collection
+        assert os.path.exists(
+            os.path.join(
+                plugin.coursedir.format_path(
+                    plugin_config.CourseDirectory.submitted_directory,
+                    student_id,
+                    ass_1_3,
+                ),
+                os.path.basename(notebook1_filename),
+            )
+        )
+
+
+@pytest.mark.gen_test
+def test_collect_normal_gradebook_called_no_full_name(plugin_config, tmpdir):
+    plugin_config.CourseDirectory.course_id = "no_course"
+    plugin_config.CourseDirectory.assignment_id = ass_1_3
+    plugin_config.CourseDirectory.submitted_directory = str(
+        tmpdir.mkdir("submitted").realpath()
+    )
+    plugin = ExchangeCollect(
+        coursedir=CourseDirectory(config=plugin_config), config=plugin_config
+    )
+    collections = False
+    collection = False
+    gradebook_called = False
+
+    def gradebook_update(*args, **kwargs):
+        nonlocal gradebook_called
+        gradebook_called = True
+        assert kwargs.get("first_name") == ""
+        assert kwargs.get("last_name") == ""
+        assert args[0] == student_id
+
+    def api_request(*args, **kwargs):
+        nonlocal collections, collection
+        tar_file = io.BytesIO()
+        if "collections" in args[0]:
+            assert collections is False
+            collections = True
+            assert args[0] == (
+                f"collections?course_id=no_course&assignment_id={ass_1_3}"
+            )
+            assert "method" not in kwargs or kwargs.get("method").lower() == "get"
+            return type(
+                "Response",
+                (object,),
+                {
+                    "status_code": 200,
+                    "headers": {"content-type": "application/x-tar"},
+                    "json": lambda: {
+                        "success": True,
+                        "value": [
+                            {
+                                "student_id": student_id,
+                                "path": f"/submitted/no_course/{ass_1_3}/1/",
+                                "timestamp": "2020-01-01 00:00:00.0 UTC",
+                            }
+                        ],
+                    },
+                },
+            )
+        else:
+            assert collection is False
+            collection = True
+            assert args[0] == (
+                f"collection?course_id=no_course&assignment_id={ass_1_3}&path=%2Fsubmitted%2Fno_course%2F{ass_1_3}%2F1%2F"
+            )
+            assert "method" not in kwargs or kwargs.get("method").lower() == "get"
+            with tarfile.open(fileobj=tar_file, mode="w:gz") as tar_handle:
+                tar_handle.add(
+                    notebook1_filename, arcname=os.path.basename(notebook1_filename)
+                )
+                # tar_handle.add(notebook2_filename, arcname=os.path.basename(notebook2_filename))
+            tar_file.seek(0)
+
+            return type(
+                "Response",
+                (object,),
+                {
+                    "status_code": 200,
+                    "headers": {"content-type": "application/x-tar"},
+                    "content": tar_file.read(),
+                },
+            )
+
+    with patch.object(Exchange, "api_request", side_effect=api_request), patch.object(
+        Gradebook, "update_or_create_student", side_effect=gradebook_update
+    ):
+        plugin.start()
+        assert gradebook_called
+        assert collections and collection
+        assert os.path.exists(
+            os.path.join(
+                plugin.coursedir.format_path(
+                    plugin_config.CourseDirectory.submitted_directory,
+                    student_id,
+                    ass_1_3,
+                ),
+                os.path.basename(notebook1_filename),
+            )
+        )
+
+
+@pytest.mark.gen_test
+def test_collect_normal_several_gradebook_called(plugin_config, tmpdir):
+    plugin_config.CourseDirectory.course_id = "no_course"
+    plugin_config.CourseDirectory.assignment_id = ass_1_1
+    plugin_config.CourseDirectory.submitted_directory = str(
+        tmpdir.mkdir("submitted").realpath()
+    )
+    plugin = ExchangeCollect(
+        coursedir=CourseDirectory(config=plugin_config), config=plugin_config
+    )
+    collections = False
+    collection = False
+    gradebook_called = False
+    first_names = ["First", "Second"]
+    last_names = ["Surname", "Lastname"]
+    student_ids = ["1", "2"]
+    collection_number = 0
+
+    def gradebook_update(*args, **kwargs):
+        nonlocal gradebook_called, collection_number
+        gradebook_called = True
+        assert kwargs.get("first_name") == first_names[collection_number]
+        assert kwargs.get("last_name") == last_names[collection_number]
+        assert args[0] == student_ids[collection_number]
+        collection_number += 1
+
+    def api_request(*args, **kwargs):
+        nonlocal collections, collection
+        tar_file = io.BytesIO()
+        if "collections" in args[0]:
+            collections = True
+            assert args[0] == (
+                f"collections?course_id=no_course&assignment_id={ass_1_1}"
+            )
+            assert "method" not in kwargs or kwargs.get("method").lower() == "get"
+            return type(
+                "Response",
+                (object,),
+                {
+                    "status_code": 200,
+                    "headers": {"content-type": "application/x-tar"},
+                    "json": lambda: {
+                        "success": True,
+                        "value": [
+                            {
+                                "student_id": student_ids[0],
+                                "full_name": "First Surname",
+                                "path": f"/submitted/no_course/{ass_1_1}/1/",
+                                "timestamp": "2020-01-01 00:00:00.0 UTC",
+                            },
+                            {
+                                "student_id": student_ids[1],
+                                "full_name": "Second Lastname",
+                                "path": f"/submitted/no_course/{ass_1_1}/2/",
+                                "timestamp": "2020-01-01 00:00:00.1 UTC",
+                            },
+                        ],
+                    },
+                },
+            )
+        else:
+            num = "2" if collection else "1"
+            assert args[0] == (
+                f"collection?course_id=no_course&assignment_id={ass_1_1}&path=%2Fsubmitted%2Fno_course%2F{ass_1_1}%2F{num}%2F"
+            )
+            collection = True
+            assert "method" not in kwargs or kwargs.get("method").lower() == "get"
+            with tarfile.open(fileobj=tar_file, mode="w:gz") as tar_handle:
+                tar_handle.add(
+                    notebook1_filename, arcname=os.path.basename(notebook1_filename)
+                )
+            tar_file.seek(0)
+
+            return type(
+                "Response",
+                (object,),
+                {
+                    "status_code": 200,
+                    "headers": {"content-type": "application/x-tar"},
+                    "content": tar_file.read(),
+                },
+            )
+
+    with patch.object(Exchange, "api_request", side_effect=api_request), patch.object(
+        Gradebook, "update_or_create_student", side_effect=gradebook_update
+    ):
+        plugin.start()
+        assert gradebook_called
+        assert collection_number == 2
+        assert collections and collection

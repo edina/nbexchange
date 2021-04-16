@@ -36,6 +36,7 @@ class NaasUserHandler(BaseUserHandler):
 
         return {
             "name": transformed_username,
+            "full_name": result.get("n_fn", ""),
             "course_id": result["n_cid"],
             "course_title": result["n_cnm"],
             "course_role": result["n_rl"],

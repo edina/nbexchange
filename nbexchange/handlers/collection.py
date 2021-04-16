@@ -103,6 +103,7 @@ class Collections(BaseHandler):
                     models.append(
                         {
                             "student_id": action.user.name,
+                            "full_name": action.user.full_name,
                             "assignment_id": assignment.assignment_code,
                             "course_id": assignment.course.course_code,
                             "status": action.action.value,  # currently called 'action' in our db

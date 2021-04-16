@@ -6,6 +6,7 @@ import re
 import shutil
 import tarfile
 
+from nbgrader.api import Gradebook, MissingEntry
 from urllib.parse import quote_plus
 
 from .exchange import Exchange
@@ -82,6 +83,14 @@ class ExchangeCollect(abc.ExchangeCollect, Exchange):
         for submission in submissions:
 
             student_id = submission["student_id"]
+            full_name = submission.get("full_name", "")
+            if " " in full_name:
+                first_name, last_name = full_name.rsplit(" ", 1)
+            else:
+                first_name, last_name = (
+                    full_name,
+                    "",
+                )  # TODO: should we prefer first or last name here?
 
             if student_id:
                 local_dest_path = self.coursedir.format_path(
@@ -127,6 +136,18 @@ class ExchangeCollect(abc.ExchangeCollect, Exchange):
                         self.log.info(
                             f"Collecting submission: {student_id} {self.coursedir.assignment_id}"
                         )
+
+                    with Gradebook(
+                        self.coursedir.db_url, self.coursedir.course_id
+                    ) as gb:
+                        try:
+                            gb.update_or_create_student(
+                                student_id, first_name=first_name, last_name=last_name
+                            )
+                        except MissingEntry:
+                            self.log.info(
+                                f"Unable to update: {student_id} with first_name={first_name}, last_name={last_name}"
+                            )
                     self.download(submission, local_dest_path)
                 else:
                     if self.update:

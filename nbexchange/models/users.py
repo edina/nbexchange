@@ -1,4 +1,4 @@
-from sqlalchemy import UniqueConstraint, Column, Integer, Unicode
+from sqlalchemy import UniqueConstraint, Column, Integer, Unicode, Text
 from sqlalchemy.orm import relationship
 
 from nbexchange.models import Base
@@ -22,6 +22,7 @@ class User(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(Unicode(200), nullable=False, index=True)
+    full_name = Column(Text, nullable=True)
     org_id = Column(Integer, nullable=False, index=True)
 
     ## User <-> Course Relationship

@@ -10,6 +10,7 @@ from nbexchange.tests.utils import (
     user_kiz_instructor,
     user_brobbere_instructor,
     user_kiz_student,
+    user_zik_student,
     user_brobbere_student,
 )
 
@@ -347,3 +348,73 @@ def test_collections_with_named_user(app):
     assert response_data["success"] is True
     # 2 if run solo, 8 is run in the complete suite
     assert len(response_data["value"]) in [2, 8]
+
+
+# Reminder: actions are persistent, so the previous test set up most of the actions
+@pytest.mark.gen_test
+def test_collections_with_named_user_check_full_name(app):
+    assignment_id_1 = "assign_a"
+    course_id = "course_2"
+    notebook = "notebook"
+    student = "1-zik"
+
+    # XXX: Doing this in a separate function doesn't work for some reason
+    #  (Exchange doesn't get called)
+    kwargs = {"data": {"notebooks": [notebook]}}
+    with patch.object(BaseHandler, "get_current_user", return_value=user_zik_student):
+        r = yield async_requests.post(
+            app.url
+            + f"/submission?course_id={course_id}&assignment_id={assignment_id_1}",
+            files=files,
+        )
+
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_kiz_instructor
+    ):
+        r = yield async_requests.get(
+            app.url
+            + f"/collections?course_id={course_id}&assignment_id={assignment_id_1}&user_id={student}"
+        )
+
+    response_data = r.json()
+    assert response_data["success"] is True
+    # 2 if run solo, 8 is run in the complete suite
+    assert len(response_data["value"]) == 1
+    for value in response_data["value"]:
+        assert value["full_name"] == "One Zik"
+
+
+# Reminder: actions are persistent, so the previous test set up most of the actions
+@pytest.mark.gen_test
+def test_collections_with_named_user_check_full_name_missing(app):
+    assignment_id_1 = "assign_a"
+    course_id = "course_2"
+    notebook = "notebook"
+    student = "1-brobbere"
+
+    # XXX: Doing this in a separate function doesn't work for some reason
+    #  (Exchange doesn't get called)
+    kwargs = {"data": {"notebooks": [notebook]}}
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_brobbere_student
+    ):
+        r = yield async_requests.post(
+            app.url
+            + f"/submission?course_id={course_id}&assignment_id={assignment_id_1}",
+            files=files,
+        )
+
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_kiz_instructor
+    ):
+        r = yield async_requests.get(
+            app.url
+            + f"/collections?course_id={course_id}&assignment_id={assignment_id_1}&user_id={student}"
+        )
+
+    response_data = r.json()
+    assert response_data["success"] is True
+    # 2 if run solo, 8 is run in the complete suite
+    assert len(response_data["value"]) in [1, 2]
+    for value in response_data["value"]:
+        assert value["full_name"] is None

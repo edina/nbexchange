@@ -34,6 +34,7 @@ user_zik_student = {
     "course_id": "course_2",
     "course_role": "Student",
     "course_title": "A title",
+    "full_name": "One Zik",
 }
 
 user_brobbere_instructor = {

@@ -1,3 +1,4 @@
+import glob
 import io
 import nbgrader.exchange.abc as abc
 import os
@@ -51,9 +52,10 @@ class ExchangeFetchAssignment(abc.ExchangeFetchAssignment, Exchange):
         else:
             root = self.coursedir.assignment_id
         self.dest_path = os.path.abspath(os.path.join(self.assignment_dir, root))
-        if os.path.isdir(self.dest_path) and not self.replace_missing_files:
+        # Lets check there are no notebooks already in the dest_path dir
+        if os.path.isdir(self.dest_path) and glob.glob(self.dest_path + "/*.ipynb") and not self.replace_missing_files:
             self.fail(
-                f"You already have a copy of the assignment in this directory: {root}"
+                f"You already have notebook documents in directory: {root}. Please remove them before fetching again"
             )
         else:
             os.makedirs(os.path.dirname(self.dest_path + "/"), exist_ok=True)

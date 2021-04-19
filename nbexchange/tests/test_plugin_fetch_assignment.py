@@ -162,6 +162,7 @@ def test_fetch_assignment_fetch_several_normal(plugin_config, tmpdir):
     finally:
         shutil.rmtree(plugin.dest_path)
 
+
 @pytest.mark.gen_test
 def test_fetch_empty_folder_exists(plugin_config, tmpdir):
     plugin_config.CourseDirectory.course_id = "no_course"
@@ -221,8 +222,8 @@ def test_fetch_folder_exists_with_ipynb(plugin_config, tmpdir):
         coursedir=CourseDirectory(config=plugin_config), config=plugin_config
     )
     os.makedirs("assign_1_3")
-    with open('assign_1_3/decoy.ipynb', 'w') as f:
-        f.write(' ')
+    with open("assign_1_3/decoy.ipynb", "w") as f:
+        f.write(" ")
     try:
 
         def api_request(*args, **kwargs):
@@ -254,9 +255,13 @@ def test_fetch_folder_exists_with_ipynb(plugin_config, tmpdir):
         with patch.object(Exchange, "api_request", side_effect=api_request):
             with pytest.raises(ExchangeError) as e_info:
                 called = plugin.start()
-            assert str(e_info.value) == "You already have notebook documents in directory: assign_1_3. Please remove them before fetching again"
+            assert (
+                str(e_info.value)
+                == "You already have notebook documents in directory: assign_1_3. Please remove them before fetching again"
+            )
     finally:
         shutil.rmtree(plugin.dest_path)
+
 
 @pytest.mark.gen_test
 def test_fetch_folder_exists_with_other_file(plugin_config, tmpdir):
@@ -267,8 +272,8 @@ def test_fetch_folder_exists_with_other_file(plugin_config, tmpdir):
         coursedir=CourseDirectory(config=plugin_config), config=plugin_config
     )
     os.makedirs("assign_1_3")
-    with open('assign_1_3/decoy.txt', 'w') as f:
-        f.write(' ')
+    with open("assign_1_3/decoy.txt", "w") as f:
+        f.write(" ")
     try:
 
         def api_request(*args, **kwargs):

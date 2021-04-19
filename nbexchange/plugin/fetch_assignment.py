@@ -53,7 +53,11 @@ class ExchangeFetchAssignment(abc.ExchangeFetchAssignment, Exchange):
             root = self.coursedir.assignment_id
         self.dest_path = os.path.abspath(os.path.join(self.assignment_dir, root))
         # Lets check there are no notebooks already in the dest_path dir
-        if os.path.isdir(self.dest_path) and glob.glob(self.dest_path + "/*.ipynb") and not self.replace_missing_files:
+        if (
+            os.path.isdir(self.dest_path)
+            and glob.glob(self.dest_path + "/*.ipynb")
+            and not self.replace_missing_files
+        ):
             self.fail(
                 f"You already have notebook documents in directory: {root}. Please remove them before fetching again"
             )

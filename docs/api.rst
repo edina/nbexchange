@@ -51,6 +51,21 @@ returns
 
 or raises Exception (which is returned as a `503` error)
 
+**DELETE**:  (role=instructor, with file): Remove an assignment.
+
+Marks an asiignment as ``active: False``, and forgets any associated notebooks. Returns
+
+    {"success": True, "note": "Assignment '$assignment_code' on course '$course_code' marked as unreleased by user $user" 
+
+Takes as *optional* parameter ``purge``. This will delete the notebooks, the assignment,
+and any associated data (``actions``, ``feedback``, etc). Returns
+
+    {"success": True, "note": "Assignment '$assignment_code' on course '$course_code' deleted and purged from the database by user $user"}
+
+If there are permission issues, returns
+
+    {"success": False, "note": $note}
+
 Submission
 ----------
 

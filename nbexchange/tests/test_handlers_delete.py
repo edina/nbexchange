@@ -219,7 +219,7 @@ def test_delete_multiple_courses_listed_first_right_passes(app):
 
 # confirm unreleased does not show in list
 # Skipping because it fails in the group test, but fine when just the 1 file is run
-# @pytest.mark.skip
+@pytest.mark.skip
 @pytest.mark.gen_test
 def test_delete_assignment10(app):
     with patch.object(

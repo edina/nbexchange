@@ -437,8 +437,8 @@ def test_collections_with_a_blank_feedback_path_injected(app):
 
         action = nbexchange.models.actions.Action(
             user_id=3,
-            assignment_id=assignment_id_1,
-            action="feedback_fetched",
+            assignment_id=1,
+            action=nbexchange.models.actions.AssignmentActions.feedback_fetched.value,
             location=None,
         )
         session.add(action)

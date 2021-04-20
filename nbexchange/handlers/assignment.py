@@ -419,7 +419,7 @@ class Assignment(BaseHandler):
             self.finish({"success": False, "note": note})
             return
 
-        note = "Assignment unreleased"
+        note = f"Assignment '{assignment_code}' on course '{course_code}' marked as unreleased"
         with scoped_session() as session:
             course = nbexchange.models.courses.Course.find_by_code(
                 db=session, code=course_code, org_id=this_user["org_id"], log=self.log
@@ -438,7 +438,7 @@ class Assignment(BaseHandler):
             # If we have the purge parameter, we actually delete the data
             # The various 'cascade on delete' settings should clear all the sub-tables
             if purge:
-                print(f"assignment id = {assignment.id}")
                 session.delete(assignment)
-                note = "Assignment deleted and purged from the database"
+                note = f"Assignment '{assignment_code}' on course '{course_code}' deleted and purged from the database"
+        self.log.info(f"{note} by user {this_user['id']} ")
         self.finish({"success": True, "note": note})

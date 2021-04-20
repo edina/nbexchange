@@ -37,7 +37,7 @@ def upgrade():
         ),  # code from jupyterhub
         sa.Column("username", sa.Unicode(200), nullable=False, index=True),
     )
-    op.create_unique_constraint("uq_users", 'user"'["username", "org_id"])
+    op.create_unique_constraint("uq_users", "user", ["username", "org_id"])
 
     # Courses.
     # Need to be separated by some kind of organisational ID
@@ -47,7 +47,7 @@ def upgrade():
         sa.Column("org_id", sa.Integer, nullable=False, index=True),
         sa.Column("course_code", sa.Unicode(200), nullable=False, index=True),
     )
-    op.create_unique_constraint("uq_courses", 'course"'["course_code", "org_id"])
+    op.create_unique_constraint("uq_courses", "course", ["course_code", "org_id"])
 
     # user -> course_code, with role
     # Unique across all three, however a user can have multiple roles on a course.

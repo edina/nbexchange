@@ -123,7 +123,10 @@ def test_delete_instructor_delete(app):
     assert r.status_code == 200
     response_data = r.json()
     assert response_data["success"] == True
-    assert response_data["note"] == "Assignment unreleased"
+    assert (
+        response_data["note"]
+        == "Assignment 'assign_a' on course 'course_2' marked as unreleased"
+    )
 
 
 # instructor can purge
@@ -144,7 +147,10 @@ def test_delete_instructor_purge(app):
     assert r.status_code == 200
     response_data = r.json()
     assert response_data["success"] == True
-    assert response_data["note"] == "Assignment deleted and purged from the database"
+    assert (
+        response_data["note"]
+        == "Assignment 'assign_b' on course 'course_2' deleted and purged from the database"
+    )
 
 
 # Instructor, wrong course, cannot delete
@@ -205,10 +211,14 @@ def test_delete_multiple_courses_listed_first_right_passes(app):
     assert r.status_code == 200
     response_data = r.json()
     assert response_data["success"] == True
-    assert response_data["note"] == "Assignment unreleased"
+    assert (
+        response_data["note"]
+        == "Assignment 'assign_a' on course 'course_2' marked as unreleased"
+    )
 
 
 # confirm unreleased does not show in list
+# Skipping because it fails in the group test, but fine when just the 1 file is run
 @pytest.mark.skip
 @pytest.mark.gen_test
 def test_delete_assignment10(app):

@@ -418,3 +418,40 @@ def test_collections_with_named_user_check_full_name_missing(app):
     assert len(response_data["value"]) in [1, 2]
     for value in response_data["value"]:
         assert value["full_name"] is None
+
+
+# Reminder: actions are persistent, so the previous test set up most of the actions
+@pytest.mark.gen_test
+def test_collections_with_a_blank_feedback_path_injected(app):
+    assignment_id_1 = "assign_a"
+    course_id = "course_2"
+    notebook = "notebook"
+
+    ## We're just using persistent actions here.
+
+    # Now manually inject a `feedback_fetched` action
+    import nbexchange.models.actions
+    from nbexchange.database import scoped_session
+
+    with scoped_session() as session:
+
+        action = nbexchange.models.actions.Action(
+            user_id=3,
+            assignment_id=assignment_id_1,
+            action="feedback_fetched",
+            location=None,
+        )
+        session.add(action)
+
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_kiz_instructor
+    ):
+        r = yield async_requests.get(
+            app.url
+            + f"/collections?course_id={course_id}&assignment_id={assignment_id_1}"
+        )
+
+    response_data = r.json()
+    assert response_data["success"] is True
+    # 3 if run solo, 9 is run in the complete suite
+    assert len(response_data["value"]) in [5, 11]

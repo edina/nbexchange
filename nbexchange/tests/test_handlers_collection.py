@@ -23,14 +23,14 @@ files = get_files_dict(sys.argv[0])  # ourself :)
 
 # No method available (501, because we've hard-coded it)
 @pytest.mark.gen_test
-def test_post_collection0(app):
+def test_post_collection_is_501(app):
     r = yield async_requests.post(app.url + "/collection")
     assert r.status_code == 501
 
 
 # subscribed user makes no difference (501, because we've hard-coded it)
 @pytest.mark.gen_test
-def test_post_assignments1(app):
+def test_post_collection_is_501_even_authenticaated(app):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):
@@ -42,14 +42,14 @@ def test_post_assignments1(app):
 
 # require authenticated user
 @pytest.mark.gen_test
-def test_collection0(app):
+def test_get_collection_requires_authentication(app):
     r = yield async_requests.get(app.url + "/collection")
     assert r.status_code == 403
 
 
 # Requires three params (none)
 @pytest.mark.gen_test
-def test_collection1(app):
+def test_get_collection_requires_parameters(app):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):
@@ -68,7 +68,7 @@ def test_collection1(app):
 # (needs to be fetched before it can be submitted )
 # (needs to be released before it can be fetched )
 @pytest.mark.gen_test
-def test_collection2(app):
+def test_get_collection_catches_missing_path(app):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):
@@ -112,7 +112,7 @@ def test_collection2(app):
 # (needs to be fetched before it can be submitted )
 # (needs to be released before it can be fetched )
 @pytest.mark.gen_test
-def test_collection3(app):
+def test_get_collection_catches_missing_assignment(app):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):
@@ -156,7 +156,7 @@ def test_collection3(app):
 # (needs to be fetched before it can be submitted )
 # (needs to be released before it can be fetched )
 @pytest.mark.gen_test
-def test_collection4(app):
+def test_get_collection_catches_missing_course(app):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):
@@ -200,7 +200,7 @@ def test_collection4(app):
 # (needs to be fetched before it can be submitted )
 # (needs to be released before it can be fetched )
 @pytest.mark.gen_test
-def test_collection5(app):
+def test_get_collection_checks_for_user_subscription(app):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):
@@ -239,7 +239,7 @@ def test_collection5(app):
 # Has all three params, student can't collect (note this is hard-coded params, as students can list items available for collection)
 # (needs to be released to register the assignment )
 @pytest.mark.gen_test
-def test_collection6(app):
+def test_get_collection_check_catches_student_role(app):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):
@@ -265,7 +265,7 @@ def test_collection6(app):
 # (needs to be fetched before it can be submitted )
 # (needs to be released before it can be fetched )
 @pytest.mark.gen_test
-def test_collection7(app):
+def test_get_collection_confirm_instructor_does_download(app):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):
@@ -302,7 +302,7 @@ def test_collection7(app):
 
 # Confirm that multiple submissions are listed
 @pytest.mark.gen_test
-async def test_post_assignment9(app):
+async def test_collection_actions_show_correctly(app):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):
@@ -401,3 +401,98 @@ async def test_post_assignment9(app):
 
         assert len(actions) == 4
         assert actions == ["released", "fetched", "submitted", "submitted"]
+
+
+# what happens the path doesn't match
+# (needs to be submitted before it can listed for collection )
+# (needs to be fetched before it can be submitted )
+# (needs to be released before it can be fetched )
+@pytest.mark.gen_test
+def test_get_collection_path_is_incorrect(app):
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_kiz_instructor
+    ):
+        r = yield async_requests.post(
+            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
+            files=files,
+        )
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+        r = yield async_requests.get(
+            app.url + "/assignment?course_id=course_2&assignment_id=assign_a"
+        )
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+        r = yield async_requests.post(
+            app.url + "/submission?course_id=course_2&assignment_id=assign_a",
+            files=files,
+        )
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_kiz_instructor
+    ):
+        collected_data = None
+        r = yield async_requests.get(
+            app.url + "/collections?course_id=course_2&assignment_id=assign_a"
+        )  ## Get the data we need to make test the call we want to make
+        response_data = r.json()
+        collected_data = response_data["value"][0]
+        r = yield async_requests.get(
+            app.url
+            + f"/collection?course_id={collected_data['course_id']}&path=/some/random/path&assignment_id={collected_data['assignment_id']}"
+        )
+    assert r.status_code == 200
+    assert r.headers["Content-Type"] == "application/gzip"
+    assert int(r.headers["Content-Length"]) == 0
+
+
+# what happens when collections returns a fetched_feedback with an empty path
+# (needs to be submitted before it can listed for collection )
+# (needs to be fetched before it can be submitted )
+# (needs to be released before it can be fetched )
+@pytest.mark.gen_test
+def test_get_collection_with_a_blank_feedback_path_injected(app):
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_kiz_instructor
+    ):
+        r = yield async_requests.post(
+            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
+            files=files,
+        )
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+        r = yield async_requests.get(
+            app.url + "/assignment?course_id=course_2&assignment_id=assign_a"
+        )
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+        r = yield async_requests.post(
+            app.url + "/submission?course_id=course_2&assignment_id=assign_a",
+            files=files,
+        )
+
+    # Now manually inject a `feedback_fetched` action
+    import nbexchange.models.actions
+    from nbexchange.database import scoped_session
+
+    with scoped_session() as session:
+
+        action = nbexchange.models.actions.Action(
+            user_id=3,
+            assignment_id="assign_a",
+            action="feedback_fetched",
+            location=None,
+        )
+        session.add(action)
+
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_kiz_instructor
+    ):
+        collected_data = None
+        r = yield async_requests.get(
+            app.url + "/collections?course_id=course_2&assignment_id=assign_a"
+        )  ## Get the data we need to make test the call we want to make
+        response_data = r.json()
+        collected_data = response_data["value"][0]
+        r = yield async_requests.get(
+            app.url
+            + f"/collection?course_id={collected_data['course_id']}&path={collected_data['path']}&assignment_id={collected_data['assignment_id']}"
+        )
+    assert r.status_code == 200
+    assert r.headers["Content-Type"] == "application/gzip"
+    assert int(r.headers["Content-Length"]) > 0

@@ -154,7 +154,7 @@ def test_collections_zero_results_if_no_submissions(app):
     assert response_data["success"] == True
     assert "note" not in response_data  # just that it's missing
     # it will have no content if run solo, with content if run in the set
-    assert response_data["value"] == [] or len(response_data["value"]) == 6
+    assert response_data["value"] == [] or len(response_data["value"]) == 9
 
 
 # both params, correct course, assignment does not exist - differnet user, same role
@@ -172,7 +172,7 @@ def test_collections_zero_results_instructor_autosubscribed_to_course(app):
     assert response_data["success"] == True
     assert "note" not in response_data  # just that it's missing
     # it will have no content if run solo, with content if run in the set
-    assert response_data["value"] == [] or len(response_data["value"]) == 6
+    assert response_data["value"] == [] or len(response_data["value"]) == 9
 
 
 # student cannot collect
@@ -224,7 +224,7 @@ def test_collections_repeated_parameters_right_first(app):
     assert response_data["success"] == True
     assert "note" not in response_data  # just that it's missing
     # it will have no content if run solo, with content if run in the set
-    assert response_data["value"] == [] or len(response_data["value"]) == 6
+    assert response_data["value"] == [] or len(response_data["value"]) == 9
 
 
 # actions are persistent, so later tests have to take into account these actions
@@ -289,8 +289,8 @@ def test_collections_with_two_users_submitting(app):
 
     response_data = r.json()
     assert response_data["success"] is True
-    # 2 if run solo, 8 is run in the complete suite
-    assert len(response_data["value"]) in [2, 8]
+    # 2 if run solo, 11 is run in the complete suite
+    assert len(response_data["value"]) in [2, 11]
 
 
 # Reminder: actions are persistent, so the previous test set up most of the actions
@@ -320,8 +320,8 @@ def test_collections_with_one_user_submits_2nd_time(app):
 
     response_data = r.json()
     assert response_data["success"] is True
-    # 3 if run solo, 9 is run in the complete suite
-    assert len(response_data["value"]) in [3, 9]
+    # 3 if run solo, 12 is run in the complete suite
+    assert len(response_data["value"]) in [3, 12]
 
 
 # Reminder: actions are persistent, so the previous test set up most of the actions
@@ -346,8 +346,8 @@ def test_collections_with_named_user(app):
 
     response_data = r.json()
     assert response_data["success"] is True
-    # 2 if run solo, 8 is run in the complete suite
-    assert len(response_data["value"]) in [2, 8]
+    # 2 if run solo, 11 is run in the complete suite
+    assert len(response_data["value"]) in [2, 11]
 
 
 # Reminder: actions are persistent, so the previous test set up most of the actions
@@ -453,5 +453,4 @@ def test_collections_with_a_blank_feedback_path_injected(app):
 
     response_data = r.json()
     assert response_data["success"] is True
-    # 3 if run solo, 9 is run in the complete suite
-    assert len(response_data["value"]) in [5, 11]
+    assert len(response_data["value"]) in [5, 14]

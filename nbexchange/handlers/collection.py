@@ -95,28 +95,43 @@ class Collections(BaseHandler):
                 return
 
             self.log.debug(f"Assignment: {assignment}")
-            for action in assignment.actions:
-                if re.search(
-                    fr"/{re_action}/{re_course}/{re_assignment}/{re_user}/",
-                    action.location,
-                ):
-                    models.append(
-                        {
-                            "student_id": action.user.name,
-                            "full_name": action.user.full_name,
-                            "assignment_id": assignment.assignment_code,
-                            "course_id": assignment.course.course_code,
-                            "status": action.action.value,  # currently called 'action' in our db
-                            "path": action.location,
-                            # 'name' in db, 'notebook_id' id nbgrader
-                            "notebooks": [
-                                {"notebook_id": x.name} for x in assignment.notebooks
-                            ],
-                            "timestamp": action.timestamp.strftime(
-                                "%Y-%m-%d %H:%M:%S.%f %Z"
-                            ),
-                        }
+
+            filters = [
+                nbexchange.models.actions.Action.assignment_id == assignment.id,
+                nbexchange.models.actions.Action.action == nbexchange.models.actions.AssignmentActions.submitted.value
+            ]
+
+            if user_id:
+                student = (
+                    session.query(nbexchange.models.users.User)
+                        .filter(nbexchange.models.users.User.name==user_id)
+                        .first()
                     )
+                filters.append(nbexchange.models.actions.Action.user_id==student.id)
+
+            actions = (
+                session.query(nbexchange.models.actions.Action)
+                .filter(*filters)
+           )
+
+            for action in actions:
+                models.append(
+                    {
+                        "student_id": action.user.name,
+                        "full_name": action.user.full_name,
+                        "assignment_id": assignment.assignment_code,
+                        "course_id": assignment.course.course_code,
+                        "status": action.action.value,  # currently called 'action' in our db
+                        "path": action.location,
+                        # 'name' in db, 'notebook_id' id nbgrader
+                        "notebooks": [
+                            {"notebook_id": x.name} for x in assignment.notebooks
+                        ],
+                        "timestamp": action.timestamp.strftime(
+                            "%Y-%m-%d %H:%M:%S.%f %Z"
+                        ),
+                    }
+                )
 
             self.log.debug(f"Assignments: {models}")
         self.finish({"success": True, "value": models})

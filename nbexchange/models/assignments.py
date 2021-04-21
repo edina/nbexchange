@@ -1,16 +1,16 @@
 from sqlalchemy import (
-    UniqueConstraint,
-    Column,
-    Integer,
-    Unicode,
     Boolean,
+    Column,
     ForeignKey,
+    Integer,
     Text,
+    Unicode,
+    UniqueConstraint,
 )
 from sqlalchemy.orm import relationship
 
-from nbexchange.models.actions import Action
 from nbexchange.models import Base
+from nbexchange.models.actions import Action
 
 
 class Assignment(Base):
@@ -54,7 +54,7 @@ class Assignment(Base):
         Returns None if not found.
         """
         if log:
-            log.debug(f"Assignmetn.find_by_pk - pk:{pk}")
+            log.debug(f"Assignment.find_by_pk - pk:{pk}")
         if pk is None:
             raise ValueError(f"Primary Key needs to be defined")
         if isinstance(pk, int):

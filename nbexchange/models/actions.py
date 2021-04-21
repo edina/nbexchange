@@ -1,7 +1,7 @@
 import enum
 from datetime import datetime
 
-from sqlalchemy import Column, Integer, ForeignKey, Enum, Unicode, DateTime
+from sqlalchemy import Column, DateTime, Enum, ForeignKey, Integer, Unicode
 from sqlalchemy.orm import relationship
 
 from nbexchange.models import Base
@@ -64,3 +64,47 @@ class Action(Base):
 
     def __repr__(self):
         return f"Assignment #{self.assignment_id} {self.action} by {self.user_id} at {self.timestamp}"
+
+    @classmethod
+    def find_by_pk(cls, db, pk, log=None):
+        """Find an Action by Primary Key.
+        Returns None if not found.
+        """
+        if log:
+            log.debug(f"Action.find_by_pk - pk:{pk}")
+
+        if pk is None:
+            raise ValueError(f"Primary Key needs to be defined")
+        if isinstance(pk, int):
+            return db.query(cls).filter(cls.id == pk).first()
+        else:
+            raise TypeError(f"Primary Keys are required to be Ints")
+
+    @classmethod
+    def find_most_recent_action(cls, db, assignment_id, action=None, log=None):
+        """Find the most recent action for a given assignment
+
+        action = orm.Action.find_most_recent_action(
+            db=session, assignment_id=current_assignment.id,
+        )
+
+        optional parameters:
+            'action' Allows one to restrict the search to a specific action. Not used
+                if set to None. Defaults to None
+
+        Returns None if not found
+        """
+        if log:
+            log.debug(
+                f"Action.find_most_recent_action - code:{assignment_id} (action:{action})"
+            )
+        if assignment_id is None or not isinstance(assignment_id, int):
+            raise TypeError(f"assignment_id must be defined, and an Int")
+        if action is not None and not (
+            isinstance(action, str) or isinstance(action, AssignmentActions)
+        ):
+            raise TypeError(f"action, if defined, must be a string")
+        filters = [cls.assignment_id == assignment_id]
+        if action:
+            filters.append(cls.action == action)
+        return db.query(cls).filter(*filters).order_by(cls.id.desc()).first()

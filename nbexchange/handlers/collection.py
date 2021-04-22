@@ -98,21 +98,19 @@ class Collections(BaseHandler):
 
             filters = [
                 nbexchange.models.actions.Action.assignment_id == assignment.id,
-                nbexchange.models.actions.Action.action == nbexchange.models.actions.AssignmentActions.submitted.value
+                nbexchange.models.actions.Action.action
+                == nbexchange.models.actions.AssignmentActions.submitted.value,
             ]
 
             if user_id:
                 student = (
                     session.query(nbexchange.models.users.User)
-                        .filter(nbexchange.models.users.User.name==user_id)
-                        .first()
-                    )
-                filters.append(nbexchange.models.actions.Action.user_id==student.id)
+                    .filter(nbexchange.models.users.User.name == user_id)
+                    .first()
+                )
+                filters.append(nbexchange.models.actions.Action.user_id == student.id)
 
-            actions = (
-                session.query(nbexchange.models.actions.Action)
-                .filter(*filters)
-           )
+            actions = session.query(nbexchange.models.actions.Action).filter(*filters)
 
             for action in actions:
                 models.append(

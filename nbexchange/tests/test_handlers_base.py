@@ -1,6 +1,8 @@
 import logging
-import pytest
 import re
+
+import pytest
+
 from nbexchange.tests.utils import async_requests
 
 logger = logging.getLogger(__file__)

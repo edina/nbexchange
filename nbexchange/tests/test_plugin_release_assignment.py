@@ -6,18 +6,14 @@ from shutil import copyfile
 
 import pytest
 import requests
-
 from mock import patch
-
-from nbexchange.plugin import ExchangeReleaseAssignment, Exchange
 from nbgrader.coursedir import CourseDirectory
-
-from nbexchange.tests.utils import get_feedback_file
 from nbgrader.exchange import ExchangeError
-
 from nbgrader.utils import make_unique_key, notebook_hash
 
 import nbexchange
+from nbexchange.plugin import Exchange, ExchangeReleaseAssignment
+from nbexchange.tests.utils import get_feedback_file
 
 logger = logging.getLogger(__file__)
 logger.setLevel(logging.ERROR)

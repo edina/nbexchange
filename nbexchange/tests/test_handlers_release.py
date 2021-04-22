@@ -1,10 +1,10 @@
 import logging
-import pytest
 import sys
 
+import pytest
 from mock import patch
-from nbexchange.handlers.base import BaseHandler
 
+from nbexchange.handlers.base import BaseHandler
 from nbexchange.tests.utils import (
     async_requests,
     get_files_dict,

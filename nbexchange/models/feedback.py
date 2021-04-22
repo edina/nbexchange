@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, Unicode
+from sqlalchemy.orm import relationship
 
 from nbexchange.models import Base
 from nbexchange.models.notebooks import Notebook
@@ -13,18 +14,18 @@ class Feedback(Base):
     #: Unique id of the feedback (automatically incremented)
     id = Column(Integer(), primary_key=True, autoincrement=True)
 
-    notebook = None
+    #notebook = None
     #: Unique id of :attr:`~nbexchange.orm.Notebook.assignment`
     notebook_id = Column(
         Integer(), ForeignKey("notebook.id", ondelete="CASCADE"), index=True
     )
 
-    instructor = None
+    #instructor = None
     instructor_id = Column(
         Integer, ForeignKey("user.id", ondelete="CASCADE"), index=True
     )
 
-    student = None
+    #student = None
     student_id = Column(Integer, ForeignKey("user.id", ondelete="CASCADE"), index=True)
 
     location = Column(
@@ -33,6 +34,11 @@ class Feedback(Base):
     checksum = Column(Unicode(200), nullable=True)  # Checksum for the feedback file
     timestamp = Column(DateTime(timezone=True), nullable=False)
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+    # relationships: a specific piece of feedback is for a specific notebook, for a specific student and a specific instructor
+    notebook = relationship("Notebook")
+    instructor = relationship("User", foreign_keys=[instructor_id])
+    student = relationship("User", foreign_keys=[student_id])
 
     def __repr__(self):
         return f"Feedback<Notebook-{self.notebook_id}/Student-{self.student_id}/{self.checksum}>"
@@ -97,4 +103,8 @@ class Feedback(Base):
             Notebook.assignment_id == assignment_id,
             cls.student_id == student_id,
         ]
-        return db.query(cls).join(Notebook).filter(*filters).all()
+        foo = db.query(cls).join(Notebook).filter(*filters)
+        print(foo)
+        print(f"assignment_id:{assignment_id}, student_id: {student_id}")
+        return foo.all()
+        # return db.query(cls).join(Notebook).filter(*filters).all()

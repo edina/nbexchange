@@ -83,8 +83,12 @@ class Assignment(Base):
             )
         if code is None:
             raise ValueError(f"code needs to be defined")
-        if course_id and not isinstance(course_id, int):
-            raise TypeError(f"Course_id, if specified, must be an Int")
+        if course_id is None:
+            raise ValueError(f"course_id needs to be defined")
+        if not isinstance(code, str):
+            raise TypeError(f"code must be an Str")
+        if not isinstance(course_id, int):
+            raise TypeError(f"Course_id must be an Int")
         filters = [
             cls.assignment_code == code,
             cls.course_id == course_id,

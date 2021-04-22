@@ -6,13 +6,11 @@ import tarfile
 from shutil import copyfile
 
 import pytest
-
 from mock import patch
 from nbgrader.api import Gradebook
-
-from nbexchange.plugin import ExchangeCollect, Exchange
 from nbgrader.coursedir import CourseDirectory
 
+from nbexchange.plugin import Exchange, ExchangeCollect
 from nbexchange.tests.utils import get_feedback_file
 
 logger = logging.getLogger(__file__)

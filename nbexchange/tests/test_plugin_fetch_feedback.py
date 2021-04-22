@@ -3,12 +3,10 @@ import os
 import sys
 
 import pytest
-
 from mock import patch
-
-from nbexchange.plugin import ExchangeFetchFeedback, Exchange
 from nbgrader.coursedir import CourseDirectory
 
+from nbexchange.plugin import Exchange, ExchangeFetchFeedback
 from nbexchange.tests.utils import get_feedback_file
 
 logger = logging.getLogger(__file__)

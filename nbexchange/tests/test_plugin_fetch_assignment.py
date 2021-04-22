@@ -6,12 +6,10 @@ import tarfile
 from shutil import copyfile
 
 import pytest
-
 from mock import patch
-
-from nbexchange.plugin import ExchangeFetchAssignment, Exchange
 from nbgrader.coursedir import CourseDirectory
 
+from nbexchange.plugin import Exchange, ExchangeFetchAssignment
 from nbexchange.tests.utils import get_feedback_file
 
 logger = logging.getLogger(__file__)

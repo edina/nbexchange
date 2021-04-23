@@ -21,6 +21,7 @@ from nbexchange.handlers import base
 from nbexchange.handlers.auth.naas_user_handler import NaasUserHandler
 from nbexchange.handlers.auth.user_handler import BaseUserHandler
 
+from tornado_prometheus import PrometheusMixIn, MetricsHandler
 
 ROOT = os.path.dirname(__file__)
 STATIC_FILES_DIR = os.path.join(ROOT, "static")
@@ -57,7 +58,7 @@ flags = {
 }
 
 
-class NbExchange(Application):
+class NbExchange(PrometheusMixIn, Application):
     """The nbexchange application"""
 
     name = "nbexchange"
@@ -250,6 +251,8 @@ class NbExchange(Application):
         for handler in handlers.default_handlers:
             for url in handler.urls:
                 self.handlers.append((url_path_join(self.base_url, url), handler))
+
+        self.handlers.append((r"/metrics", MetricsHandler))
 
         self.handlers.append((r".*", base.Template404))
         self.log.debug("##### ALL HANDLERS" + str(self.handlers))

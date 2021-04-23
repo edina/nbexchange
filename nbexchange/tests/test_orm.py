@@ -467,14 +467,14 @@ def test_action_object_creation_errors(
         db.commit()
     db.rollback()
 
-    with pytest.raises(IntegrityError):
-        action = Action(
-            user_id=user_johaannes.id,
-            assignment_id=assignment_tree.id,
-            location="/some/random/path/to/a/file.tzg",
-            action="foo",
-        )
-        db.add(action)
+    action = Action(
+        user_id=user_johaannes.id,
+        assignment_id=assignment_tree.id,
+        location="/some/random/path/to/a/file.tzg",
+        action="foo",
+    )
+    db.add(action)
+    with pytest.raises(Exception):
         db.commit()
     db.rollback()
 

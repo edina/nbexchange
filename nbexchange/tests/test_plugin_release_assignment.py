@@ -5,7 +5,6 @@ import sys
 from shutil import copyfile
 
 import pytest
-import requests
 from mock import patch
 from nbgrader.coursedir import CourseDirectory
 from nbgrader.exchange import ExchangeError

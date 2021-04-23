@@ -3,7 +3,6 @@ import logging
 import os
 import shutil
 import tarfile
-import warnings
 from os.path import basename
 from shutil import copyfile
 

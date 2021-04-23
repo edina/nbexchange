@@ -1,9 +1,9 @@
 import io
-import nbgrader.exchange.abc as abc
 import os
-
-from nbgrader.utils import find_all_notebooks
 from urllib.parse import quote_plus
+
+import nbgrader.exchange.abc as abc
+from nbgrader.utils import find_all_notebooks
 
 from .exchange import Exchange
 from .list import ExchangeList

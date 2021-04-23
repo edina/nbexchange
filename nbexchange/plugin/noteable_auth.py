@@ -1,8 +1,9 @@
 import json
 
-from .exchange import Exchange
 from nbgrader.auth import BaseAuthPlugin
 from tornado import gen
+
+from .exchange import Exchange
 
 
 class NoteableEnvironmentError(Exception):

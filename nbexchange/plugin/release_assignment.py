@@ -1,10 +1,10 @@
 import glob
 import io
 import json
-import nbgrader.exchange.abc as abc
 import os
-
 from urllib.parse import quote_plus
+
+import nbgrader.exchange.abc as abc
 
 from .exchange import Exchange
 

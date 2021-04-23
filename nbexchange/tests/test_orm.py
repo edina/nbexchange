@@ -101,7 +101,9 @@ def assignment_tree(db):
 
 @pytest.fixture
 def assignment_false(db):
-    orm_thing = AssignmentModel.find_by_code(db=db, code="not used", course_id=1, active=False)
+    orm_thing = AssignmentModel.find_by_code(
+        db=db, code="not used", course_id=1, active=False
+    )
     if not orm_thing:
         orm_thing = AssignmentModel(
             assignment_code="not used", course_id=1, active=False
@@ -441,13 +443,16 @@ def test_with_inactive_assignment(db, course_strange, assignment_false):
     assert course_strange.assignments[0].id == assignment_false.id
 
 
-def test_assignment_find_for_course(db, course_strange, assignment_false, assignment_tree ):
+def test_assignment_find_for_course(
+    db, course_strange, assignment_false, assignment_tree
+):
     courses = AssignmentModel.find_for_course(db, course_strange.id)
     assert len(courses.all()) == 1
     assignment_false.active = True
     courses = AssignmentModel.find_for_course(db, course_strange.id)
     assert len(courses.all()) == 2
     assignment_false.active = False
+
 
 ### Action tests
 # Remember Users, Courses, Subscriptions, and Assignments are already in the DB
@@ -594,27 +599,27 @@ def test_action_relationships(db, user_johaannes):
     assert found_by_pk.assignment.assignment_code == "tree 1"
     assert found_by_pk.assignment.course.course_code == "Strange"
 
+
 def test_action_can_restrict_assignment_searches(db, assignment_tree):
     found = AssignmentModel.find_by_code(
-        db, 
-        assignment_tree.assignment_code, 
-        assignment_tree.course_id
-        )
+        db, assignment_tree.assignment_code, assignment_tree.course_id
+    )
     assert found.id == assignment_tree.id
     found = AssignmentModel.find_by_code(
-        db=db, 
-        code=assignment_tree.assignment_code, 
+        db=db,
+        code=assignment_tree.assignment_code,
         course_id=assignment_tree.course_id,
-        action=AssignmentActions.released
-        )
+        action=AssignmentActions.released,
+    )
     assert found.id == assignment_tree.id
     found = AssignmentModel.find_by_code(
-        db=db, 
-        code=assignment_tree.assignment_code, 
+        db=db,
+        code=assignment_tree.assignment_code,
         course_id=assignment_tree.course_id,
-        action=AssignmentActions.feedback_released
-        )
+        action=AssignmentActions.feedback_released,
+    )
     assert found == None
+
 
 ### Notebook tests
 # Remember Users, Courses, Subscriptions, Assignments, and Actions are already in the DB

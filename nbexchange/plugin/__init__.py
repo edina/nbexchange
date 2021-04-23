@@ -7,16 +7,16 @@ After installation, you can enable it by adding:
 
 in your root `nbgrader_config.py` file.
 """
-from .exchange import ExchangeError, Exchange
-from .submit import ExchangeSubmit
-from .release_feedback import ExchangeReleaseFeedback
-from .release import ExchangeRelease
-from .release_assignment import ExchangeReleaseAssignment
-from .fetch_feedback import ExchangeFetchFeedback
+from .collect import ExchangeCollect
+from .exchange import Exchange, ExchangeError
 from .fetch import ExchangeFetch
 from .fetch_assignment import ExchangeFetchAssignment
-from .collect import ExchangeCollect
+from .fetch_feedback import ExchangeFetchFeedback
 from .list import ExchangeList
+from .release import ExchangeRelease
+from .release_assignment import ExchangeReleaseAssignment
+from .release_feedback import ExchangeReleaseFeedback
+from .submit import ExchangeSubmit
 
 __all__ = [
     "Exchange",

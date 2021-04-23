@@ -1,13 +1,13 @@
 import io
 import json
-import nbgrader.exchange.abc as abc
 import os
 import re
 import shutil
 import tarfile
-
-from nbgrader.api import Gradebook, MissingEntry
 from urllib.parse import quote_plus
+
+import nbgrader.exchange.abc as abc
+from nbgrader.api import Gradebook, MissingEntry
 
 from .exchange import Exchange
 

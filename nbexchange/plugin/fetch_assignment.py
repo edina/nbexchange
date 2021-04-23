@@ -1,14 +1,14 @@
 import glob
 import io
-import nbgrader.exchange.abc as abc
 import os
 import shutil
 import tarfile
 import tempfile
+from urllib.parse import quote_plus
 
+import nbgrader.exchange.abc as abc
 from nbgrader.api import new_uuid
 from traitlets import Bool
-from urllib.parse import quote_plus
 
 from .exchange import Exchange
 

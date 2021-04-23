@@ -24,7 +24,7 @@ VERSION = None
 REQUIRED = [
     "alembic",
     "aiocontextvars",
-    "tornado",
+    "tornado==6.1",
     "psycopg2-binary",
     "ipykernel==5.5.0",
     "jupyterhub",

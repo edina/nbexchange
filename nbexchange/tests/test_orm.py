@@ -101,7 +101,7 @@ def assignment_tree(db):
 
 @pytest.fixture
 def assignment_false(db):
-    orm_thing = AssignmentModel.find_by_code(db, "not used", 1)
+    orm_thing = AssignmentModel.find_by_code(db=db, code="not used", course_id=1, active=False)
     if not orm_thing:
         orm_thing = AssignmentModel(
             assignment_code="not used", course_id=1, active=False
@@ -441,6 +441,14 @@ def test_with_inactive_assignment(db, course_strange, assignment_false):
     assert course_strange.assignments[0].id == assignment_false.id
 
 
+def test_assignment_find_for_course(db, course_strange, assignment_false, assignment_tree ):
+    courses = AssignmentModel.find_for_course(db, course_strange.id)
+    assert len(courses.all()) == 1
+    assignment_false.active = True
+    courses = AssignmentModel.find_for_course(db, course_strange.id)
+    assert len(courses.all()) == 2
+    assignment_false.active = False
+
 ### Action tests
 # Remember Users, Courses, Subscriptions, and Assignments are already in the DB
 
@@ -509,8 +517,11 @@ def test_action_base_mathods_and_find_by_pk(db, assignment_tree, user_johaannes)
     found_by_pk = Action.find_by_pk(db, 1)
     assert found_by_pk.id == 1
     assert found_by_pk.action == AssignmentActions.released
-    assert found_by_pk.user.name == user_johaannes.name
     assert found_by_pk.location == release_file
+
+    # check the relationships
+    assert found_by_pk.user.name == user_johaannes.name
+    assert found_by_pk.assignment.assignment_code == assignment_tree.assignment_code
 
     found_by_pk = Action.find_by_pk(db, 11)
     assert found_by_pk is None
@@ -583,6 +594,27 @@ def test_action_relationships(db, user_johaannes):
     assert found_by_pk.assignment.assignment_code == "tree 1"
     assert found_by_pk.assignment.course.course_code == "Strange"
 
+def test_action_can_restrict_assignment_searches(db, assignment_tree):
+    found = AssignmentModel.find_by_code(
+        db, 
+        assignment_tree.assignment_code, 
+        assignment_tree.course_id
+        )
+    assert found.id == assignment_tree.id
+    found = AssignmentModel.find_by_code(
+        db=db, 
+        code=assignment_tree.assignment_code, 
+        course_id=assignment_tree.course_id,
+        action=AssignmentActions.released
+        )
+    assert found.id == assignment_tree.id
+    found = AssignmentModel.find_by_code(
+        db=db, 
+        code=assignment_tree.assignment_code, 
+        course_id=assignment_tree.course_id,
+        action=AssignmentActions.feedback_released
+        )
+    assert found == None
 
 ### Notebook tests
 # Remember Users, Courses, Subscriptions, Assignments, and Actions are already in the DB
@@ -621,6 +653,10 @@ def test_notebook_base_mathods_and_find_by_pk(db, assignment_tree):
 
     found_by_pk = Notebook.find_by_pk(db, orm_notebook.id)
     assert found_by_pk.id == orm_notebook.id
+
+    ## relationships
+    assert found_by_pk.assignment.id == assignment_tree.id
+
     found_by_pk = Notebook.find_by_pk(db, orm_notebook.id + 10)
     assert found_by_pk is None
 
@@ -695,14 +731,6 @@ def test_feedback_base_mathods_and_find_by_pk(
     db.add(orm_feedback)
     db.commit()
 
-    assert orm_feedback.notebook_id == notebook.id
-    assert orm_feedback.instructor_id == user_kaylee.id
-    assert orm_feedback.student_id == user_johaannes.id
-
-    assert orm_feedback.notebook.name == notebook.name
-    assert orm_feedback.instructor.name == user_kaylee.name
-    assert orm_feedback.student.name == user_johaannes.name
-
     with pytest.raises(TypeError):
         found_by_pk = Feedback.find_by_pk()
     with pytest.raises(TypeError):
@@ -718,6 +746,15 @@ def test_feedback_base_mathods_and_find_by_pk(
         str(found_by_pk)
         == f"Feedback<Notebook-{found_by_pk.notebook_id}/Student-{found_by_pk.student_id}/{found_by_pk.checksum}>"
     )
+
+    assert found_by_pk.notebook_id == notebook.id
+    assert found_by_pk.instructor_id == user_kaylee.id
+    assert found_by_pk.student_id == user_johaannes.id
+
+    # relationships
+    assert found_by_pk.notebook.name == notebook.name
+    assert found_by_pk.instructor.name == user_kaylee.name
+    assert found_by_pk.student.name == user_johaannes.name
 
     found_by_pk = Feedback.find_by_pk(db, orm_feedback.id + 10)
     assert found_by_pk is None

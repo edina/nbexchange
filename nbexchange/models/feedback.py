@@ -103,8 +103,4 @@ class Feedback(Base):
             Notebook.assignment_id == assignment_id,
             cls.student_id == student_id,
         ]
-        foo = db.query(cls).join(Notebook).filter(*filters)
-        print(foo)
-        print(f"assignment_id:{assignment_id}, student_id: {student_id}")
-        return foo.all()
-        # return db.query(cls).join(Notebook).filter(*filters).all()
+        return db.query(cls).join(Notebook).filter(*filters).all()

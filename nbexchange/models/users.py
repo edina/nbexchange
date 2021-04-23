@@ -38,7 +38,7 @@ class User(Base):
         """Find a course by Primary Key.
 
         user = User.find_by_pk(db, 1)
-    
+
         Returns None if not found.
         """
         if log:
@@ -56,7 +56,7 @@ class User(Base):
         """Find a user by name.
 
         user = User.find_by_name(db, "freddy")
-    
+
         Returns None if not found.
         """
         if log:
@@ -70,7 +70,7 @@ class User(Base):
         """Find all users for an organisation.
 
         user = User.find_by_name(db, customer.org.id)
-    
+
         Returns None if not found.
         """
         if log:

@@ -14,18 +14,18 @@ class Feedback(Base):
     #: Unique id of the feedback (automatically incremented)
     id = Column(Integer(), primary_key=True, autoincrement=True)
 
-    #notebook = None
+    # notebook = None
     #: Unique id of :attr:`~nbexchange.orm.Notebook.assignment`
     notebook_id = Column(
         Integer(), ForeignKey("notebook.id", ondelete="CASCADE"), index=True
     )
 
-    #instructor = None
+    # instructor = None
     instructor_id = Column(
         Integer, ForeignKey("user.id", ondelete="CASCADE"), index=True
     )
 
-    #student = None
+    # student = None
     student_id = Column(Integer, ForeignKey("user.id", ondelete="CASCADE"), index=True)
 
     location = Column(

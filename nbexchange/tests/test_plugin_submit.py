@@ -1,23 +1,19 @@
 import io
 import logging
 import os
-import pytest
 import shutil
 import tarfile
-import warnings
-
-from mock import patch
 from os.path import basename
 from shutil import copyfile
 
-
-from nbexchange.plugin import ExchangeSubmit, Exchange
+import pytest
+from mock import patch
 from nbgrader.coursedir import CourseDirectory
-
-from nbexchange.tests.utils import get_feedback_file
 from nbgrader.exchange import ExchangeError
 from nbgrader.utils import make_unique_key, notebook_hash
 
+from nbexchange.plugin import Exchange, ExchangeSubmit
+from nbexchange.tests.utils import get_feedback_file
 
 logger = logging.getLogger(__file__)
 logger.setLevel(logging.ERROR)

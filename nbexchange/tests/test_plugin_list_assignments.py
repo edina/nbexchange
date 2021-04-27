@@ -5,16 +5,13 @@ from os.path import basename
 from shutil import copyfile
 
 import pytest
-
 from mock import patch
-
-from nbexchange.plugin import ExchangeList, Exchange
 from nbgrader.coursedir import CourseDirectory
-
-from nbexchange.tests.utils import get_feedback_file
 from nbgrader.exchange import ExchangeError
 from nbgrader.utils import make_unique_key, notebook_hash
 
+from nbexchange.plugin import Exchange, ExchangeList
+from nbexchange.tests.utils import get_feedback_file
 
 logger = logging.getLogger(__file__)
 logger.setLevel(logging.ERROR)

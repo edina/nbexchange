@@ -1,17 +1,18 @@
 import logging
-import pytest
 import sys
 
+import pytest
 from mock import patch
+
 from nbexchange.handlers.base import BaseHandler
 from nbexchange.tests.utils import (
     async_requests,
     get_files_dict,
-    user_kiz_instructor,
     user_brobbere_instructor,
+    user_brobbere_student,
+    user_kiz_instructor,
     user_kiz_student,
     user_zik_student,
-    user_brobbere_student,
 )
 
 logger = logging.getLogger(__file__)

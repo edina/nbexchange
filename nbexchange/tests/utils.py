@@ -1,16 +1,13 @@
 # async-request utility from jupyterhub.tests.utils v0.8.1
 # used under BSD license
-import base64
-import glob
-import io
-import json
-import requests
-import sys
 import asyncio
-
+import base64
+import io
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 from urllib.parse import urljoin
+
+import requests
 
 user_kiz = {"name": "1-kiz"}
 user_bert = {"name": "1-bert"}

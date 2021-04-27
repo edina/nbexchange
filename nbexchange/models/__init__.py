@@ -12,7 +12,7 @@ Base = declarative_base()
 from .actions import Action
 from .assignments import Assignment
 from .courses import Course
+from .feedback import Feedback
 from .notebooks import Notebook
 from .subscriptions import Subscription
 from .users import User
-from .feedback import Feedback

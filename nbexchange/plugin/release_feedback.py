@@ -2,17 +2,15 @@ import datetime
 import glob
 import io
 import json
-import shutil
+import os
 import re
+import shutil
+import tempfile
+from urllib.parse import quote_plus
 
 import nbgrader.exchange.abc as abc
-import os
-import tempfile
-
-from urllib.parse import quote_plus
 from dateutil import parser
-
-from nbgrader.utils import notebook_hash, make_unique_key
+from nbgrader.utils import make_unique_key, notebook_hash
 
 from .exchange import Exchange
 

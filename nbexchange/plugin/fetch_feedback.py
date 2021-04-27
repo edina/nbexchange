@@ -2,17 +2,16 @@ import base64
 import datetime
 import io
 import json
-
-import nbgrader.exchange.abc as abc
 import os
 import shutil
 import tarfile
 import tempfile
+from urllib.parse import quote_plus
 
+import nbgrader.exchange.abc as abc
+from dateutil import parser
 from nbgrader.api import new_uuid
 from traitlets import Bool
-from urllib.parse import quote_plus
-from dateutil import parser
 
 from .exchange import Exchange
 

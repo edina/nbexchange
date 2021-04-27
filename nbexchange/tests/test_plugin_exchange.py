@@ -2,13 +2,10 @@ import logging
 import os
 
 import pytest
-import requests
-
 from mock import patch
+from nbgrader.exchange import ExchangeError
 
 from nbexchange.plugin import Exchange
-from nbgrader.coursedir import CourseDirectory
-from nbgrader.exchange import ExchangeError
 
 logger = logging.getLogger(__file__)
 logger.setLevel(logging.ERROR)

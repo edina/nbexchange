@@ -1,14 +1,15 @@
+import base64
 import datetime
 import sys
-import base64
 
 import pytest
 from mock import patch
+from nbgrader.utils import make_unique_key, notebook_hash
 
 from nbexchange.handlers.base import BaseHandler
 from nbexchange.tests.utils import (
-    async_requests,
     AsyncSession,
+    async_requests,
     get_feedback_dict,
     get_files_dict,
     user_brobbere_student,
@@ -16,7 +17,6 @@ from nbexchange.tests.utils import (
     user_kiz_student,
     user_lkihlman_instructor,
 )
-from nbgrader.utils import notebook_hash, make_unique_key
 
 # set up the file to be uploaded
 feedback_filename = sys.argv[0]  # ourself :)

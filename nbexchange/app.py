@@ -6,22 +6,21 @@ from getpass import getuser
 
 from jupyterhub.log import CoroutineLogFormatter, log_request
 from jupyterhub.utils import url_path_join
+from sentry_sdk.integrations.tornado import TornadoIntegration
 from sqlalchemy.exc import OperationalError
 from tornado import web
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
-from tornado.log import app_log, access_log, gen_log
-from traitlets import Bool, Dict, Integer, Unicode, default, Type
+from tornado.log import access_log, app_log, gen_log
+from tornado_prometheus import MetricsHandler, PrometheusMixIn
+from traitlets import Bool, Dict, Integer, Type, Unicode, default
 from traitlets.config import Application, catch_config_error
-from sentry_sdk.integrations.tornado import TornadoIntegration
 
 import nbexchange.dbutil
 from nbexchange import dbutil, handlers
 from nbexchange.handlers import base
 from nbexchange.handlers.auth.naas_user_handler import NaasUserHandler
 from nbexchange.handlers.auth.user_handler import BaseUserHandler
-
-from tornado_prometheus import PrometheusMixIn, MetricsHandler
 
 ROOT = os.path.dirname(__file__)
 STATIC_FILES_DIR = os.path.join(ROOT, "static")

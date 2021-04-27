@@ -99,16 +99,11 @@ class Collections(BaseHandler):
 
             filters = [
                 Action.assignment_id == assignment.id,
-                Action.action
-                == AssignmentActions.submitted.value,
+                Action.action == AssignmentActions.submitted.value,
             ]
 
             if user_id:
-                student = (
-                    session.query(User)
-                    .filter(User.name == user_id)
-                    .first()
-                )
+                student = session.query(User).filter(User.name == user_id).first()
                 filters.append(Action.user_id == student.id)
 
             actions = session.query(Action).filter(*filters)

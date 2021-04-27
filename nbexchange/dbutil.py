@@ -11,8 +11,8 @@ from tempfile import TemporaryDirectory
 import alembic.command
 import alembic.config
 from alembic.script import ScriptDirectory
-from sqlalchemy import create_engine, inspect, event, select, exc
-from sqlalchemy.orm import object_session, interfaces, Session
+from sqlalchemy import create_engine, event, exc, inspect, select
+from sqlalchemy.orm import Session, interfaces, object_session
 from sqlalchemy.pool import StaticPool
 
 from nbexchange.models import Base

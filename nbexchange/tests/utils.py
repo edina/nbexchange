@@ -7,7 +7,16 @@ from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 from urllib.parse import urljoin
 
+import pytest
 import requests
+
+from nbexchange.models.actions import Action
+from nbexchange.models.assignments import Assignment as AssignmentModel
+from nbexchange.models.courses import Course
+from nbexchange.models.feedback import Feedback
+from nbexchange.models.notebooks import Notebook
+from nbexchange.models.subscriptions import Subscription
+from nbexchange.models.users import User
 
 user_kiz = {"name": "1-kiz"}
 user_bert = {"name": "1-bert"}
@@ -143,3 +152,19 @@ class AsyncSession(requests.Session):
 
     def request(self, *args, **kwargs):
         return async_requests.executor.submit(super().request, *args, **kwargs)
+
+
+# fixture to clear the database completely
+@pytest.fixture
+def clear_database(db):
+    """Clears the database.
+
+    requires the db handler
+    """
+    db.query(Action).delete()
+    db.query(AssignmentModel).delete()
+    db.query(Course).delete()
+    db.query(Feedback).delete()
+    db.query(Notebook).delete()
+    db.query(Subscription).delete()
+    db.query(User).delete()

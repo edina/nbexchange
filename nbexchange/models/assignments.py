@@ -1,16 +1,16 @@
 from sqlalchemy import (
-    UniqueConstraint,
-    Column,
-    Integer,
-    Unicode,
     Boolean,
+    Column,
     ForeignKey,
+    Integer,
     Text,
+    Unicode,
+    UniqueConstraint,
 )
 from sqlalchemy.orm import relationship
 
-from nbexchange.models.actions import Action
 from nbexchange.models import Base
+from nbexchange.models.actions import Action
 
 
 class Assignment(Base):
@@ -54,7 +54,7 @@ class Assignment(Base):
         Returns None if not found.
         """
         if log:
-            log.debug(f"Assignmetn.find_by_pk - pk:{pk}")
+            log.debug(f"Assignment.find_by_pk - pk:{pk}")
         if pk is None:
             raise ValueError(f"Primary Key needs to be defined")
         if isinstance(pk, int):
@@ -83,8 +83,12 @@ class Assignment(Base):
             )
         if code is None:
             raise ValueError(f"code needs to be defined")
-        if course_id and not isinstance(course_id, int):
-            raise TypeError(f"Course_id, if specified, must be an Int")
+        if course_id is None:
+            raise ValueError(f"course_id needs to be defined")
+        if not isinstance(code, str):
+            raise TypeError(f"code must be an Str")
+        if not isinstance(course_id, int):
+            raise TypeError(f"Course_id must be an Int")
         filters = [
             cls.assignment_code == code,
             cls.course_id == course_id,

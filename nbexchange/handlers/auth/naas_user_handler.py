@@ -1,7 +1,7 @@
+import logging
 import os
 
 import jwt
-import logging
 
 from nbexchange.handlers.auth.user_handler import BaseUserHandler
 

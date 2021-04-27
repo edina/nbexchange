@@ -2,11 +2,12 @@ import re
 
 from tornado import web
 
-import nbexchange.models.actions
-import nbexchange.models.assignments
-import nbexchange.models.courses
 from nbexchange.database import scoped_session
 from nbexchange.handlers.base import BaseHandler, authenticated
+from nbexchange.models.actions import Action, AssignmentActions
+from nbexchange.models.assignments import Assignment as AssignmentModel
+from nbexchange.models.courses import Course
+from nbexchange.models.users import User
 
 """
 All URLs relative to /services/nbexchange
@@ -71,7 +72,7 @@ class Collections(BaseHandler):
 
         # Find the course being referred to
         with scoped_session() as session:
-            course = nbexchange.models.courses.Course.find_by_code(
+            course = Course.find_by_code(
                 db=session, code=course_code, org_id=this_user["org_id"], log=self.log
             )
             if not course:
@@ -80,12 +81,12 @@ class Collections(BaseHandler):
                 self.finish({"success": False, "note": note})
                 return
 
-            assignment = nbexchange.models.assignments.Assignment.find_by_code(
+            assignment = AssignmentModel.find_by_code(
                 db=session,
                 course_id=course.id,
                 log=self.log,
                 code=assignment_code,
-                action=nbexchange.models.actions.AssignmentActions.submitted.value,
+                action=AssignmentActions.submitted.value,
             )
 
             if not assignment:
@@ -95,28 +96,36 @@ class Collections(BaseHandler):
                 return
 
             self.log.debug(f"Assignment: {assignment}")
-            for action in assignment.actions:
-                if re.search(
-                    fr"/{re_action}/{re_course}/{re_assignment}/{re_user}/",
-                    action.location,
-                ):
-                    models.append(
-                        {
-                            "student_id": action.user.name,
-                            "full_name": action.user.full_name,
-                            "assignment_id": assignment.assignment_code,
-                            "course_id": assignment.course.course_code,
-                            "status": action.action.value,  # currently called 'action' in our db
-                            "path": action.location,
-                            # 'name' in db, 'notebook_id' id nbgrader
-                            "notebooks": [
-                                {"notebook_id": x.name} for x in assignment.notebooks
-                            ],
-                            "timestamp": action.timestamp.strftime(
-                                "%Y-%m-%d %H:%M:%S.%f %Z"
-                            ),
-                        }
-                    )
+
+            filters = [
+                Action.assignment_id == assignment.id,
+                Action.action == AssignmentActions.submitted.value,
+            ]
+
+            if user_id:
+                student = session.query(User).filter(User.name == user_id).first()
+                filters.append(Action.user_id == student.id)
+
+            actions = session.query(Action).filter(*filters)
+
+            for action in actions:
+                models.append(
+                    {
+                        "student_id": action.user.name,
+                        "full_name": action.user.full_name,
+                        "assignment_id": assignment.assignment_code,
+                        "course_id": assignment.course.course_code,
+                        "status": action.action.value,  # currently called 'action' in our db
+                        "path": action.location,
+                        # 'name' in db, 'notebook_id' id nbgrader
+                        "notebooks": [
+                            {"notebook_id": x.name} for x in assignment.notebooks
+                        ],
+                        "timestamp": action.timestamp.strftime(
+                            "%Y-%m-%d %H:%M:%S.%f %Z"
+                        ),
+                    }
+                )
 
             self.log.debug(f"Assignments: {models}")
         self.finish({"success": True, "value": models})
@@ -177,7 +186,7 @@ class Collection(BaseHandler):
 
         # Find the course being referred to
         with scoped_session() as session:
-            course = nbexchange.models.courses.Course.find_by_code(
+            course = Course.find_by_code(
                 db=session, code=course_code, org_id=this_user["org_id"], log=self.log
             )
             if not course:
@@ -188,11 +197,11 @@ class Collection(BaseHandler):
 
             # We need to key off the assignment, but we're actually looking
             # for the action with a action and a specific path
-            assignments = nbexchange.models.assignments.Assignment.find_for_course(
+            assignments = AssignmentModel.find_for_course(
                 db=session,
                 course_id=course.id,
                 log=self.log,
-                action=nbexchange.models.actions.AssignmentActions.submitted.value,
+                action=AssignmentActions.submitted.value,
                 path=path,
             )
 
@@ -212,12 +221,12 @@ class Collection(BaseHandler):
                     raise Exception
 
                 self.log.info(
-                    f"Adding action {nbexchange.models.actions.AssignmentActions.collected.value} for user {this_user['id']} against assignment {assignment.id}"
+                    f"Adding action {AssignmentActions.collected.value} for user {this_user['id']} against assignment {assignment.id}"
                 )
-                action = nbexchange.models.actions.Action(
+                action = Action(
                     user_id=this_user["id"],
                     assignment_id=assignment.id,
-                    action=nbexchange.models.actions.AssignmentActions.collected,
+                    action=AssignmentActions.collected,
                     location=path,
                 )
                 session.add(action)

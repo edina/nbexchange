@@ -5,11 +5,11 @@ Revises: d500457efb3b
 Create Date: 2019-04-02 15:40
 
 """
-import sqlalchemy as sa
-
-from alembic import op
 from datetime import datetime
 from enum import Enum
+
+import sqlalchemy as sa
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "20190202"

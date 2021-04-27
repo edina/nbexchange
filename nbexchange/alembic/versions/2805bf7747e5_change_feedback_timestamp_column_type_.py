@@ -5,8 +5,8 @@ Create Date: 2020-06-23 13:58:38.781382
 """
 from datetime import datetime
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 from sqlalchemy import orm
 
 # revision identifiers, used by Alembic.
@@ -18,7 +18,8 @@ branch_labels = None
 depends_on = None
 
 from datetime import datetime
-from sqlalchemy import Column, Integer, Unicode, ForeignKey, DateTime
+
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, Unicode
 
 from nbexchange.models import Base
 

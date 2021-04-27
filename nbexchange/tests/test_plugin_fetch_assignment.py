@@ -1,17 +1,16 @@
 import io
 import logging
 import os
-import pytest
 import shutil
 import tarfile
-
-
-from mock import patch
 from shutil import copyfile
 
+import pytest
+from mock import patch
 from nbgrader.coursedir import CourseDirectory
 from nbgrader.exchange import ExchangeError
-from nbexchange.plugin import ExchangeFetchAssignment, Exchange
+
+from nbexchange.plugin import Exchange, ExchangeFetchAssignment
 from nbexchange.tests.utils import get_feedback_file
 
 logger = logging.getLogger(__file__)

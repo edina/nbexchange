@@ -7,6 +7,7 @@ from nbexchange.handlers.base import BaseHandler, authenticated
 from nbexchange.models.actions import Action, AssignmentActions
 from nbexchange.models.assignments import Assignment as AssignmentModel
 from nbexchange.models.courses import Course
+from nbexchange.models.users import User
 
 """
 All URLs relative to /services/nbexchange
@@ -97,20 +98,20 @@ class Collections(BaseHandler):
             self.log.debug(f"Assignment: {assignment}")
 
             filters = [
-                nbexchange.models.actions.Action.assignment_id == assignment.id,
-                nbexchange.models.actions.Action.action
-                == nbexchange.models.actions.AssignmentActions.submitted.value,
+                Action.assignment_id == assignment.id,
+                Action.action
+                == AssignmentActions.submitted.value,
             ]
 
             if user_id:
                 student = (
-                    session.query(nbexchange.models.users.User)
-                    .filter(nbexchange.models.users.User.name == user_id)
+                    session.query(User)
+                    .filter(User.name == user_id)
                     .first()
                 )
-                filters.append(nbexchange.models.actions.Action.user_id == student.id)
+                filters.append(Action.user_id == student.id)
 
-            actions = session.query(nbexchange.models.actions.Action).filter(*filters)
+            actions = session.query(Action).filter(*filters)
 
             for action in actions:
                 models.append(

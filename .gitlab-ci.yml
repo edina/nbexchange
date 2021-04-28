@@ -5,6 +5,7 @@ image: registry.gitlab.edina.ac.uk:1875/shared/gitlab-ci-tools
 
 stages:
   - build
+  - publish
 
 build:
   stage: build
@@ -13,3 +14,12 @@ build:
     - docker-compose build
     - docker tag edina/nbexchange:$VERSION $CI_REGISTRY_IMAGE:$VERSION
     - docker push $CI_REGISTRY_IMAGE:$VERSION
+
+publish-python:
+  stage: publish
+  variables:
+    FLIT_INDEX_URL: https://gitlab.edina.ac.uk/api/v4/projects/${CI_PROJECT_ID}/packages/pypi
+  script:
+    - pip install flit
+    - flit build
+    - FLIT_PASSWORD=${CI_JOB_TOKEN} FLIT_USERNAME=gitlab-ci-token flit publish

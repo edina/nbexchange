@@ -1,4 +1,6 @@
 """
 Nbexchange
 """
-from .__version__ import __version__
+VERSION = (1, 2, 0, "dev")
+
+__version__ = ".".join(map(str, VERSION))

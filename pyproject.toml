@@ -1,0 +1,76 @@
+[build-system]
+requires = ["flit_core >=2,<4"]
+
+build-backend = "flit_core.buildapi"
+
+# [tool.flit.metadata]
+# module = "nbexchange"
+# author = "Ian Stuart, Bert Robberechts, Ludvig Kihlman"
+# author-email = "bert.robberechts@ed.ac.uk"
+# requires-python = ">=3.7"
+# home-page = "https://github.com/edina/nbexchange"
+# classifiers = [
+#     "License :: OSI Approved :: MIT License",
+#     "Programming Language :: Python :: 3",
+# ]
+# description-file = "README.md"
+
+[project]
+name = "nbexchange"
+version = "1.2.0"
+description = "Jupyterhub extension that provides an exchange service for nbgrader."
+readme = "README.md"
+requires-python = ">=3.7"
+license = {file = "LICENSE"}
+# keywords = ["egg", "bacon", "sausage", "tomatoes", "Lobster Thermidor"]
+authors = [
+  {email = "Ian.Stuart@ed.ac.uk"},
+  {name = "Ian Stuart"}
+]
+maintainers = [
+  {name = "Ian Stuart", email = "Ian.Stuart@ed.ac.uk"},
+  {name = "Ludvig Kihlman", email = "Ludvig.Kihlman@ed.ac.uk"},
+  {name = "Bert Robberechts", email = "bert.robberechts@ed.ac.uk"},
+]
+classifiers = [
+  "License :: OSI Approved :: BSD License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.7",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Intended Audience :: Education",
+]
+
+dependencies = [
+  "alembic",
+  "aiocontextvars",
+  "tornado==6.1",
+  "psycopg2-binary",
+  "jupyterhub",
+  "sentry-sdk==1.0.0",
+  "sqlalchemy>=1.4.3",
+  "nbgrader @ git+https://github.com/jupyter/nbgrader.git@c04f9c497eed5e481b57e557ef61989e073c5415",
+  "pyjwt",
+  "tornado-prometheus==0.1.1",
+]
+
+[project.optional-dependencies]
+test = [
+  "pytest",
+  "pytest-cov[all]",
+  "pytest-tornado",
+  "pytest-docker-tools",
+  "beautifulsoup4",
+  "html5lib",
+  "psycopg2-binary",
+  "mock",
+]
+
+[project.urls]
+homepage = "https://edina.ac.uk"
+documentation = "https://nbexchange.readthedocs.org"
+repository = "https://github.com/edina/nbexchange"
+changelog = "https://github.com/edina/nbexchange/blob/master/CHANGELOG.md"
+
+[project.scripts]
+nbexchange = "nbexchange.app:NbExchange.launch_instance"

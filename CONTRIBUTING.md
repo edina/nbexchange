@@ -32,17 +32,9 @@ Travis does a pretty good job testing nbexchange and Pull Requests, but it may m
 To setup nbexchange for development, run:
 
 ```bash
-pip install -r requirements.txt
-pip install -r requirements-dev.txt
+pip install .[test]
 ```
 
-Until nbgrader 0.7 is released, the master branch of nbgrader github repository needs to be used. The setup.py file
-is configured to pick this up, but unfortunately pip does not know how to work with this feature of setup.py. Thus
-it might be necessary to manually install nbgrader from github:
-
-```bash
-pip install -e git+https://github.com/jupyter/nbgrader#egg=nbgrader-0.7.0.dev0
-```
 When writing code, please don't rely on _code is its own documentation_ - particularly if you're doing anything remotely complicated.
 A simple comment at the top is useful for future developers to know _why_ the code is doing something.
 ## Running Tests
@@ -62,7 +54,7 @@ There is no such thing as _too many tests_
 This is how I test, using a virtual environment
 
 ```sh
-pip install -r requirements-dev.txt
+pip install .[test]
 pytest nbexchange
 ```
 

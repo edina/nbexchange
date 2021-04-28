@@ -23,3 +23,6 @@ publish-python:
     - pip install flit
     - flit build
     - FLIT_PASSWORD=${CI_JOB_TOKEN} FLIT_USERNAME=gitlab-ci-token flit publish
+  only:
+    - tags
+

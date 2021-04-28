@@ -14,8 +14,6 @@ COPY supervisord.conf /usr/src/app
 
 # Copy package
 COPY pyproject.toml README.md /usr/src/app/
-# COPY requirements.txt /usr/src/app
-# COPY scripts /usr/src/app/scripts
 COPY nbexchange /usr/src/app/nbexchange
 # Install dependencies
 RUN pip install .

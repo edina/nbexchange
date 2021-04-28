@@ -1,6 +1,6 @@
 import os
 from nbexchange.handlers.base import BaseHandler
-from nbexchange.__version__ import __version__
+from nbexchange import __version__
 
 
 class HomeHandler(BaseHandler):

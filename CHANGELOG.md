@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.2.1
+
+Move from setup.py to pyproject.toml
 
 ## v1.2.0
 

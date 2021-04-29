@@ -1,4 +1,4 @@
-from sqlalchemy import UniqueConstraint, Column, Integer, Unicode, Text
+from sqlalchemy import Column, Integer, Text, Unicode, UniqueConstraint
 from sqlalchemy.orm import relationship
 
 from nbexchange.models import Base
@@ -36,6 +36,9 @@ class User(Base):
     @classmethod
     def find_by_pk(cls, db, pk, log=None):
         """Find a course by Primary Key.
+
+        user = User.find_by_pk(db, 1)
+
         Returns None if not found.
         """
         if log:
@@ -51,6 +54,9 @@ class User(Base):
     @classmethod
     def find_by_name(cls, db, name, log=None):
         """Find a user by name.
+
+        user = User.find_by_name(db, "freddy")
+
         Returns None if not found.
         """
         if log:
@@ -62,6 +68,9 @@ class User(Base):
     @classmethod
     def find_by_org(cls, db, org_id, log=None):
         """Find all users for an organisation.
+
+        user = User.find_by_name(db, customer.org.id)
+
         Returns None if not found.
         """
         if log:

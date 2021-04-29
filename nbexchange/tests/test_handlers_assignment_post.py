@@ -1,7 +1,8 @@
 import logging
-import pytest
 
+import pytest
 from mock import patch
+
 from nbexchange.handlers.base import BaseHandler
 from nbexchange.tests.utils import async_requests, user_kiz_instructor
 

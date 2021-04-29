@@ -1,4 +1,5 @@
 import warnings
+
 from .fetch_assignment import ExchangeFetchAssignment
 
 

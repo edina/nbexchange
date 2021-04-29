@@ -4,11 +4,11 @@ import uuid
 
 from tornado import web
 
-import nbexchange.models.actions
-import nbexchange.models.assignments
-import nbexchange.models.courses
 from nbexchange.database import scoped_session
 from nbexchange.handlers.base import BaseHandler, authenticated
+from nbexchange.models.actions import Action, AssignmentActions
+from nbexchange.models.assignments import Assignment
+from nbexchange.models.courses import Course
 
 """
 All URLs relative to /services/nbexchange
@@ -56,12 +56,12 @@ class Submission(BaseHandler):
         # The course will exist: the user object creates it if it doesn't exist
         #  - and we know the user is subscribed to the course as an instructor (above)
         with scoped_session() as session:
-            course = nbexchange.models.courses.Course.find_by_code(
+            course = Course.find_by_code(
                 db=session, code=course_code, org_id=this_user["org_id"], log=self.log
             )
 
             # We need to find this assignment, or make a new one.
-            assignment = nbexchange.models.assignments.Assignment.find_by_code(
+            assignment = Assignment.find_by_code(
                 db=session, code=assignment_code, course_id=course.id
             )
             if assignment is None:
@@ -76,7 +76,7 @@ class Submission(BaseHandler):
                 [
                     self.base_storage_location,
                     str(this_user["org_id"]),
-                    nbexchange.models.actions.AssignmentActions.submitted.value,
+                    AssignmentActions.submitted.value,
                     course_code,
                     assignment_code,
                     this_user["name"],
@@ -119,19 +119,19 @@ class Submission(BaseHandler):
                 raise web.HTTPError(418)
 
             # now commit the assignment, and get it back to find the id
-            assignment = nbexchange.models.assignments.Assignment.find_by_code(
+            assignment = Assignment.find_by_code(
                 db=session, code=assignment_code, course_id=course.id
             )
 
             # Record the action.
             # Note we record the path to the files.
             self.log.info(
-                f"Adding action {nbexchange.models.actions.AssignmentActions.submitted.value} for user {this_user['id']} against assignment {assignment.id}"
+                f"Adding action {AssignmentActions.submitted.value} for user {this_user['id']} against assignment {assignment.id}"
             )
-            action = nbexchange.models.actions.Action(
+            action = Action(
                 user_id=this_user["id"],
                 assignment_id=assignment.id,
-                action=nbexchange.models.actions.AssignmentActions.submitted,
+                action=AssignmentActions.submitted,
                 location=release_file,
             )
             session.add(action)

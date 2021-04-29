@@ -1,23 +1,20 @@
 import base64
-import datetime
 import os
 import tempfile
 import time
-import uuid
 
-from sqlalchemy import desc
-from tornado import web, httputil
 from dateutil import parser
+from nbgrader.utils import make_unique_key, notebook_hash
+from tornado import web
 
-from nbexchange.models.actions import Action, AssignmentActions
-from nbexchange.models.assignments import Assignment
-from nbexchange.models.courses import Course
-from nbexchange.models.notebooks import Notebook
-from nbexchange.models.feedback import Feedback
-from nbexchange.models.users import User
 from nbexchange.database import scoped_session
 from nbexchange.handlers.base import BaseHandler, authenticated
-from nbgrader.utils import notebook_hash, make_unique_key
+from nbexchange.models.actions import Action, AssignmentActions
+from nbexchange.models.assignments import Assignment as AssignmentModel
+from nbexchange.models.courses import Course
+from nbexchange.models.feedback import Feedback
+from nbexchange.models.notebooks import Notebook
+from nbexchange.models.users import User
 
 """
 All URLs relative to /services/nbexchange
@@ -58,34 +55,42 @@ class FeedbackHandler(BaseHandler):
 
         with scoped_session() as session:
 
-            assignment = (
-                session.query(Assignment)
-                .join(Course)
-                .filter(Assignment.assignment_code == assignment_id)
-                .filter(Assignment.active == True)
-                .filter(Course.course_code == course_id)
-                .filter(Course.org_id == this_user["org_id"])
-                .order_by(Assignment.id.desc())
-                .first()
+            course = Course.find_by_code(
+                db=session, code=course_id, org_id=this_user["org_id"], log=self.log
+            )
+            if not course:
+                note = f"Course {course_id} not found"
+                self.log.info(note)
+                # self.finish({"success": False, "note": note, "value": []})
+                # return
+                raise web.HTTPError(404, note)
+
+            assignment = AssignmentModel.find_by_code(
+                db=session, code=assignment_id, course_id=course.id, log=self.log
+            )
+            if not assignment:
+                note = f"Assignment {assignment_id} for Course {course_id} not found"
+                self.log.info(note)
+                # self.finish({"success": False, "note": note, "value": []})
+                # return
+                raise web.HTTPError(404, note)
+
+            student = User.find_by_name(
+                db=session, name=this_user["name"], log=self.log
             )
 
-            if not assignment:
-                raise web.HTTPError(404, "Could not find requested resource")
-
-            student = session.query(User).filter_by(name=this_user["name"]).first()
-
-            # Find feedback for this notebook
-            res = (
-                session.query(Feedback)
-                .join(Notebook)
-                .filter(Feedback.student_id == student.id)
-                .filter(Notebook.assignment_id == assignment.id)
-                .all()
+            res = Feedback.find_all_for_student(
+                db=session,
+                student_id=student.id,
+                assignment_id=assignment.id,
+                log=self.log,
             )
             feedbacks = []
             for r in res:
                 f = {}
-                notebook = session.query(Notebook).filter_by(id=r.notebook_id).first()
+                notebook = Notebook.find_by_pk(
+                    db=session, pk=r.notebook_id, log=self.log
+                )
                 if notebook is not None:
                     feedback_name = "{0}.html".format(notebook.name)
                 else:
@@ -178,41 +183,32 @@ class FeedbackHandler(BaseHandler):
                     404, f"Could not find requested resource course {course_id}"
                 )
 
-            assignment = (
-                session.query(Assignment)
-                .filter_by(assignment_code=assignment_id, course_id=course.id)
-                .first()
+            assignment = AssignmentModel.find_by_code(
+                db=session,
+                code=assignment_id,
+                course_id=course.id,
+                action=AssignmentActions.released.value,
             )
 
             if not assignment:
-                self.log.info(
-                    f"Could not find requested resource assignment {assignment_id}"
-                )
-                raise web.HTTPError(
-                    404, f"Could not find requested resource assignment {assignment_id}"
-                )
+                note = f"Could not find requested resource assignment {assignment_id}"
+                self.log.info(note)
+                raise web.HTTPError(404, note)
 
-            notebook = (
-                session.query(Notebook)
-                .filter_by(name=notebook_id, assignment_id=assignment.id)
-                .first()
+            notebook = Notebook.find_by_name(
+                db=session, name=notebook_id, assignment_id=assignment.id, log=self.log
             )
-
             if not notebook:
-                self.log.info(
-                    f"Could not find requested resource notebook {notebook_id}"
-                )
-                raise web.HTTPError(
-                    404, f"Could not find requested resource notebook {notebook_id}"
-                )
+                note = f"Could not find requested resource notebook {notebook_id}"
+                self.log.info(note)
+                raise web.HTTPError(404, note)
 
-            student = session.query(User).filter_by(name=student_id).first()
+            student = User.find_by_name(db=session, name=student_id, log=self.log)
 
             if not student:
-                self.log.info(f"Could not find requested resource student {student_id}")
-                raise web.HTTPError(
-                    404, f"Could not find requested resource student {student_id}"
-                )
+                note = f"Could not find requested resource student {student_id}"
+                self.log.info(note)
+                raise web.HTTPError(404, note)
 
             # # raise Exception(f"{res}")
             # self.log.info(f"Notebook: {notebook}")

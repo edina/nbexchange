@@ -1,4 +1,4 @@
-from sqlalchemy import UniqueConstraint, Column, Integer, ForeignKey, Unicode
+from sqlalchemy import Column, ForeignKey, Integer, Unicode, UniqueConstraint
 from sqlalchemy.orm import relationship
 
 from nbexchange.models import Base

@@ -1,17 +1,16 @@
 import datetime
 import glob
+import os
 from collections import Sequence, defaultdict
+from functools import partial
+from urllib.parse import urljoin
 
 import nbgrader.exchange.abc as abc
-import os
 import requests
-
 from dateutil.tz import gettz
-from functools import partial
 from nbgrader.exchange import ExchangeError
 from nbgrader.utils import full_split
-from traitlets import Unicode, Bool, Instance
-from urllib.parse import urljoin
+from traitlets import Bool, Instance, Unicode
 
 
 class Exchange(abc.Exchange):

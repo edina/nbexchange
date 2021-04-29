@@ -1,16 +1,17 @@
 """pytest fixtures for nbexchange"""
+import logging
 import os
+from getpass import getuser
+
 import pytest
 import requests
-import logging
-from getpass import getuser
+from pytest_docker_tools import build, container
 from tornado import ioloop
 from traitlets.config.loader import PyFileConfigLoader
-from pytest_docker_tools import build, container
 
 import nbexchange.models.users
-from nbexchange.database import Session
 from nbexchange.app import NbExchange
+from nbexchange.database import Session
 
 here = os.path.abspath(os.path.dirname(__file__))
 root = os.path.join(here, os.pardir, os.pardir)

@@ -1,16 +1,16 @@
 import functools
 import re
-from typing import Optional, Awaitable, Callable
+from typing import Awaitable, Callable, Optional
 from urllib.parse import unquote, unquote_plus
 
 import requests
 from tornado import web
 from tornado.log import app_log
 
-import nbexchange.models.courses
-import nbexchange.models.subscriptions
-import nbexchange.models.users
 from nbexchange.database import scoped_session
+from nbexchange.models.courses import Course
+from nbexchange.models.subscriptions import Subscription
+from nbexchange.models.users import User
 
 
 def authenticated(
@@ -72,28 +72,24 @@ class BaseHandler(web.RequestHandler):
         self.org_id = org_id
 
         with scoped_session() as session:
-            user = nbexchange.models.users.User.find_by_name(
-                db=session, name=hub_username, log=self.log
-            )
+            user = User.find_by_name(db=session, name=hub_username, log=self.log)
             if user is None:
                 self.log.debug(
                     f"New user details: name:{hub_username}, org_id:{org_id}"
                 )
-                user = nbexchange.models.users.User(name=hub_username, org_id=org_id)
+                user = User(name=hub_username, org_id=org_id)
                 session.add(user)
             if user.full_name != full_name:
                 user.full_name = full_name
 
-            course = nbexchange.models.courses.Course.find_by_code(
+            course = Course.find_by_code(
                 db=session, code=current_course, org_id=org_id, log=self.log
             )
             if course is None:
                 self.log.debug(
                     f"New course details: code:{current_course}, org_id:{org_id}"
                 )
-                course = nbexchange.models.courses.Course(
-                    org_id=org_id, course_code=current_course
-                )
+                course = Course(org_id=org_id, course_code=current_course)
                 if course_title:
                     self.log.debug(f"Adding title {course_title}")
                     course.course_title = course_title
@@ -104,14 +100,14 @@ class BaseHandler(web.RequestHandler):
                 f"Looking for subscription for: user:{user.id}, course:{course.id}, role:{current_role}"
             )
 
-            subscription = nbexchange.models.subscriptions.Subscription.find_by_set(
+            subscription = Subscription.find_by_set(
                 db=session, user_id=user.id, course_id=course.id, role=current_role
             )
             if subscription is None:
                 self.log.debug(
                     f"New subscription details: user:{user.id}, course:{course.id}, role:{current_role}"
                 )
-                subscription = nbexchange.models.subscriptions.Subscription(
+                subscription = Subscription(
                     user_id=user.id, course_id=course.id, role=current_role
                 )
                 session.add(subscription)

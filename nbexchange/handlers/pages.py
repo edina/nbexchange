@@ -1,4 +1,4 @@
-from nbexchange.__version__ import __version__
+from nbexchange import __version__
 from nbexchange.handlers.base import BaseHandler
 
 

@@ -1,8 +1,0 @@
-pytest
-pytest-cov
-pytest-tornado
-beautifulsoup4
-html5lib
-psycopg2-binary
-mock
-pytest_docker_tools

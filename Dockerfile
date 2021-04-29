@@ -13,12 +13,10 @@ RUN pip install supervisor
 COPY supervisord.conf /usr/src/app
 
 # Copy package
-COPY setup.py /usr/src/app
-COPY requirements.txt /usr/src/app
-COPY scripts /usr/src/app/scripts
+COPY pyproject.toml README.md /usr/src/app/
 COPY nbexchange /usr/src/app/nbexchange
 # Install dependencies
-RUN python setup.py install
+RUN pip install .
 
 # Set commit sha as an environment variable
 ENV COMMIT_SHA=${COMMIT}

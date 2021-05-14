@@ -192,3 +192,8 @@ c.ExchangeFactory.submit = 'nbexchange.plugin.ExchangeSubmit'
 - Get a `handlers/auth/user_handler` to get details from jupyterhub (users, courses, and assignments should all be in the config file)
 - Get an external sanity-check for the code
 - Get docs to ReadTheDocs
+
+## Releasing new versions
+
+* Update `pyproject.toml` and `nbexchange/__init__.py` to change to the new version
+* Create a new git tag doing `git tag -a vx.y.z` to match the version above

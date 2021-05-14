@@ -4,6 +4,7 @@ import sys
 from datetime import datetime
 from getpass import getuser
 
+import sentry_sdk
 from jupyterhub.log import CoroutineLogFormatter, log_request
 from jupyterhub.utils import url_path_join
 from sentry_sdk.integrations.tornado import TornadoIntegration

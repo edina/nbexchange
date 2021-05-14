@@ -27,21 +27,6 @@ ROOT = os.path.dirname(__file__)
 STATIC_FILES_DIR = os.path.join(ROOT, "static")
 
 
-class UnicodeFromEnv(Unicode):
-    """A Unicode trait that gets its default value from the environment
-    Use .tag(env='VARNAME') to specify the environment variable to use.
-    """
-
-    def default(self, obj=None):
-        sys.stderr.write(f"stderr - object: {obj}")
-        env_key = self.metadata.get("env")
-        sys.stderr.write(f"stderr - looking for: {env_key} in {os.environ}")
-        if env_key in os.environ:
-            return os.environ[env_key]
-        else:
-            return self.default_value
-
-
 flags = {
     "debug": (
         {"Application": {"log_level": logging.DEBUG}},
@@ -94,7 +79,7 @@ class NbExchange(PrometheusMixIn, Application):
 
     port = Integer(9000).tag(config=True)
 
-    sentry_dsn = UnicodeFromEnv("").tag(env="SENTRY_DSN", config=False)
+    sentry_dsn = os.environ.get("SENTRY_DSN", "")
 
     tornado_settings = Dict()
 

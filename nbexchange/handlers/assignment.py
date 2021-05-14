@@ -356,7 +356,7 @@ class Assignment(BaseHandler):
             notebooks = self.get_arguments("notebooks")
 
             for notebook in notebooks:
-                self.log.error(f"Adding notebook {notebook}")
+                self.log.info(f"Adding notebook {notebook}")
                 new_notebook = Notebook(name=notebook)
                 assignment.notebooks.append(new_notebook)
 

@@ -348,7 +348,11 @@ class Assignment(BaseHandler):
                 raise Exception
 
             # Check the file exists on disk
-            if not (os.path.exists(release_file) and os.access(release_file, os.R_OK) and os.path.getsize(release_file) > 0):
+            if not (
+                os.path.exists(release_file)
+                and os.access(release_file, os.R_OK)
+                and os.path.getsize(release_file) > 0
+            ):
                 note = "File upload failed."
                 self.log.info(note)
                 self.finish({"success": False, "note": note})

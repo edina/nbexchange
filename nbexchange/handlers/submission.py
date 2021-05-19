@@ -118,6 +118,13 @@ class Submission(BaseHandler):
                 # error 500??
                 raise web.HTTPError(418)
 
+            # Check the file exists on disk
+            if not (os.path.exists(release_file) and os.access(release_file, os.R_OK) and os.path.getsize(release_file) > 0):
+                note = "File upload failed."
+                self.log.info(note)
+                self.finish({"success": False, "note": note})
+                return
+
             # now commit the assignment, and get it back to find the id
             assignment = Assignment.find_by_code(
                 db=session, code=assignment_code, course_id=course.id

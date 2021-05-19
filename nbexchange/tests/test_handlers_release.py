@@ -7,6 +7,7 @@ from mock import patch
 from nbexchange.handlers.base import BaseHandler
 from nbexchange.tests.utils import (
     async_requests,
+    clear_database,
     get_files_dict,
     user_kiz_instructor,
     user_kiz_student,
@@ -17,9 +18,21 @@ logger.setLevel(logging.ERROR)
 
 ##### POST /assignment (upload/release assignment) ######
 
+#################################
+#
+# Very Important Note
+#
+# The `clear_database` fixture removed all database records.
+# In this suite of tests, we do that FOR EVERY TEST
+# This means that every single test is run in isolation, and therefore will need to have the full Release, Fetch,
+#   Submit steps done before the collection can be tested.
+# (On the plus side, adding or changing a test will no longer affect those below)
+#
+#################################
+
 # require authenticated user (404 because the bounce to login fails)
 @pytest.mark.gen_test
-def test_post_assignment0(app):
+def test_post_requires_authenticated_user(app, clear_database):
     with patch.object(BaseHandler, "get_current_user", return_value={}):
         r = yield async_requests.post(app.url + "/assignment")
     assert r.status_code == 403  # why not 404???
@@ -30,7 +43,7 @@ files = get_files_dict(sys.argv[0])  # ourself :)
 
 # Requires both params (none)
 @pytest.mark.gen_test
-def test_post_assignment1(app):
+def test_post_no_params(app, clear_database):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):
@@ -45,7 +58,7 @@ def test_post_assignment1(app):
 
 # Requires both params (just course)
 @pytest.mark.gen_test
-def test_post_assignment2(app):
+def test_post_missing_assignment(app, clear_database):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):
@@ -61,7 +74,7 @@ def test_post_assignment2(app):
 
 # Requires both params (just assignment)
 @pytest.mark.gen_test
-def test_post_assignment3(app):
+def test_post_missing_course(app, clear_database):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):
@@ -77,7 +90,7 @@ def test_post_assignment3(app):
 
 # Student cannot release
 @pytest.mark.gen_test
-def test_post_assignment4(app):
+def test_post_student_cannot_release(app, clear_database):
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a"
@@ -90,7 +103,7 @@ def test_post_assignment4(app):
 
 # instructor can release
 @pytest.mark.gen_test
-def test_post_assignment5(app):
+def test_post_release_ok(app, clear_database):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):
@@ -106,7 +119,7 @@ def test_post_assignment5(app):
 
 # fails if no file is part of post request
 @pytest.mark.gen_test
-def test_post_assignment6(app):
+def test_post_no_file_provided(app, clear_database):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):
@@ -118,7 +131,7 @@ def test_post_assignment6(app):
 
 # Instructor, wrong course, cannot release
 @pytest.mark.gen_test
-def test_post_assignment7(app):
+def test_post_wrong_course(app, clear_database):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):
@@ -133,7 +146,7 @@ def test_post_assignment7(app):
 
 # instructor releasing - Picks up the first attribute if more than 1 (wrong course)
 @pytest.mark.gen_test
-def test_post_assignment8(app):
+def test_post_picks_first_instance_of_param_gets_it_wrong(app, clear_database):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):
@@ -150,7 +163,7 @@ def test_post_assignment8(app):
 
 # instructor releasing - Picks up the first attribute if more than 1 (right course)
 @pytest.mark.gen_test
-def test_post_assignment9(app):
+def test_post_picks_first_instance_of_param_gets_it_right(app, clear_database):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):
@@ -166,9 +179,9 @@ def test_post_assignment9(app):
 
 
 # Confirm 3 releases lists 3 actions, with 3 different locations
-@pytest.mark.skip
+# @pytest.mark.skip
 @pytest.mark.gen_test
-def test_post_assignment10(app):
+def test_post_location_different_each_time(app, clear_database):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):

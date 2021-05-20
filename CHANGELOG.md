@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.2.6
+
+Strip forward slashes from usernames
+
 ## v1.2.1
 
 Move from setup.py to pyproject.toml

@@ -31,11 +31,10 @@ classifiers = [
 
 dependencies = [
   "alembic",
-  "aiocontextvars",
   "tornado==6.1",
   "psycopg2-binary",
   "jupyterhub",
-  "sentry-sdk==1.0.0",
+  "sentry-sdk==1.1.0",
   "sqlalchemy>=1.4.3",
   "nbgrader @ git+https://github.com/jupyter/nbgrader.git@c04f9c497eed5e481b57e557ef61989e073c5415",
   "pyjwt",

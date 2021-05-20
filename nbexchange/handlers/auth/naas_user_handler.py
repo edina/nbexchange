@@ -2,6 +2,7 @@ import logging
 import os
 
 import jwt
+from tornado import web
 
 from nbexchange.handlers.auth.user_handler import BaseUserHandler
 
@@ -9,7 +10,7 @@ from nbexchange.handlers.auth.user_handler import BaseUserHandler
 class NaasUserHandler(BaseUserHandler):
     jwt_key = os.environ.get("SECRET_KEY")
 
-    def get_current_user(self, request):
+    def get_current_user(self, request: web.RequestHandler) -> dict:
         cookies = dict()
         # Pass through cookies
         for name in request.request.cookies:

@@ -269,7 +269,11 @@ def check_db_revision(engine, log=None):
     """
 
     # Check database schema version
-    current_table_names = set(engine.table_names())
+    # "The Engine.table_names() method is deprecated and will be removed in a future release."
+    # (deprecated since: 1.4)
+    # current_table_names = set(engine.table_names())
+    insp = inspect(engine)
+    current_table_names = set(insp.get_table_names())
     my_table_names = set(Base.metadata.tables.keys())
 
     from nbexchange.dbutil import _temp_alembic_ini

@@ -1,7 +1,7 @@
 import datetime
 import glob
 import os
-from collections import Sequence, defaultdict
+from collections.abc import Sequence
 from functools import partial
 from urllib.parse import urljoin
 

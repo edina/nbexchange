@@ -190,3 +190,59 @@ def test_release_assignment_fail(plugin_config, tmpdir):
         with pytest.raises(ExchangeError) as e_info:
             called = plugin.start()
         assert str(e_info.value) == "failure note"
+
+
+@pytest.mark.gen_test
+def test_release_oversize_blocked(plugin_config, tmpdir):
+    plugin_config.CourseDirectory.root = "/"
+
+    plugin_config.CourseDirectory.release_directory = str(
+        tmpdir.mkdir("submitted_test").realpath()
+    )
+    plugin_config.CourseDirectory.assignment_id = "assign_1"
+    os.makedirs(
+        os.path.join(plugin_config.CourseDirectory.release_directory, "assign_1"),
+        exist_ok=True,
+    )
+    copyfile(
+        notebook1_filename,
+        os.path.join(
+            plugin_config.CourseDirectory.release_directory, "assign_1", "release.ipynb"
+        ),
+    )
+    with open(
+        os.path.join(
+            plugin_config.CourseDirectory.release_directory, "assign_1", "timestamp.txt"
+        ),
+        "w",
+    ) as fp:
+        fp.write("2020-01-01 00:00:00.0 UTC")
+
+    plugin = ExchangeReleaseAssignment(
+        coursedir=CourseDirectory(config=plugin_config), config=plugin_config
+    )
+
+    # Set the max-buffer-size to 50 bytes
+    plugin.max_buffer_size = 50
+
+    def api_request(*args, **kwargs):
+        assert args[0] == (f"assignment?course_id=no_course" f"&assignment_id=assign_1")
+        assert kwargs.get("method").lower() == "post"
+        assert kwargs.get("data").get("notebooks") == ["release"]
+        assert "assignment" in kwargs.get("files")
+        assert "assignment.tar.gz" == kwargs.get("files").get("assignment")[0]
+        assert len(kwargs.get("files").get("assignment")[1]) > 0
+
+        return type(
+            "Request",
+            (object,),
+            {"status_code": 200, "json": (lambda: {"success": True})},
+        )
+
+    with patch.object(Exchange, "api_request", side_effect=api_request):
+        with pytest.raises(ExchangeError) as e_info:
+            called = plugin.start()
+        assert (
+            str(e_info.value)
+            == "Assignment assign_1 not released. The contents of your assignment are too large:\nYou may have data files, temporary files, and/or working files that should not be included - try deleting them."
+        )

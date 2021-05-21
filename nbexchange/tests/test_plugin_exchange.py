@@ -26,6 +26,7 @@ def test_defaults():
     assert plugin.base_service_url == "https://noteable.edina.ac.uk"
     assert plugin.service_url() == "https://noteable.edina.ac.uk/services/nbexchange/"
     assert plugin.course_id == "no_course"
+    assert plugin.max_buffer_size == 5253530000
 
 
 @pytest.mark.gen_test

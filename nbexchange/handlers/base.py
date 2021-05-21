@@ -1,9 +1,10 @@
 import functools
+import os
 import re
+
 from typing import Awaitable, Callable, Optional
 from urllib.parse import unquote, unquote_plus
 
-import requests
 from tornado import web
 from tornado.log import app_log
 
@@ -50,6 +51,10 @@ class BaseHandler(web.RequestHandler):
     @property
     def user_plugin(self):
         return self.settings["user_plugin"]
+
+    @property
+    def max_buffer_size(self):
+        return self.settings["max_buffer_size"]
 
     def get_current_user(self):
         return self.user_plugin.get_current_user(self)

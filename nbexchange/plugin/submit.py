@@ -1,5 +1,7 @@
 import io
 import os
+import sys
+
 from urllib.parse import quote_plus
 
 import nbgrader.exchange.abc as abc
@@ -127,5 +129,12 @@ class ExchangeSubmit(abc.ExchangeSubmit, Exchange):
         self.check_filename_diff()
         # Grab files from hard drive
         file = self.tar_source()
+        if sys.getsizeof(file) > self.max_buffer_size:
+            self.fail(
+                "Assignment {} not submitted. "
+                "The contents of your submission are too large:\n"
+                "You may have data files, temporary files, and/or working files that are not needed - try deleting them."
+                "".format(self.coursedir.assignment_id)
+            )
         # Upload files to exchange
         self.upload(file)

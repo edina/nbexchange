@@ -2,6 +2,7 @@ import glob
 import io
 import json
 import os
+import sys
 from urllib.parse import quote_plus
 
 import nbgrader.exchange.abc as abc
@@ -96,6 +97,13 @@ class ExchangeReleaseAssignment(abc.ExchangeReleaseAssignment, Exchange):
     def copy_files(self):
         # Grab files from hard drive
         file = self.tar_source()
+        if sys.getsizeof(file) > self.max_buffer_size:
+            self.fail(
+                "Assignment {} not released. "
+                "The contents of your assignment are too large:\n"
+                "You may have data files, temporary files, and/or working files that should not be included - try deleting them."
+                "".format(self.coursedir.assignment_id)
+            )
         # Upload files to exchange
         self.get_notebooks()
         self.upload(file)

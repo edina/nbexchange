@@ -347,6 +347,17 @@ class Assignment(BaseHandler):
                 # error 500??
                 raise Exception
 
+            # Check the file exists on disk
+            if not (
+                os.path.exists(release_file)
+                and os.access(release_file, os.R_OK)
+                and os.path.getsize(release_file) > 0
+            ):
+                note = "File upload failed."
+                self.log.info(note)
+                self.finish({"success": False, "note": note})
+                return
+
             # now commit the assignment, and get it back to find the id
             assignment = AssignmentModel.find_by_code(
                 db=session, code=assignment_code, course_id=course.id
@@ -356,7 +367,7 @@ class Assignment(BaseHandler):
             notebooks = self.get_arguments("notebooks")
 
             for notebook in notebooks:
-                self.log.info(f"Adding notebook {notebook}")
+                self.log.debug(f"Adding notebook {notebook}")
                 new_notebook = Notebook(name=notebook)
                 assignment.notebooks.append(new_notebook)
 
@@ -372,7 +383,7 @@ class Assignment(BaseHandler):
                 location=release_file,
             )
             session.add(action)
-        self.finish({"success": True, "note": "Released"})
+            self.finish({"success": True, "note": "Released"})
 
     # This is unreleasing an assignment
     @authenticated

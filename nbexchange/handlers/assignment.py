@@ -243,6 +243,15 @@ class Assignment(BaseHandler):
     @authenticated
     def post(self):
 
+        # Do a content-length check, before we go any further
+        if "Content-Length" in self.request.headers and int(
+            self.request.headers["Content-Length"]
+        ) > int(self.max_buffer_size):
+            note = "File upload oversize, and rejected. Please reduce the contents of the assignment, re-generate, and re-release"
+            self.log.info(note)
+            self.finish({"success": False, "note": note})
+            return
+
         [course_code, assignment_code] = self.get_params(["course_id", "assignment_id"])
         self.log.debug(
             f"Called POST /assignment with arguments: course {course_code} and  assignment {assignment_code}"
@@ -358,7 +367,7 @@ class Assignment(BaseHandler):
                 self.finish({"success": False, "note": note})
                 return
 
-            # Check file-size is under the limit
+            # We shouldn't get here, but a double-check is good
             if os.path.getsize(release_file) > self.max_buffer_size:
                 os.remove(release_file)
                 note = "File upload oversize, and rejected. Please reduce the contents of the assignment, re-generate, and re-release"

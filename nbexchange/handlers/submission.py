@@ -36,6 +36,14 @@ class Submission(BaseHandler):
     @authenticated
     def post(self):
 
+        if "Content-Length" in self.request.headers and int(
+            self.request.headers["Content-Length"]
+        ) > int(self.max_buffer_size):
+            note = "File upload oversize, and rejected. Please reduce the files in your submission and try again."
+            self.log.info(note)
+            self.finish({"success": False, "note": note})
+            return
+
         [course_code, assignment_code] = self.get_params(["course_id", "assignment_id"])
         self.log.debug(
             f"Called POST /submission with arguments: course {course_code} and  assignment {assignment_code}"
@@ -132,7 +140,7 @@ class Submission(BaseHandler):
             # Check file-size is under the limit
             if os.path.getsize(release_file) > self.max_buffer_size:
                 os.remove(release_file)
-                note = "File upload oversize, and rejected. Please reduce the contents of the assignment, re-generate, and re-release"
+                note = "File upload oversize, and rejected. Please reduce the files in your submission and try again."
                 self.log.info(note)
                 self.finish({"success": False, "note": note})
                 return

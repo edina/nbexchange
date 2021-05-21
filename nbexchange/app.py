@@ -223,6 +223,7 @@ class NbExchange(PrometheusMixIn, Application):
             base_url=self.base_url,
             base_storage_location=self.base_storage_location,
             # naas_url=self.naas_url,
+            max_buffer_size=self.max_buffer_size,
             user_plugin=self.user_plugin_class(),
             version_hash=version_hash,
             xsrf_cookies=False,

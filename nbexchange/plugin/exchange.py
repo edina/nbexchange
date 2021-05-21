@@ -10,7 +10,7 @@ import requests
 from dateutil.tz import gettz
 from nbgrader.exchange import ExchangeError
 from nbgrader.utils import full_split
-from traitlets import Bool, Instance, Unicode
+from traitlets import Bool, Instance, Integer, Unicode
 
 
 class Exchange(abc.Exchange):
@@ -43,6 +43,10 @@ which is normally Jupyter's notebook_dir.
         return this_url
 
     course_id = Unicode(os.environ.get("NAAS_COURSE_ID", "no_course")).tag(config=True)
+
+    max_buffer_size = Integer(
+        5253530000, help="The maximum size, in bytes, of an upload (defaults to 5GB)"
+    ).tag(config=True)
 
     def fail(self, msg):
         self.log.fatal(msg)

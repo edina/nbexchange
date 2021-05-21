@@ -51,6 +51,10 @@ class BaseHandler(web.RequestHandler):
     def user_plugin(self):
         return self.settings["user_plugin"]
 
+    # @property
+    # def max_buffer_size(self):
+    #     return self.settings["max_buffer_size"]
+
     def get_current_user(self):
         return self.user_plugin.get_current_user(self)
 

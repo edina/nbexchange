@@ -157,6 +157,10 @@ class NbExchange(PrometheusMixIn, Application):
         False, help="log all database transactions. This has A LOT of output"
     ).tag(config=True)
 
+    max_buffer_size = Integer(
+        5253530000, help="The maximum size, in bytes, of an upload (defaults to 5GB)"
+    ).tag(config=True)
+
     def _check_db_path(self, path):
         """More informative log messages for failed filesystem access"""
         path = os.path.abspath(path)
@@ -274,6 +278,8 @@ class NbExchange(PrometheusMixIn, Application):
             self.subapp.start()
             return
 
+        # *NOT* adding 'max_buffer_size=self.max_buffer_size' here, as we handle the
+        # size-checks in code (both plugin & exchange side)
         self.http_server = HTTPServer(self.tornado_application, xheaders=True)
         self.http_server.listen(self.port, address=self.ip)
         if run_loop:

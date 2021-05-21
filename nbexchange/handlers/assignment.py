@@ -347,6 +347,25 @@ class Assignment(BaseHandler):
                 # error 500??
                 raise Exception
 
+            # Check the file exists on disk
+            if not (
+                os.path.exists(release_file)
+                and os.access(release_file, os.R_OK)
+                and os.path.getsize(release_file) > 0
+            ):
+                note = "File upload failed."
+                self.log.info(note)
+                self.finish({"success": False, "note": note})
+                return
+
+            # Check file-size is under the limit
+            if os.path.getsize(release_file) > self.max_buffer_size:
+                os.remove(release_file)
+                note = "File upload oversize, and rejected. Please reduce the contents of the assignment, re-generate, and re-release"
+                self.log.info(note)
+                self.finish({"success": False, "note": note})
+                return
+
             # now commit the assignment, and get it back to find the id
             assignment = AssignmentModel.find_by_code(
                 db=session, code=assignment_code, course_id=course.id

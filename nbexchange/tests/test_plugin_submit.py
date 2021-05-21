@@ -1633,3 +1633,88 @@ def test_submit_with_multiple_assignments_oldest_first(plugin_config, tmpdir):
             called = plugin.start()
     finally:
         shutil.rmtree(assignment_id3)
+
+
+# Check the client-side oversizxe limit works
+@pytest.mark.gen_test
+def test_submit_fails_oversize(plugin_config, tmpdir):
+    try:
+        plugin_config.CourseDirectory.course_id = course_id
+        plugin_config.CourseDirectory.assignment_id = assignment_id1
+
+        os.makedirs(assignment_id1, exist_ok=True)
+        copyfile(
+            notebook1_filename,
+            os.path.join(assignment_id1, basename(notebook1_filename)),
+        )
+
+        plugin = ExchangeSubmit(
+            coursedir=CourseDirectory(config=plugin_config), config=plugin_config
+        )
+
+        # Set the max-buffer-size to 50 bytes
+        plugin.max_buffer_size = 50
+
+        def api_request(*args, **kwargs):
+            if args[0].startswith("assignments"):
+                return type(
+                    "Request",
+                    (object,),
+                    {
+                        "status_code": 200,
+                        "json": (
+                            lambda: {
+                                "success": True,
+                                "value": [
+                                    {
+                                        "assignment_id": assignment_id1,
+                                        "student_id": "1",
+                                        "course_id": course_id,
+                                        "status": "released",
+                                        "path": "",
+                                        "notebooks": [
+                                            {
+                                                "notebook_id": "assignment-0.6",
+                                                "has_exchange_feedback": False,
+                                                "feedback_updated": False,
+                                                "feedback_timestamp": False,
+                                            }
+                                        ],
+                                        "timestamp": "2020-01-01 00:00:00.0 UTC",
+                                    }
+                                ],
+                            }
+                        ),
+                    },
+                )
+            else:
+                pth = str(tmpdir.mkdir("submit_several").realpath())
+                assert args[0] == (
+                    f"submission?course_id={course_id}&assignment_id={assignment_id1}"
+                )
+                assert "method" not in kwargs or kwargs.get("method").lower() == "post"
+                files = kwargs.get("files")
+                assert "assignment" in files
+                assert "assignment.tar.gz" == files["assignment"][0]
+                tar_file = io.BytesIO(files["assignment"][1])
+                with tarfile.open(fileobj=tar_file) as handle:
+                    handle.extractall(path=pth)
+
+                assert os.path.exists(os.path.join(pth, "assignment-0.6.ipynb"))
+                assert os.path.exists(os.path.join(pth, "timestamp.txt"))
+                return type(
+                    "Request",
+                    (object,),
+                    {"status_code": 200, "json": (lambda: {"success": True})},
+                )
+
+        with patch.object(Exchange, "api_request", side_effect=api_request):
+            with pytest.raises(ExchangeError) as e_info:
+                called = plugin.start()
+            assert (
+                str(e_info.value)
+                == "Assignment assign_1_1 not submitted. The contents of your submission are too large:\nYou may have data files, temporary files, and/or working files that are not needed - try deleting them."
+            )
+
+    finally:
+        shutil.rmtree(assignment_id1)

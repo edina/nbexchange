@@ -7,6 +7,7 @@ from mock import patch
 from nbexchange.handlers.base import BaseHandler
 from nbexchange.tests.utils import (
     async_requests,
+    clear_database,
     get_files_dict,
     user_kiz_instructor,
     user_kiz_student,
@@ -197,3 +198,21 @@ def test_post_assignment10(app):
     assert paths[1] != paths[2]  # 2nd not the same as 3rd
     assert paths[0] != paths[2]  # 1st not the same as third
     assert actions == ["released", "released", "released"]
+
+
+# @pytest.mark.gen_test
+# def test_blocks_filesize(app, clear_database):
+#     with patch.object(
+#         BaseHandler, "max_buffer_size", return_value=int(50)
+#     ):
+#         with patch.object(
+#             BaseHandler, "get_current_user", return_value=user_kiz_instructor
+#         ):
+#             r = yield async_requests.post(
+#                 app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
+#                 files=files,
+#             )
+#     assert r.status_code == 200
+#     response_data = r.json()
+#     assert response_data["success"] == True
+#     assert response_data["note"] == "Released"

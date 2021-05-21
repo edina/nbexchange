@@ -83,7 +83,7 @@ class ExchangeCollect(abc.ExchangeCollect, Exchange):
         for submission in submissions:
 
             student_id = submission["student_id"]
-            full_name = submission.get("full_name", "")
+            full_name = submission.get("full_name") or ""
             if " " in full_name:
                 first_name, last_name = full_name.rsplit(" ", 1)
             else:

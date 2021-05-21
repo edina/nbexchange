@@ -137,7 +137,7 @@ class Submission(BaseHandler):
                 self.finish({"success": False, "note": note})
                 return
 
-            # Check file-size is under the limit
+            # We shouldn't need this, but it's good to double-check
             if os.path.getsize(release_file) > self.max_buffer_size:
                 os.remove(release_file)
                 note = "File upload oversize, and rejected. Please reduce the files in your submission and try again."

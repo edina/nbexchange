@@ -212,19 +212,20 @@ def test_post_location_different_each_time(app, clear_database):
     assert actions == ["released", "released", "released"]
 
 
-# @pytest.mark.gen_test
-# def test_blocks_filesize(app, clear_database):
-#     with patch.object(
-#         BaseHandler, "max_buffer_size", return_value=int(50)
-#     ):
-#         with patch.object(
-#             BaseHandler, "get_current_user", return_value=user_kiz_instructor
-#         ):
-#             r = yield async_requests.post(
-#                 app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-#                 files=files,
-#             )
-#     assert r.status_code == 200
-#     response_data = r.json()
-#     assert response_data["success"] == True
-#     assert response_data["note"] == "Released"
+@pytest.mark.gen_test
+def test_blocks_filesize(app, clear_database):
+    with patch.object(BaseHandler, "max_buffer_size", return_value=int(50)):
+        with patch.object(
+            BaseHandler, "get_current_user", return_value=user_kiz_instructor
+        ):
+            r = yield async_requests.post(
+                app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
+                files=files,
+            )
+    assert r.status_code == 200
+    response_data = r.json()
+    assert response_data["success"] == False
+    assert (
+        response_data["note"]
+        == "File upload oversize, and rejected. Please reduce the contents of the assignment, re-generate, and re-release"
+    )

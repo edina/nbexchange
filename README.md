@@ -7,15 +7,17 @@ A Jupyterhub service that replaces the nbgrader Exchange.
 <!-- TOC -->
 
 - [Highlights of nbexchange](#highlights-of-nbexchange)
-  - [Compatibility](#compatibility)
+    - [Compatibility](#compatibility)
 - [Documentation](#documentation)
-  - [Database relationships](#database-relationships)
+    - [Database relationships](#database-relationships)
 - [Installing](#installing)
+    - [Configuration](#configuration)
+    - [How to](#how-to)
 - [Contributing](#contributing)
-- [Configuration](#configuration)
-  - [Configuring `nbexchange`](#configuring-nbexchange)
-  - [Configuring `nbgrader`](#configuring-nbgrader)
-- [Know To-Do stuff](#know-to-do-stuff)
+- [Configuration](#configuration-1)
+    - [Configuring `nbexchange`](#configuring-nbexchange)
+    - [Configuring `nbgrader`](#configuring-nbgrader)
+    - [Releasing new versions](#releasing-new-versions)
 
 <!-- /TOC -->
 
@@ -146,17 +148,33 @@ This is the database connector, and defaults to an in-memory SQLite (`sqlite:///
 
 Can also be defined in the environment variable `NBEX_DB_URL`
 
+- **`db_kwargs`** 
+
+Where to include any kwargs to pass to the database connection.
+
+- **`max_buffer_size`**
+
+The service will limit the size of uploads. The figure is bytes
+
+By default, upload sizes are limited to 5GB (5253530000)
+
+- **`upgrade_db`**, **`reset_db`**, **`debug_db`**  
+
+Do stuff to the db... see the code for what these do
+
 - **`user_plugin_class`**
 
 This is a class that defines how `get_current_user` works.
 
-For the exchange to work, it needs some details about the user connecting to it - specifically, it needs 5 pieces of information:
+For the exchange to work, it needs some details about the user connecting to it - specifically, it needs 7 pieces of information:
 
 - `name`: The username of the person (eg `perllaghu`),
+- `full_name`: The optional full name, if supplied by the remote authenticator
 - `course_id`: The course code as used in nbgrader (eg `cool_course`),
 - `course_title`: A long name for the course (eg `A course of understanding thermondynamics in bulk refrigerant transport"),
 - `course_role`: The role of the user, normally `Student` or `Instructor`. (currently only `Instructor` get privilaged actions),
 - `org_id`: As mentioned above, nbexchange divides courses and users across organisations. This is an id (numeric) for the org_id for the user.
+- `cust_id`: Whilst most of the exchange is keyed on the `org_id`, knowing _customer_ can be useful. This is an id (numeric) for the org_id for the user.
 
 ## Configuring `nbgrader`
 
@@ -185,13 +203,12 @@ c.ExchangeFactory.release_feedback = 'nbexchange.plugin.ExchangeReleaseFeedback'
 c.ExchangeFactory.submit = 'nbexchange.plugin.ExchangeSubmit'
 ```
 
-# Know To-Do stuff
+These plugins will also check the size of _releases_ & _submissions_
 
-- ~~Get the initial code up~~
-- Get a master-branch established
-- Get a `handlers/auth/user_handler` to get details from jupyterhub (users, courses, and assignments should all be in the config file)
-- Get an external sanity-check for the code
-- Get docs to ReadTheDocs
+`c.Exchange.max_buffer_size = 204800  # 200KB`
+
+By default, upload sizes are limited to 5GB (5253530000)
+The figure is bytes
 
 ## Releasing new versions
 

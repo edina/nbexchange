@@ -21,19 +21,3 @@ class TestHandlersBasic(BaseTestHandlers):
         r = yield async_requests.get(app.url + "/")
         assert r.status_code == 200
         assert re.search(r"NbExchange", r.text)
-
-    #### Not working
-    # # we can define a datasbe name
-    # @pytest.mark.gen_test
-    # def test_different_db_name(app, monkeypatch):
-    #     monkeypatch.setitem(os.environ, 'NBEX_DB_DATABASE', 'kiz_test.sqlite')
-    #     print(f"db_url: {app.db_url}")
-    #     r = yield async_requests.get(app.url + "/")
-    #     assert r.status_code == 200
-    #     assert re.search(r"NbExchange", r.text)
-
-    #     assert os.path.isfile('kiz_test.sqlite')
-    #     #os.remove('kiz_test.sqlite')
-    #     #assert not os.path.isfile('kiz_test.sqlite')
-    #     monkeypatch.setitem(os.environ, 'NBEX_DB_DATABASE', '')
-    #     reload(app)

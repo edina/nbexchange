@@ -122,9 +122,3 @@ def test_exhange_api_request_get():
         os.environ["NAAS_JWT"] = naas_token
     else:
         del os.environ["NAAS_JWT"]
-
-
-## Not sure how to test this just now
-@pytest.mark.gen_test
-def test_exhange__assignment_not_found():
-    pass

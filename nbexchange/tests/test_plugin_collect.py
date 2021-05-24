@@ -35,6 +35,74 @@ ass_1_5 = "assign_1_5"
 
 
 @pytest.mark.gen_test
+def test_collect_methods(plugin_config, tmpdir):
+    plugin_config.CourseDirectory.course_id = "no_course"
+    plugin_config.CourseDirectory.assignment_id = ass_1_3
+    plugin_config.CourseDirectory.submitted_directory = str(
+        tmpdir.mkdir("submitted").realpath()
+    )
+    plugin = ExchangeCollect(
+        coursedir=CourseDirectory(config=plugin_config), config=plugin_config
+    )
+
+    plugin.init_src()
+    with pytest.raises(AttributeError) as e_info:
+        foo = plugin.src_path
+        assert (
+            str(e_info.value) == "'ExchangeCollect' object has no attribute 'src_path'"
+        )
+    plugin.init_dest()
+    with pytest.raises(AttributeError) as e_info:
+        foo = plugin.dest_path
+        assert (
+            str(e_info.value) == "'ExchangeCollect' object has no attribute 'dest_path'"
+        )
+
+    def api_request_good(*args, **kwargs):
+        tar_file = io.BytesIO()
+
+        assert "method" not in kwargs or kwargs.get("method").lower() == "get"
+        with tarfile.open(fileobj=tar_file, mode="w:gz") as tar_handle:
+            tar_handle.add(
+                notebook1_filename, arcname=os.path.basename(notebook1_filename)
+            )
+            # tar_handle.add(notebook2_filename, arcname=os.path.basename(notebook2_filename))
+        tar_file.seek(0)
+
+        return type(
+            "Response",
+            (object,),
+            {
+                "status_code": 200,
+                "headers": {"content-type": "application/x-tar"},
+                "content": tar_file.read(),
+            },
+        )
+
+    def api_request_bad(*args, **kwargs):
+        return type(
+            "Response",
+            (object,),
+            {
+                "status_code": 200,
+                "headers": {"content-type": "application/x-tar"},
+                "content": b"",
+            },
+        )
+
+    with patch.object(Exchange, "api_request", side_effect=api_request_bad):
+        submission = {
+            "student_id": student_id,
+            "path": f"/submitted/no_course/{ass_1_3}/1/",
+            "timestamp": "2020-01-01 00:00:00.0 UTC",
+        }
+        dest_path = f"{plugin_config.CourseDirectory.submitted_directory}/123/{ass_1_3}"
+        with pytest.raises(Exception) as e_info:
+            plugin.download(submission, dest_path)
+        assert str(e_info.value) == "file could not be opened successfully"
+
+
+@pytest.mark.gen_test
 def test_collect_normal(plugin_config, tmpdir):
     plugin_config.CourseDirectory.course_id = "no_course"
     plugin_config.CourseDirectory.assignment_id = ass_1_3

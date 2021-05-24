@@ -22,3 +22,7 @@ class TestHandlersBasic(BaseTestHandlers):
         r = yield async_requests.get(app.url + "/")
         assert r.status_code == 200
         assert re.search(r"NbExchange", r.text)
+
+    def test_base_location_story(self, app):
+        # Not "/services/nbexchange/", the tests move it
+        assert app.base_storage_location == "/tmp/exchange/"

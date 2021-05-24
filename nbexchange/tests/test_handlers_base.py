@@ -25,4 +25,4 @@ class TestHandlersBasic(BaseTestHandlers):
 
     def test_base_location_story(self, app):
         # Not "/services/nbexchange/", the tests move it
-        assert app.base_storage_location == "/tmp/exchange/"
+        assert app.base_storage_location in ["/tmp/exchange/", "/tmp/courses"]

@@ -10,6 +10,7 @@ from nbexchange.handlers.base import BaseHandler
 from nbexchange.tests.utils import (
     AsyncSession,
     async_requests,
+    clear_database,
     get_feedback_dict,
     get_files_dict,
     user_brobbere_student,
@@ -35,7 +36,7 @@ def test_feedback_unauthenticated(app):
 
 
 @pytest.mark.gen_test
-def test_feedback_authenticated_no_params(app):
+def test_feedback_authenticated_no_params(app, clear_database):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):
@@ -49,7 +50,7 @@ def test_feedback_authenticated_no_params(app):
 
 
 @pytest.mark.gen_test
-def test_feedback_authenticated_with_params(app):
+def test_feedback_authenticated_with_params(app, clear_database):
     assignment_id = "my_assignment"
     course_id = "my_course"
 
@@ -64,7 +65,7 @@ def test_feedback_authenticated_with_params(app):
 
 
 @pytest.mark.gen_test
-def test_feedback_post_unauthenticated(app):
+def test_feedback_post_unauthenticated(app, clear_database):
     """
     Require authenticated user for posting
     """
@@ -73,7 +74,7 @@ def test_feedback_post_unauthenticated(app):
 
 
 @pytest.mark.gen_test
-def test_feedback_post_authenticated_no_params(app):
+def test_feedback_post_authenticated_no_params(app, clear_database):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):
@@ -87,7 +88,7 @@ def test_feedback_post_authenticated_no_params(app):
 
 
 @pytest.mark.gen_test
-def test_feedback_post_authenticated_no_assignment_id(app):
+def test_feedback_post_authenticated_no_assignment_id(app, clear_database):
     url = f"/feedback?course_id=faked&notebook=faked&student=faked&timestamp=faked&checksum=faked"
 
     with patch.object(
@@ -103,7 +104,7 @@ def test_feedback_post_authenticated_no_assignment_id(app):
 
 
 @pytest.mark.gen_test
-def test_feedback_post_authenticated_no_course_id(app):
+def test_feedback_post_authenticated_no_course_id(app, clear_database):
     assignment_id = "my_assignment"
     url = f"/feedback?assignment_id={assignment_id}&notebook=faked&student=faked&timestamp=faked&checksum=faked"
 
@@ -120,7 +121,7 @@ def test_feedback_post_authenticated_no_course_id(app):
 
 
 @pytest.mark.gen_test
-def test_feedback_post_authenticated_no_notebook(app):
+def test_feedback_post_authenticated_no_notebook(app, clear_database):
     assignment_id = "my_assignment"
     url = f"/feedback?assignment_id={assignment_id}&course_id=faked&student=faked&timestamp=faked&checksum=faked"
 
@@ -137,7 +138,7 @@ def test_feedback_post_authenticated_no_notebook(app):
 
 
 @pytest.mark.gen_test
-def test_feedback_post_authenticated_no_student(app):
+def test_feedback_post_authenticated_no_student(app, clear_database):
     assignment_id = "my_assignment"
     url = f"/feedback?assignment_id={assignment_id}&course_id=faked&notebook=faked&timestamp=faked&checksum=faked"
 
@@ -154,7 +155,7 @@ def test_feedback_post_authenticated_no_student(app):
 
 
 @pytest.mark.gen_test
-def test_feedback_post_authenticated_no_timestamp(app):
+def test_feedback_post_authenticated_no_timestamp(app, clear_database):
     assignment_id = "my_assignment"
     url = f"/feedback?assignment_id={assignment_id}&course_id=faked&notebook=faked&student=faked&checksum=faked"
 
@@ -171,7 +172,7 @@ def test_feedback_post_authenticated_no_timestamp(app):
 
 
 @pytest.mark.gen_test
-def test_feedback_post_authenticated_no_checksum(app):
+def test_feedback_post_authenticated_no_checksum(app, clear_database):
     assignment_id = "my_assignment"
     url = f"/feedback?assignment_id={assignment_id}&course_id=faked&notebook=faked&student=faked&timestamp=faked"
 
@@ -188,7 +189,7 @@ def test_feedback_post_authenticated_no_checksum(app):
 
 
 @pytest.mark.gen_test
-def test_feedback_post_authenticated_with_params(app):
+def test_feedback_post_authenticated_with_params(app, clear_database):
     assignment_id = "my_assignment"
 
     url = (
@@ -209,7 +210,7 @@ def test_feedback_post_authenticated_with_params(app):
 
 
 @pytest.mark.gen_test
-def test_feedback_post_authenticated_with_incorrect_assignment_id(app):
+def test_feedback_post_authenticated_with_incorrect_assignment_id(app, clear_database):
     assignment_id = "assign_a"
     course_id = "course_2"
     notebook = "notebook"
@@ -258,7 +259,7 @@ def test_feedback_post_authenticated_with_incorrect_assignment_id(app):
 
 
 @pytest.mark.gen_test
-def test_feedback_post_authenticated_with_incorrect_notebook_id(app):
+def test_feedback_post_authenticated_with_incorrect_notebook_id(app, clear_database):
     assignment_id = "assign_a"
     course_id = "course_2"
     notebook = "notebook"
@@ -308,7 +309,7 @@ def test_feedback_post_authenticated_with_incorrect_notebook_id(app):
 
 
 @pytest.mark.gen_test
-def test_feedback_post_authenticated_with_incorrect_student_id(app):
+def test_feedback_post_authenticated_with_incorrect_student_id(app, clear_database):
     assignment_id = "assign_a"
     course_id = "course_2"
     notebook = "notebook"
@@ -359,7 +360,8 @@ def test_feedback_post_authenticated_with_incorrect_student_id(app):
 
 # Not yet implemented on exchange server...
 @pytest.mark.skip
-def test_feedback_post_authenticated_with_incorrect_checksum(app):
+@pytest.mark.gen_test
+def test_feedback_post_authenticated_with_incorrect_checksum(app, clear_database):
     assignment_id = "assign_a"
     course_id = "course_2"
     notebook = "notebook"
@@ -409,7 +411,7 @@ def test_feedback_post_authenticated_with_incorrect_checksum(app):
 
 
 @pytest.mark.gen_test
-def test_feedback_post_authenticated_with_correct_params(app):
+def test_feedback_post_authenticated_with_correct_params(app, clear_database):
     assignment_id = "assign_a"
     course_id = "course_2"
     notebook = "notebook"
@@ -461,7 +463,7 @@ def test_feedback_post_authenticated_with_correct_params(app):
 
 
 @pytest.mark.gen_test
-def test_feedback_post_authenticated_with_correct_params_incorrect_instructor(app):
+def test_feedback_post_authenticated_with_correct_params_incorrect_instructor(app, clear_database):
     assignment_id = "assign_a"
     course_id = "course_2"
     notebook = "notebook"
@@ -514,7 +516,7 @@ def test_feedback_post_authenticated_with_correct_params_incorrect_instructor(ap
 
 
 @pytest.mark.gen_test
-def test_feedback_post_authenticated_with_correct_params_student_submitter(app):
+def test_feedback_post_authenticated_with_correct_params_student_submitter(app, clear_database):
     assignment_id = "assign_a"
     course_id = "course_2"
     notebook = "notebook"
@@ -565,7 +567,7 @@ def test_feedback_post_authenticated_with_correct_params_student_submitter(app):
 
 
 @pytest.mark.gen_test
-def test_feedback_get_authenticated_with_incorrect_student(app):
+def test_feedback_get_authenticated_with_incorrect_student(app, clear_database):
     assignment_id = "assign_a"
     course_id = "course_2"
     notebook = "notebook"
@@ -627,7 +629,7 @@ def test_feedback_get_authenticated_with_incorrect_student(app):
 
 
 @pytest.mark.gen_test
-def test_feedback_get_authenticated_with_correct_params(app):
+def test_feedback_get_authenticated_with_correct_params(app, clear_database):
     assignment_id = "assign_a"
     course_id = "course_2"
     notebook = "notebook"
@@ -690,7 +692,7 @@ def test_feedback_get_authenticated_with_correct_params(app):
 # test feedback picks up the correct assignment when two courses have the same assignment name
 # Should pick up course 2.
 @pytest.mark.gen_test
-def test_feedback_get_correct_assignment_across_courses(app):
+def test_feedback_get_correct_assignment_across_courses(app, clear_database):
     pass
     # set up the situation
     assignment_id = "assign_a"

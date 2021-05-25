@@ -20,7 +20,7 @@ class ExchangeFetchFeedback(abc.ExchangeFetchFeedback, Exchange):
 
     # where the downloaded files are placed
     def init_src(self):
-        self.src_path = ""
+        pass
 
     # where in the user tree
     def init_dest(self):
@@ -74,17 +74,8 @@ class ExchangeFetchFeedback(abc.ExchangeFetchFeedback, Exchange):
         else:
             self.fail(content.get("note", "could not get feedback"))
 
-    def do_copy(self, src, dest):
-        """Copy the src dir to the dest dir omitting the self.coursedir.ignore globs."""
-        self.download()
-        # shutil.copy(src, dest)
-        # # clear tmp having downloaded file
-        # os.remove(self.src_path)
-
     def copy_files(self):
 
-        self.log.debug(f"Source: {self.src_path}")
         self.log.debug(f"Destination: {self.dest_path}")
-        # self.do_copy(self.src_path, self.dest_path)
         self.download()
         self.log.debug(f"Fetched as: {self.coursedir.notebook_id}")

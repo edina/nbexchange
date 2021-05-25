@@ -1,5 +1,6 @@
 import logging
 import os
+import re
 import sys
 
 import pytest
@@ -22,6 +23,35 @@ assignment_id = "assign_1"
 """
 Note that the directory created for feedback is "2020-01-01 00:00:00.100000", not "2020-01-01 00:00:00.10 00:00"
 """
+
+
+@pytest.mark.gen_test
+def test_fetch_feedback_methods(plugin_config, tmpdir):
+    plugin_config.Exchange.assignment_dir = str(
+        tmpdir.mkdir("feedback_test").realpath()
+    )
+    plugin_config.CourseDirectory.course_id = "no_course"
+    plugin_config.CourseDirectory.assignment_id = assignment_id
+
+    plugin = ExchangeFetchFeedback(
+        coursedir=CourseDirectory(config=plugin_config), config=plugin_config
+    )
+
+    plugin.init_src()
+    with pytest.raises(AttributeError) as e_info:
+        foo = plugin.src_path
+    assert (
+        str(e_info.value)
+        == "'ExchangeFetchFeedback' object has no attribute 'src_path'"
+    )
+
+    plugin.init_dest()
+    print(f"plugin.dest_path:{plugin.dest_path}")
+    assert re.search(
+        r"test_fetch_feedback_methods0/feedback_test/assign_1/feedback$",
+        plugin.dest_path,
+    )
+    assert os.path.isdir(plugin.dest_path)
 
 
 @pytest.mark.gen_test

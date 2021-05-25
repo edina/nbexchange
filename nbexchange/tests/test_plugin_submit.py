@@ -1,6 +1,7 @@
 import io
 import logging
 import os
+import re
 import shutil
 import tarfile
 from os.path import basename
@@ -41,6 +42,107 @@ course_id = "no_course"
 assignment_id1 = "assign_1_1"
 assignment_id2 = "assign_1_2"
 assignment_id3 = "assign_1_3"
+
+
+@pytest.mark.gen_test
+def test_submit_methods(plugin_config, tmpdir, caplog):
+    plugin_config.CourseDirectory.course_id = course_id
+    plugin_config.CourseDirectory.assignment_id = assignment_id1
+
+    os.makedirs(assignment_id1, exist_ok=True)
+    copyfile(
+        notebook1_filename,
+        os.path.join(assignment_id1, basename(notebook1_filename)),
+    )
+
+    plugin = ExchangeSubmit(
+        coursedir=CourseDirectory(config=plugin_config), config=plugin_config
+    )
+    plugin.init_src()
+    assert re.search(r"nbexchange/assign_1_1$", plugin.src_path)
+    plugin.init_dest()
+    with pytest.raises(AttributeError) as e_info:
+        foo = plugin.dest_path
+        assert (
+            str(e_info.value)
+            == "'ExchangeReleaseAssignment' object has no attribute 'dest_path'"
+        )
+    file = plugin.tar_source()
+    assert len(file) > 1000
+
+    def api_request_wrong_nb(*args, **kwargs):
+        return type(
+            "Request",
+            (object,),
+            {
+                "status_code": 200,
+                "json": (
+                    lambda: {
+                        "success": True,
+                        "value": [
+                            {
+                                "assignment_id": assignment_id1,
+                                "student_id": "1",
+                                "course_id": course_id,
+                                "status": "released",
+                                "path": "",
+                                "notebooks": [
+                                    {
+                                        "notebook_id": "assignment-0.6.1",
+                                        "has_exchange_feedback": False,
+                                        "feedback_updated": False,
+                                        "feedback_timestamp": False,
+                                    }
+                                ],
+                                "timestamp": "2020-01-01 00:00:00.0 UTC",
+                            }
+                        ],
+                    }
+                ),
+            },
+        )
+
+    def api_request_right_nb(*args, **kwargs):
+        return type(
+            "Request",
+            (object,),
+            {
+                "status_code": 200,
+                "json": (
+                    lambda: {
+                        "success": True,
+                        "value": [
+                            {
+                                "assignment_id": assignment_id1,
+                                "student_id": "1",
+                                "course_id": course_id,
+                                "status": "released",
+                                "path": "",
+                                "notebooks": [
+                                    {
+                                        "notebook_id": "assignment-0.6",
+                                        "has_exchange_feedback": False,
+                                        "feedback_updated": False,
+                                        "feedback_timestamp": False,
+                                    }
+                                ],
+                                "timestamp": "2020-01-01 00:00:00.0 UTC",
+                            }
+                        ],
+                    }
+                ),
+            },
+        )
+
+    with patch.object(Exchange, "api_request", side_effect=api_request_wrong_nb):
+        plugin.check_filename_diff()
+        assert "assignment-0.6.1.ipynb: MISSING" in caplog.text
+        assert "assignment-0.6.ipynb: EXTRA" in caplog.text
+    caplog.clear()  # clears the capture from above
+    with patch.object(Exchange, "api_request", side_effect=api_request_right_nb):
+        plugin.check_filename_diff()
+        assert caplog.text == ""
+
 
 # Straight simple submission works
 @pytest.mark.gen_test

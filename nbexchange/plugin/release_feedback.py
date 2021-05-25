@@ -18,8 +18,6 @@ from .exchange import Exchange
 class ExchangeReleaseFeedback(abc.ExchangeReleaseFeedback, Exchange):
 
     src_path = None
-    dest_path = None
-    notebooks = None
 
     # where the downloaded files are placed
     def init_src(self):

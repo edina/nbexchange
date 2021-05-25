@@ -7,6 +7,7 @@ from mock import patch
 from nbexchange.handlers.base import BaseHandler
 from nbexchange.tests.utils import (
     async_requests,
+    clear_database,
     get_files_dict,
     user_kiz_instructor,
     user_kiz_student,
@@ -15,6 +16,18 @@ from nbexchange.tests.utils import (
 
 logger = logging.getLogger(__file__)
 logger.setLevel(logging.ERROR)
+
+#################################
+#
+# Very Important Note
+#
+# The `clear_database` fixture removed all database records.
+# In this suite of tests, we do that FOR EVERY TEST
+# This means that every single test is run in isolation, and therefore will need to have the full Release, Fetch,
+#   Submit steps done before the collection can be tested.
+# (On the plus side, adding or changing a test will no longer affect those below)
+#
+#################################
 
 ##### DELETE /assignment (delete or purge assignment) ######
 
@@ -31,7 +44,7 @@ files = get_files_dict(sys.argv[0])  # ourself :)
 
 # Requires both params (none)
 @pytest.mark.gen_test
-def test_delete_needs_both_params(app):
+def test_delete_needs_both_params(app, clear_database):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):
@@ -46,7 +59,7 @@ def test_delete_needs_both_params(app):
 
 # Requires both params (just course)
 @pytest.mark.gen_test
-def test_delete_needs_assignment(app):
+def test_delete_needs_assignment(app, clear_database):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):
@@ -62,7 +75,7 @@ def test_delete_needs_assignment(app):
 
 # Requires both params (just assignment)
 @pytest.mark.gen_test
-def test_delete_needs_course(app):
+def test_delete_needs_course(app, clear_database):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):
@@ -79,7 +92,7 @@ def test_delete_needs_course(app):
 # Student cannot release
 # Note we have to use a user who's NEVER been an instructor on the course
 @pytest.mark.gen_test
-def test_delete_student_blocked(app):
+def test_delete_student_blocked(app, clear_database):
     with patch.object(BaseHandler, "get_current_user", return_value=user_zik_student):
         r = yield async_requests.get(app.url + "/assignments?course_id=course_2")
         r = yield async_requests.delete(
@@ -93,7 +106,7 @@ def test_delete_student_blocked(app):
 
 # Instructor, wrong course, cannot release
 @pytest.mark.gen_test
-def test_delete_wrong_course_blocked(app):
+def test_delete_wrong_course_blocked(app, clear_database):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):
@@ -108,7 +121,7 @@ def test_delete_wrong_course_blocked(app):
 
 # instructor can delete
 @pytest.mark.gen_test
-def test_delete_instructor_delete(app):
+def test_delete_instructor_delete(app, clear_database):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):
@@ -131,7 +144,7 @@ def test_delete_instructor_delete(app):
 
 # instructor can purge
 @pytest.mark.gen_test
-def test_delete_instructor_purge(app):
+def test_delete_instructor_purge(app, clear_database):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):
@@ -155,7 +168,7 @@ def test_delete_instructor_purge(app):
 
 # Instructor, wrong course, cannot delete
 @pytest.mark.gen_test
-def test_delete_wrong_course_blocked(app):
+def test_delete_wrong_course_blocked(app, clear_database):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):
@@ -174,7 +187,7 @@ def test_delete_wrong_course_blocked(app):
 
 # instructor releasing - Picks up the first attribute if more than 1 (wrong course)
 @pytest.mark.gen_test
-def test_delete_multiple_courses_listed_first_wrong_blocked(app):
+def test_delete_multiple_courses_listed_first_wrong_blocked(app, clear_database):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):
@@ -195,7 +208,7 @@ def test_delete_multiple_courses_listed_first_wrong_blocked(app):
 
 # instructor releasing - Picks up the first attribute if more than 1 (wrong course)
 @pytest.mark.gen_test
-def test_delete_multiple_courses_listed_first_right_passes(app):
+def test_delete_multiple_courses_listed_first_right_passes(app, clear_database):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):
@@ -218,10 +231,8 @@ def test_delete_multiple_courses_listed_first_right_passes(app):
 
 
 # confirm unreleased does not show in list
-# Skipping because it fails in the group test, but fine when just the 1 file is run
-@pytest.mark.skip
 @pytest.mark.gen_test
-def test_delete_assignment10(app):
+def test_delete_assignment10(app, clear_database):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):

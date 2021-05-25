@@ -7,6 +7,7 @@ from mock import patch
 from nbexchange.handlers.base import BaseHandler
 from nbexchange.tests.utils import (
     async_requests,
+    clear_database,
     get_files_dict,
     user_brobbere_instructor,
     user_brobbere_student,
@@ -20,18 +21,30 @@ logger.setLevel(logging.ERROR)
 # set up the file to be uploaded as part of the testing later
 files = get_files_dict(sys.argv[0])  # ourself :)
 
+#################################
+#
+# Very Important Note
+#
+# The `clear_database` fixture removed all database records.
+# In this suite of tests, we do that FOR EVERY TEST
+# This means that every single test is run in isolation, and therefore will need to have the full Release, Fetch,
+#   Submit steps done before the collection can be tested.
+# (On the plus side, adding or changing a test will no longer affect those below)
+#
+#################################
+
 ##### GET /assignment (download/fetch assignment)  ######
 
 # require authenticated user (404 because the bounce to login fails)
 @pytest.mark.gen_test
-def test_assignment0(app):
+def test_fetch_requires_auth_user(app):
     r = yield async_requests.get(app.url + "/assignment")
     assert r.status_code == 403
 
 
 # Requires both params (none)
 @pytest.mark.gen_test
-def test_assignment1(app):
+def test_fetch_fails_no_parama(app, clear_database):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):
@@ -46,7 +59,7 @@ def test_assignment1(app):
 
 # Requires both params (just course)
 @pytest.mark.gen_test
-def test_assignment2(app):
+def test_fetch_fails_missing_assignment(app, clear_database):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):
@@ -62,7 +75,7 @@ def test_assignment2(app):
 
 # Requires both params (just assignment)
 @pytest.mark.gen_test
-def test_assignment3(app):
+def test_fetch_fails_missing_course(app, clear_database):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):
@@ -78,7 +91,7 @@ def test_assignment3(app):
 
 # both params, incorrect course
 @pytest.mark.gen_test
-def test_assignment4(app):
+def test_fetch_fails_user_not_subscribed(app, clear_database):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):
@@ -93,7 +106,7 @@ def test_assignment4(app):
 
 # both params, correct course, assignment does not exist
 @pytest.mark.gen_test
-def test_assignment5(app):
+def test_fetch_fails_assignment_not_exists(app, clear_database):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):
@@ -107,71 +120,9 @@ def test_assignment5(app):
     assert response_data["note"] == "Assignment assign_does_not_exist does not exist"
 
 
-# both params, correct course, assignment does not exist - differnet user, same role
-@pytest.mark.gen_test
-def test_assignment6(app):
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_brobbere_instructor
-    ):
-        r = yield async_requests.get(
-            app.url
-            + "/assignment?course_id=course_2&assignment_id=assign_does_not_exist"
-        )
-    assert r.status_code == 200
-    response_data = r.json()
-    assert response_data["success"] == False
-    assert response_data["note"] == "Assignment assign_does_not_exist does not exist"
-
-
-# both params, correct course, assignment does not exist - same user, different role
-@pytest.mark.gen_test
-def test_assignment7(app):
-    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
-        r = yield async_requests.get(
-            app.url
-            + "/assignment?course_id=course_2&assignment_id=assign_does_not_exist"
-        )
-    assert r.status_code == 200
-    response_data = r.json()
-    assert response_data["success"] == False
-    assert response_data["note"] == "Assignment assign_does_not_exist does not exist"
-
-
-# both params, correct course, assignment does not exist - different user, different role
-@pytest.mark.gen_test
-def test_assignment8(app):
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_brobbere_student
-    ):
-        r = yield async_requests.get(
-            app.url
-            + "/assignment?course_id=course_2&assignment_id=assign_does_not_exist"
-        )
-    assert r.status_code == 200
-    response_data = r.json()
-    assert response_data["success"] == False
-    assert response_data["note"] == "Assignment assign_does_not_exist does not exist"
-
-
-# additional param makes no difference
-@pytest.mark.gen_test
-def test_assignment9(app):
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_brobbere_student
-    ):
-        r = yield async_requests.get(
-            app.url
-            + "/assignment?course_id=course_2&assignment_id=assign_does_not_exist&foo=bar"
-        )
-    assert r.status_code == 200
-    response_data = r.json()
-    assert response_data["success"] == False
-    assert response_data["note"] == "Assignment assign_does_not_exist does not exist"
-
-
 # Picks up the first attribute if more than 1 (wrong course)
 @pytest.mark.gen_test
-def test_assignment10(app):
+def test_fetch_duplicate_param_first_is_wrong(app, clear_database):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_brobbere_student
     ):
@@ -187,7 +138,7 @@ def test_assignment10(app):
 
 # Picks up the first attribute if more than 1 (right course)
 @pytest.mark.gen_test
-def test_assignment11(app):
+def test_fetch_duplicate_param_first_is_right(app, clear_database):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_brobbere_student
     ):
@@ -204,7 +155,7 @@ def test_assignment11(app):
 # fetch assignment, correct details, same user as releaser
 # (needs to be released before it can be fetched )
 @pytest.mark.gen_test
-def test_assignment13(app):
+def test_instructor_can_fetch(app, clear_database):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):
@@ -226,7 +177,7 @@ def test_assignment13(app):
 # fetch assignment, correct details, different user, different role
 # (needs to be released before it can be fetched )
 @pytest.mark.gen_test
-def test_assignment14(app):
+def test_student_can_fetch(app, clear_database):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):
@@ -245,27 +196,9 @@ def test_assignment14(app):
     assert int(r.headers["Content-Length"]) > 0
 
 
-# fetch assignment, correct details, different user, different role - Picks up the first attribute if more than 1 (wrong course)
-@pytest.mark.gen_test
-def test_assignment15(app):
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_brobbere_student
-    ):
-        r = yield async_requests.get(
-            app.url
-            + "/assignment?course_id=course_1&course_id=course_2&assignment_id=assign_a"
-        )
-    assert r.status_code == 200
-    response_data = r.json()
-    assert response_data["success"] == False
-    assert response_data["note"] == "User not subscribed to course course_1"
-
-
 # Confirm that a fetch always matches the last release
-### This is skipped because it's database is cumulitive with earlier tests - which we don't waht!
-@pytest.mark.skip
 @pytest.mark.gen_test
-def test_post_assignment16(app):
+def test_fetch_after_rerelease_gets_different_file(app, clear_database):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):
@@ -308,7 +241,7 @@ def test_post_assignment16(app):
     assert "note" not in response_data  # just that it's missing
     paths = list(map(lambda assignment: assignment["path"], response_data["value"]))
     actions = list(map(lambda assignment: assignment["status"], response_data["value"]))
-    assert len(paths) == 7  # 6
+    assert len(paths) == 6
     assert actions == [
         "released",
         "released",

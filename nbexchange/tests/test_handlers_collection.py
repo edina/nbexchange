@@ -8,6 +8,7 @@ from mock import patch
 from nbexchange.handlers.base import BaseHandler
 from nbexchange.tests.utils import (
     async_requests,
+    clear_database,
     get_files_dict,
     user_brobbere_student,
     user_kiz_instructor,
@@ -31,7 +32,7 @@ def test_post_collection_is_501(app):
 
 # subscribed user makes no difference (501, because we've hard-coded it)
 @pytest.mark.gen_test
-def test_post_collection_is_501_even_authenticaated(app):
+def test_post_collection_is_501_even_authenticaated(app, clear_database):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):
@@ -43,7 +44,7 @@ def test_post_collection_is_501_even_authenticaated(app):
 
 # require authenticated user
 @pytest.mark.gen_test
-def test_get_collection_requires_authentication(app):
+def test_get_collection_requires_authentication(app, clear_database):
     r = yield async_requests.get(app.url + "/collection")
     assert r.status_code == 403
 
@@ -69,7 +70,7 @@ def test_get_collection_requires_parameters(app):
 # (needs to be fetched before it can be submitted )
 # (needs to be released before it can be fetched )
 @pytest.mark.gen_test
-def test_get_collection_catches_missing_path(app):
+def test_get_collection_catches_missing_path(app, clear_database):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):
@@ -113,7 +114,7 @@ def test_get_collection_catches_missing_path(app):
 # (needs to be fetched before it can be submitted )
 # (needs to be released before it can be fetched )
 @pytest.mark.gen_test
-def test_get_collection_catches_missing_assignment(app):
+def test_get_collection_catches_missing_assignment(app, clear_database):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):
@@ -157,7 +158,7 @@ def test_get_collection_catches_missing_assignment(app):
 # (needs to be fetched before it can be submitted )
 # (needs to be released before it can be fetched )
 @pytest.mark.gen_test
-def test_get_collection_catches_missing_course(app):
+def test_get_collection_catches_missing_course(app, clear_database):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):
@@ -201,7 +202,7 @@ def test_get_collection_catches_missing_course(app):
 # (needs to be fetched before it can be submitted )
 # (needs to be released before it can be fetched )
 @pytest.mark.gen_test
-def test_get_collection_checks_for_user_subscription(app):
+def test_get_collection_checks_for_user_subscription(app, clear_database):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):
@@ -240,7 +241,7 @@ def test_get_collection_checks_for_user_subscription(app):
 # Has all three params, student can't collect (note this is hard-coded params, as students can list items available for collection)
 # (needs to be released to register the assignment )
 @pytest.mark.gen_test
-def test_get_collection_check_catches_student_role(app):
+def test_get_collection_check_catches_student_role(app, clear_database):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):
@@ -266,7 +267,7 @@ def test_get_collection_check_catches_student_role(app):
 # (needs to be fetched before it can be submitted )
 # (needs to be released before it can be fetched )
 @pytest.mark.gen_test
-def test_get_collection_confirm_instructor_does_download(app):
+def test_get_collection_confirm_instructor_does_download(app, clear_database):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):
@@ -303,7 +304,7 @@ def test_get_collection_confirm_instructor_does_download(app):
 
 # Confirm that multiple submissions are listed
 @pytest.mark.gen_test
-async def test_collection_actions_show_correctly(app):
+async def test_collection_actions_show_correctly(app, clear_database):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):
@@ -409,7 +410,7 @@ async def test_collection_actions_show_correctly(app):
 # (needs to be fetched before it can be submitted )
 # (needs to be released before it can be fetched )
 @pytest.mark.gen_test
-def test_get_collection_path_is_incorrect(app):
+def test_get_collection_path_is_incorrect(app, clear_database):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):
@@ -449,7 +450,7 @@ def test_get_collection_path_is_incorrect(app):
 # (needs to be fetched before it can be submitted )
 # (needs to be released before it can be fetched )
 @pytest.mark.gen_test
-def test_get_collection_with_a_blank_feedback_path_injected(app):
+def test_get_collection_with_a_blank_feedback_path_injected(app, clear_database):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):

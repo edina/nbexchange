@@ -1,5 +1,6 @@
 import logging
 import os
+import re
 from shutil import copyfile
 
 import pytest
@@ -35,6 +36,37 @@ notebook2_file = get_feedback_file(notebook2_filename)
 
 student_id = "1"
 assignment_id = "assign_1"
+
+
+@pytest.mark.gen_test
+def test_release_feedback_methods(plugin_config, tmpdir):
+    plugin_config.CourseDirectory.root = "/"
+    plugin_config.CourseDirectory.feedback_directory = str(
+        tmpdir.mkdir("feedback_test").realpath()
+    )
+    plugin_config.CourseDirectory.assignment_id = assignment_id
+
+    plugin = ExchangeReleaseFeedback(
+        coursedir=CourseDirectory(config=plugin_config), config=plugin_config
+    )
+    plugin.init_src()
+    print(f"asserting plugin.src_path: {plugin.src_path}")
+    assert re.search(
+        r"test_release_feedback_methods0/feedback_test/\*/assign_1$", plugin.src_path
+    )
+    plugin.coursedir.student_id = student_id
+    plugin.init_src()
+    assert re.search(
+        r"test_release_feedback_methods0/feedback_test/1/assign_1$", plugin.src_path
+    )
+
+    plugin.init_dest()
+    with pytest.raises(AttributeError) as e_info:
+        foo = plugin.dest_path
+    assert (
+        str(e_info.value)
+        == "'ExchangeReleaseFeedback' object has no attribute 'dest_path'"
+    )
 
 
 @pytest.mark.gen_test

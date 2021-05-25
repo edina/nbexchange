@@ -37,7 +37,7 @@ Following the lead of other Jupyter services, it is a `tornado` application.
 
 ## Compatibility
 
-This version is compatible with `nbgrader` 0.5
+This version is compatible with `nbgrader` >= 0.6.2
 
 # Documentation
 
@@ -72,19 +72,19 @@ Nbexchange can be installed as a Helm chart
 
 ## Configuration
 
-| Parameter                                                     | Description                                                                                                                                                                  | Default                                                                                                   |
-| ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| `replicaCount`                                            | Replica count                                                                                                                                                             | 1                                                                                |
-| `image.repository`                                            | Image repository                                                                                                                                                             | `quay.io/noteable/nbexchange`                                                                                |
-| `image.tag`                                                   | Image tag                                                                                                                                                                    | `latest`                                                                                                  |
-| `image.pullPolicy`                                            | Image pull policy                                                                                                                                                            | `IfNotPresent`                                                                                            |
-| `environment`                                              | Environment variables for the application                                                                                                                                          | `{}`                                                                                                      |
-| `service.type`                                                 | Type of Service                                                                                                                                     | `ClusterIP`                                                                                                    |
-| `service.port`                           | Port to expose service under                                                                                                | `9000`                                                                                                    |
-| `resources.requests.cpu`                             | CPU resource requests                      | `200m`                                                                                                        |
-| `resources.requests.memory`                             | Memory resource requests                      | `256Mi`                                                                                                        |
-| `tolerations`                                                 | Pod taint tolerations for deployment                                                                                                                                              | `[]`                                                                                                      |
-| `nodeSelector`                                                | Pod node selector for deployment                                                                                                                                               | `{}`                                                                                                      |
+| Parameter  | Description    | Default |
+| ---------- | -------------- | ------- |
+| `replicaCount` | Replica count | 1  |
+| `image.repository` | Image repository | `quay.io/noteable/nbexchange` |
+| `image.tag` | Image tag | `latest` |
+| `image.pullPolicy` | Image pull policy | `IfNotPresent` |
+| `environment` | Environment variables for the application | `{}` |
+| `service.type` | Type of Service | `ClusterIP` |
+| `service.port` | Port to expose service under | `9000` |
+| `resources.requests.cpu` | CPU resource requests | `200m` |
+| `resources.requests.memory` | Memory resource requests | `256Mi` |
+| `tolerations` | Pod taint tolerations for deployment| `[]` |
+| `nodeSelector` | Pod node selector for deployment | `{}` |
 
 
 ## How to

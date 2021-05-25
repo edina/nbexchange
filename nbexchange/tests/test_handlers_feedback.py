@@ -463,7 +463,9 @@ def test_feedback_post_authenticated_with_correct_params(app, clear_database):
 
 
 @pytest.mark.gen_test
-def test_feedback_post_authenticated_with_correct_params_incorrect_instructor(app, clear_database):
+def test_feedback_post_authenticated_with_correct_params_incorrect_instructor(
+    app, clear_database
+):
     assignment_id = "assign_a"
     course_id = "course_2"
     notebook = "notebook"
@@ -516,7 +518,9 @@ def test_feedback_post_authenticated_with_correct_params_incorrect_instructor(ap
 
 
 @pytest.mark.gen_test
-def test_feedback_post_authenticated_with_correct_params_student_submitter(app, clear_database):
+def test_feedback_post_authenticated_with_correct_params_student_submitter(
+    app, clear_database
+):
     assignment_id = "assign_a"
     course_id = "course_2"
     notebook = "notebook"

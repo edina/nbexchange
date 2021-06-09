@@ -1,18 +1,11 @@
 Documentation relating to the NBExchange service
 ================================================
 
-NbExchange API
---------------
+Configuration documentation is at https://github.com/edina/nbexchange/
 
-The documentation for the various API calls are given in ` <api.html>`_ 
+.. toctree::
+    :maxdepth: 1
+    :caption: Documentation
 
-It gives the URL calls, the HTTP Methods, and the expected responses
-
-
-Exchange API
-------------
-
-Th `Exchange API calls <nbgrader-exchange-calls.html>`_ documentation describes how
-nbgrader expects to interact with an exchange service.
-
-This is the original documentation for `nbgrader and its exchange service <https://nbgrader.readthedocs.io/en/master/exchange/index.html>`_ page
+    api
+    nbgrader-exchange-calls

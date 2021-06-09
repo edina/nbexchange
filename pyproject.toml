@@ -5,7 +5,7 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "nbexchange"
-version = "1.2.6"
+version = "1.2.7"
 description = "Jupyterhub extension that provides an exchange service for nbgrader."
 readme = "README.md"
 requires-python = ">=3.7"
@@ -29,28 +29,29 @@ classifiers = [
   "Intended Audience :: Education",
 ]
 
+# pyjwt limited due to djangorestframework-jwt dependencies
 dependencies = [
-  "alembic",
-  "tornado==6.1",
-  "psycopg2-binary",
-  "jupyterhub",
+  "alembic>=1.6.5",
+  "jupyterhub>=1.4.1",
+  "nbgrader @ git+https://github.com/jupyter/nbgrader.git@c04f9c497eed5e481b57e557ef61989e073c5415",
+  "psycopg2-binary>=2.8.6",
+  "pyjwt<2",
   "sentry-sdk==1.1.0",
   "sqlalchemy>=1.4.3",
-  "nbgrader @ git+https://github.com/jupyter/nbgrader.git@c04f9c497eed5e481b57e557ef61989e073c5415",
-  "pyjwt",
+  "tornado==6.1",
   "tornado-prometheus==0.1.1",
 ]
 
 [project.optional-dependencies]
 test = [
-  "pytest",
-  "pytest-cov[all]",
-  "pytest-tornado",
-  "pytest-docker-tools",
-  "beautifulsoup4",
-  "html5lib",
-  "psycopg2-binary",
-  "mock",
+  "beautifulsoup4>=2.9.3",
+  "html5lib>=1.1",
+  "mock>=4.0.2",
+  "psycopg2-binary>=2.8.6",
+  "pytest>=6.1.2",
+  "pytest-cov[all]>=2.10.1",
+  "pytest-docker-tools>=1.0",
+  "pytest-tornado>=0.8.1",
 ]
 
 [project.urls]

@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.2.7
+
+* Add a file-size upload limit (defaults to 5GB)
+* Add verification that 'release_assignment' and 'submit' actually store the received file
+* Correct bug in full name handlers
+* Fix library versions for dependencies
+
 ## v1.2.6
 
 Strip forward slashes from usernames

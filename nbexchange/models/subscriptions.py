@@ -1,4 +1,11 @@
-from sqlalchemy import Column, ForeignKey, Integer, Unicode, UniqueConstraint
+from sqlalchemy import (
+    Column,
+    ForeignKey,
+    Integer,
+    Unicode,
+    UniqueConstraint,
+    UnicodeText,
+)
 from sqlalchemy.orm import relationship
 
 from nbexchange.models import Base
@@ -25,7 +32,7 @@ class Subscription(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(Integer, ForeignKey("user.id", ondelete="CASCADE"), index=True)
     course_id = Column(Integer, ForeignKey("course.id", ondelete="CASCADE"), index=True)
-    role = Column(Unicode(50), nullable=False)
+    role = Column(UnicodeText, nullable=False)
 
     # These are the relationship handles: a specific subscription has a single user to a single course
     user = relationship("User", back_populates="courses")

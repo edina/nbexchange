@@ -68,9 +68,20 @@ Documentation currently in [docs/](docs/) - should be in readthedocs
 
 # Installing
 
-Nbexchange can be installed as a Helm chart
+Nbexchange can be installed as a Helm chart or as a pip dependency:
 
-## Configuration
+
+```
+helm install --name nbexchange --namespace default ./chart -f myconfiguration.yaml
+```
+
+or
+
+```
+pip install .
+```
+
+## Helm Configuration
 
 | Parameter  | Description    | Default |
 | ---------- | -------------- | ------- |
@@ -86,12 +97,6 @@ Nbexchange can be installed as a Helm chart
 | `tolerations` | Pod taint tolerations for deployment| `[]` |
 | `nodeSelector` | Pod node selector for deployment | `{}` |
 
-
-## How to
-
-```
-helm install --name nbexchange --namespace default ./chart -f myconfiguration.yaml
-```
 
 # Contributing
 

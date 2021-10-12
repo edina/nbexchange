@@ -442,6 +442,12 @@ class Assignment(BaseHandler):
                 db=session, code=assignment_code, course_id=course.id
             )
 
+            if not assignment:
+                note = f"Missing assignment for {assignment_code} and {course.id}, cannot delete"
+                self.log.info(note)
+                self.finish({"success": False, "note": note})
+                return
+
             # Set assignment to inactive
             assignment.active = False
             # Delete the associated notebook

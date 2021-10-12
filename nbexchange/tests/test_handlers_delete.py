@@ -10,7 +10,6 @@ from nbexchange.tests.utils import (
     clear_database,
     get_files_dict,
     user_kiz_instructor,
-    user_kiz_student,
     user_zik_student,
 )
 
@@ -50,7 +49,7 @@ def test_delete_needs_both_params(app, clear_database):
     ):
         r = yield async_requests.delete(app.url + "/assignment")
     response_data = r.json()
-    assert response_data["success"] == False
+    assert response_data["success"] is False
     assert (
         response_data["note"]
         == "Unreleasing an Assigment requires a course code and an assignment code"
@@ -66,7 +65,7 @@ def test_delete_needs_assignment(app, clear_database):
         r = yield async_requests.delete(app.url + "/assignment?course_id=course_a")
     assert r.status_code == 200
     response_data = r.json()
-    assert response_data["success"] == False
+    assert response_data["success"] is False
     assert (
         response_data["note"]
         == "Unreleasing an Assigment requires a course code and an assignment code"
@@ -82,7 +81,7 @@ def test_delete_needs_course(app, clear_database):
         r = yield async_requests.delete(app.url + "/assignment?assignment_id=assign_a")
     assert r.status_code == 200
     response_data = r.json()
-    assert response_data["success"] == False
+    assert response_data["success"] is False
     assert (
         response_data["note"]
         == "Unreleasing an Assigment requires a course code and an assignment code"
@@ -100,7 +99,7 @@ def test_delete_student_blocked(app, clear_database):
         )
     assert r.status_code == 200
     response_data = r.json()
-    assert response_data["success"] == False
+    assert response_data["success"] is False
     assert response_data["note"] == "User not an instructor to course course_2"
 
 
@@ -115,7 +114,7 @@ def test_delete_wrong_course_blocked(app, clear_database):
         )
     assert r.status_code == 200
     response_data = r.json()
-    assert response_data["success"] == False
+    assert response_data["success"] is False
     assert response_data["note"] == "User not subscribed to course course_1"
 
 
@@ -135,7 +134,7 @@ def test_delete_instructor_delete(app, clear_database):
         )
     assert r.status_code == 200
     response_data = r.json()
-    assert response_data["success"] == True
+    assert response_data["success"] is True
     assert (
         response_data["note"]
         == "Assignment 'assign_a' on course 'course_2' marked as unreleased"
@@ -159,7 +158,7 @@ def test_delete_instructor_purge(app, clear_database):
         )
     assert r.status_code == 200
     response_data = r.json()
-    assert response_data["success"] == True
+    assert response_data["success"] is True
     assert (
         response_data["note"]
         == "Assignment 'assign_b' on course 'course_2' deleted and purged from the database"
@@ -181,7 +180,7 @@ def test_delete_wrong_course_blocked(app, clear_database):
         )
     assert r.status_code == 200
     response_data = r.json()
-    assert response_data["success"] == False
+    assert response_data["success"] is False
     assert response_data["note"] == "User not subscribed to course course_1"
 
 
@@ -202,8 +201,31 @@ def test_delete_multiple_courses_listed_first_wrong_blocked(app, clear_database)
         )
     assert r.status_code == 200
     response_data = r.json()
-    assert response_data["success"] == False
+    assert response_data["success"] is False
     assert response_data["note"] == "User not subscribed to course course_1"
+
+
+# instructor releasing - Picks up the first attribute if more than 1 (wrong course)
+@pytest.mark.gen_test
+def test_assignment_missing(app, clear_database):
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_kiz_instructor
+    ):
+        r = yield async_requests.post(
+            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
+            files=files,
+        )
+        r = yield async_requests.delete(
+            app.url + "/assignment?course_id=course_2&assignment_id=noexist",
+            files=files,
+        )
+    assert r.status_code == 200
+    response_data = r.json()
+    assert response_data["success"] is False
+    assert (
+        response_data["note"]
+        == "Missing assignment for noexist and course_2, cannot delete"
+    )
 
 
 # instructor releasing - Picks up the first attribute if more than 1 (wrong course)
@@ -223,7 +245,7 @@ def test_delete_multiple_courses_listed_first_right_passes(app, clear_database):
         )
     assert r.status_code == 200
     response_data = r.json()
-    assert response_data["success"] == True
+    assert response_data["success"] is True
     assert (
         response_data["note"]
         == "Assignment 'assign_a' on course 'course_2' marked as unreleased"
@@ -247,6 +269,6 @@ def test_delete_assignment10(app, clear_database):
         r = yield async_requests.get(app.url + "/assignments?course_id=course_2")
     assert r.status_code == 200
     response_data = r.json()
-    assert response_data["success"] == True
+    assert response_data["success"] is True
     assert "note" not in response_data  # just that it's missing
     assert len(response_data["value"]) == 0

@@ -345,6 +345,7 @@ def test_get_collection_broken_nbex_user(app, clear_database, caplog):
         in caplog.text
     )
 
+
 # Confirm that multiple submissions are listed
 @pytest.mark.gen_test
 async def test_collection_actions_show_correctly(app, clear_database):

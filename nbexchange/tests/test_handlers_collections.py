@@ -163,6 +163,7 @@ def test_collections_broken_nbex_user(app, clear_database, caplog):
         in caplog.text
     )
 
+
 # both params, correct course, assignment does not exist - differnet user, same role
 # Passes, because instructor on course
 @pytest.mark.gen_test

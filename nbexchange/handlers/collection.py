@@ -52,7 +52,13 @@ class Collections(BaseHandler):
         re_user = fr"{user_id}" if user_id else r"[^/]+"
 
         # Who is my user?
-        this_user = self.nbex_user
+        try:
+            this_user = self.nbex_user
+        except ValueError as e:
+            note = f"GET api/collections caught exception: {e}"
+            self.log.info(note)
+            raise web.HTTPError(404, note)
+
         self.log.debug(f"User: {this_user.get('name')}")
         # For what course do we want to see the assignments?
         self.log.debug(f"Course: {course_code}")
@@ -164,7 +170,13 @@ class Collection(BaseHandler):
             return
 
         # Who is my user?
-        this_user = self.nbex_user
+        try:
+            this_user = self.nbex_user
+        except ValueError as e:
+            note = f"GET api/collection caught exception: {e}"
+            self.log.info(note)
+            raise web.HTTPError(404, note)
+
         self.log.debug(f"User: {this_user.get('name')}")
         # For what course do we want to see the assignments?
         self.log.debug(f"Course: {course_code}")

@@ -71,8 +71,11 @@ class BaseHandler(web.RequestHandler):
         course_title = hub_user.get("course_title", "no_title")
         org_id = hub_user.get("org_id", 1)
 
+        # Raising an error appears to have no detrimental affect when running.
         if not (current_course and current_role):
-            return
+            note = f"Both current_course ('{current_course}') and current_role ('{current_role}') must have values. User was '{hub_username}'"
+            self.log.info(note)
+            raise ValueError(note)
 
         self.org_id = org_id
 

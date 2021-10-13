@@ -51,7 +51,12 @@ class FeedbackHandler(BaseHandler):
 
         self.log.debug(f"checking for feedback for {assignment_id} on {course_id}")
 
-        this_user = self.nbex_user
+        try:
+            this_user = self.nbex_user
+        except ValueError as e:
+            note = f"GET api/feedback caught exception: {e}"
+            self.log.info(note)
+            raise web.HTTPError(404, note)
 
         with scoped_session() as session:
 
@@ -154,7 +159,13 @@ class FeedbackHandler(BaseHandler):
             self.finish({"success": False, "note": note})
             return
 
-        this_user = self.nbex_user
+        try:
+            this_user = self.nbex_user
+        except ValueError as e:
+            note = f"POST api/feedback caught exception: {e}"
+            self.log.info(note)
+            raise web.HTTPError(404, note)
+
         if course_id not in this_user["courses"]:
             note = f"User not subscribed to course {course_id}"
             self.log.info(note)

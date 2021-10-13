@@ -443,7 +443,7 @@ class Assignment(BaseHandler):
             )
 
             if not assignment:
-                note = f"Missing assignment for {assignment_code} and {course.id}, cannot delete"
+                note = f"Missing assignment for {assignment_code} and {course_code}, cannot delete"
                 self.log.info(note)
                 self.finish({"success": False, "note": note})
                 return

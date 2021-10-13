@@ -54,12 +54,7 @@ class Submission(BaseHandler):
             self.finish({"success": False, "note": note})
             return
 
-        try:
-            this_user = self.nbex_user
-        except ValueError as e:
-            note = f"POST api/submission caught exception: {e}"
-            self.log.info(note)
-            raise web.HTTPError(404, note)
+        this_user = self.nbex_user
 
         if not course_code in this_user["courses"]:
             note = f"User not subscribed to course {course_code}"

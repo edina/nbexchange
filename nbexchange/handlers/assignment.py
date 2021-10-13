@@ -44,12 +44,7 @@ class Assignments(BaseHandler):
             return
 
         # Who is my user?
-        try:
-            this_user = self.nbex_user
-        except ValueError as e:
-            note = f"GET api/assignments caught exception: {e}"
-            self.log.info(note)
-            raise web.HTTPError(404, note)
+        this_user = self.nbex_user
 
         self.log.debug(f"User: {this_user.get('name')}")
         # For what course do we want to see the assignments?
@@ -162,12 +157,7 @@ class Assignment(BaseHandler):
             self.finish({"success": False, "note": note})
             return
 
-        try:
-            this_user = self.nbex_user
-        except ValueError as e:
-            note = f"GET api/assignment caught exception: {e}"
-            self.log.info(note)
-            raise web.HTTPError(404, note)
+        this_user = self.nbex_user
 
         if not course_code in this_user["courses"]:
             note = f"User not subscribed to course {course_code}"
@@ -273,12 +263,7 @@ class Assignment(BaseHandler):
             self.finish({"success": False, "note": note})
             return
 
-        try:
-            this_user = self.nbex_user
-        except ValueError as e:
-            note = f"POST api/assignment caught exception: {e}"
-            self.log.info(note)
-            raise web.HTTPError(404, note)
+        this_user = self.nbex_user
 
         if not course_code in this_user["courses"]:
             note = f"User not subscribed to course {course_code}"
@@ -436,12 +421,7 @@ class Assignment(BaseHandler):
             self.finish({"success": False, "note": note})
             return
 
-        try:
-            this_user = self.nbex_user
-        except ValueError as e:
-            note = f"DELETE api/assignment caught exception: {e}"
-            self.log.info(note)
-            raise web.HTTPError(404, note)
+        this_user = self.nbex_user
 
         if not course_code in this_user["courses"]:
             note = f"User not subscribed to course {course_code}"

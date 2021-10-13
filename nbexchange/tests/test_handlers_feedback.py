@@ -74,30 +74,6 @@ def test_feedback_post_unauthenticated(app, clear_database):
 
 
 @pytest.mark.gen_test
-def test_feedback_post_broken_nbex_user(app, clear_database, caplog):
-    assignment_id = "my_assignment"
-
-    url = (
-        f"/feedback?assignment_id={assignment_id}"
-        f"&course_id=course_2"
-        f"&notebook=faked"
-        f"&student=faked"
-        f"&timestamp=faked"
-        f"&checksum=faked"
-    )
-
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_kiz  # No course details
-    ):
-        r = yield async_requests.post(app.url + url)
-    assert r.status_code == 404
-    assert (
-        "POST api/feedback caught exception: Both current_course ('None') and current_role ('None') must have values. User was '1-kiz'"
-        in caplog.text
-    )
-
-
-@pytest.mark.gen_test
 def test_feedback_post_authenticated_no_params(app, clear_database):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
@@ -714,66 +690,6 @@ def test_feedback_get_authenticated_with_correct_params(app, clear_database):
     assert len(response_data["feedback"]) >= 1
     assert response_data["feedback"][0].get("content") == feedback_base64.decode(
         "utf-8"
-    )
-
-
-@pytest.mark.gen_test
-def test_feedback_get_broken_nbex_user(app, clear_database, caplog):
-    assignment_id = "assign_a"
-    course_id = "course_2"
-    notebook = "notebook"
-    student = user_kiz_student
-    timestamp = datetime.datetime.utcnow().isoformat(" ")
-    checksum = notebook_hash(
-        feedback_filename,
-        make_unique_key(course_id, assignment_id, notebook, student["name"], timestamp),
-    )
-
-    # XXX: Doing this in a separate function doesn't work for some reason (Exchange doesn't get called)
-    kwargs = {"data": {"notebooks": [notebook]}}
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_kiz_instructor
-    ):
-        r = yield async_requests.post(
-            app.url
-            + f"/assignment?course_id={course_id}&assignment_id={assignment_id}",
-            files=files,
-            **kwargs,
-        )
-    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
-        r = yield async_requests.get(
-            app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}"
-        )
-    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
-        r = yield async_requests.post(
-            app.url
-            + f"/submission?course_id={course_id}&assignment_id={assignment_id}",
-            files=files,
-        )
-
-    url = (
-        f"/feedback?assignment_id={assignment_id}"
-        f"&course_id={course_id}"
-        f"&notebook={notebook}"
-        f"&student={student['name']}"
-        f"&timestamp={timestamp}"
-        f"&checksum={checksum}"
-    )
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_kiz_instructor
-    ):
-        r = yield async_requests.post(app.url + url, files=feedbacks)
-
-    url = f"/feedback?assignment_id={assignment_id}&course_id={course_id}"
-
-    # finally able to do the test.
-    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz):
-        r = yield async_requests.get(app.url + url)
-
-    assert r.status_code == 404
-    assert (
-        "GET api/feedback caught exception: Both current_course ('None') and current_role ('None') must have values. User was '1-kiz'"
-        in caplog.text
     )
 
 

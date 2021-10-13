@@ -142,6 +142,27 @@ def test_delete_instructor_delete(app, clear_database):
     )
 
 
+@pytest.mark.gen_test
+def test_delete_broken_nbex_user(app, clear_database, caplog):
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_kiz_instructor
+    ):
+        r = yield async_requests.post(
+            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
+            files=files,
+        )
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz):
+        r = yield async_requests.delete(
+            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
+            files=files,
+        )
+    assert r.status_code == 500
+    assert (
+        "Both current_course ('None') and current_role ('None') must have values. User was '1-kiz'"
+        in caplog.text
+    )
+
+
 # instructor can purge
 @pytest.mark.gen_test
 def test_delete_instructor_purge(app, clear_database):

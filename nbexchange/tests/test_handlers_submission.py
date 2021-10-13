@@ -136,6 +136,34 @@ def test_post_submision_student_can_submit(app, clear_database):
     assert response_data["note"] == "Submitted"
 
 
+# broken nbex_user throws a 500 error on the server
+# (needs to be fetched before it can be submitted )
+# (needs to be released before it can be fetched )
+@pytest.mark.gen_test
+def test_post_submision_broken_nbex_user(app, clear_database, caplog):
+    with patch.object(
+        BaseHandler, "get_current_user", return_value=user_kiz_instructor
+    ):
+        r = yield async_requests.post(
+            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
+            files=files,
+        )
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+        r = yield async_requests.get(
+            app.url + "/assignment?course_id=course_2&assignment_id=assign_a"
+        )
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz):
+        r = yield async_requests.post(
+            app.url + "/submission?course_id=course_2&assignment_id=assign_a",
+            files=files,
+        )
+    assert r.status_code == 500
+    assert (
+        "Both current_course ('None') and current_role ('None') must have values. User was '1-kiz'"
+        in caplog.text
+    )
+
+
 # instructor can submit
 # (needs to be fetched before it can be submitted )
 # (needs to be released before it can be fetched )

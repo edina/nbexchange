@@ -11,10 +11,10 @@ from nbexchange.tests.utils import (
     get_files_dict,
     user_brobbere_instructor,
     user_brobbere_student,
+    user_kiz,
     user_kiz_instructor,
     user_kiz_student,
     user_zik_student,
-    user_kiz,
 )
 
 logger = logging.getLogger(__file__)
@@ -153,14 +153,15 @@ def test_collections_broken_nbex_user(app, clear_database, caplog):
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
             files=files,
         )
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_kiz
-    ):
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz):
         r = yield async_requests.get(
             app.url + "/collections?course_id=course_2&assignment_id=assign_a"
         )
     assert r.status_code == 404
-    assert "GET api/collections caught exception: Both current_course ('None') and current_role ('None') must have values. User was '1-kiz'" in caplog.text
+    assert (
+        "GET api/collections caught exception: Both current_course ('None') and current_role ('None') must have values. User was '1-kiz'"
+        in caplog.text
+    )
 
 
 # both params, correct course, assignment does not exist - differnet user, same role

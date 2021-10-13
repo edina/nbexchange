@@ -5,7 +5,7 @@ from mock import patch
 
 from nbexchange.handlers.base import BaseHandler
 from nbexchange.tests.test_handlers_base import BaseTestHandlers
-from nbexchange.tests.utils import async_requests, user_kiz_instructor, user_kiz
+from nbexchange.tests.utils import async_requests, user_kiz, user_kiz_instructor
 
 logger = logging.getLogger(__file__)
 logger.setLevel(logging.ERROR)
@@ -62,10 +62,10 @@ class TestHandlersFetch(BaseTestHandlers):
     # test when subscribed
     @pytest.mark.gen_test
     def test_assignments_broken_nbex_user(self, app, caplog):
-        with patch.object(
-            BaseHandler, "get_current_user", return_value=user_kiz
-        ):
+        with patch.object(BaseHandler, "get_current_user", return_value=user_kiz):
             r = yield async_requests.get(app.url + "/assignments?course_id=course_2")
         assert r.status_code == 404
-        assert "GET api/assignments caught exception: Both current_course ('None') and current_role ('None') must have values. User was '1-kiz'" in caplog.text
-
+        assert (
+            "GET api/assignments caught exception: Both current_course ('None') and current_role ('None') must have values. User was '1-kiz'"
+            in caplog.text
+        )

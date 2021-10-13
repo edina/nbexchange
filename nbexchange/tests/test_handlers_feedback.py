@@ -8,13 +8,12 @@ from nbgrader.utils import make_unique_key, notebook_hash
 
 from nbexchange.handlers.base import BaseHandler
 from nbexchange.tests.utils import (
-    AsyncSession,
     async_requests,
     clear_database,
     get_feedback_dict,
     get_files_dict,
-    user_kiz,
     user_brobbere_student,
+    user_kiz,
     user_kiz_instructor,
     user_kiz_student,
     user_lkihlman_instructor,
@@ -73,6 +72,7 @@ def test_feedback_post_unauthenticated(app, clear_database):
     r = yield async_requests.post(app.url + "/feedback", files=feedbacks)
     assert r.status_code == 403
 
+
 @pytest.mark.gen_test
 def test_feedback_post_broken_nbex_user(app, clear_database, caplog):
     assignment_id = "my_assignment"
@@ -87,12 +87,15 @@ def test_feedback_post_broken_nbex_user(app, clear_database, caplog):
     )
 
     with patch.object(
-        BaseHandler, "get_current_user",
-        return_value=user_kiz  # No course details
+        BaseHandler, "get_current_user", return_value=user_kiz  # No course details
     ):
         r = yield async_requests.post(app.url + url)
     assert r.status_code == 404
-    assert "POST api/feedback caught exception: Both current_course ('None') and current_role ('None') must have values. User was '1-kiz'" in caplog.text
+    assert (
+        "POST api/feedback caught exception: Both current_course ('None') and current_role ('None') must have values. User was '1-kiz'"
+        in caplog.text
+    )
+
 
 @pytest.mark.gen_test
 def test_feedback_post_authenticated_no_params(app, clear_database):
@@ -713,6 +716,7 @@ def test_feedback_get_authenticated_with_correct_params(app, clear_database):
         "utf-8"
     )
 
+
 @pytest.mark.gen_test
 def test_feedback_get_broken_nbex_user(app, clear_database, caplog):
     assignment_id = "assign_a"
@@ -767,7 +771,11 @@ def test_feedback_get_broken_nbex_user(app, clear_database, caplog):
         r = yield async_requests.get(app.url + url)
 
     assert r.status_code == 404
-    assert "GET api/feedback caught exception: Both current_course ('None') and current_role ('None') must have values. User was '1-kiz'" in caplog.text
+    assert (
+        "GET api/feedback caught exception: Both current_course ('None') and current_role ('None') must have values. User was '1-kiz'"
+        in caplog.text
+    )
+
 
 # test feedback picks up the correct assignment when two courses have the same assignment name
 # Should pick up course 2.

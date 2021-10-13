@@ -9,11 +9,9 @@ from nbexchange.tests.utils import (
     async_requests,
     clear_database,
     get_files_dict,
-    user_brobbere_instructor,
     user_brobbere_student,
-    user_kiz_instructor,
-    user_kiz_student,
     user_kiz,
+    user_kiz_instructor,
 )
 
 logger = logging.getLogger(__file__)
@@ -174,6 +172,7 @@ def test_instructor_can_fetch(app, clear_database):
     assert r.headers["Content-Type"] == "application/gzip"
     assert int(r.headers["Content-Length"]) > 0
 
+
 # fetch assignment, correct details, same user as releaser
 # (needs to be released before it can be fetched )
 @pytest.mark.gen_test
@@ -185,15 +184,15 @@ def test_fetch_broken_nbex_user(app, clear_database, caplog):
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
             files=files,
         )
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_kiz
-    ):
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz):
         r = yield async_requests.get(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a"
         )
         assert r.status_code == 404
-        assert "GET api/assignment caught exception: Both current_course ('None') and current_role ('None') must have values. User was '1-kiz'" in caplog.text
-
+        assert (
+            "GET api/assignment caught exception: Both current_course ('None') and current_role ('None') must have values. User was '1-kiz'"
+            in caplog.text
+        )
 
 
 # fetch assignment, correct details, different user, different role

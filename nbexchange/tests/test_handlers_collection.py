@@ -11,9 +11,9 @@ from nbexchange.tests.utils import (
     clear_database,
     get_files_dict,
     user_brobbere_student,
+    user_kiz,
     user_kiz_instructor,
     user_kiz_student,
-    user_kiz,
 )
 
 logger = logging.getLogger(__file__)
@@ -302,6 +302,7 @@ def test_get_collection_confirm_instructor_does_download(app, clear_database):
     assert r.headers["Content-Type"] == "application/gzip"
     assert int(r.headers["Content-Length"]) > 0
 
+
 # Has all three params, instructor can collect
 # (needs to be submitted before it can listed for collection )
 # (needs to be fetched before it can be submitted )
@@ -333,15 +334,17 @@ def test_get_collection_broken_nbex_user(app, clear_database, caplog):
         )  ## Get the data we need to make test the call we want to make
         response_data = r.json()
         collected_data = response_data["value"][0]
-        with patch.object(
-            BaseHandler, "get_current_user", return_value=user_kiz
-        ):
+        with patch.object(BaseHandler, "get_current_user", return_value=user_kiz):
             r = yield async_requests.get(
                 app.url
                 + f"/collection?course_id={collected_data['course_id']}&path={collected_data['path']}&assignment_id={collected_data['assignment_id']}"
             )
     assert r.status_code == 404
-    assert "GET api/collection caught exception: Both current_course ('None') and current_role ('None') must have values. User was '1-kiz'" in caplog.text
+    assert (
+        "GET api/collection caught exception: Both current_course ('None') and current_role ('None') must have values. User was '1-kiz'"
+        in caplog.text
+    )
+
 
 # Confirm that multiple submissions are listed
 @pytest.mark.gen_test

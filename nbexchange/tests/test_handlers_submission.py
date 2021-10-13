@@ -9,9 +9,9 @@ from nbexchange.tests.utils import (
     async_requests,
     clear_database,
     get_files_dict,
+    user_kiz,
     user_kiz_instructor,
     user_kiz_student,
-    user_kiz,
 )
 
 logger = logging.getLogger(__file__)
@@ -135,6 +135,7 @@ def test_post_submision_student_can_submit(app, clear_database):
     assert response_data["success"] == True
     assert response_data["note"] == "Submitted"
 
+
 # Student can submit
 # (needs to be fetched before it can be submitted )
 # (needs to be released before it can be fetched )
@@ -157,8 +158,10 @@ def test_post_submision_broken_nbex_user(app, clear_database, caplog):
             files=files,
         )
     assert r.status_code == 404
-    assert "POST api/submission caught exception: Both current_course ('None') and current_role ('None') must have values. User was '1-kiz'" in caplog.text
-
+    assert (
+        "POST api/submission caught exception: Both current_course ('None') and current_role ('None') must have values. User was '1-kiz'"
+        in caplog.text
+    )
 
 
 # instructor can submit

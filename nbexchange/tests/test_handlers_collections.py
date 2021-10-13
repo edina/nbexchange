@@ -14,6 +14,7 @@ from nbexchange.tests.utils import (
     user_kiz_instructor,
     user_kiz_student,
     user_zik_student,
+    user_kiz,
 )
 
 logger = logging.getLogger(__file__)
@@ -144,7 +145,7 @@ def test_collections_zero_results_with_wrong_course(app, clear_database):
 # both params, correct details
 # (needs to be submitted before it can be seen )
 @pytest.mark.gen_test
-def test_collections_zero_results_if_no_submissions(app, clear_database):
+def test_collections_broken_nbex_user(app, clear_database, caplog):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):
@@ -153,16 +154,13 @@ def test_collections_zero_results_if_no_submissions(app, clear_database):
             files=files,
         )
     with patch.object(
-        BaseHandler, "get_current_user", return_value=user_kiz_instructor
+        BaseHandler, "get_current_user", return_value=user_kiz
     ):
         r = yield async_requests.get(
             app.url + "/collections?course_id=course_2&assignment_id=assign_a"
         )
-    assert r.status_code == 200
-    response_data = r.json()
-    assert response_data["success"] == True
-    assert "note" not in response_data  # just that it's missing
-    assert response_data["value"] == []
+    assert r.status_code == 404
+    assert "GET api/collections caught exception: Both current_course ('None') and current_role ('None') must have values. User was '1-kiz'" in caplog.text
 
 
 # both params, correct course, assignment does not exist - differnet user, same role

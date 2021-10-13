@@ -12,7 +12,7 @@ logger.setLevel(logging.ERROR)
 ##### POST /submissions ######
 # No method available (501, because we've hard-coded it)
 @pytest.mark.gen_test
-def test_assignments0(app):
+def test_post_submissions_501(app):
     with patch.object(BaseHandler, "get_current_user", return_value={}):
         r = yield async_requests.post(app.url + "/submissions")
     assert r.status_code == 501
@@ -20,7 +20,7 @@ def test_assignments0(app):
 
 # subscribed user makes no difference (501, because we've hard-coded it)
 @pytest.mark.gen_test
-def test_post_assignments1(app):
+def test_post_submissions_with_course_501(app):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):
@@ -31,14 +31,14 @@ def test_post_assignments1(app):
 ##### GET /submissions  ######
 # No method available (501, because we've hard-coded it)
 @pytest.mark.gen_test
-def test_submissions0(app):
+def test_get_submissions_501(app):
     r = yield async_requests.get(app.url + "/submissions")
     assert r.status_code == 501
 
 
 # subscribed user makes no difference (501, because we've hard-coded it)
 @pytest.mark.gen_test
-def test_submissions1(app):
+def test_get_submissions_with_course_501(app):
     with patch.object(
         BaseHandler, "get_current_user", return_value=user_kiz_instructor
     ):

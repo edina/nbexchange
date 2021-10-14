@@ -55,6 +55,7 @@ class Submission(BaseHandler):
             return
 
         this_user = self.nbex_user
+
         if not course_code in this_user["courses"]:
             note = f"User not subscribed to course {course_code}"
             self.log.info(note)

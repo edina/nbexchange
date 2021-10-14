@@ -53,6 +53,7 @@ class Collections(BaseHandler):
 
         # Who is my user?
         this_user = self.nbex_user
+
         self.log.debug(f"User: {this_user.get('name')}")
         # For what course do we want to see the assignments?
         self.log.debug(f"Course: {course_code}")
@@ -165,6 +166,7 @@ class Collection(BaseHandler):
 
         # Who is my user?
         this_user = self.nbex_user
+
         self.log.debug(f"User: {this_user.get('name')}")
         # For what course do we want to see the assignments?
         self.log.debug(f"Course: {course_code}")

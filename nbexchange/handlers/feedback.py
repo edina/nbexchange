@@ -155,6 +155,7 @@ class FeedbackHandler(BaseHandler):
             return
 
         this_user = self.nbex_user
+
         if course_id not in this_user["courses"]:
             note = f"User not subscribed to course {course_id}"
             self.log.info(note)

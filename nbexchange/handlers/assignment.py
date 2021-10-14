@@ -45,6 +45,7 @@ class Assignments(BaseHandler):
 
         # Who is my user?
         this_user = self.nbex_user
+
         self.log.debug(f"User: {this_user.get('name')}")
         # For what course do we want to see the assignments?
         self.log.debug(f"Course: {course_code}")
@@ -263,6 +264,7 @@ class Assignment(BaseHandler):
             return
 
         this_user = self.nbex_user
+
         if not course_code in this_user["courses"]:
             note = f"User not subscribed to course {course_code}"
             self.log.info(note)
@@ -420,6 +422,7 @@ class Assignment(BaseHandler):
             return
 
         this_user = self.nbex_user
+
         if not course_code in this_user["courses"]:
             note = f"User not subscribed to course {course_code}"
             self.log.info(note)

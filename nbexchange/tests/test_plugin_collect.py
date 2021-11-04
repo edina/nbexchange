@@ -9,6 +9,7 @@ import pytest
 from mock import patch
 from nbgrader.api import Gradebook
 from nbgrader.coursedir import CourseDirectory
+from nbgrader.exchange import ExchangeError
 
 from nbexchange.plugin import Exchange, ExchangeCollect
 from nbexchange.tests.utils import get_feedback_file
@@ -1080,3 +1081,158 @@ def test_collect_normal_several_full_name_none(plugin_config, tmpdir):
         assert gradebook_called
         assert collection_number == 2
         assert collections and collection
+
+
+@pytest.mark.gen_test
+def test_collect_handles_failure_json(plugin_config, tmpdir):
+    plugin_config.CourseDirectory.course_id = "no_course"
+    plugin_config.CourseDirectory.assignment_id = ass_1_3
+    plugin_config.CourseDirectory.submitted_directory = str(
+        tmpdir.mkdir("submitted").realpath()
+    )
+    plugin = ExchangeCollect(
+        coursedir=CourseDirectory(config=plugin_config), config=plugin_config
+    )
+
+    # Much cut down from above, as we're only testing the plugin's ability to manage
+    # errors from the handler
+    def api_request(*args, **kwargs):
+        if "collections" in args[0]:
+            return type(
+                "Response",
+                (object,),
+                {
+                    "status_code": 200,
+                    "headers": {"content-type": "application/x-tar"},
+                    "json": lambda: {
+                        "success": True,
+                        "value": [
+                            {
+                                "student_id": student_id,
+                                "path": f"/submitted/no_course/{ass_1_3}/1/",
+                                "timestamp": "2020-01-01 00:00:00.0 UTC",
+                            }
+                        ],
+                    },
+                },
+            )
+        else:
+            return type(
+                "Response",
+                (object,),
+                {
+                    "status_code": 200,
+                    "headers": {"content-type": "application/json"},
+                    "json": lambda: {
+                        "success": False,
+                        "note": "Collection call requires a course code, an assignment code, and a path",
+                    },
+                },
+            )
+
+    with patch.object(Exchange, "api_request", side_effect=api_request):
+        with pytest.raises(ExchangeError) as e_info:
+            called = plugin.start()
+        assert str(e_info.value) == "Error looking for assignments to collect"
+
+
+@pytest.mark.gen_test
+def test_collect_handles_500_failure(plugin_config, tmpdir):
+    plugin_config.CourseDirectory.course_id = "no_course"
+    plugin_config.CourseDirectory.assignment_id = ass_1_3
+    plugin_config.CourseDirectory.submitted_directory = str(
+        tmpdir.mkdir("submitted").realpath()
+    )
+    plugin = ExchangeCollect(
+        coursedir=CourseDirectory(config=plugin_config), config=plugin_config
+    )
+
+    # Much cut down from above, as we're only testing the plugin's ability to manage
+    # errors from the handler
+    def api_request(*args, **kwargs):
+        if "collections" in args[0]:
+            return type(
+                "Response",
+                (object,),
+                {
+                    "status_code": 200,
+                    "headers": {"content-type": "application/x-tar"},
+                    "json": lambda: {
+                        "success": True,
+                        "value": [
+                            {
+                                "student_id": student_id,
+                                "path": f"/submitted/no_course/{ass_1_3}/1/",
+                                "timestamp": "2020-01-01 00:00:00.0 UTC",
+                            }
+                        ],
+                    },
+                },
+            )
+        else:
+            return type(
+                "Response",
+                (object,),
+                {
+                    "status_code": 500,
+                    "headers": {"content-type": "application/x-tar"},
+                },
+            )
+
+    with patch.object(Exchange, "api_request", side_effect=api_request):
+        with pytest.raises(ExchangeError) as e_info:
+            called = plugin.start()
+        assert (
+            str(e_info.value)
+            == "Error looking for assignments to collect: status code 500"
+        )
+
+
+@pytest.mark.gen_test
+def test_docollect_handles_failure_json(plugin_config, tmpdir):
+    plugin_config.CourseDirectory.course_id = "no_course"
+    plugin_config.CourseDirectory.assignment_id = ass_1_3
+    plugin_config.CourseDirectory.submitted_directory = str(
+        tmpdir.mkdir("submitted").realpath()
+    )
+    plugin = ExchangeCollect(
+        coursedir=CourseDirectory(config=plugin_config), config=plugin_config
+    )
+
+    def api_request_a(*args, **kwargs):
+        return type(
+            "Response",
+            (object,),
+            {
+                "status_code": 200,
+                "headers": {"content-type": "application/x-tar"},
+                "json": lambda: {
+                    "success": False,
+                    "note": "Collections call requires both a course code and an assignment code",
+                },
+            },
+        )
+
+    def api_request_b(*args, **kwargs):
+        return type(
+            "Response",
+            (object,),
+            {
+                "status_code": 200,
+                "headers": {"content-type": "application/x-tar"},
+                "json": lambda: {
+                    "success": False,
+                    "note": f"User not subscribed to course {plugin_config.CourseDirectory.course_id}",
+                },
+            },
+        )
+        ## All the rest would be handled the same way... I'm not testing them all!
+
+    with patch.object(Exchange, "api_request", side_effect=api_request_a):
+        with pytest.raises(ExchangeError) as e_info:
+            called = plugin.start()
+        assert str(e_info.value) == "Error looking for assignments to collect"
+    with patch.object(Exchange, "api_request", side_effect=api_request_b):
+        with pytest.raises(ExchangeError) as e_info:
+            called = plugin.start()
+        assert str(e_info.value) == "Error looking for assignments to collect"

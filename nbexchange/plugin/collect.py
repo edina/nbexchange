@@ -33,7 +33,7 @@ class ExchangeCollect(abc.ExchangeCollect, Exchange):
 
         if r.status_code > 399:
             self.fail(
-                f"Error looking for assignments to collect: status code {r.status_code}"
+                f"Error failing to collect for assignment {self.coursedir.assignment_id} on course {self.course_id}: status code {r.status_code}: error {r.content}"
             )
 
         if r.headers["content-type"] == "application/x-tar":
@@ -45,16 +45,24 @@ class ExchangeCollect(abc.ExchangeCollect, Exchange):
                     handle.extractall(path=dest_path)
             except Exception as e:  # TODO: exception handling
                 if hasattr(e, "message"):
-                    self.fail(e.message)
+                    self.fail(
+                        f"Error unpacking download for {self.coursedir.assignment_id} on course {self.course_id}: {e.message}"
+                    )
                 else:
-                    self.fail(e)
+                    self.fail(
+                        f"Error unpacking download for {self.coursedir.assignment_id} on course {self.course_id}: {e}"
+                    )
         else:
             # Fails, even if the json response is a success (for now)
             data = r.json()
             if not data["success"]:
-                self.fail("Error looking for assignments to collect")
+                self.fail(
+                    f"Error failing to collect for assignment {self.coursedir.assignment_id} on course {self.course_id}"
+                )
             else:
-                self.fail(data["note"])
+                self.fail(
+                    f"Error failing to collect for assignment {self.coursedir.assignment_id} on course {self.course_id}: {data['note']}"
+                )
 
     def do_collect(self):
         """

@@ -1184,7 +1184,7 @@ def test_collect_handles_500_failure(plugin_config, tmpdir):
                 {
                     "status_code": 500,
                     "headers": {"content-type": "application/x-tar"},
-                    "content": http_error
+                    "content": http_error,
                 },
             )
 

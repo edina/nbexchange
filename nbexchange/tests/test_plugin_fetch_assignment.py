@@ -31,6 +31,7 @@ course_id = "no_course"
 ass_1_2 = "assign_1_2"
 ass_1_3 = "assign_1_3"
 
+
 @pytest.mark.gen_test
 def test_fetch_assignment_methods_init_dest(plugin_config, tmpdir):
     plugin_config.CourseDirectory.course_id = course_id
@@ -422,7 +423,7 @@ def test_fetch_assignment_handles_500_failure(plugin_config):
                 {
                     "status_code": 500,
                     "headers": {"content-type": "application/x-tar"},
-                    "content": http_error
+                    "content": http_error,
                 },
             )
 
@@ -430,8 +431,8 @@ def test_fetch_assignment_handles_500_failure(plugin_config):
             with pytest.raises(ExchangeError) as e_info:
                 plugin.start()
             assert (
-                str(e_info.value) == f"Error failing to fetch assignment {ass_1_2} on course {course_id}: status code 500: error {http_error}"
+                str(e_info.value)
+                == f"Error failing to fetch assignment {ass_1_2} on course {course_id}: status code 500: error {http_error}"
             )
     finally:
         shutil.rmtree(plugin.dest_path)
-

@@ -413,21 +413,25 @@ def test_fetch_assignment_handles_500_failure(plugin_config):
     plugin = ExchangeFetchAssignment(
         coursedir=CourseDirectory(config=plugin_config), config=plugin_config
     )
+    try:
 
-    def api_request(*args, **kwargs):
-        return type(
-            "Response",
-            (object,),
-            {
-                "status_code": 500,
-                "headers": {"content-type": "application/x-tar"},
-                "content": http_error
-            },
-        )
+        def api_request(*args, **kwargs):
+            return type(
+                "Response",
+                (object,),
+                {
+                    "status_code": 500,
+                    "headers": {"content-type": "application/x-tar"},
+                    "content": http_error
+                },
+            )
 
-    with patch.object(Exchange, "api_request", side_effect=api_request):
-        with pytest.raises(ExchangeError) as e_info:
-            plugin.start()
-        assert (
-            str(e_info.value) == f"Error failing to fetch assignment {ass_1_2} on course {course_id}: status code 500: error {http_error}"
-        )
+        with patch.object(Exchange, "api_request", side_effect=api_request):
+            with pytest.raises(ExchangeError) as e_info:
+                plugin.start()
+            assert (
+                str(e_info.value) == f"Error failing to fetch assignment {ass_1_2} on course {course_id}: status code 500: error {http_error}"
+            )
+    finally:
+        shutil.rmtree(plugin.dest_path)
+

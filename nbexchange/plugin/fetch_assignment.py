@@ -73,14 +73,7 @@ class ExchangeFetchAssignment(abc.ExchangeFetchAssignment, Exchange):
         self.log.debug(
             f"Got back {r.status_code}  {r.headers['content-type']} after file download"
         )
-        # tgz = r.content
 
-        # try:
-        #     tar_file = io.BytesIO(tgz)
-        #     with tarfile.open(fileobj=tar_file) as handle:
-        #         handle.extractall(path=self.src_path)
-        # except Exception as e:  # TODO: exception handling
-        #     self.fail(str(e))
         if r.status_code > 399:
             self.fail(
                 f"Error failing to fetch assignment {self.coursedir.assignment_id} on course {self.course_id}: status code {r.status_code}: error {r.content}"

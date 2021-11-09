@@ -2,6 +2,7 @@ FROM python:3.10
 
 ARG COMMIT=""
 LABEL commit=${COMMIT}
+RUN pip install --upgrade pip
 
 WORKDIR /usr/src/app
 

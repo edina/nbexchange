@@ -30,17 +30,39 @@ class ExchangeCollect(abc.ExchangeCollect, Exchange):
         self.log.debug(
             f"Got back {r.status_code}  {r.headers['content-type']} after file download"
         )
-        tgz = r.content
 
-        try:
-            tar_file = io.BytesIO(tgz)
-            with tarfile.open(fileobj=tar_file) as handle:
-                handle.extractall(path=dest_path)
-        except Exception as e:  # TODO: exception handling
-            if hasattr(e, "message"):
-                self.fail(e.message)
+        if r.status_code > 399:
+            self.fail(
+                f"Error failing to collect for assignment {self.coursedir.assignment_id} on course {self.course_id}: status code {r.status_code}: error {r.content}"
+            )
+
+        if r.headers["content-type"] == "application/x-tar":
+            tgz = r.content
+
+            try:
+                tar_file = io.BytesIO(tgz)
+                with tarfile.open(fileobj=tar_file) as handle:
+                    handle.extractall(path=dest_path)
+            except Exception as e:  # TODO: exception handling
+                if hasattr(e, "message"):
+                    self.fail(
+                        f"Error unpacking download for {self.coursedir.assignment_id} on course {self.course_id}: {e.message}"
+                    )
+                else:
+                    self.fail(
+                        f"Error unpacking download for {self.coursedir.assignment_id} on course {self.course_id}: {e}"
+                    )
+        else:
+            # Fails, even if the json response is a success (for now)
+            data = r.json()
+            if not data["success"]:
+                self.fail(
+                    f"Error failing to collect for assignment {self.coursedir.assignment_id} on course {self.course_id}"
+                )
             else:
-                self.fail(e)
+                self.fail(
+                    f"Error failing to collect for assignment {self.coursedir.assignment_id} on course {self.course_id}: {data['note']}"
+                )
 
     def do_collect(self):
         """

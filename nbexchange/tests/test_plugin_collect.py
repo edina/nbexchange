@@ -9,6 +9,7 @@ import pytest
 from mock import patch
 from nbgrader.api import Gradebook
 from nbgrader.coursedir import CourseDirectory
+from nbgrader.exchange import ExchangeError
 
 from nbexchange.plugin import Exchange, ExchangeCollect
 from nbexchange.tests.utils import get_feedback_file
@@ -26,6 +27,7 @@ notebook2_filename = os.path.join(
 )
 notebook2_file = get_feedback_file(notebook2_filename)
 
+course_id = "no_course"
 student_id = "1"
 ass_1_1 = "assign_1_1"
 ass_1_2 = "assign_1_2"
@@ -36,7 +38,7 @@ ass_1_5 = "assign_1_5"
 
 @pytest.mark.gen_test
 def test_collect_methods(plugin_config, tmpdir):
-    plugin_config.CourseDirectory.course_id = "no_course"
+    plugin_config.CourseDirectory.course_id = course_id
     plugin_config.CourseDirectory.assignment_id = ass_1_3
     plugin_config.CourseDirectory.submitted_directory = str(
         tmpdir.mkdir("submitted").realpath()
@@ -93,18 +95,21 @@ def test_collect_methods(plugin_config, tmpdir):
     with patch.object(Exchange, "api_request", side_effect=api_request_bad):
         submission = {
             "student_id": student_id,
-            "path": f"/submitted/no_course/{ass_1_3}/1/",
+            "path": f"/submitted/{course_id}/{ass_1_3}/1/",
             "timestamp": "2020-01-01 00:00:00.0 UTC",
         }
         dest_path = f"{plugin_config.CourseDirectory.submitted_directory}/123/{ass_1_3}"
         with pytest.raises(Exception) as e_info:
             plugin.download(submission, dest_path)
-        assert str(e_info.value) == "file could not be opened successfully"
+        assert (
+            str(e_info.value)
+            == f"Error unpacking download for {ass_1_3} on course {course_id}: file could not be opened successfully"
+        )
 
 
 @pytest.mark.gen_test
 def test_collect_normal(plugin_config, tmpdir):
-    plugin_config.CourseDirectory.course_id = "no_course"
+    plugin_config.CourseDirectory.course_id = course_id
     plugin_config.CourseDirectory.assignment_id = ass_1_3
     plugin_config.CourseDirectory.submitted_directory = str(
         tmpdir.mkdir("submitted").realpath()
@@ -122,7 +127,7 @@ def test_collect_normal(plugin_config, tmpdir):
             assert collections is False
             collections = True
             assert args[0] == (
-                f"collections?course_id=no_course&assignment_id={ass_1_3}"
+                f"collections?course_id={course_id}&assignment_id={ass_1_3}"
             )
             assert "method" not in kwargs or kwargs.get("method").lower() == "get"
             return type(
@@ -136,7 +141,7 @@ def test_collect_normal(plugin_config, tmpdir):
                         "value": [
                             {
                                 "student_id": student_id,
-                                "path": f"/submitted/no_course/{ass_1_3}/1/",
+                                "path": f"/submitted/{course_id}/{ass_1_3}/1/",
                                 "timestamp": "2020-01-01 00:00:00.0 UTC",
                             }
                         ],
@@ -147,7 +152,7 @@ def test_collect_normal(plugin_config, tmpdir):
             assert collection is False
             collection = True
             assert args[0] == (
-                f"collection?course_id=no_course&assignment_id={ass_1_3}&path=%2Fsubmitted%2Fno_course%2F{ass_1_3}%2F1%2F"
+                f"collection?course_id={course_id}&assignment_id={ass_1_3}&path=%2Fsubmitted%2F{course_id}%2F{ass_1_3}%2F1%2F"
             )
             assert "method" not in kwargs or kwargs.get("method").lower() == "get"
             with tarfile.open(fileobj=tar_file, mode="w:gz") as tar_handle:
@@ -184,7 +189,7 @@ def test_collect_normal(plugin_config, tmpdir):
 
 @pytest.mark.gen_test
 def test_collect_normal_update(plugin_config, tmpdir):
-    plugin_config.CourseDirectory.course_id = "no_course"
+    plugin_config.CourseDirectory.course_id = course_id
     plugin_config.CourseDirectory.assignment_id = ass_1_2
     plugin_config.ExchangeCollect.update = True
     plugin_config.CourseDirectory.submitted_directory = str(
@@ -229,7 +234,7 @@ def test_collect_normal_update(plugin_config, tmpdir):
             assert collections is False
             collections = True
             assert args[0] == (
-                f"collections?course_id=no_course&assignment_id={ass_1_2}"
+                f"collections?course_id={course_id}&assignment_id={ass_1_2}"
             )
             assert "method" not in kwargs or kwargs.get("method").lower() == "get"
             return type(
@@ -243,7 +248,7 @@ def test_collect_normal_update(plugin_config, tmpdir):
                         "value": [
                             {
                                 "student_id": student_id,
-                                "path": f"/submitted/no_course/{ass_1_2}/1/",
+                                "path": f"/submitted/{course_id}/{ass_1_2}/1/",
                                 "timestamp": "2020-02-01 00:00:00.100",
                             }
                         ],
@@ -254,7 +259,7 @@ def test_collect_normal_update(plugin_config, tmpdir):
             assert collection is False
             collection = True
             assert args[0] == (
-                f"collection?course_id=no_course&assignment_id={ass_1_2}&path=%2Fsubmitted%2Fno_course%2F{ass_1_2}%2F1%2F"
+                f"collection?course_id={course_id}&assignment_id={ass_1_2}&path=%2Fsubmitted%2F{course_id}%2F{ass_1_2}%2F1%2F"
             )
             assert "method" not in kwargs or kwargs.get("method").lower() == "get"
             with tarfile.open(fileobj=tar_file, mode="w:gz") as tar_handle:
@@ -301,7 +306,7 @@ def test_collect_normal_update(plugin_config, tmpdir):
 
 @pytest.mark.gen_test
 def test_collect_normal_dont_update(plugin_config, tmpdir):
-    plugin_config.CourseDirectory.course_id = "no_course"
+    plugin_config.CourseDirectory.course_id = course_id
     plugin_config.CourseDirectory.assignment_id = ass_1_4
     plugin_config.ExchangeCollect.update = False
     plugin_config.CourseDirectory.submitted_directory = str(
@@ -346,7 +351,7 @@ def test_collect_normal_dont_update(plugin_config, tmpdir):
             assert collections is False
             collections = True
             assert args[0] == (
-                f"collections?course_id=no_course&assignment_id={ass_1_4}"
+                f"collections?course_id={course_id}&assignment_id={ass_1_4}"
             )
             assert "method" not in kwargs or kwargs.get("method").lower() == "get"
             return type(
@@ -360,7 +365,7 @@ def test_collect_normal_dont_update(plugin_config, tmpdir):
                         "value": [
                             {
                                 "student_id": student_id,
-                                "path": f"/submitted/no_course/{ass_1_4}/1/",
+                                "path": f"/submitted/{course_id}/{ass_1_4}/1/",
                                 "timestamp": "2020-02-01 00:00:00.100",
                             }
                         ],
@@ -371,7 +376,7 @@ def test_collect_normal_dont_update(plugin_config, tmpdir):
             assert collection is False
             collection = True
             assert args[0] == (
-                f"collection?course_id=no_course&assignment_id={ass_1_4}&path=%2Fsubmitted%2Fno_course%2F{ass_1_4}%2F1%2F"
+                f"collection?course_id={course_id}&assignment_id={ass_1_4}&path=%2Fsubmitted%2F{course_id}%2F{ass_1_4}%2F1%2F"
             )
             assert "method" not in kwargs or kwargs.get("method").lower() == "get"
             with tarfile.open(fileobj=tar_file, mode="w:gz") as tar_handle:
@@ -418,7 +423,7 @@ def test_collect_normal_dont_update(plugin_config, tmpdir):
 
 @pytest.mark.gen_test
 def test_collect_normal_dont_update_old(plugin_config, tmpdir):
-    plugin_config.CourseDirectory.course_id = "no_course"
+    plugin_config.CourseDirectory.course_id = course_id
     plugin_config.CourseDirectory.assignment_id = ass_1_5
     plugin_config.ExchangeCollect.update = True
     plugin_config.CourseDirectory.submitted_directory = str(
@@ -463,7 +468,7 @@ def test_collect_normal_dont_update_old(plugin_config, tmpdir):
             assert collections is False
             collections = True
             assert args[0] == (
-                f"collections?course_id=no_course&assignment_id={ass_1_5}"
+                f"collections?course_id={course_id}&assignment_id={ass_1_5}"
             )
             assert "method" not in kwargs or kwargs.get("method").lower() == "get"
             return type(
@@ -477,7 +482,7 @@ def test_collect_normal_dont_update_old(plugin_config, tmpdir):
                         "value": [
                             {
                                 "student_id": student_id,
-                                "path": f"/submitted/no_course/{ass_1_5}/1/",
+                                "path": f"/submitted/{course_id}/{ass_1_5}/1/",
                                 "timestamp": "2020-01-01 00:00:00.100",
                             }
                         ],
@@ -488,7 +493,7 @@ def test_collect_normal_dont_update_old(plugin_config, tmpdir):
             assert collection is False
             collection = True
             assert args[0] == (
-                f"collection?course_id=no_course&assignment_id={ass_1_5}&path=%2Fsubmitted%2Fno_course%2F{ass_1_5}%2F1%2F"
+                f"collection?course_id={course_id}&assignment_id={ass_1_5}&path=%2Fsubmitted%2F{course_id}%2F{ass_1_5}%2F1%2F"
             )
             assert "method" not in kwargs or kwargs.get("method").lower() == "get"
             with tarfile.open(fileobj=tar_file, mode="w:gz") as tar_handle:
@@ -535,7 +540,7 @@ def test_collect_normal_dont_update_old(plugin_config, tmpdir):
 
 @pytest.mark.gen_test
 def test_collect_normal_several(plugin_config, tmpdir):
-    plugin_config.CourseDirectory.course_id = "no_course"
+    plugin_config.CourseDirectory.course_id = course_id
     plugin_config.CourseDirectory.assignment_id = ass_1_1
     plugin_config.CourseDirectory.submitted_directory = str(
         tmpdir.mkdir("submitted").realpath()
@@ -553,7 +558,7 @@ def test_collect_normal_several(plugin_config, tmpdir):
             assert collections is False
             collections = True
             assert args[0] == (
-                f"collections?course_id=no_course&assignment_id={ass_1_1}"
+                f"collections?course_id={course_id}&assignment_id={ass_1_1}"
             )
             assert "method" not in kwargs or kwargs.get("method").lower() == "get"
             return type(
@@ -567,7 +572,7 @@ def test_collect_normal_several(plugin_config, tmpdir):
                         "value": [
                             {
                                 "student_id": student_id,
-                                "path": f"/submitted/no_course/{ass_1_1}/1/",
+                                "path": f"/submitted/{course_id}/{ass_1_1}/1/",
                                 "timestamp": "2020-01-01 00:00:00.0 UTC",
                             }
                         ],
@@ -578,7 +583,7 @@ def test_collect_normal_several(plugin_config, tmpdir):
             assert collection is False
             collection = True
             assert args[0] == (
-                f"collection?course_id=no_course&assignment_id={ass_1_1}&path=%2Fsubmitted%2Fno_course%2F{ass_1_1}%2F1%2F"
+                f"collection?course_id={course_id}&assignment_id={ass_1_1}&path=%2Fsubmitted%2F{course_id}%2F{ass_1_1}%2F1%2F"
             )
             assert "method" not in kwargs or kwargs.get("method").lower() == "get"
             with tarfile.open(fileobj=tar_file, mode="w:gz") as tar_handle:
@@ -627,7 +632,7 @@ def test_collect_normal_several(plugin_config, tmpdir):
 
 @pytest.mark.gen_test
 def test_collect_normal_gradebook_called(plugin_config, tmpdir):
-    plugin_config.CourseDirectory.course_id = "no_course"
+    plugin_config.CourseDirectory.course_id = course_id
     plugin_config.CourseDirectory.assignment_id = ass_1_3
     plugin_config.CourseDirectory.submitted_directory = str(
         tmpdir.mkdir("submitted").realpath()
@@ -653,7 +658,7 @@ def test_collect_normal_gradebook_called(plugin_config, tmpdir):
             assert collections is False
             collections = True
             assert args[0] == (
-                f"collections?course_id=no_course&assignment_id={ass_1_3}"
+                f"collections?course_id={course_id}&assignment_id={ass_1_3}"
             )
             assert "method" not in kwargs or kwargs.get("method").lower() == "get"
             return type(
@@ -668,7 +673,7 @@ def test_collect_normal_gradebook_called(plugin_config, tmpdir):
                             {
                                 "student_id": student_id,
                                 "full_name": "First Surname",
-                                "path": f"/submitted/no_course/{ass_1_3}/1/",
+                                "path": f"/submitted/{course_id}/{ass_1_3}/1/",
                                 "timestamp": "2020-01-01 00:00:00.0 UTC",
                             }
                         ],
@@ -679,7 +684,7 @@ def test_collect_normal_gradebook_called(plugin_config, tmpdir):
             assert collection is False
             collection = True
             assert args[0] == (
-                f"collection?course_id=no_course&assignment_id={ass_1_3}&path=%2Fsubmitted%2Fno_course%2F{ass_1_3}%2F1%2F"
+                f"collection?course_id={course_id}&assignment_id={ass_1_3}&path=%2Fsubmitted%2F{course_id}%2F{ass_1_3}%2F1%2F"
             )
             assert "method" not in kwargs or kwargs.get("method").lower() == "get"
             with tarfile.open(fileobj=tar_file, mode="w:gz") as tar_handle:
@@ -719,7 +724,7 @@ def test_collect_normal_gradebook_called(plugin_config, tmpdir):
 
 @pytest.mark.gen_test
 def test_collect_normal_gradebook_called_no_space(plugin_config, tmpdir):
-    plugin_config.CourseDirectory.course_id = "no_course"
+    plugin_config.CourseDirectory.course_id = course_id
     plugin_config.CourseDirectory.assignment_id = ass_1_3
     plugin_config.CourseDirectory.submitted_directory = str(
         tmpdir.mkdir("submitted").realpath()
@@ -745,7 +750,7 @@ def test_collect_normal_gradebook_called_no_space(plugin_config, tmpdir):
             assert collections is False
             collections = True
             assert args[0] == (
-                f"collections?course_id=no_course&assignment_id={ass_1_3}"
+                f"collections?course_id={course_id}&assignment_id={ass_1_3}"
             )
             assert "method" not in kwargs or kwargs.get("method").lower() == "get"
             return type(
@@ -760,7 +765,7 @@ def test_collect_normal_gradebook_called_no_space(plugin_config, tmpdir):
                             {
                                 "student_id": student_id,
                                 "full_name": "First",
-                                "path": f"/submitted/no_course/{ass_1_3}/1/",
+                                "path": f"/submitted/{course_id}/{ass_1_3}/1/",
                                 "timestamp": "2020-01-01 00:00:00.0 UTC",
                             }
                         ],
@@ -771,7 +776,7 @@ def test_collect_normal_gradebook_called_no_space(plugin_config, tmpdir):
             assert collection is False
             collection = True
             assert args[0] == (
-                f"collection?course_id=no_course&assignment_id={ass_1_3}&path=%2Fsubmitted%2Fno_course%2F{ass_1_3}%2F1%2F"
+                f"collection?course_id={course_id}&assignment_id={ass_1_3}&path=%2Fsubmitted%2F{course_id}%2F{ass_1_3}%2F1%2F"
             )
             assert "method" not in kwargs or kwargs.get("method").lower() == "get"
             with tarfile.open(fileobj=tar_file, mode="w:gz") as tar_handle:
@@ -811,7 +816,7 @@ def test_collect_normal_gradebook_called_no_space(plugin_config, tmpdir):
 
 @pytest.mark.gen_test
 def test_collect_normal_gradebook_called_no_full_name(plugin_config, tmpdir):
-    plugin_config.CourseDirectory.course_id = "no_course"
+    plugin_config.CourseDirectory.course_id = course_id
     plugin_config.CourseDirectory.assignment_id = ass_1_3
     plugin_config.CourseDirectory.submitted_directory = str(
         tmpdir.mkdir("submitted").realpath()
@@ -837,7 +842,7 @@ def test_collect_normal_gradebook_called_no_full_name(plugin_config, tmpdir):
             assert collections is False
             collections = True
             assert args[0] == (
-                f"collections?course_id=no_course&assignment_id={ass_1_3}"
+                f"collections?course_id={course_id}&assignment_id={ass_1_3}"
             )
             assert "method" not in kwargs or kwargs.get("method").lower() == "get"
             return type(
@@ -851,7 +856,7 @@ def test_collect_normal_gradebook_called_no_full_name(plugin_config, tmpdir):
                         "value": [
                             {
                                 "student_id": student_id,
-                                "path": f"/submitted/no_course/{ass_1_3}/1/",
+                                "path": f"/submitted/{course_id}/{ass_1_3}/1/",
                                 "timestamp": "2020-01-01 00:00:00.0 UTC",
                             }
                         ],
@@ -862,7 +867,7 @@ def test_collect_normal_gradebook_called_no_full_name(plugin_config, tmpdir):
             assert collection is False
             collection = True
             assert args[0] == (
-                f"collection?course_id=no_course&assignment_id={ass_1_3}&path=%2Fsubmitted%2Fno_course%2F{ass_1_3}%2F1%2F"
+                f"collection?course_id={course_id}&assignment_id={ass_1_3}&path=%2Fsubmitted%2F{course_id}%2F{ass_1_3}%2F1%2F"
             )
             assert "method" not in kwargs or kwargs.get("method").lower() == "get"
             with tarfile.open(fileobj=tar_file, mode="w:gz") as tar_handle:
@@ -902,7 +907,7 @@ def test_collect_normal_gradebook_called_no_full_name(plugin_config, tmpdir):
 
 @pytest.mark.gen_test
 def test_collect_normal_several_gradebook_called(plugin_config, tmpdir):
-    plugin_config.CourseDirectory.course_id = "no_course"
+    plugin_config.CourseDirectory.course_id = course_id
     plugin_config.CourseDirectory.assignment_id = ass_1_1
     plugin_config.CourseDirectory.submitted_directory = str(
         tmpdir.mkdir("submitted").realpath()
@@ -932,7 +937,7 @@ def test_collect_normal_several_gradebook_called(plugin_config, tmpdir):
         if "collections" in args[0]:
             collections = True
             assert args[0] == (
-                f"collections?course_id=no_course&assignment_id={ass_1_1}"
+                f"collections?course_id={course_id}&assignment_id={ass_1_1}"
             )
             assert "method" not in kwargs or kwargs.get("method").lower() == "get"
             return type(
@@ -947,13 +952,13 @@ def test_collect_normal_several_gradebook_called(plugin_config, tmpdir):
                             {
                                 "student_id": student_ids[0],
                                 "full_name": "First Surname",
-                                "path": f"/submitted/no_course/{ass_1_1}/1/",
+                                "path": f"/submitted/{course_id}/{ass_1_1}/1/",
                                 "timestamp": "2020-01-01 00:00:00.0 UTC",
                             },
                             {
                                 "student_id": student_ids[1],
                                 "full_name": "Second Lastname",
-                                "path": f"/submitted/no_course/{ass_1_1}/2/",
+                                "path": f"/submitted/{course_id}/{ass_1_1}/2/",
                                 "timestamp": "2020-01-01 00:00:00.1 UTC",
                             },
                         ],
@@ -963,7 +968,7 @@ def test_collect_normal_several_gradebook_called(plugin_config, tmpdir):
         else:
             num = "2" if collection else "1"
             assert args[0] == (
-                f"collection?course_id=no_course&assignment_id={ass_1_1}&path=%2Fsubmitted%2Fno_course%2F{ass_1_1}%2F{num}%2F"
+                f"collection?course_id={course_id}&assignment_id={ass_1_1}&path=%2Fsubmitted%2F{course_id}%2F{ass_1_1}%2F{num}%2F"
             )
             collection = True
             assert "method" not in kwargs or kwargs.get("method").lower() == "get"
@@ -994,7 +999,7 @@ def test_collect_normal_several_gradebook_called(plugin_config, tmpdir):
 
 @pytest.mark.gen_test
 def test_collect_normal_several_full_name_none(plugin_config, tmpdir):
-    plugin_config.CourseDirectory.course_id = "no_course"
+    plugin_config.CourseDirectory.course_id = course_id
     plugin_config.CourseDirectory.assignment_id = ass_1_1
     plugin_config.CourseDirectory.submitted_directory = str(
         tmpdir.mkdir("submitted").realpath()
@@ -1022,7 +1027,7 @@ def test_collect_normal_several_full_name_none(plugin_config, tmpdir):
         if "collections" in args[0]:
             collections = True
             assert args[0] == (
-                f"collections?course_id=no_course&assignment_id={ass_1_1}"
+                f"collections?course_id={course_id}&assignment_id={ass_1_1}"
             )
             assert "method" not in kwargs or kwargs.get("method").lower() == "get"
             return type(
@@ -1037,13 +1042,13 @@ def test_collect_normal_several_full_name_none(plugin_config, tmpdir):
                             {
                                 "student_id": student_ids[0],
                                 "full_name": None,
-                                "path": f"/submitted/no_course/{ass_1_1}/1/",
+                                "path": f"/submitted/{course_id}/{ass_1_1}/1/",
                                 "timestamp": "2020-01-01 00:00:00.0 UTC",
                             },
                             {
                                 "student_id": student_ids[1],
                                 "full_name": None,
-                                "path": f"/submitted/no_course/{ass_1_1}/2/",
+                                "path": f"/submitted/{course_id}/{ass_1_1}/2/",
                                 "timestamp": "2020-01-01 00:00:00.1 UTC",
                             },
                         ],
@@ -1053,7 +1058,7 @@ def test_collect_normal_several_full_name_none(plugin_config, tmpdir):
         else:
             num = "2" if collection else "1"
             assert args[0] == (
-                f"collection?course_id=no_course&assignment_id={ass_1_1}&path=%2Fsubmitted%2Fno_course%2F{ass_1_1}%2F{num}%2F"
+                f"collection?course_id={course_id}&assignment_id={ass_1_1}&path=%2Fsubmitted%2F{course_id}%2F{ass_1_1}%2F{num}%2F"
             )
             collection = True
             assert "method" not in kwargs or kwargs.get("method").lower() == "get"
@@ -1080,3 +1085,163 @@ def test_collect_normal_several_full_name_none(plugin_config, tmpdir):
         assert gradebook_called
         assert collection_number == 2
         assert collections and collection
+
+
+@pytest.mark.gen_test
+def test_collect_handles_failure_json(plugin_config, tmpdir):
+    plugin_config.CourseDirectory.course_id = course_id
+    plugin_config.CourseDirectory.assignment_id = ass_1_3
+    plugin_config.CourseDirectory.submitted_directory = str(
+        tmpdir.mkdir("submitted").realpath()
+    )
+    plugin = ExchangeCollect(
+        coursedir=CourseDirectory(config=plugin_config), config=plugin_config
+    )
+
+    # Much cut down from above, as we're only testing the plugin's ability to manage
+    # errors from the handler
+    def api_request(*args, **kwargs):
+        if "collections" in args[0]:
+            return type(
+                "Response",
+                (object,),
+                {
+                    "status_code": 200,
+                    "headers": {"content-type": "application/x-tar"},
+                    "json": lambda: {
+                        "success": True,
+                        "value": [
+                            {
+                                "student_id": student_id,
+                                "path": f"/submitted/{course_id}/{ass_1_3}/1/",
+                                "timestamp": "2020-01-01 00:00:00.0 UTC",
+                            }
+                        ],
+                    },
+                },
+            )
+        else:
+            return type(
+                "Response",
+                (object,),
+                {
+                    "status_code": 200,
+                    "headers": {"content-type": "application/json"},
+                    "json": lambda: {
+                        "success": False,
+                        "note": "Collection call requires a course code, an assignment code, and a path",
+                    },
+                },
+            )
+
+    with patch.object(Exchange, "api_request", side_effect=api_request):
+        with pytest.raises(ExchangeError) as e_info:
+            called = plugin.start()
+        assert (
+            str(e_info.value)
+            == f"Error failing to collect for assignment {ass_1_3} on course {course_id}"
+        )
+
+
+@pytest.mark.gen_test
+def test_collect_handles_500_failure(plugin_config, tmpdir):
+    http_error = "blown op"
+    plugin_config.CourseDirectory.course_id = course_id
+    plugin_config.CourseDirectory.assignment_id = ass_1_3
+    plugin_config.CourseDirectory.submitted_directory = str(
+        tmpdir.mkdir("submitted").realpath()
+    )
+    plugin = ExchangeCollect(
+        coursedir=CourseDirectory(config=plugin_config), config=plugin_config
+    )
+
+    # Much cut down from above, as we're only testing the plugin's ability to manage
+    # errors from the handler
+    def api_request(*args, **kwargs):
+        if "collections" in args[0]:
+            return type(
+                "Response",
+                (object,),
+                {
+                    "status_code": 200,
+                    "headers": {"content-type": "application/x-tar"},
+                    "json": lambda: {
+                        "success": True,
+                        "value": [
+                            {
+                                "student_id": student_id,
+                                "path": f"/submitted/{course_id}/{ass_1_3}/1/",
+                                "timestamp": "2020-01-01 00:00:00.0 UTC",
+                            }
+                        ],
+                    },
+                },
+            )
+        else:
+            return type(
+                "Response",
+                (object,),
+                {
+                    "status_code": 500,
+                    "headers": {"content-type": "application/x-tar"},
+                    "content": http_error,
+                },
+            )
+
+    with patch.object(Exchange, "api_request", side_effect=api_request):
+        with pytest.raises(ExchangeError) as e_info:
+            called = plugin.start()
+        assert (
+            str(e_info.value)
+            == f"Error failing to collect for assignment {ass_1_3} on course {course_id}: status code 500: error {http_error}"
+        )
+
+
+@pytest.mark.gen_test
+def test_docollect_handles_failure_json(plugin_config, tmpdir):
+    plugin_config.CourseDirectory.course_id = course_id
+    plugin_config.CourseDirectory.assignment_id = ass_1_3
+    plugin_config.CourseDirectory.submitted_directory = str(
+        tmpdir.mkdir("submitted").realpath()
+    )
+    plugin = ExchangeCollect(
+        coursedir=CourseDirectory(config=plugin_config), config=plugin_config
+    )
+
+    def api_request_a(*args, **kwargs):
+        return type(
+            "Response",
+            (object,),
+            {
+                "status_code": 200,
+                "headers": {"content-type": "application/x-tar"},
+                "json": lambda: {
+                    "success": False,
+                    "note": "Collections call requires both a course code and an assignment code",
+                },
+            },
+        )
+
+    def api_request_b(*args, **kwargs):
+        return type(
+            "Response",
+            (object,),
+            {
+                "status_code": 200,
+                "headers": {"content-type": "application/x-tar"},
+                "json": lambda: {
+                    "success": False,
+                    "note": f"User not subscribed to course {plugin_config.CourseDirectory.course_id}",
+                },
+            },
+        )
+        ## All the rest would be handled the same way... I'm not testing them all!
+
+    with patch.object(Exchange, "api_request", side_effect=api_request_a):
+        with pytest.raises(ExchangeError) as e_info:
+            called = plugin.start()
+        assert str(e_info.value) == "Error looking for assignments to collect"
+    with patch.object(Exchange, "api_request", side_effect=api_request_b):
+        with pytest.raises(ExchangeError) as e_info:
+            called = plugin.start()
+        assert str(e_info.value) == "Error looking for assignments to collect"

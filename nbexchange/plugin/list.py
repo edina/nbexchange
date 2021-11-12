@@ -381,17 +381,24 @@ class ExchangeList(abc.ExchangeList, Exchange):
         #
         # This is the code that changes the submitted directory
         #   away from default.
+        # The feature flag NAAS_FEATURE_MULTI_MARKERS is also used
+        #   to revert to default nbgrader behaviour
+        # Once the feature flag becomes the default, `self.fetched_root`
+        #   can be ditched
         #####
-        if self.path_includes_course:
-            self.coursedir.submitted_directory = os.path.join(
-                self.coursedir.course_id, "collected"
-            )
-            r = self.coursedir.course_id
+        if not os.environ.get("NAAS_FEATURE_MULTI_MARKERS"):
+            if self.path_includes_course:
+                self.coursedir.submitted_directory = os.path.join(
+                    self.coursedir.course_id, "collected"
+                )
+                r = self.coursedir.course_id
+            else:
+                self.coursedir.submitted_directory = "collected"
+                r = "."
+            self.fetched_root = os.path.abspath(os.path.join("", r))
         else:
-            self.coursedir.submitted_directory = "collected"
-            r = "."
+            self.fetched_root = os.path.abspath(".")
 
-        self.fetched_root = os.path.abspath(os.path.join("", r))
         if self.remove:
             return self.remove_files()
         else:

@@ -26,6 +26,65 @@ notebook2_filename = os.path.join(
 )
 notebook2_file = get_feedback_file(notebook2_filename)
 
+
+@pytest.mark.gen_test
+def test_list_acknowledges_multi_marker_feature_flag(
+    plugin_config, tmpdir, monkeypatch
+):
+    plugin_config.CourseDirectory.course_id = "no_course"
+    plugin_config.ExchangeList.inbound = True
+
+    plugin = ExchangeList(
+        coursedir=CourseDirectory(config=plugin_config), config=plugin_config
+    )
+
+    def api_request(*args, **kwargs):
+        assert args[0] == ("assignments?course_id=no_course")
+        assert "method" not in kwargs or kwargs.get("method").lower() == "get"
+        return type(
+            "Request",
+            (object,),
+            {
+                "status_code": 200,
+                "json": (
+                    lambda: {
+                        "success": True,
+                        "value": [
+                            {
+                                "assignment_id": "assign_1_1",
+                                "student_id": 1,
+                                "course_id": "no_course",
+                                "status": "released",
+                                "path": "",
+                                "notebooks": [
+                                    {
+                                        "notebook_id": "assignment-0.6",
+                                        "has_exchange_feedback": False,
+                                        "feedback_updated": False,
+                                        "feedback_timestamp": None,
+                                    }
+                                ],
+                                "timestamp": "2020-01-01 00:00:00.0 00:00",
+                            }
+                        ],
+                    }
+                ),
+            },
+        )
+
+    with patch.object(Exchange, "api_request", side_effect=api_request):
+        called = plugin.start()
+    assert plugin.coursedir.submitted_directory == "collected"
+
+    monkeypatch.setenv("NAAS_FEATURE_MULTI_MARKERS", "True")
+    plugin = ExchangeList(
+        coursedir=CourseDirectory(config=plugin_config), config=plugin_config
+    )
+    with patch.object(Exchange, "api_request", side_effect=api_request):
+        called = plugin.start()
+    assert plugin.coursedir.submitted_directory == "submitted"
+
+
 # Released items come with feedback items.
 @pytest.mark.gen_test
 def test_list_normal(plugin_config, tmpdir):

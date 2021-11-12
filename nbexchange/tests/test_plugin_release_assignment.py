@@ -94,6 +94,23 @@ def test_release_assignment_methods_init_src(plugin_config, tmpdir, caplog):
 
 
 @pytest.mark.gen_test
+def test_release_assignment_methods_init_dest(plugin_config, tmpdir, caplog):
+    plugin_config.CourseDirectory.root = "/"
+
+    plugin_config.CourseDirectory.release_directory = str(
+        tmpdir.mkdir(release_dir).realpath()
+    )
+    plugin_config.CourseDirectory.assignment_id = "assign_1"
+
+    plugin = ExchangeReleaseAssignment(
+        coursedir=CourseDirectory(config=plugin_config), config=plugin_config
+    )
+    with pytest.raises(ExchangeError) as e_info:
+        foo = plugin.init_dest()
+        assert str(e_info.value) == "No course id specified. Re-run with --course flag."
+
+
+@pytest.mark.gen_test
 def test_release_assignment_methods_the_rest(plugin_config, tmpdir, caplog):
     plugin_config.CourseDirectory.root = "/"
 
@@ -124,7 +141,6 @@ def test_release_assignment_methods_the_rest(plugin_config, tmpdir, caplog):
         fp.write("2020-01-01 00:00:00.0 UTC")
 
     plugin.init_src()
-    plugin.init_dest()
     with pytest.raises(AttributeError) as e_info:
         foo = plugin.dest_path
         assert (

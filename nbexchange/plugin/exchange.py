@@ -97,6 +97,9 @@ which is normally Jupyter's notebook_dir.
     def start(self):
         self.log.debug(f"Called start on {self.__class__.__name__}")
 
+        if self.coursedir and not self.coursedir.course_id:
+            self.coursedir.course_id = self.course_id
+
         self.init_src()
         self.init_dest()
         self.copy_files()

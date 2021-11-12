@@ -31,13 +31,13 @@ class ExchangeFetchAssignment(abc.ExchangeFetchAssignment, Exchange):
     # where the downloaded files are placed
     def init_src(self):
         self.log.debug(
-            f"ExchangeFetch.init_src using {self.course_id} {self.coursedir.assignment_id}"
+            f"ExchangeFetch.init_src using {self.coursedir.course_id} {self.coursedir.assignment_id}"
         )
 
         location = os.path.join(
             "/tmp/",
             new_uuid(),
-            self.course_id,
+            self.coursedir.course_id,
             self.coursedir.assignment_id,
             "assignment.tar.gz",
         )
@@ -48,7 +48,7 @@ class ExchangeFetchAssignment(abc.ExchangeFetchAssignment, Exchange):
     # where in the user tree
     def init_dest(self):
         if self.path_includes_course:
-            root = os.path.join(self.course_id, self.coursedir.assignment_id)
+            root = os.path.join(self.coursedir.course_id, self.coursedir.assignment_id)
         else:
             root = self.coursedir.assignment_id
         self.dest_path = os.path.abspath(os.path.join(self.assignment_dir, root))
@@ -68,7 +68,7 @@ class ExchangeFetchAssignment(abc.ExchangeFetchAssignment, Exchange):
     def download(self):
         self.log.debug(f"Download from {self.service_url}")
         r = self.api_request(
-            f"assignment?course_id={quote_plus(self.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}"
+            f"assignment?course_id={quote_plus(self.coursedir.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}"
         )
         self.log.debug(
             f"Got back {r.status_code}  {r.headers['content-type']} after file download"
@@ -76,7 +76,7 @@ class ExchangeFetchAssignment(abc.ExchangeFetchAssignment, Exchange):
 
         if r.status_code > 399:
             self.fail(
-                f"Error failing to fetch assignment {self.coursedir.assignment_id} on course {self.course_id}: status code {r.status_code}: error {r.content}"
+                f"Error failing to fetch assignment {self.coursedir.assignment_id} on course {self.coursedir.course_id}: status code {r.status_code}: error {r.content}"
             )
 
         if r.headers["content-type"] == "application/x-tar":
@@ -89,22 +89,22 @@ class ExchangeFetchAssignment(abc.ExchangeFetchAssignment, Exchange):
             except Exception as e:  # TODO: exception handling
                 if hasattr(e, "message"):
                     self.fail(
-                        f"Error unpacking download for {self.coursedir.assignment_id} on course {self.course_id}: {e.message}"
+                        f"Error unpacking download for {self.coursedir.assignment_id} on course {self.coursedir.course_id}: {e.message}"
                     )
                 else:
                     self.fail(
-                        f"Error unpacking download for {self.coursedir.assignment_id} on course {self.course_id}: {e}"
+                        f"Error unpacking download for {self.coursedir.assignment_id} on course {self.coursedir.course_id}: {e}"
                     )
         else:
             # Fails, even if the json response is a success (for now)
             data = r.json()
             if not data["success"]:
                 self.fail(
-                    f"Error failing to fetch assignment {self.coursedir.assignment_id} on course {self.course_id}"
+                    f"Error failing to fetch assignment {self.coursedir.assignment_id} on course {self.coursedir.course_id}"
                 )
             else:
                 self.fail(
-                    f"Error failing to fetch assignment {self.coursedir.assignment_id} on course {self.course_id}: {data['note']}"
+                    f"Error failing to fetch assignment {self.coursedir.assignment_id} on course {self.coursedir.course_id}: {data['note']}"
                 )
 
     def copy_if_missing(self, src, dest, ignore=None):
@@ -147,4 +147,6 @@ class ExchangeFetchAssignment(abc.ExchangeFetchAssignment, Exchange):
         self.log.debug(f"Source: {self.src_path}")
         self.log.debug(f"Destination: {self.dest_path}")
         self.do_copy(self.src_path, self.dest_path)
-        self.log.debug(f"Fetched as: {self.course_id} {self.coursedir.assignment_id}")
+        self.log.debug(
+            f"Fetched as: {self.coursedir.course_id} {self.coursedir.assignment_id}"
+        )

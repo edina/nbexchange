@@ -60,13 +60,9 @@ def test_release_feedback_methods(plugin_config, tmpdir):
         r"test_release_feedback_methods0/feedback_test/1/assign_1$", plugin.src_path
     )
 
-    plugin.init_dest()
-    with pytest.raises(AttributeError) as e_info:
-        foo = plugin.dest_path
-    assert (
-        str(e_info.value)
-        == "'ExchangeReleaseFeedback' object has no attribute 'dest_path'"
-    )
+    with pytest.raises(ExchangeError) as e_info:
+        foo = plugin.init_dest()
+        assert str(e_info.value) == "No course id specified. Re-run with --course flag."
 
 
 @pytest.mark.gen_test

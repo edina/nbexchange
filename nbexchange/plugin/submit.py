@@ -18,7 +18,7 @@ class ExchangeSubmit(abc.ExchangeSubmit, Exchange):
     def init_src(self):
         root = ""
         if self.path_includes_course:
-            root = os.path.join(self.course_id, self.coursedir.assignment_id)
+            root = os.path.join(self.coursedir.course_id, self.coursedir.assignment_id)
         else:
             root = self.coursedir.assignment_id
         self.src_path = os.path.abspath(os.path.join(self.assignment_dir, root))
@@ -27,7 +27,8 @@ class ExchangeSubmit(abc.ExchangeSubmit, Exchange):
         self.log.debug(f"ExchangeSubmit.init_src ensuring {self.src_path} exists")
 
     def init_dest(self):
-        pass
+        if self.coursedir.course_id == "":
+            self.fail("No course id specified. Re-run with --course flag.")
 
     # The submitted files have a timestamp.txt file with them.
     def tar_source(self):
@@ -53,7 +54,7 @@ class ExchangeSubmit(abc.ExchangeSubmit, Exchange):
         self.log.debug(f"ExchangeSubmit uploading to: {self.service_url()}")
         files = {"assignment": ("assignment.tar.gz", file)}
         r = self.api_request(
-            f"submission?course_id={quote_plus(self.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}",
+            f"submission?course_id={quote_plus(self.coursedir.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}",
             method="POST",
             files=files,
         )

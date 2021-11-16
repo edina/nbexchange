@@ -16,8 +16,11 @@ class ExchangeCollect(abc.ExchangeCollect, Exchange):
     def do_copy(self, src, dest):
         pass
 
+    # A check that we actually have a course_id!
+    # This should be set
     def init_src(self):
-        pass
+        if self.coursedir.course_id == "":
+            self.fail("No course id specified. Re-run with --course flag.")
 
     def init_dest(self):
         pass
@@ -25,7 +28,7 @@ class ExchangeCollect(abc.ExchangeCollect, Exchange):
     def download(self, submission, dest_path):
         self.log.debug(f"ExchangeCollect.download - record {submission} to {dest_path}")
         r = self.api_request(
-            f"collection?course_id={quote_plus(self.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}&path={quote_plus(submission['path'])}"
+            f"collection?course_id={quote_plus(self.coursedir.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}&path={quote_plus(submission['path'])}"
         )
         self.log.debug(
             f"Got back {r.status_code}  {r.headers['content-type']} after file download"
@@ -33,7 +36,7 @@ class ExchangeCollect(abc.ExchangeCollect, Exchange):
 
         if r.status_code > 399:
             self.fail(
-                f"Error failing to collect for assignment {self.coursedir.assignment_id} on course {self.course_id}: status code {r.status_code}: error {r.content}"
+                f"Error failing to collect for assignment {self.coursedir.assignment_id} on course {self.coursedir.course_id}: status code {r.status_code}: error {r.content}"
             )
 
         if r.headers["content-type"] == "application/x-tar":
@@ -46,22 +49,22 @@ class ExchangeCollect(abc.ExchangeCollect, Exchange):
             except Exception as e:  # TODO: exception handling
                 if hasattr(e, "message"):
                     self.fail(
-                        f"Error unpacking download for {self.coursedir.assignment_id} on course {self.course_id}: {e.message}"
+                        f"Error unpacking download for {self.coursedir.assignment_id} on course {self.coursedir.course_id}: {e.message}"
                     )
                 else:
                     self.fail(
-                        f"Error unpacking download for {self.coursedir.assignment_id} on course {self.course_id}: {e}"
+                        f"Error unpacking download for {self.coursedir.assignment_id} on course {self.coursedir.course_id}: {e}"
                     )
         else:
             # Fails, even if the json response is a success (for now)
             data = r.json()
             if not data["success"]:
                 self.fail(
-                    f"Error failing to collect for assignment {self.coursedir.assignment_id} on course {self.course_id}"
+                    f"Error failing to collect for assignment {self.coursedir.assignment_id} on course {self.coursedir.course_id}"
                 )
             else:
                 self.fail(
-                    f"Error failing to collect for assignment {self.coursedir.assignment_id} on course {self.course_id}: {data['note']}"
+                    f"Error failing to collect for assignment {self.coursedir.assignment_id} on course {self.coursedir.course_id}: {data['note']}"
                 )
 
     def do_collect(self):
@@ -71,7 +74,7 @@ class ExchangeCollect(abc.ExchangeCollect, Exchange):
         If coursedir.student_id, then we're only looking for that user"""
 
         # Get a list of submissions
-        url = f"collections?course_id={quote_plus(self.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}"
+        url = f"collections?course_id={quote_plus(self.coursedir.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}"
         if self.coursedir.student_id != "*":
             url = url + f"&user_id={quote_plus(self.coursedir.student_id)}"
         r = self.api_request(url)
@@ -95,11 +98,11 @@ class ExchangeCollect(abc.ExchangeCollect, Exchange):
 
         if len(submissions) == 0:
             self.log.warning(
-                f"No submissions of '{self.coursedir.assignment_id}' for course '{self.course_id}' to collect"
+                f"No submissions of '{self.coursedir.assignment_id}' for course '{self.coursedir.course_id}' to collect"
             )
         else:
             self.log.debug(
-                f"Processing {len(submissions)} submissions of '{self.coursedir.assignment_id}' for course '{self.course_id}'"
+                f"Processing {len(submissions)} submissions of '{self.coursedir.assignment_id}' for course '{self.coursedir.course_id}'"
             )
 
         for submission in submissions:
@@ -114,6 +117,8 @@ class ExchangeCollect(abc.ExchangeCollect, Exchange):
                     "",
                 )  # TODO: should we prefer first or last name here?
 
+            # self.coursedir.submitted_directory gets defined in `list.py`
+            #   otherwise this is consistent with the upstream code
             if student_id:
                 local_dest_path = self.coursedir.format_path(
                     self.coursedir.submitted_directory,

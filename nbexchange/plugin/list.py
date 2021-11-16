@@ -37,9 +37,11 @@ class ExchangeList(abc.ExchangeList, Exchange):
 
         (it doesn't care about feedback or collected actions)
         """
-        if self.course_id:
+        if self.coursedir.course_id:
             """List assignments for specific course"""
-            r = self.api_request(f"assignments?course_id={quote_plus(self.course_id)}")
+            r = self.api_request(
+                f"assignments?course_id={quote_plus(self.coursedir.course_id)}"
+            )
         else:
             """List assignments for all courses"""
             r = self.api_request(f"assignments")
@@ -60,7 +62,7 @@ class ExchangeList(abc.ExchangeList, Exchange):
     # sets self.assignments to be the list of assignment records that match the
     #  released/submitted/cached criteria configured
     def init_dest(self):
-        course_id = self.course_id if self.course_id else "*"
+        course_id = self.coursedir.course_id if self.coursedir.course_id else "*"
         assignment_id = (
             self.coursedir.assignment_id if self.coursedir.assignment_id else "*"
         )
@@ -101,7 +103,9 @@ class ExchangeList(abc.ExchangeList, Exchange):
 
             if self.path_includes_course:
                 assignment_dir = os.path.join(
-                    self.assignment_dir, self.course_id, assignment.get("assignment_id")
+                    self.assignment_dir,
+                    self.coursedir.course_id,
+                    assignment.get("assignment_id"),
                 )
 
             assignment["notebooks"] = []
@@ -128,9 +132,13 @@ class ExchangeList(abc.ExchangeList, Exchange):
         held_assignments = {"fetched": {}, "released": {}}
         assignment_dir = os.path.join(self.assignment_dir)
         if self.path_includes_course:
-            assignment_dir = os.path.join(self.assignment_dir, self.course_id)
+            assignment_dir = os.path.join(self.assignment_dir, self.coursedir.course_id)
 
-        course_id = self.course_id if self.course_id and self.course_id != "*" else None
+        course_id = (
+            self.coursedir.course_id
+            if self.coursedir.course_id and self.coursedir.course_id != "*"
+            else None
+        )
         assignment_id = (
             self.coursedir.assignment_id
             if self.coursedir.assignment_id and self.coursedir.assignment_id != "*"
@@ -236,7 +244,9 @@ class ExchangeList(abc.ExchangeList, Exchange):
                 )
                 if self.path_includes_course:
                     assignment_dir = os.path.join(
-                        self.course_id, assignment.get("assignment_id"), "feedback"
+                        self.coursedir.course_id,
+                        assignment.get("assignment_id"),
+                        "feedback",
                     )
 
                 local_feedback_dir = None
@@ -356,26 +366,39 @@ class ExchangeList(abc.ExchangeList, Exchange):
         return assignments
 
     def remove_files(self):
-        if self.course_id:
+        if self.coursedir.course_id:
             """Delete assignment"""
 
-            url = f"assignment?course_id={quote_plus(self.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}"
+            url = f"assignment?course_id={quote_plus(self.coursedir.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}"
 
             r = self.api_request(url, method="DELETE")
 
             self.log.debug(f"Got back {r.status_code} after assignment unrelease")
 
     def start(self):
-        if self.path_includes_course:
-            self.coursedir.submitted_directory = os.path.join(
-                self.course_id, "collected"
-            )
-            r = self.course_id
-        else:
-            self.coursedir.submitted_directory = "collected"
-            r = "."
 
-        self.fetched_root = os.path.abspath(os.path.join("", r))
+        #####
+        #
+        # This is the code that changes the submitted directory
+        #   away from default.
+        # The feature flag NAAS_FEATURE_MULTI_MARKERS is also used
+        #   to revert to default nbgrader behaviour
+        # Once the feature flag becomes the default, `self.fetched_root`
+        #   can be ditched
+        #####
+        if not os.environ.get("NAAS_FEATURE_MULTI_MARKERS"):
+            if self.path_includes_course:
+                self.coursedir.submitted_directory = os.path.join(
+                    self.coursedir.course_id, "collected"
+                )
+                r = self.coursedir.course_id
+            else:
+                self.coursedir.submitted_directory = "collected"
+                r = "."
+            self.fetched_root = os.path.abspath(os.path.join("", r))
+        else:
+            self.fetched_root = os.path.abspath(".")
+
         if self.remove:
             return self.remove_files()
         else:

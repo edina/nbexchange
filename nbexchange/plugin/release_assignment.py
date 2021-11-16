@@ -53,8 +53,11 @@ class ExchangeReleaseAssignment(abc.ExchangeReleaseAssignment, Exchange):
                 )
         self.log.debug(f"ExchangeRelease.init_src ensuring {self.src_path} exists")
 
+    # Unlike the filesystem version, we don't need to have an exchange folder
+    # or `self.course_path` from the `default` exchange
     def init_dest(self):
-        pass
+        if self.coursedir.course_id == "":
+            self.fail("No course id specified. Re-run with --course flag.")
 
     def tar_source(self):
 
@@ -77,7 +80,7 @@ class ExchangeReleaseAssignment(abc.ExchangeReleaseAssignment, Exchange):
     def upload(self, file):
         files = {"assignment": ("assignment.tar.gz", file)}
 
-        url = f"assignment?course_id={quote_plus(self.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}"
+        url = f"assignment?course_id={quote_plus(self.coursedir.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}"
 
         r = self.api_request(
             url, method="POST", data={"notebooks": self.notebooks}, files=files

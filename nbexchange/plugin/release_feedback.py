@@ -28,7 +28,8 @@ class ExchangeReleaseFeedback(abc.ExchangeReleaseFeedback, Exchange):
 
     # where in the user tree
     def init_dest(self):
-        pass
+        if self.coursedir.course_id == "":
+            self.fail("No course id specified. Re-run with --course flag.")
 
     def copy_if_missing(self, src, dest, ignore=None):
         pass
@@ -81,7 +82,7 @@ class ExchangeReleaseFeedback(abc.ExchangeReleaseFeedback, Exchange):
             timestamp = open(os.path.join(feedback_dir, "timestamp.txt")).read().strip()
             nbfile = os.path.join(submission_dir, "{}.ipynb".format(notebook_id))
             unique_key = make_unique_key(
-                self.course_id,
+                self.coursedir.course_id,
                 self.coursedir.assignment_id,
                 notebook_id,
                 student_id,
@@ -118,7 +119,7 @@ class ExchangeReleaseFeedback(abc.ExchangeReleaseFeedback, Exchange):
             files = {"feedback": ("feedback.html", feedback_file.read())}
 
         url = (
-            f"feedback?course_id={quote_plus(self.course_id)}"
+            f"feedback?course_id={quote_plus(self.coursedir.course_id)}"
             f"&assignment_id={quote_plus(assignment_id)}"
             f"&notebook={quote_plus(notebook)}"
             f"&student={quote_plus(student)}"

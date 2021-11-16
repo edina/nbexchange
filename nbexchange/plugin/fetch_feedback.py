@@ -20,14 +20,15 @@ class ExchangeFetchFeedback(abc.ExchangeFetchFeedback, Exchange):
 
     # where the downloaded files are placed
     def init_src(self):
-        pass
+        if self.coursedir.course_id == "":
+            self.fail("No course id specified. Re-run with --course flag.")
 
     # where in the user tree
     def init_dest(self):
-        root = self.coursedir.assignment_id
         if self.path_includes_course:
             root = os.path.join(self.coursedir.course_id, self.coursedir.assignment_id)
-
+        else:
+            root = self.coursedir.assignment_id
         self.dest_path = os.path.abspath(
             os.path.join(self.assignment_dir, root, "feedback")
         )

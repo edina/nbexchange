@@ -76,7 +76,7 @@ def test_collect_methods(plugin_config, tmpdir):
             (object,),
             {
                 "status_code": 200,
-                "headers": {"content-type": "application/x-tar"},
+                "headers": {"content-type": "application/gzip"},
                 "content": tar_file.read(),
             },
         )
@@ -87,7 +87,7 @@ def test_collect_methods(plugin_config, tmpdir):
             (object,),
             {
                 "status_code": 200,
-                "headers": {"content-type": "application/x-tar"},
+                "headers": {"content-type": "application/gzip"},
                 "content": b"",
             },
         )
@@ -135,7 +135,7 @@ def test_collect_normal(plugin_config, tmpdir):
                 (object,),
                 {
                     "status_code": 200,
-                    "headers": {"content-type": "application/x-tar"},
+                    "headers": {"content-type": "application/gzip"},
                     "json": lambda: {
                         "success": True,
                         "value": [
@@ -167,7 +167,7 @@ def test_collect_normal(plugin_config, tmpdir):
                 (object,),
                 {
                     "status_code": 200,
-                    "headers": {"content-type": "application/x-tar"},
+                    "headers": {"content-type": "application/gzip"},
                     "content": tar_file.read(),
                 },
             )
@@ -242,7 +242,7 @@ def test_collect_normal_update(plugin_config, tmpdir):
                 (object,),
                 {
                     "status_code": 200,
-                    "headers": {"content-type": "application/x-tar"},
+                    "headers": {"content-type": "application/gzip"},
                     "json": lambda: {
                         "success": True,
                         "value": [
@@ -274,7 +274,7 @@ def test_collect_normal_update(plugin_config, tmpdir):
                 (object,),
                 {
                     "status_code": 200,
-                    "headers": {"content-type": "application/x-tar"},
+                    "headers": {"content-type": "application/gzip"},
                     "content": tar_file.read(),
                 },
             )
@@ -359,7 +359,7 @@ def test_collect_normal_dont_update(plugin_config, tmpdir):
                 (object,),
                 {
                     "status_code": 200,
-                    "headers": {"content-type": "application/x-tar"},
+                    "headers": {"content-type": "application/gzip"},
                     "json": lambda: {
                         "success": True,
                         "value": [
@@ -391,7 +391,7 @@ def test_collect_normal_dont_update(plugin_config, tmpdir):
                 (object,),
                 {
                     "status_code": 200,
-                    "headers": {"content-type": "application/x-tar"},
+                    "headers": {"content-type": "application/gzip"},
                     "content": tar_file.read(),
                 },
             )
@@ -476,7 +476,7 @@ def test_collect_normal_dont_update_old(plugin_config, tmpdir):
                 (object,),
                 {
                     "status_code": 200,
-                    "headers": {"content-type": "application/x-tar"},
+                    "headers": {"content-type": "application/gzip"},
                     "json": lambda: {
                         "success": True,
                         "value": [
@@ -508,7 +508,7 @@ def test_collect_normal_dont_update_old(plugin_config, tmpdir):
                 (object,),
                 {
                     "status_code": 200,
-                    "headers": {"content-type": "application/x-tar"},
+                    "headers": {"content-type": "application/gzip"},
                     "content": tar_file.read(),
                 },
             )
@@ -566,7 +566,7 @@ def test_collect_normal_several(plugin_config, tmpdir):
                 (object,),
                 {
                     "status_code": 200,
-                    "headers": {"content-type": "application/x-tar"},
+                    "headers": {"content-type": "application/gzip"},
                     "json": lambda: {
                         "success": True,
                         "value": [
@@ -600,7 +600,7 @@ def test_collect_normal_several(plugin_config, tmpdir):
                 (object,),
                 {
                     "status_code": 200,
-                    "headers": {"content-type": "application/x-tar"},
+                    "headers": {"content-type": "application/gzip"},
                     "content": tar_file.read(),
                 },
             )
@@ -666,7 +666,7 @@ def test_collect_normal_gradebook_called(plugin_config, tmpdir):
                 (object,),
                 {
                     "status_code": 200,
-                    "headers": {"content-type": "application/x-tar"},
+                    "headers": {"content-type": "application/gzip"},
                     "json": lambda: {
                         "success": True,
                         "value": [
@@ -699,7 +699,7 @@ def test_collect_normal_gradebook_called(plugin_config, tmpdir):
                 (object,),
                 {
                     "status_code": 200,
-                    "headers": {"content-type": "application/x-tar"},
+                    "headers": {"content-type": "application/gzip"},
                     "content": tar_file.read(),
                 },
             )
@@ -758,7 +758,7 @@ def test_collect_normal_gradebook_called_no_space(plugin_config, tmpdir):
                 (object,),
                 {
                     "status_code": 200,
-                    "headers": {"content-type": "application/x-tar"},
+                    "headers": {"content-type": "application/gzip"},
                     "json": lambda: {
                         "success": True,
                         "value": [
@@ -791,7 +791,7 @@ def test_collect_normal_gradebook_called_no_space(plugin_config, tmpdir):
                 (object,),
                 {
                     "status_code": 200,
-                    "headers": {"content-type": "application/x-tar"},
+                    "headers": {"content-type": "application/gzip"},
                     "content": tar_file.read(),
                 },
             )
@@ -850,7 +850,7 @@ def test_collect_normal_gradebook_called_no_full_name(plugin_config, tmpdir):
                 (object,),
                 {
                     "status_code": 200,
-                    "headers": {"content-type": "application/x-tar"},
+                    "headers": {"content-type": "application/gzip"},
                     "json": lambda: {
                         "success": True,
                         "value": [
@@ -882,7 +882,7 @@ def test_collect_normal_gradebook_called_no_full_name(plugin_config, tmpdir):
                 (object,),
                 {
                     "status_code": 200,
-                    "headers": {"content-type": "application/x-tar"},
+                    "headers": {"content-type": "application/gzip"},
                     "content": tar_file.read(),
                 },
             )
@@ -945,7 +945,7 @@ def test_collect_normal_several_gradebook_called(plugin_config, tmpdir):
                 (object,),
                 {
                     "status_code": 200,
-                    "headers": {"content-type": "application/x-tar"},
+                    "headers": {"content-type": "application/gzip"},
                     "json": lambda: {
                         "success": True,
                         "value": [
@@ -983,7 +983,7 @@ def test_collect_normal_several_gradebook_called(plugin_config, tmpdir):
                 (object,),
                 {
                     "status_code": 200,
-                    "headers": {"content-type": "application/x-tar"},
+                    "headers": {"content-type": "application/gzip"},
                     "content": tar_file.read(),
                 },
             )
@@ -1035,7 +1035,7 @@ def test_collect_normal_several_full_name_none(plugin_config, tmpdir):
                 (object,),
                 {
                     "status_code": 200,
-                    "headers": {"content-type": "application/x-tar"},
+                    "headers": {"content-type": "application/gzip"},
                     "json": lambda: {
                         "success": True,
                         "value": [
@@ -1073,7 +1073,7 @@ def test_collect_normal_several_full_name_none(plugin_config, tmpdir):
                 (object,),
                 {
                     "status_code": 200,
-                    "headers": {"content-type": "application/x-tar"},
+                    "headers": {"content-type": "application/gzip"},
                     "content": tar_file.read(),
                 },
             )
@@ -1107,7 +1107,7 @@ def test_collect_handles_failure_json(plugin_config, tmpdir):
                 (object,),
                 {
                     "status_code": 200,
-                    "headers": {"content-type": "application/x-tar"},
+                    "headers": {"content-type": "application/gzip"},
                     "json": lambda: {
                         "success": True,
                         "value": [
@@ -1164,7 +1164,7 @@ def test_collect_handles_500_failure(plugin_config, tmpdir):
                 (object,),
                 {
                     "status_code": 200,
-                    "headers": {"content-type": "application/x-tar"},
+                    "headers": {"content-type": "application/gzip"},
                     "json": lambda: {
                         "success": True,
                         "value": [
@@ -1183,7 +1183,7 @@ def test_collect_handles_500_failure(plugin_config, tmpdir):
                 (object,),
                 {
                     "status_code": 500,
-                    "headers": {"content-type": "application/x-tar"},
+                    "headers": {"content-type": "application/gzip"},
                     "content": http_error,
                 },
             )
@@ -1214,7 +1214,7 @@ def test_docollect_handles_failure_json(plugin_config, tmpdir):
             (object,),
             {
                 "status_code": 200,
-                "headers": {"content-type": "application/x-tar"},
+                "headers": {"content-type": "application/gzip"},
                 "json": lambda: {
                     "success": False,
                     "note": "Collections call requires both a course code and an assignment code",
@@ -1228,7 +1228,7 @@ def test_docollect_handles_failure_json(plugin_config, tmpdir):
             (object,),
             {
                 "status_code": 200,
-                "headers": {"content-type": "application/x-tar"},
+                "headers": {"content-type": "application/gzip"},
                 "json": lambda: {
                     "success": False,
                     "note": f"User not subscribed to course {plugin_config.CourseDirectory.course_id}",

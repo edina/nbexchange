@@ -357,13 +357,14 @@ class ExchangeList(abc.ExchangeList, Exchange):
                 self.coursedir.submitted_directory = os.path.join(
                     self.coursedir.course_id, "collected"
                 )
-                r = self.coursedir.course_id
             else:
                 self.coursedir.submitted_directory = "collected"
-                r = "."
-            self.fetched_root = os.path.abspath(os.path.join("", r))
+
+        if self.path_includes_course:
+            r = self.coursedir.course_id
         else:
-            self.fetched_root = os.path.abspath(".")
+            r = "."
+        self.fetched_root = os.path.abspath(os.path.join("", r))
 
         if self.remove:
             return self.remove_files()

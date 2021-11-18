@@ -101,7 +101,7 @@ def test_fetch_assignment_methods_rest(plugin_config, tmpdir):
                 (object,),
                 {
                     "status_code": 200,
-                    "headers": {"content-type": "application/x-tar"},
+                    "headers": {"content-type": "application/gzip"},
                     "content": tar_file.read(),
                 },
             )
@@ -149,7 +149,7 @@ def test_fetch_assignment_fetch_normal(plugin_config, tmpdir):
                 (object,),
                 {
                     "status_code": 200,
-                    "headers": {"content-type": "application/x-tar"},
+                    "headers": {"content-type": "application/gzip"},
                     "content": tar_file.read(),
                 },
             )
@@ -193,7 +193,7 @@ def test_fetch_assignment_fetch_normal_with_path_includes_course(plugin_config, 
                 (object,),
                 {
                     "status_code": 200,
-                    "headers": {"content-type": "application/x-tar"},
+                    "headers": {"content-type": "application/gzip"},
                     "content": tar_file.read(),
                 },
             )
@@ -238,7 +238,7 @@ def test_fetch_assignment_fetch_several_normal(plugin_config, tmpdir):
                 (object,),
                 {
                     "status_code": 200,
-                    "headers": {"content-type": "application/x-tar"},
+                    "headers": {"content-type": "application/gzip"},
                     "content": tar_file.read(),
                 },
             )
@@ -287,7 +287,7 @@ def test_fetch_empty_folder_exists(plugin_config, tmpdir):
                 (object,),
                 {
                     "status_code": 200,
-                    "headers": {"content-type": "application/x-tar"},
+                    "headers": {"content-type": "application/gzip"},
                     "content": tar_file.read(),
                 },
             )
@@ -338,7 +338,7 @@ def test_fetch_folder_exists_with_ipynb(plugin_config, tmpdir):
                 (object,),
                 {
                     "status_code": 200,
-                    "headers": {"content-type": "application/x-tar"},
+                    "headers": {"content-type": "application/gzip"},
                     "content": tar_file.read(),
                 },
             )
@@ -388,7 +388,7 @@ def test_fetch_folder_exists_with_other_file(plugin_config, tmpdir):
                 (object,),
                 {
                     "status_code": 200,
-                    "headers": {"content-type": "application/x-tar"},
+                    "headers": {"content-type": "application/gzip"},
                     "content": tar_file.read(),
                 },
             )
@@ -422,7 +422,7 @@ def test_fetch_assignment_handles_500_failure(plugin_config):
                 (object,),
                 {
                     "status_code": 500,
-                    "headers": {"content-type": "application/x-tar"},
+                    "headers": {"content-type": "application/gzip"},
                     "content": http_error,
                 },
             )

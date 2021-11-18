@@ -79,7 +79,7 @@ class ExchangeFetchAssignment(abc.ExchangeFetchAssignment, Exchange):
                 f"Error failing to fetch assignment {self.coursedir.assignment_id} on course {self.coursedir.course_id}: status code {r.status_code}: error {r.content}"
             )
 
-        if r.headers["content-type"] == "application/x-tar":
+        if r.headers["content-type"] == "application/gzip":
             tgz = r.content
 
             try:

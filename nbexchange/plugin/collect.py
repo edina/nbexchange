@@ -39,7 +39,7 @@ class ExchangeCollect(abc.ExchangeCollect, Exchange):
                 f"Error failing to collect for assignment {self.coursedir.assignment_id} on course {self.coursedir.course_id}: status code {r.status_code}: error {r.content}"
             )
 
-        if r.headers["content-type"] == "application/x-tar":
+        if r.headers["content-type"] == "application/gzip":
             tgz = r.content
 
             try:

@@ -1,13 +1,10 @@
 import glob
 import json
 import os
-import re
-import sys
 from urllib.parse import quote, quote_plus
 
 import nbgrader.exchange.abc as abc
-from dateutil import parser
-from traitlets import Bool, Unicode
+from traitlets import Unicode
 
 from .exchange import Exchange
 
@@ -62,11 +59,6 @@ class ExchangeList(abc.ExchangeList, Exchange):
     # sets self.assignments to be the list of assignment records that match the
     #  released/submitted/cached criteria configured
     def init_dest(self):
-        course_id = self.coursedir.course_id if self.coursedir.course_id else "*"
-        assignment_id = (
-            self.coursedir.assignment_id if self.coursedir.assignment_id else "*"
-        )
-
         self.assignments = []
 
         exchange_listed_assignments = self.query_exchange()
@@ -130,25 +122,6 @@ class ExchangeList(abc.ExchangeList, Exchange):
         # Set up some general variables
         self.assignments = []
         held_assignments = {"fetched": {}, "released": {}}
-        assignment_dir = os.path.join(self.assignment_dir)
-        if self.path_includes_course:
-            assignment_dir = os.path.join(self.assignment_dir, self.coursedir.course_id)
-
-        course_id = (
-            self.coursedir.course_id
-            if self.coursedir.course_id and self.coursedir.course_id != "*"
-            else None
-        )
-        assignment_id = (
-            self.coursedir.assignment_id
-            if self.coursedir.assignment_id and self.coursedir.assignment_id != "*"
-            else None
-        )
-        student_id = (
-            self.coursedir.student_id
-            if self.coursedir.student_id and self.coursedir.student_id != "*"
-            else None
-        )
 
         # Get a list of everything from the exchange
         exchange_listed_assignments = self.query_exchange()
@@ -198,10 +171,6 @@ class ExchangeList(abc.ExchangeList, Exchange):
             if assignment is None:
                 continue
 
-            assignment_directory = (
-                self.fetched_root + "/" + assignment.get("assignment_id")
-            )
-
             # Hang onto the fetched assignment, if there is one
             # Note, we'll only have a note of the _first_ one - but that's fine
             #  as the timestamp is irrelevant... we just need to know if we
@@ -249,11 +218,8 @@ class ExchangeList(abc.ExchangeList, Exchange):
                         "feedback",
                     )
 
-                local_feedback_dir = None
                 local_feedback_path = None
                 has_local_feedback = False
-                has_exchange_feedback = False
-                feedback_updated = False
 
                 for notebook in assignment["notebooks"]:
 

@@ -119,11 +119,11 @@ class ExchangeFetchAssignment(abc.ExchangeFetchAssignment, Exchange):
             relpath = os.path.relpath(destpath, os.getcwd())
             if not os.path.exists(destpath):
                 if os.path.isdir(srcpath):
-                    self.log.warning("Creating missing directory '%s'", relpath)
+                    self.log.info("Creating missing directory '%s'", relpath)
                     os.mkdir(destpath)
 
                 else:
-                    self.log.warning("Replacing missing file '%s'", relpath)
+                    self.log.info("Replacing missing file '%s'", relpath)
                     shutil.copy(srcpath, destpath)
 
             if os.path.isdir(srcpath):

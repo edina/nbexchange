@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.2.8
+
+Support for multiple markers
+
 ## v1.2.7
 
 * Add a file-size upload limit (defaults to 5GB)

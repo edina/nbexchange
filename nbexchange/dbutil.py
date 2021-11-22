@@ -193,9 +193,8 @@ def register_foreign_keys(engine):
 
     @event.listens_for(engine, "connect")
     def connect(dbapi_con, con_record):
-        cursor = dbapi_con.cursor()
-        cursor.execute("PRAGMA foreign_keys=ON")
-        cursor.close()
+        with dbapi_con.cursor() as cursor:
+            cursor.execute("PRAGMA foreign_keys=ON")
 
 
 @event.listens_for(Session, "persistent_to_deleted")

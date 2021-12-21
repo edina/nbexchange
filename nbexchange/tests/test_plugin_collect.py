@@ -34,7 +34,7 @@ ass_1_2 = "assign_1_2"
 ass_1_3 = "assign_1_3"
 ass_1_4 = "assign_1_4"
 ass_1_5 = "assign_1_5"
-
+ass_1_a2ovi = "⍺ to ⍵ via ∞"
 
 @pytest.mark.gen_test
 def test_collect_methods(plugin_config, tmpdir):

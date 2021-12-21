@@ -10,6 +10,8 @@ User -> Course -> Subscription -> Assignment -> Action -> Notebook -> Feedback
 
 """
 import pytest
+import pickle
+
 from sqlalchemy.exc import IntegrityError
 
 # NOTE: All objects & relationships that are built up remain until the end of
@@ -88,6 +90,15 @@ def user_fidel(db):
         db.commit()
     return orm_thing
 
+# Rainbow Unicorn Rose (three "words")
+@pytest.fixture
+def user_rur(db):
+    orm_thing = User.find_by_name(db, "🌈 🦄 🌹")
+    if not orm_thing:
+        orm_thing = User(name="🌈 🦄 🌹", org_id=2)
+        db.add(orm_thing)
+        db.commit()
+    return orm_thing
 
 @pytest.fixture
 def assignment_tree(db):
@@ -108,6 +119,17 @@ def assignment_false(db):
         orm_thing = AssignmentModel(
             assignment_code="not used", course_id=1, active=False
         )
+        db.add(orm_thing)
+        db.commit()
+    return orm_thing
+
+
+# Alpha to Omega via Infinity
+@pytest.fixture
+def assignment_a2ovi(db):
+    orm_thing = AssignmentModel.find_by_code(db, "⍺ to ⍵ via ∞", 1)
+    if not orm_thing:
+        orm_thing = AssignmentModel(assignment_code="⍺ to ⍵ via ∞", course_id=1)
         db.add(orm_thing)
         db.commit()
     return orm_thing
@@ -834,3 +856,46 @@ def test_feedback_find_all_for_student(
     feedback = Feedback.find_all_for_student(db, user_johaannes.id, assignment_tree.id)
 
     assert len(feedback) == 2
+
+def test_all_the_unicode(
+    db, assignment_a2ovi, user_rur, course_strange
+):
+    # subscribe user to course
+    # add assignment to course
+
+    role = "instructor"
+    release_file = "/some/random/path/to/a/file.tzg"
+    orm_subscription = Subscription(
+        user_id=user_rur.id, course_id=course_strange.id, role=role
+    )
+    db.add(orm_subscription)
+    assignment_a2ovi.course_id = course_strange.id
+    db.commit()
+
+    found_by_pk = Subscription.find_by_pk(db, orm_subscription.id)
+    assert found_by_pk.id == orm_subscription.id
+    assert orm_subscription.course.course_title == "Damnation Alley"
+
+    # release
+    orm_action = Action(
+        action=AssignmentActions.released,
+        location=release_file,
+    )
+    db.add(orm_action)
+    db.commit()
+    orm_action.user_id = user_rur.id
+    orm_action.assignment_id = assignment_a2ovi.id
+    db.commit()
+
+    # fetch
+    orm_action = Action(
+        user_id=user_rur.id,
+        assignment_id=assignment_a2ovi.id,
+        action=AssignmentActions.fetched,
+        location=release_file,
+    )
+    db.add(orm_action)
+    db.commit()
+
+    found = Action.find_most_recent_action(db, assignment_a2ovi.id )
+    assert found.user.name == user_rur.name

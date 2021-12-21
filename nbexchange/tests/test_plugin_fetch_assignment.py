@@ -4,6 +4,8 @@ import os
 import re
 import shutil
 import tarfile
+import urllib.parse
+
 from shutil import copyfile
 
 import pytest
@@ -30,6 +32,7 @@ notebook2_file = get_feedback_file(notebook2_filename)
 course_id = "no_course"
 ass_1_2 = "assign_1_2"
 ass_1_3 = "assign_1_3"
+ass_1_a2ovi = "⍺ to ⍵ via ∞"
 
 
 @pytest.mark.gen_test
@@ -433,6 +436,48 @@ def test_fetch_assignment_handles_500_failure(plugin_config):
             assert (
                 str(e_info.value)
                 == f"Error failing to fetch assignment {ass_1_2} on course {course_id}: status code 500: error {http_error}"
+            )
+    finally:
+        shutil.rmtree(plugin.dest_path)
+
+@pytest.mark.gen_test
+def test_fetch_assignment_fetch_unicode(plugin_config, tmpdir):
+    plugin_config.CourseDirectory.course_id = course_id
+    plugin_config.CourseDirectory.assignment_id = ass_1_a2ovi
+
+    plugin = ExchangeFetchAssignment(
+        coursedir=CourseDirectory(config=plugin_config), config=plugin_config
+    )
+
+    try:
+
+        def api_request(*args, **kwargs):
+            tar_file = io.BytesIO()
+
+            with tarfile.open(fileobj=tar_file, mode="w:gz") as tar_handle:
+                tar_handle.add(
+                    notebook1_filename, arcname=os.path.basename(notebook1_filename)
+                )
+            tar_file.seek(0)
+
+            assert args[0] == (
+                f"assignment?course_id={course_id}&assignment_id={urllib.parse.quote_plus(ass_1_a2ovi)}"
+            )
+            assert "method" not in kwargs or kwargs.get("method").lower() == "get"
+            return type(
+                "Response",
+                (object,),
+                {
+                    "status_code": 200,
+                    "headers": {"content-type": "application/gzip"},
+                    "content": tar_file.read(),
+                },
+            )
+
+        with patch.object(Exchange, "api_request", side_effect=api_request):
+            plugin.start()
+            assert os.path.exists(
+                os.path.join(plugin.dest_path, "assignment-0.6.ipynb")
             )
     finally:
         shutil.rmtree(plugin.dest_path)

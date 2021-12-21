@@ -4,6 +4,7 @@ import os
 import shutil
 import tarfile
 from shutil import copyfile
+import urllib.parse
 
 import pytest
 from mock import patch
@@ -35,6 +36,7 @@ ass_1_3 = "assign_1_3"
 ass_1_4 = "assign_1_4"
 ass_1_5 = "assign_1_5"
 ass_1_a2ovi = "⍺ to ⍵ via ∞"
+
 
 @pytest.mark.gen_test
 def test_collect_methods(plugin_config, tmpdir):
@@ -1245,3 +1247,88 @@ def test_docollect_handles_failure_json(plugin_config, tmpdir):
         with pytest.raises(ExchangeError) as e_info:
             called = plugin.start()
         assert str(e_info.value) == "Error looking for assignments to collect"
+
+
+# Check that a unicode path is made using both assignment_id and student_id
+@pytest.mark.gen_test
+def test_collect_with_unicode(plugin_config, tmpdir):
+    course_id = "made up"
+    assignment_id = "⍺ to ⍵ via ∞"
+    student_id = "🌈 🦄 🌹"
+
+    plugin_config.CourseDirectory.course_id = course_id
+    plugin_config.CourseDirectory.assignment_id = assignment_id
+    plugin_config.CourseDirectory.submitted_directory = str(
+        tmpdir.mkdir("submitted").realpath()
+    )
+    plugin = ExchangeCollect(
+        coursedir=CourseDirectory(config=plugin_config), config=plugin_config
+    )
+    collections = False
+    collection = False
+
+    def api_request(*args, **kwargs):
+        nonlocal collections, collection
+        tar_file = io.BytesIO()
+        if "collections" in args[0]:
+            assert collections is False
+            collections = True
+            assert args[0] == (
+                f"collections?course_id={urllib.parse.quote_plus(course_id)}&assignment_id={urllib.parse.quote_plus(assignment_id)}"
+            )
+            assert "method" not in kwargs or kwargs.get("method").lower() == "get"
+            return type(
+                "Response",
+                (object,),
+                {
+                    "status_code": 200,
+                    "headers": {"content-type": "application/gzip"},
+                    "json": lambda: {
+                        "success": True,
+                        "value": [
+                            {
+                                "student_id": student_id,
+                                "path": f"/submitted/{course_id}/{assignment_id}/1/",
+                                "timestamp": "2020-01-01 00:00:00.0 UTC",
+                            }
+                        ],
+                    },
+                },
+            )
+        else:
+            assert collection is False
+            collection = True
+            assert args[0] == (
+                f"collection?course_id={urllib.parse.quote_plus(course_id)}&assignment_id={urllib.parse.quote_plus(assignment_id)}&path=%2Fsubmitted%2F{urllib.parse.quote_plus(course_id)}%2F{urllib.parse.quote_plus(assignment_id)}%2F1%2F"
+            )
+            assert "method" not in kwargs or kwargs.get("method").lower() == "get"
+            with tarfile.open(fileobj=tar_file, mode="w:gz") as tar_handle:
+                tar_handle.add(
+                    notebook1_filename, arcname=os.path.basename(notebook1_filename)
+                )
+                # tar_handle.add(notebook2_filename, arcname=os.path.basename(notebook2_filename))
+            tar_file.seek(0)
+
+            return type(
+                "Response",
+                (object,),
+                {
+                    "status_code": 200,
+                    "headers": {"content-type": "application/gzip"},
+                    "content": tar_file.read(),
+                },
+            )
+
+    with patch.object(Exchange, "api_request", side_effect=api_request):
+        called = plugin.start()
+        assert collections and collection
+        assert os.path.exists(
+            os.path.join(
+                plugin.coursedir.format_path(
+                    plugin_config.CourseDirectory.submitted_directory,
+                    student_id,
+                    assignment_id,
+                ),
+                os.path.basename(notebook1_filename),
+            )
+        )

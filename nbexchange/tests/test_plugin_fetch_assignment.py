@@ -440,6 +440,7 @@ def test_fetch_assignment_handles_500_failure(plugin_config):
     finally:
         shutil.rmtree(plugin.dest_path)
 
+
 @pytest.mark.gen_test
 def test_fetch_assignment_fetch_unicode(plugin_config, tmpdir):
     plugin_config.CourseDirectory.course_id = course_id
@@ -476,6 +477,7 @@ def test_fetch_assignment_fetch_unicode(plugin_config, tmpdir):
 
         with patch.object(Exchange, "api_request", side_effect=api_request):
             plugin.start()
+            assert os.path.basename(plugin.dest_path) == ass_1_a2ovi
             assert os.path.exists(
                 os.path.join(plugin.dest_path, "assignment-0.6.ipynb")
             )

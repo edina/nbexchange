@@ -90,6 +90,7 @@ def user_fidel(db):
         db.commit()
     return orm_thing
 
+
 # Rainbow Unicorn Rose (three "words")
 @pytest.fixture
 def user_rur(db):
@@ -99,6 +100,7 @@ def user_rur(db):
         db.add(orm_thing)
         db.commit()
     return orm_thing
+
 
 @pytest.fixture
 def assignment_tree(db):
@@ -857,9 +859,8 @@ def test_feedback_find_all_for_student(
 
     assert len(feedback) == 2
 
-def test_all_the_unicode(
-    db, assignment_a2ovi, user_rur, course_strange
-):
+
+def test_all_the_unicode(db, assignment_a2ovi, user_rur, course_strange):
     # subscribe user to course
     # add assignment to course
 
@@ -897,5 +898,5 @@ def test_all_the_unicode(
     db.add(orm_action)
     db.commit()
 
-    found = Action.find_most_recent_action(db, assignment_a2ovi.id )
+    found = Action.find_most_recent_action(db, assignment_a2ovi.id)
     assert found.user.name == user_rur.name

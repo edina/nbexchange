@@ -68,6 +68,7 @@ class History(BaseHandler):
 
     urls = ["history"]
 
+    # want to add in stuff so "customer-admin" users see all courses for their org.
     @authenticated
     def get(self):
 

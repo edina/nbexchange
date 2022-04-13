@@ -46,18 +46,18 @@ def test_fetch_assignment_methods_init_dest(plugin_config, tmpdir):
 
     # we're good if the dir doesn't exist
     plugin.init_dest()
-    assert re.search(fr"{ass_1_2}$", plugin.dest_path)
+    assert re.search(rf"{ass_1_2}$", plugin.dest_path)
     assert os.path.isdir(plugin.dest_path)
 
     # we're good if the dir exists and is empty
     plugin.init_dest()
-    assert re.search(fr"{ass_1_2}$", plugin.dest_path)
+    assert re.search(rf"{ass_1_2}$", plugin.dest_path)
 
     # we're good if the dir exists, and has something OTHER than an ipynb file in it
     with open(f"{plugin.dest_path}/random.txt", "w") as fp:
         fp.write("Hello world")
     plugin.init_dest()
-    assert re.search(fr"{ass_1_2}$", plugin.dest_path)
+    assert re.search(rf"{ass_1_2}$", plugin.dest_path)
 
     # FAILS if the dir exists AND there's an ipynb file in it
     with open(f"{plugin.dest_path}/random.ipynb", "w") as fp:
@@ -81,7 +81,7 @@ def test_fetch_assignment_methods_rest(plugin_config, tmpdir):
     )
 
     plugin.init_src()
-    assert re.search(fr"{course_id}/{ass_1_2}/assignment.tar.gz$", plugin.src_path)
+    assert re.search(rf"{course_id}/{ass_1_2}/assignment.tar.gz$", plugin.src_path)
     plugin.init_dest()
 
     try:

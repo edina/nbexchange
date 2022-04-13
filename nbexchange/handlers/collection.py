@@ -44,13 +44,6 @@ class Collections(BaseHandler):
             self.finish({"success": False, "note": note})
             return
 
-        # set up some regex segments for use later on
-        # fr is combining f-string substitution with re's raw-string
-        re_action = r"submitted"
-        re_course = fr"{course_code}"
-        re_assignment = fr"{assignment_code}"
-        re_user = fr"{user_id}" if user_id else r"[^/]+"
-
         # Who is my user?
         this_user = self.nbex_user
 

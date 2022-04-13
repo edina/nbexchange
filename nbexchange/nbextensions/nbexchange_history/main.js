@@ -38,28 +38,7 @@ define([
         '</div>'
     ].join('\n'));
 
-    // function checkNbGraderVersion(base_url) {
-    //     var settings = {
-    //         cache : false,
-    //         type : "GET",
-    //         dataType : "json",
-    //         data : {
-    //             version: nbgrader_version
-    //         },
-    //         success : function (response) {
-    //             if (!response['success']) {
-    //                 var err = $("#history .version_error");
-    //                 err.text(response['message']);
-    //                 err.show();
-    //             }
-    //         },
-    //         error : utils.log_ajax_error,
-    //     };
-    //     var url = utils.url_path_join(base_url, 'nbgrader_version');
-    //     ajax(url, settings);
-    // }
-
-    function load_ipython_extension() {
+    function load() {
         // if (!Jupyter.notebook_list) return;
         var base_url = Jupyter.notebook_list.base_url;
         $('head').append(
@@ -91,10 +70,9 @@ define([
             }
         );
 
-        // checkNbGraderVersion(base_url);
     }
     return {
         
-        load_ipython_extension: load_ipython_extension
+        load_ipython_extension: load
     };
 });

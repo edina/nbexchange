@@ -33,7 +33,8 @@ define([
 
     // Remove all 'div' elements under the #history_list element
     CourseList.prototype.clear_list = function (loading) {
-        this.history_root_selector.children('div').remove
+        // this.history_root_selector.children('div').remove
+        foo = this.history_root_selector;
     };
 
     CourseList.prototype.bind_events = function () {

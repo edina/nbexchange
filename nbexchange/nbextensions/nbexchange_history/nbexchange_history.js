@@ -31,6 +31,11 @@ define([
         this.data = undefined;
     };
 
+    // Remove all 'div' elements under the #history_list element
+    CourseList.prototype.clear_list = function (loading) {
+        this.history_root_selector.children('div').remove
+    };
+
     CourseList.prototype.bind_events = function () {
         var that = this;
         this.refresh_element.click(function () {
@@ -69,14 +74,6 @@ define([
         };
         var url = utils.url_path_join(this.base_url, 'history');
         ajax(url, settings);
-    };
-
-    // Not sure what to do with these yet - but I should delete all
-    // the #history_list .panel-default divs
-    CourseList.prototype.clear_list = function (loading) {
-        var elems = [this.assignment_element];
-        var i;
-
     };
 
     // Not sure what to do with this yet - I need to consider

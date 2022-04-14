@@ -39,6 +39,13 @@ define([
     ].join('\n'));
 
     function load() {
+        var history_list = new HistoryList.CourseList(
+            '#history_list',
+            '#refresh_history_list',
+            {
+                base_url: Jupyter.notebook_list.base_url,
+            }
+        );
         // if (!Jupyter.notebook_list) return;
         var base_url = Jupyter.notebook_list.base_url;
         $('head').append(
@@ -62,13 +69,7 @@ define([
                 })
             )
         );
-        var history_list = new HistoryList.CourseList(
-            '#history_list',
-            '#refresh_history_list',
-            {
-                base_url: Jupyter.notebook_list.base_url,
-            }
-        );
+
 
     }
     return {

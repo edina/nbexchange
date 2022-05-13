@@ -9,9 +9,9 @@ get used by the handlers:
 User -> Course -> Subscription -> Assignment -> Action -> Notebook -> Feedback
 
 """
-import pytest
 import pickle
 
+import pytest
 from sqlalchemy.exc import IntegrityError
 
 # NOTE: All objects & relationships that are built up remain until the end of

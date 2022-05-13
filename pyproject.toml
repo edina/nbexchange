@@ -62,3 +62,10 @@ changelog = "https://github.com/edina/nbexchange/blob/master/CHANGELOG.md"
 
 [project.scripts]
 nbexchange = "nbexchange.app:NbExchange.launch_instance"
+
+[tool.black]
+line-length = 120
+
+[tool.isort]
+profile = "black"
+known_first_party = ["nbexchange"]

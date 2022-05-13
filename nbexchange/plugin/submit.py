@@ -1,7 +1,6 @@
 import io
 import os
 import sys
-
 from urllib.parse import quote_plus
 
 import nbgrader.exchange.abc as abc

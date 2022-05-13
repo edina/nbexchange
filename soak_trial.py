@@ -4,11 +4,9 @@ import glob
 import hashlib
 import io
 import json
-import jwt
 import logging
 import os
 import re
-import requests
 import shutil
 import sys
 import tarfile
@@ -19,6 +17,8 @@ from datetime import datetime
 from functools import partial
 from urllib.parse import quote_plus
 
+import jwt
+import requests
 from kubernetes import client, config
 
 

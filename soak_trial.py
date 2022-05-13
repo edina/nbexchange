@@ -45,9 +45,7 @@ class nbexchangeSoakTest:
     jwt_token = None
 
     def parse_args(self, args):
-        parser = argparse.ArgumentParser(
-            description="Arguments for nbexchange capacity-test."
-        )
+        parser = argparse.ArgumentParser(description="Arguments for nbexchange capacity-test.")
         parser.add_argument(
             "-c",
             "--cluster",
@@ -206,9 +204,7 @@ class nbexchangeSoakTest:
         if active_context["name"] != self.args.cluster:
             print(f"    kubectl config use-context {self.args.cluster}")
         print(f"    kubectl port-forward pod/{self.exchange_server}  9000:9000\n")
-        input(
-            ".... and wait for the command to say it's forwarding - then press enter here to continue"
-        )
+        input(".... and wait for the command to say it's forwarding - then press enter here to continue")
         ### port forwarding, hack ends
 
         self.log.info(
@@ -226,19 +222,13 @@ class nbexchangeSoakTest:
             "n_oid": "1",
             "n_nb": "Standard service",
         }
-        self.log.debug(
-            f"making jwt - payload: {payload}, secret: {self.args.jwt_secret}"
-        )
-        this_jwt_token = jwt.encode(
-            payload, self.args.jwt_secret, algorithm="HS256"
-        ).decode("UTF-8")
+        self.log.debug(f"making jwt - payload: {payload}, secret: {self.args.jwt_secret}")
+        this_jwt_token = jwt.encode(payload, self.args.jwt_secret, algorithm="HS256").decode("UTF-8")
         self.log.debug(f"make_jwt_token returning token {this_jwt_token}")
         return this_jwt_token
 
     def api_request(self, path, method="GET", jwt_token=None, *args, **kwargs):
-        self.log.debug(
-            f"api_request called. method:{method}, path:{path}, jwt_token:{jwt_token}"
-        )
+        self.log.debug(f"api_request called. method:{method}, path:{path}, jwt_token:{jwt_token}")
 
         cookies = dict()
         headers = dict()
@@ -259,9 +249,7 @@ class nbexchangeSoakTest:
                 return post_req(*args, **kwargs)
             elif method == "DELETE":
                 self.log.debug(f"make DELETE request")
-                delete_req = partial(
-                    requests.delete, url, headers=headers, cookies=cookies
-                )
+                delete_req = partial(requests.delete, url, headers=headers, cookies=cookies)
                 return delete_req(*args, **kwargs)
             else:
                 raise NotImplementedError(f"HTTP Method {method} is not implemented")
@@ -283,7 +271,9 @@ class nbexchangeSoakTest:
             tar_file.seek(0)
 
             files = {"assignment": ("assignment.tar.gz", tar_file)}
-            url = f"assignment?course_id={quote_plus(self.course_code)}&assignment_id={quote_plus(self.assignment_code)}"
+            url = (
+                f"assignment?course_id={quote_plus(self.course_code)}&assignment_id={quote_plus(self.assignment_code)}"
+            )
             self.log.debug(f"call self.api_request")
 
             r = self.api_request(
@@ -301,9 +291,7 @@ class nbexchangeSoakTest:
             if not data["success"]:
                 self.log.info(f"Release failed: {data['note']}")
             if data != {"success": True, "note": "Released"}:
-                self.log.warning(
-                    f"Release response not as expects: {data} != {{'success': True, 'note': 'Released'}}"
-                )
+                self.log.warning(f"Release response not as expects: {data} != {{'success': True, 'note': 'Released'}}")
         self.log.info(f"Assignment released")
 
     def student_fetch(self, username=None):
@@ -324,9 +312,7 @@ class nbexchangeSoakTest:
                 f"assignment?course_id={quote_plus(self.course_code)}&assignment_id={quote_plus(self.assignment_code)}",
                 jwt_token=user_jwt_token,
             )
-            self.log.debug(
-                f"Got back {r.status_code}  {r.headers['content-type']} after file download"
-            )
+            self.log.debug(f"Got back {r.status_code}  {r.headers['content-type']} after file download")
             tgz = r.content
             try:
                 tar_file = io.BytesIO(tgz)
@@ -363,9 +349,7 @@ class nbexchangeSoakTest:
             # timestamp format has to match the exchange, for veracity
             timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f %Z").strip()
             tar_file = io.BytesIO()
-            self.log.debug(
-                f"make the tar file object (with timestamp.txt file {timestamp})"
-            )
+            self.log.debug(f"make the tar file object (with timestamp.txt file {timestamp})")
 
             with tarfile.open(fileobj=tar_file, mode="w:gz") as tar_handle:
                 tar_handle.add(unpack_dir, arcname=".")
@@ -377,7 +361,9 @@ class nbexchangeSoakTest:
             tar_file.seek(0)
 
             files = {"assignment": ("assignment.tar.gz", tar_file)}
-            url = f"submission?course_id={quote_plus(self.course_code)}&assignment_id={quote_plus(self.assignment_code)}"
+            url = (
+                f"submission?course_id={quote_plus(self.course_code)}&assignment_id={quote_plus(self.assignment_code)}"
+            )
             self.log.debug(f"call self.api_request")
 
             r = self.api_request(
@@ -395,9 +381,7 @@ class nbexchangeSoakTest:
             if not data["success"]:
                 self.log.info(f"Release failed: {data['note']}")
             if data != {"success": True, "note": "Submitted"}:
-                self.log.warning(
-                    f"Release response not as expects: {data} != {{'success': True, 'note': 'Submitted'}}"
-                )
+                self.log.warning(f"Release response not as expects: {data} != {{'success': True, 'note': 'Submitted'}}")
         self.log.info(f"student_submit done")
 
     # This is a tad complex: it has to get the list of submissions, and then
@@ -410,7 +394,9 @@ class nbexchangeSoakTest:
 
             # Get a list of submissions
             self.log.debug(f"get a listing of collectable assignments")
-            url = f"collections?course_id={quote_plus(self.course_code)}&assignment_id={quote_plus(self.assignment_code)}"
+            url = (
+                f"collections?course_id={quote_plus(self.course_code)}&assignment_id={quote_plus(self.assignment_code)}"
+            )
             r = self.api_request(url, jwt_token=user_jwt_token)
             self.log.debug(f"Got back {r} when listing collectable assignments")
 
@@ -429,24 +415,16 @@ class nbexchangeSoakTest:
             self.log.debug(f"Found the following items: {submissions}")
 
             if len(submissions) == 0:
-                self.log.warning(
-                    f"No submissions of '{self.assignment_code}' to collect"
-                )
+                self.log.warning(f"No submissions of '{self.assignment_code}' to collect")
             else:
-                self.log.debug(
-                    f"Processing {len(submissions)} submissions of '{self.assignment_code}'"
-                )
+                self.log.debug(f"Processing {len(submissions)} submissions of '{self.assignment_code}'")
 
             for submission in submissions:
 
                 # Work out the user-name from the path:
                 # '/some/path/submitted/course_2/tree 1/1_kiz/1544109991/fdc8c4ae-b3e0-4db6-859d-17852d65ec08.gz'
                 regex = (
-                    f"/submitted/"
-                    + re.escape(self.course_code)
-                    + "/"
-                    + re.escape(self.assignment_code)
-                    + "/([^/]+)/"
+                    f"/submitted/" + re.escape(self.course_code) + "/" + re.escape(self.assignment_code) + "/([^/]+)/"
                 )
                 m = re.search(regex, submission["path"])
                 if m:
@@ -465,9 +443,7 @@ class nbexchangeSoakTest:
                             f"collection?course_id={quote_plus(self.course_code)}&assignment_id={quote_plus(self.assignment_code)}&path={quote_plus(submission['path'])}",
                             jwt_token=user_jwt_token,
                         )
-                        self.log.debug(
-                            f"Got back {r.status_code}  {r.headers['content-type']} after file download"
-                        )
+                        self.log.debug(f"Got back {r.status_code}  {r.headers['content-type']} after file download")
                         tgz = r.content
 
                         try:
@@ -480,9 +456,7 @@ class nbexchangeSoakTest:
                             else:
                                 self.log.warning(e)
                         found_files = os.listdir(str(local_dest_path))
-                        if sorted(found_files) != sorted(
-                            [self.notebook_name, self.data_file, "timestamp.txt"]
-                        ):
+                        if sorted(found_files) != sorted([self.notebook_name, self.data_file, "timestamp.txt"]):
                             self.log.warning(
                                 f"Instructor {username} failed to unpack assignment {self.assignment_code} for {student_id} into {local_dest_path} - seeing {found_files}"
                             )
@@ -494,9 +468,7 @@ class nbexchangeSoakTest:
                         # under 'collected' the test_1.html demo file from
                         # 'soak_trial_data/feedback and put them in an individual
                         # student directory under 'feedback'
-                        self.log.debug(
-                            "Now to mock the result of 'authgrade' and 'generate_feedback' for the student"
-                        )
+                        self.log.debug("Now to mock the result of 'authgrade' and 'generate_feedback' for the student")
                         local_feedback_path = os.path.join(
                             "/tmp/load_test/feedback",
                             self.assignment_code,
@@ -516,9 +488,7 @@ class nbexchangeSoakTest:
                                 self.log.warning(e)
                         self.log.debug("copy html file")
                         try:
-                            src = os.path.join(
-                                "soak_trial_data/feedback", self.feedback_name
-                            )
+                            src = os.path.join("soak_trial_data/feedback", self.feedback_name)
                             dest = os.path.join(local_feedback_path, self.feedback_name)
                             self.log.debug(f"copy {src} to {dest}")
                             shutil.copyfile(src, dest)
@@ -585,13 +555,9 @@ class nbexchangeSoakTest:
                     self.assignment_code,
                     student_id,
                 )
-                self.log.debug(
-                    f"feedback_dir: {feedback_dir}, feedback_dir: {feedback_dir}"
-                )
+                self.log.debug(f"feedback_dir: {feedback_dir}, feedback_dir: {feedback_dir}")
 
-                timestamp = (
-                    open(os.path.join(feedback_dir, "timestamp.txt")).read().strip()
-                )
+                timestamp = open(os.path.join(feedback_dir, "timestamp.txt")).read().strip()
                 nbfile = os.path.join(submission_dir, "{}.ipynb".format(notebook_id))
                 unique_key = "+".join(
                     [
@@ -610,9 +576,7 @@ class nbexchangeSoakTest:
                     m.update(unique_key.encode("utf-8"))
                 checksum = m.hexdigest()
 
-                release_timestamp = (
-                    datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f %Z").strip()
-                )
+                release_timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f %Z").strip()
 
                 self.log.info(
                     "Releasing feedback for student '{}' on assignment '{}/{}/{}' ({})".format(
@@ -636,9 +600,7 @@ class nbexchangeSoakTest:
                     f"&checksum={quote_plus(checksum)}"
                 )
 
-                r = self.api_request(
-                    url, method="POST", files=files, jwt_token=user_jwt_token
-                )
+                r = self.api_request(url, method="POST", files=files, jwt_token=user_jwt_token)
 
                 self.log.debug(f"Got back {r.status_code} after feedback upload")
                 data = None
@@ -655,9 +617,7 @@ class nbexchangeSoakTest:
                         f"Release response not as expects: {data} != {{'success': True, 'note': 'Feedback released'}}"
                     )
 
-                self.log.info(
-                    f"Uploaded feedback for {student_id} on assignment {self.assignment_code}."
-                )
+                self.log.info(f"Uploaded feedback for {student_id} on assignment {self.assignment_code}.")
 
         self.log.info(f"instructor_release_feedback done")
 
@@ -681,27 +641,19 @@ class nbexchangeSoakTest:
                 f"feedback?course_id={quote_plus(self.course_code)}&assignment_id={quote_plus(self.assignment_code)}",
                 jwt_token=user_jwt_token,
             )
-            self.log.debug(
-                f"Got back {r.status_code} {r.headers['content-type']} after file download"
-            )
+            self.log.debug(f"Got back {r.status_code} {r.headers['content-type']} after file download")
             content = r.json()
 
             # Feedback, here, is the time the feedback was generated, not the time of the submission
             if "feedback" in content:
                 for f in content["feedback"]:
-                    self.log.debug(
-                        f"fetch-feedback.download has {f['filename']}, {f['timestamp']}"
-                    )
+                    self.log.debug(f"fetch-feedback.download has {f['filename']}, {f['timestamp']}")
                     timestamp = f["timestamp"]
                     student_feedback_dir = os.path.join(download_dir, timestamp)
                     os.makedirs(student_feedback_dir, exist_ok=True)
                     try:
-                        self.log.debug(
-                            f"fetch-feedback.download writing to {student_feedback_dir}"
-                        )
-                        with open(
-                            os.path.join(student_feedback_dir, f["filename"]), "wb"
-                        ) as handle:
+                        self.log.debug(f"fetch-feedback.download writing to {student_feedback_dir}")
+                        with open(os.path.join(student_feedback_dir, f["filename"]), "wb") as handle:
                             handle.write(base64.b64decode(f["content"]))
                     except Exception as e:
                         self.log.debug(str(e))
@@ -717,14 +669,14 @@ class nbexchangeSoakTest:
 
     # This requires additional code in the handlers
     def tidy_up(self, username=None):
-        self.log.info(
-            f"Tidy_up called: assignment_id={self.assignment_code} (keep_data?: {self.args.keep_data})"
-        )
+        self.log.info(f"Tidy_up called: assignment_id={self.assignment_code} (keep_data?: {self.args.keep_data})")
         if username:
 
             user_jwt_token = self.make_jwt_token(username, "Instructor")
 
-            url = f"assignment?course_id={quote_plus(self.course_code)}&assignment_id={quote_plus(self.assignment_code)}"
+            url = (
+                f"assignment?course_id={quote_plus(self.course_code)}&assignment_id={quote_plus(self.assignment_code)}"
+            )
             if not self.args.keep_data:
                 self.log.info(f"We're purging the data.... so deleting files too")
                 url += "&purge=True"

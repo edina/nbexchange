@@ -60,9 +60,7 @@ class NbExchange(PrometheusMixIn, Application):
 
     flags = Dict(flags)
 
-    config_file = Unicode("nbexchange_config.py", help="The config file to load").tag(
-        config=True
-    )
+    config_file = Unicode("nbexchange_config.py", help="The config file to load").tag(config=True)
 
     base_url = os.environ.get("JUPYTERHUB_SERVICE_PREFIX", "/services/nbexchange/")
     base_storage_location = os.environ.get("NBEX_BASE_STORE", "/tmp/courses")
@@ -118,9 +116,7 @@ class NbExchange(PrometheusMixIn, Application):
         # and all of its ancenstors until propagate is set to False.
         self.log.propagate = False
 
-        _formatter = self._log_formatter_cls(
-            fmt=self.log_format, datefmt=self.log_datefmt
-        )
+        _formatter = self._log_formatter_cls(fmt=self.log_format, datefmt=self.log_datefmt)
 
         # hook up tornado 3's loggers to our app handlers
         for log in (app_log, access_log, gen_log):
@@ -153,13 +149,11 @@ class NbExchange(PrometheusMixIn, Application):
     """,
     ).tag(config=True)
     reset_db = Bool(False, help="Purge and reset the database.").tag(config=True)
-    debug_db = Bool(
-        False, help="log all database transactions. This has A LOT of output"
-    ).tag(config=True)
+    debug_db = Bool(False, help="log all database transactions. This has A LOT of output").tag(config=True)
 
-    max_buffer_size = Integer(
-        5253530000, help="The maximum size, in bytes, of an upload (defaults to 5GB)"
-    ).tag(config=True)
+    max_buffer_size = Integer(5253530000, help="The maximum size, in bytes, of an upload (defaults to 5GB)").tag(
+        config=True
+    )
 
     def _check_db_path(self, path):
         """More informative log messages for failed filesystem access"""
@@ -248,9 +242,7 @@ class NbExchange(PrometheusMixIn, Application):
         self.log.debug("##### ALL HANDLERS" + str(self.handlers))
 
     def init_tornado_application(self):
-        self.tornado_application = web.Application(
-            self.handlers, **self.tornado_settings
-        )
+        self.tornado_application = web.Application(self.handlers, **self.tornado_settings)
         if self.sentry_dsn:
             sentry_sdk.init(
                 dsn=self.sentry_dsn,

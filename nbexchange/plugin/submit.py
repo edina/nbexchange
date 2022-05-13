@@ -72,16 +72,11 @@ class ExchangeSubmit(abc.ExchangeSubmit, Exchange):
         latest_timestamp = "1990-01-01 00:00:00"
         for assignment in assignments:
             # We want the last released version of this assignments
-            if (
-                self.coursedir.assignment_id == assignment["assignment_id"]
-                and assignment.get("status") == "released"
-            ):
+            if self.coursedir.assignment_id == assignment["assignment_id"] and assignment.get("status") == "released":
                 if assignment.get("timestamp") > latest_timestamp:
                     latest_timestamp = assignment.get("timestamp")
                     released_notebooks = [
-                        n["notebook_id"] + ".ipynb"
-                        for n in assignment["notebooks"]
-                        if "notebook_id" in n
+                        n["notebook_id"] + ".ipynb" for n in assignment["notebooks"] if "notebook_id" in n
                     ]
                 else:
                     continue

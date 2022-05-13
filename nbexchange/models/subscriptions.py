@@ -58,16 +58,8 @@ class Subscription(Base):
         Returns None if not found.
         """
         if log:
-            log.debug(
-                f"Subscription.find_by_set - user_id:{user_id}, course_id:{course_id}, role:{role}"
-            )
-        return (
-            db.query(cls)
-            .filter(
-                cls.user_id == user_id, cls.course_id == course_id, cls.role == role
-            )
-            .first()
-        )
+            log.debug(f"Subscription.find_by_set - user_id:{user_id}, course_id:{course_id}, role:{role}")
+        return db.query(cls).filter(cls.user_id == user_id, cls.course_id == course_id, cls.role == role).first()
 
     def __repr__(self):
         return f"Subscription for user {self.user_id} to course {self.course_id} as a {self.role}"

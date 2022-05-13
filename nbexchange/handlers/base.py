@@ -13,18 +13,14 @@ from nbexchange.models.subscriptions import Subscription
 from nbexchange.models.users import User
 
 
-def authenticated(
-    method: Callable[..., Optional[Awaitable[None]]]
-) -> Callable[..., Optional[Awaitable[None]]]:
+def authenticated(method: Callable[..., Optional[Awaitable[None]]]) -> Callable[..., Optional[Awaitable[None]]]:
     """Decorate methods with this to require that the user be logged in.
 
     If the user is not logged in, raise a 403 error
     """
 
     @functools.wraps(method)
-    def wrapper(  # type: ignore
-        self: web.RequestHandler, *args, **kwargs
-    ) -> Optional[Awaitable[None]]:
+    def wrapper(self: web.RequestHandler, *args, **kwargs) -> Optional[Awaitable[None]]:  # type: ignore
         if not self.current_user:
             raise web.HTTPError(403)
         return method(self, *args, **kwargs)
@@ -81,21 +77,15 @@ class BaseHandler(web.RequestHandler):
         with scoped_session() as session:
             user = User.find_by_name(db=session, name=hub_username, log=self.log)
             if user is None:
-                self.log.debug(
-                    f"New user details: name:{hub_username}, org_id:{org_id}"
-                )
+                self.log.debug(f"New user details: name:{hub_username}, org_id:{org_id}")
                 user = User(name=hub_username, org_id=org_id)
                 session.add(user)
             if user.full_name != full_name:
                 user.full_name = full_name
 
-            course = Course.find_by_code(
-                db=session, code=current_course, org_id=org_id, log=self.log
-            )
+            course = Course.find_by_code(db=session, code=current_course, org_id=org_id, log=self.log)
             if course is None:
-                self.log.debug(
-                    f"New course details: code:{current_course}, org_id:{org_id}"
-                )
+                self.log.debug(f"New course details: code:{current_course}, org_id:{org_id}")
                 course = Course(org_id=org_id, course_code=current_course)
                 if course_title:
                     self.log.debug(f"Adding title {course_title}")
@@ -103,20 +93,12 @@ class BaseHandler(web.RequestHandler):
                 session.add(course)
 
             # Check to see if we have a subscription (for this course)
-            self.log.debug(
-                f"Looking for subscription for: user:{user.id}, course:{course.id}, role:{current_role}"
-            )
+            self.log.debug(f"Looking for subscription for: user:{user.id}, course:{course.id}, role:{current_role}")
 
-            subscription = Subscription.find_by_set(
-                db=session, user_id=user.id, course_id=course.id, role=current_role
-            )
+            subscription = Subscription.find_by_set(db=session, user_id=user.id, course_id=course.id, role=current_role)
             if subscription is None:
-                self.log.debug(
-                    f"New subscription details: user:{user.id}, course:{course.id}, role:{current_role}"
-                )
-                subscription = Subscription(
-                    user_id=user.id, course_id=course.id, role=current_role
-                )
+                self.log.debug(f"New subscription details: user:{user.id}, course:{course.id}, role:{current_role}")
+                subscription = Subscription(user_id=user.id, course_id=course.id, role=current_role)
                 session.add(subscription)
 
             courses = {}
@@ -151,11 +133,7 @@ class BaseHandler(web.RequestHandler):
         return_params = []
 
         for param in param_list:
-            value = (
-                self.request.arguments[param][0].decode("utf-8")
-                if param in self.request.arguments
-                else None
-            )
+            value = self.request.arguments[param][0].decode("utf-8") if param in self.request.arguments else None
             value = self.param_decode(value) if value else None
             return_params.append(value)
         return return_params

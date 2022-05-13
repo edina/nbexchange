@@ -33,9 +33,7 @@ which is normally Jupyter's notebook_dir.
 """,
     ).tag(config=True)
 
-    base_service_url = Unicode(
-        os.environ.get("NAAS_BASE_URL", "https://noteable.edina.ac.uk")
-    ).tag(config=True)
+    base_service_url = Unicode(os.environ.get("NAAS_BASE_URL", "https://noteable.edina.ac.uk")).tag(config=True)
 
     def service_url(self):
         this_url = urljoin(self.base_service_url, "/services/nbexchange/")
@@ -44,9 +42,9 @@ which is normally Jupyter's notebook_dir.
 
     course_id = Unicode(os.environ.get("NAAS_COURSE_ID", "no_course")).tag(config=True)
 
-    max_buffer_size = Integer(
-        5253530000, help="The maximum size, in bytes, of an upload (defaults to 5GB)"
-    ).tag(config=True)
+    max_buffer_size = Integer(5253530000, help="The maximum size, in bytes, of an upload (defaults to 5GB)").tag(
+        config=True
+    )
 
     def fail(self, msg):
         self.log.fatal(msg)

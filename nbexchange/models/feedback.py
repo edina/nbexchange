@@ -16,21 +16,15 @@ class Feedback(Base):
 
     # notebook = None
     #: Unique id of :attr:`~nbexchange.orm.Notebook.assignment`
-    notebook_id = Column(
-        Integer(), ForeignKey("notebook.id", ondelete="CASCADE"), index=True
-    )
+    notebook_id = Column(Integer(), ForeignKey("notebook.id", ondelete="CASCADE"), index=True)
 
     # instructor = None
-    instructor_id = Column(
-        Integer, ForeignKey("user.id", ondelete="CASCADE"), index=True
-    )
+    instructor_id = Column(Integer, ForeignKey("user.id", ondelete="CASCADE"), index=True)
 
     # student = None
     student_id = Column(Integer, ForeignKey("user.id", ondelete="CASCADE"), index=True)
 
-    location = Column(
-        Unicode(200), nullable=True
-    )  # Location for the file of this action
+    location = Column(Unicode(200), nullable=True)  # Location for the file of this action
     checksum = Column(Unicode(200), nullable=True)  # Checksum for the feedback file
     timestamp = Column(DateTime(timezone=True), nullable=False)
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
@@ -59,9 +53,7 @@ class Feedback(Base):
             raise TypeError(f"Primary Keys are required to be Ints")
 
     @classmethod
-    def find_notebook_for_student(
-        cls, db, notebook_id, student_id, log=None, action=None
-    ):
+    def find_notebook_for_student(cls, db, notebook_id, student_id, log=None, action=None):
         """Find the most recent piece of feedback for a given student/notebook combo
 
         feedback = orm.Feedback.find_notebook_for_student(
@@ -71,9 +63,7 @@ class Feedback(Base):
         Returns None if not found
         """
         if log:
-            log.debug(
-                f"Feedback.find_notebook_for_student - notebook_id:{notebook_id}, student_id:{student_id}"
-            )
+            log.debug(f"Feedback.find_notebook_for_student - notebook_id:{notebook_id}, student_id:{student_id}")
         if notebook_id is None or not isinstance(notebook_id, int):
             raise TypeError(f"notebook_id must be defined, and an Int")
         if student_id is None or not isinstance(student_id, int):
@@ -92,9 +82,7 @@ class Feedback(Base):
         Returns None if not found
         """
         if log:
-            log.debug(
-                f"Feedback.find_all_for_student - assignment_id:{assignment_id}, student_id:{student_id}"
-            )
+            log.debug(f"Feedback.find_all_for_student - assignment_id:{assignment_id}, student_id:{student_id}")
         if assignment_id is None or not isinstance(assignment_id, int):
             raise TypeError(f"assignment_id must be defined, and an Int")
         if student_id is None or not isinstance(student_id, int):

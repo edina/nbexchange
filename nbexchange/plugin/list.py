@@ -36,9 +36,7 @@ class ExchangeList(abc.ExchangeList, Exchange):
         """
         if self.coursedir.course_id:
             """List assignments for specific course"""
-            r = self.api_request(
-                f"assignments?course_id={quote_plus(self.coursedir.course_id)}"
-            )
+            r = self.api_request(f"assignments?course_id={quote_plus(self.coursedir.course_id)}")
         else:
             """List assignments for all courses"""
             r = self.api_request(f"assignments")
@@ -62,9 +60,7 @@ class ExchangeList(abc.ExchangeList, Exchange):
         self.assignments = []
 
         exchange_listed_assignments = self.query_exchange()
-        self.log.debug(
-            f"ExternalExchange.list.init_dest collected {exchange_listed_assignments}"
-        )
+        self.log.debug(f"ExternalExchange.list.init_dest collected {exchange_listed_assignments}")
 
         # if "inbound", looking for inbound (submitted) records
         # elif 'cached', looking for already downloaded files
@@ -74,9 +70,7 @@ class ExchangeList(abc.ExchangeList, Exchange):
                 if assignment.get("status") == "submitted":
                     self.assignments.append(assignment)
         else:
-            self.assignments = filter(
-                lambda x: x.get["status"] == "released", exchange_listed_assignments
-            )
+            self.assignments = filter(lambda x: x.get["status"] == "released", exchange_listed_assignments)
 
     def copy_files(self):
         pass
@@ -89,9 +83,7 @@ class ExchangeList(abc.ExchangeList, Exchange):
         if assignment.get("status") == "fetched":
 
             # get the individual notebook details
-            assignment_dir = os.path.join(
-                self.assignment_dir, assignment.get("assignment_id")
-            )
+            assignment_dir = os.path.join(self.assignment_dir, assignment.get("assignment_id"))
 
             if self.path_includes_course:
                 assignment_dir = os.path.join(
@@ -144,9 +136,7 @@ class ExchangeList(abc.ExchangeList, Exchange):
         interim_assignments = []
         found_fetched = set([])
         for assignment in self.assignments:
-            assignment_directory = (
-                self.fetched_root + "/" + assignment.get("assignment_id")
-            )
+            assignment_directory = self.fetched_root + "/" + assignment.get("assignment_id")
             if assignment["status"] == "released":
                 # Has this release already been found on disk?
                 if assignment["assignment_id"] in found_fetched:
@@ -158,9 +148,7 @@ class ExchangeList(abc.ExchangeList, Exchange):
                     found_fetched.add(assignment["assignment_id"])
 
             interim_assignments.append(self.parse_assignment(assignment))
-            self.log.debug(
-                f"parse_assignment singular assignment returned: {assignment}"
-            )
+            self.log.debug(f"parse_assignment singular assignment returned: {assignment}")
 
         # now we build two sub-lists:
         # - the last "released" per assignment_id - but only if they've not been "fetched"
@@ -176,9 +164,7 @@ class ExchangeList(abc.ExchangeList, Exchange):
             #  as the timestamp is irrelevant... we just need to know if we
             #  need to look to the local disk
             if assignment.get("status") == "fetched":
-                held_assignments["fetched"][
-                    assignment.get("assignment_id")
-                ] = assignment
+                held_assignments["fetched"][assignment.get("assignment_id")] = assignment
                 continue
 
             # filter out all the released items:
@@ -194,9 +180,7 @@ class ExchangeList(abc.ExchangeList, Exchange):
                         {"timestamp": "1990-01-01 00:00:00"},
                     )
                     if assignment.get("timestamp") > latest.get("timestamp"):
-                        held_assignments["released"][
-                            assignment.get("assignment_id")
-                        ] = assignment
+                        held_assignments["released"][assignment.get("assignment_id")] = assignment
                     continue
 
             # "Submitted" assignments [may] have feedback
@@ -208,9 +192,7 @@ class ExchangeList(abc.ExchangeList, Exchange):
             # ("feedback-time" for all notebooks in one 'release' is the same)
             if assignment.get("status") == "submitted":
 
-                assignment_dir = os.path.join(
-                    assignment.get("assignment_id"), "feedback"
-                )
+                assignment_dir = os.path.join(assignment.get("assignment_id"), "feedback")
                 if self.path_includes_course:
                     assignment_dir = os.path.join(
                         self.coursedir.course_id,
@@ -254,15 +236,9 @@ class ExchangeList(abc.ExchangeList, Exchange):
                 # Set assignment-level variables is any not the individual notebooks
                 # have them
                 if assignment["notebooks"]:
-                    has_local_feedback = any(
-                        [nb["has_local_feedback"] for nb in assignment["notebooks"]]
-                    )
-                    has_exchange_feedback = any(
-                        [nb["has_exchange_feedback"] for nb in assignment["notebooks"]]
-                    )
-                    feedback_updated = any(
-                        [nb["feedback_updated"] for nb in assignment["notebooks"]]
-                    )
+                    has_local_feedback = any([nb["has_local_feedback"] for nb in assignment["notebooks"]])
+                    has_exchange_feedback = any([nb["has_exchange_feedback"] for nb in assignment["notebooks"]])
+                    feedback_updated = any([nb["feedback_updated"] for nb in assignment["notebooks"]])
                 else:
                     has_local_feedback = False
                     has_exchange_feedback = False
@@ -286,9 +262,7 @@ class ExchangeList(abc.ExchangeList, Exchange):
         for assignment_type in ("released", "fetched"):
             if held_assignments[assignment_type].items():
                 for assignment_id in held_assignments[assignment_type]:
-                    my_assignments.append(
-                        held_assignments[assignment_type][assignment_id]
-                    )
+                    my_assignments.append(held_assignments[assignment_type][assignment_id])
 
         if self.inbound or self.cached:
             _get_key = lambda info: (
@@ -297,13 +271,9 @@ class ExchangeList(abc.ExchangeList, Exchange):
                 info["assignment_id"],
             )
             _match_key = lambda info, key: (
-                info["course_id"] == key[0]
-                and info["student_id"] == key[1]
-                and info["assignment_id"] == key[2]
+                info["course_id"] == key[0] and info["student_id"] == key[1] and info["assignment_id"] == key[2]
             )
-            assignment_keys = sorted(
-                list(set([_get_key(info) for info in my_assignments]))
-            )
+            assignment_keys = sorted(list(set([_get_key(info) for info in my_assignments])))
             assignment_submissions = []
             for key in assignment_keys:
                 submissions = [x for x in my_assignments if _match_key(x, key)]
@@ -318,9 +288,7 @@ class ExchangeList(abc.ExchangeList, Exchange):
                 assignment_submissions.append(info)
             my_assignments = assignment_submissions
         else:
-            my_assignments = [
-                x for x in my_assignments if x.get("status") != "submitted"
-            ]
+            my_assignments = [x for x in my_assignments if x.get("status") != "submitted"]
 
         return my_assignments
 
@@ -354,9 +322,7 @@ class ExchangeList(abc.ExchangeList, Exchange):
         #####
         if not os.environ.get("NAAS_FEATURE_MULTI_MARKERS"):
             if self.path_includes_course:
-                self.coursedir.submitted_directory = os.path.join(
-                    self.coursedir.course_id, "collected"
-                )
+                self.coursedir.submitted_directory = os.path.join(self.coursedir.course_id, "collected")
             else:
                 self.coursedir.submitted_directory = "collected"
 

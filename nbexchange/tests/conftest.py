@@ -74,9 +74,7 @@ def app(request, io_loop, _nbexchange_config):
 
     request.addfinalizer(cleanup)
     # convenience for accessing nbexchange in tests
-    nbexchange.url = f"http://127.0.0.1:{nbexchange.port}{nbexchange.base_url}".rstrip(
-        "/"
-    )
+    nbexchange.url = f"http://127.0.0.1:{nbexchange.port}{nbexchange.base_url}".rstrip("/")
 
     return nbexchange
 
@@ -85,9 +83,7 @@ def app(request, io_loop, _nbexchange_config):
 def db():
     """Get a db session"""
     _db = Session()  #
-    user = nbexchange.models.users.User(
-        name=getuser(), org_id=1
-    )  # TODO: remove Magic number
+    user = nbexchange.models.users.User(name=getuser(), org_id=1)  # TODO: remove Magic number
     _db.add(user)
     _db.commit()
     return _db

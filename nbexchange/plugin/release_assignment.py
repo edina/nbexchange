@@ -32,24 +32,16 @@ class ExchangeReleaseAssignment(abc.ExchangeReleaseAssignment, Exchange):
         super(ExchangeReleaseAssignment, self)._load_config(cfg, **kwargs)
 
     def init_src(self):
-        self.src_path = self.coursedir.format_path(
-            self.coursedir.release_directory, ".", self.coursedir.assignment_id
-        )
+        self.src_path = self.coursedir.format_path(self.coursedir.release_directory, ".", self.coursedir.assignment_id)
         if not os.path.isdir(self.src_path):
-            source = self.coursedir.format_path(
-                self.coursedir.source_directory, ".", self.coursedir.assignment_id
-            )
+            source = self.coursedir.format_path(self.coursedir.source_directory, ".", self.coursedir.assignment_id)
             if os.path.isdir(source):
                 # Looks like the instructor forgot to assign
-                self.fail(
-                    f"Assignment found in '{source}' but not '{self.src_path}', run `nbgrader assign` first."
-                )
+                self.fail(f"Assignment found in '{source}' but not '{self.src_path}', run `nbgrader assign` first.")
             else:
                 self._assignment_not_found(
                     self.src_path,
-                    self.coursedir.format_path(
-                        self.coursedir.release_directory, ".", "*"
-                    ),
+                    self.coursedir.format_path(self.coursedir.release_directory, ".", "*"),
                 )
         self.log.debug(f"ExchangeRelease.init_src ensuring {self.src_path} exists")
 
@@ -82,9 +74,7 @@ class ExchangeReleaseAssignment(abc.ExchangeReleaseAssignment, Exchange):
 
         url = f"assignment?course_id={quote_plus(self.coursedir.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}"
 
-        r = self.api_request(
-            url, method="POST", data={"notebooks": self.notebooks}, files=files
-        )
+        r = self.api_request(url, method="POST", data={"notebooks": self.notebooks}, files=files)
         self.log.debug(f"Got back {r.status_code} after file upload")
 
         try:

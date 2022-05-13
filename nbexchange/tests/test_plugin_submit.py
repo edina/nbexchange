@@ -20,22 +20,14 @@ logger = logging.getLogger(__file__)
 logger.setLevel(logging.ERROR)
 
 
-feedback1_filename = os.path.join(
-    os.path.dirname(__file__), "data", "assignment-0.6.html"
-)
+feedback1_filename = os.path.join(os.path.dirname(__file__), "data", "assignment-0.6.html")
 feedback1_file = get_feedback_file(feedback1_filename)
-feedback2_filename = os.path.join(
-    os.path.dirname(__file__), "data", "assignment-0.6-2.html"
-)
+feedback2_filename = os.path.join(os.path.dirname(__file__), "data", "assignment-0.6-2.html")
 feedback12_file = get_feedback_file(feedback1_filename)
 
-notebook1_filename = os.path.join(
-    os.path.dirname(__file__), "data", "assignment-0.6.ipynb"
-)
+notebook1_filename = os.path.join(os.path.dirname(__file__), "data", "assignment-0.6.ipynb")
 notebook1_file = get_feedback_file(notebook1_filename)
-notebook2_filename = os.path.join(
-    os.path.dirname(__file__), "data", "assignment-0.6-2.ipynb"
-)
+notebook2_filename = os.path.join(os.path.dirname(__file__), "data", "assignment-0.6-2.ipynb")
 notebook2_file = get_feedback_file(notebook2_filename)
 
 course_id = "no_course"
@@ -55,18 +47,13 @@ def test_submit_methods(plugin_config, tmpdir, caplog):
         os.path.join(assignment_id1, basename(notebook1_filename)),
     )
 
-    plugin = ExchangeSubmit(
-        coursedir=CourseDirectory(config=plugin_config), config=plugin_config
-    )
+    plugin = ExchangeSubmit(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
     plugin.init_src()
     assert re.search(r"nbexchange/assign_1_1$", plugin.src_path)
     plugin.init_dest()
     with pytest.raises(AttributeError) as e_info:
         foo = plugin.dest_path
-        assert (
-            str(e_info.value)
-            == "'ExchangeReleaseAssignment' object has no attribute 'dest_path'"
-        )
+        assert str(e_info.value) == "'ExchangeReleaseAssignment' object has no attribute 'dest_path'"
     file = plugin.tar_source()
     assert len(file) > 1000
 
@@ -157,9 +144,7 @@ def test_submit_single_item(plugin_config, tmpdir):
             os.path.join(assignment_id1, basename(notebook1_filename)),
         )
 
-        plugin = ExchangeSubmit(
-            coursedir=CourseDirectory(config=plugin_config), config=plugin_config
-        )
+        plugin = ExchangeSubmit(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
 
         def api_request(*args, **kwargs):
             if args[0].startswith("assignments"):
@@ -195,9 +180,7 @@ def test_submit_single_item(plugin_config, tmpdir):
                 )
             else:
                 pth = str(tmpdir.mkdir("submit_several").realpath())
-                assert args[0] == (
-                    f"submission?course_id={course_id}&assignment_id={assignment_id1}"
-                )
+                assert args[0] == (f"submission?course_id={course_id}&assignment_id={assignment_id1}")
                 assert "method" not in kwargs or kwargs.get("method").lower() == "post"
                 files = kwargs.get("files")
                 assert "assignment" in files
@@ -234,9 +217,7 @@ def test_submit_single_item_with_path_includes_course(plugin_config, tmpdir):
             os.path.join(course_id, assignment_id1, basename(notebook1_filename)),
         )
 
-        plugin = ExchangeSubmit(
-            coursedir=CourseDirectory(config=plugin_config), config=plugin_config
-        )
+        plugin = ExchangeSubmit(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
 
         def api_request(*args, **kwargs):
             if args[0].startswith("assignments"):
@@ -272,9 +253,7 @@ def test_submit_single_item_with_path_includes_course(plugin_config, tmpdir):
                 )
             else:
                 pth = str(tmpdir.mkdir("submit_several").realpath())
-                assert args[0] == (
-                    f"submission?course_id={course_id}&assignment_id={assignment_id1}"
-                )
+                assert args[0] == (f"submission?course_id={course_id}&assignment_id={assignment_id1}")
                 assert "method" not in kwargs or kwargs.get("method").lower() == "post"
                 files = kwargs.get("files")
                 assert "assignment" in files
@@ -310,9 +289,7 @@ def test_submit_fail(plugin_config, tmpdir):
             os.path.join(assignment_id1, basename(notebook1_filename)),
         )
 
-        plugin = ExchangeSubmit(
-            coursedir=CourseDirectory(config=plugin_config), config=plugin_config
-        )
+        plugin = ExchangeSubmit(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
 
         def api_request(*args, **kwargs):
             if args[0].startswith("assignments"):
@@ -347,9 +324,7 @@ def test_submit_fail(plugin_config, tmpdir):
                     },
                 )
             else:
-                assert args[0] == (
-                    f"submission?course_id={course_id}&assignment_id={assignment_id1}"
-                )
+                assert args[0] == (f"submission?course_id={course_id}&assignment_id={assignment_id1}")
                 assert "method" not in kwargs or kwargs.get("method").lower() == "post"
 
                 return type(
@@ -361,9 +336,7 @@ def test_submit_fail(plugin_config, tmpdir):
                     },
                 )
 
-        with pytest.raises(ExchangeError) as e_info, patch.object(
-            Exchange, "api_request", side_effect=api_request
-        ):
+        with pytest.raises(ExchangeError) as e_info, patch.object(Exchange, "api_request", side_effect=api_request):
             called = plugin.start()
         assert str(e_info.value) == "failure note"
     finally:
@@ -377,16 +350,10 @@ def test_submit_multiple_notebooks_in_assignment(plugin_config, tmpdir):
     plugin_config.CourseDirectory.assignment_id = assignment_id3
 
     os.makedirs(assignment_id3, exist_ok=True)
-    copyfile(
-        notebook1_filename, os.path.join(assignment_id3, basename(notebook1_filename))
-    )
-    copyfile(
-        notebook2_filename, os.path.join(assignment_id3, basename(notebook2_filename))
-    )
+    copyfile(notebook1_filename, os.path.join(assignment_id3, basename(notebook1_filename)))
+    copyfile(notebook2_filename, os.path.join(assignment_id3, basename(notebook2_filename)))
 
-    plugin = ExchangeSubmit(
-        coursedir=CourseDirectory(config=plugin_config), config=plugin_config
-    )
+    plugin = ExchangeSubmit(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
     try:
 
         def api_request(*args, **kwargs):
@@ -429,9 +396,7 @@ def test_submit_multiple_notebooks_in_assignment(plugin_config, tmpdir):
                 )
             else:
                 pth = str(tmpdir.mkdir("submit_several").realpath())
-                assert args[0] == (
-                    f"submission?course_id={course_id}&assignment_id={assignment_id3}"
-                )
+                assert args[0] == (f"submission?course_id={course_id}&assignment_id={assignment_id3}")
                 assert "method" not in kwargs or kwargs.get("method").lower() == "post"
                 files = kwargs.get("files")
                 assert "assignment" in files
@@ -465,9 +430,7 @@ def test_submit_fail_no_folder(plugin_config, tmpdir):
         plugin_config.CourseDirectory.course_id = course_id
         plugin_config.CourseDirectory.assignment_id = assignment_id1
 
-        plugin = ExchangeSubmit(
-            coursedir=CourseDirectory(config=plugin_config), config=plugin_config
-        )
+        plugin = ExchangeSubmit(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
 
         def api_request(*args, **kwargs):
             if args[0].startswith("assignments"):
@@ -503,9 +466,7 @@ def test_submit_fail_no_folder(plugin_config, tmpdir):
                 )
             else:
                 pth = str(tmpdir.mkdir("submit_several").realpath())
-                assert args[0] == (
-                    f"submission?course_id={course_id}&assignment_id={assignment_id1}"
-                )
+                assert args[0] == (f"submission?course_id={course_id}&assignment_id={assignment_id1}")
                 assert "method" not in kwargs or kwargs.get("method").lower() == "post"
                 files = kwargs.get("files")
                 assert "assignment" in files
@@ -539,9 +500,7 @@ def test_submit_warning_no_notebook(plugin_config, tmpdir):
 
         os.makedirs(assignment_id1, exist_ok=True)
 
-        plugin = ExchangeSubmit(
-            coursedir=CourseDirectory(config=plugin_config), config=plugin_config
-        )
+        plugin = ExchangeSubmit(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
 
         def api_request(*args, **kwargs):
             if args[0].startswith("assignments"):
@@ -581,12 +540,8 @@ def test_submit_warning_no_notebook(plugin_config, tmpdir):
                     match=r"Possible missing notebooks and/or extra notebooks",
                 ):
                     pth = str(tmpdir.mkdir("submit_several").realpath())
-                    assert args[0] == (
-                        f"submission?course_id={course_id}&assignment_id={assignment_id1}"
-                    )
-                    assert (
-                        "method" not in kwargs or kwargs.get("method").lower() == "post"
-                    )
+                    assert args[0] == (f"submission?course_id={course_id}&assignment_id={assignment_id1}")
+                    assert "method" not in kwargs or kwargs.get("method").lower() == "post"
                     files = kwargs.get("files")
                     assert "assignment" in files
                     assert "assignment.tar.gz" == files["assignment"][0]
@@ -623,9 +578,7 @@ def test_submit_warning_wrong_notebook(plugin_config, tmpdir):
             os.path.join(assignment_id1, basename(notebook1_filename)),
         )
 
-        plugin = ExchangeSubmit(
-            coursedir=CourseDirectory(config=plugin_config), config=plugin_config
-        )
+        plugin = ExchangeSubmit(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
 
         def api_request(*args, **kwargs):
             if args[0].startswith("assignments"):
@@ -665,12 +618,8 @@ def test_submit_warning_wrong_notebook(plugin_config, tmpdir):
                     match=r"Possible missing notebooks and/or extra notebooks",
                 ):
                     pth = str(tmpdir.mkdir("submit_several").realpath())
-                    assert args[0] == (
-                        f"submission?course_id={course_id}&assignment_id={assignment_id1}"
-                    )
-                    assert (
-                        "method" not in kwargs or kwargs.get("method").lower() == "post"
-                    )
+                    assert args[0] == (f"submission?course_id={course_id}&assignment_id={assignment_id1}")
+                    assert "method" not in kwargs or kwargs.get("method").lower() == "post"
                     files = kwargs.get("files")
                     assert "assignment" in files
                     assert "assignment.tar.gz" == files["assignment"][0]
@@ -705,9 +654,7 @@ def test_submit_no_notebook_strict_means_fail(plugin_config, tmpdir):
 
         os.makedirs(assignment_id1, exist_ok=True)
 
-        plugin = ExchangeSubmit(
-            coursedir=CourseDirectory(config=plugin_config), config=plugin_config
-        )
+        plugin = ExchangeSubmit(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
 
         def api_request(*args, **kwargs):
             if args[0].startswith("assignments"):
@@ -742,16 +689,10 @@ def test_submit_no_notebook_strict_means_fail(plugin_config, tmpdir):
                     },
                 )
             else:
-                with pytest.raises(
-                    ExchangeError, match=r"Assignment \w+ not submitted"
-                ):
+                with pytest.raises(ExchangeError, match=r"Assignment \w+ not submitted"):
                     pth = str(tmpdir.mkdir("submit_several").realpath())
-                    assert args[0] == (
-                        f"submission?course_id={course_id}&assignment_id={assignment_id1}"
-                    )
-                    assert (
-                        "method" not in kwargs or kwargs.get("method").lower() == "post"
-                    )
+                    assert args[0] == (f"submission?course_id={course_id}&assignment_id={assignment_id1}")
+                    assert "method" not in kwargs or kwargs.get("method").lower() == "post"
                     files = kwargs.get("files")
                     assert "assignment" in files
                     assert "assignment.tar.gz" == files["assignment"][0]
@@ -789,9 +730,7 @@ def test_submit_wrong_notebook_strict_means_faile(plugin_config, tmpdir):
             os.path.join(assignment_id1, basename(notebook1_filename)),
         )
 
-        plugin = ExchangeSubmit(
-            coursedir=CourseDirectory(config=plugin_config), config=plugin_config
-        )
+        plugin = ExchangeSubmit(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
 
         def api_request(*args, **kwargs):
             if args[0].startswith("assignments"):
@@ -826,16 +765,10 @@ def test_submit_wrong_notebook_strict_means_faile(plugin_config, tmpdir):
                     },
                 )
             else:
-                with pytest.raises(
-                    ExchangeError, match=r"Assignment \w+ not submitted"
-                ):
+                with pytest.raises(ExchangeError, match=r"Assignment \w+ not submitted"):
                     pth = str(tmpdir.mkdir("submit_several").realpath())
-                    assert args[0] == (
-                        f"submission?course_id={course_id}&assignment_id={assignment_id1}"
-                    )
-                    assert (
-                        "method" not in kwargs or kwargs.get("method").lower() == "post"
-                    )
+                    assert args[0] == (f"submission?course_id={course_id}&assignment_id={assignment_id1}")
+                    assert "method" not in kwargs or kwargs.get("method").lower() == "post"
                     files = kwargs.get("files")
                     assert "assignment" in files
                     assert "assignment.tar.gz" == files["assignment"][0]
@@ -875,9 +808,7 @@ def test_submit_warning_wrong_notebook(plugin_config, tmpdir):
             notebook2_filename,
             os.path.join(assignment_id1, basename(notebook2_filename)),
         )
-        plugin = ExchangeSubmit(
-            coursedir=CourseDirectory(config=plugin_config), config=plugin_config
-        )
+        plugin = ExchangeSubmit(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
 
         def api_request(*args, **kwargs):
             if args[0].startswith("assignments"):
@@ -917,12 +848,8 @@ def test_submit_warning_wrong_notebook(plugin_config, tmpdir):
                     match=r"Possible missing notebooks and/or extra notebooks",
                 ):
                     pth = str(tmpdir.mkdir("submit_several").realpath())
-                    assert args[0] == (
-                        f"submission?course_id={course_id}&assignment_id={assignment_id1}"
-                    )
-                    assert (
-                        "method" not in kwargs or kwargs.get("method").lower() == "post"
-                    )
+                    assert args[0] == (f"submission?course_id={course_id}&assignment_id={assignment_id1}")
+                    assert "method" not in kwargs or kwargs.get("method").lower() == "post"
                     files = kwargs.get("files")
                     assert "assignment" in files
                     assert "assignment.tar.gz" == files["assignment"][0]
@@ -960,9 +887,7 @@ def test_submit_extra_notebook_strict_means_fail(plugin_config, tmpdir):
             os.path.join(assignment_id1, basename(notebook1_filename)),
         )
 
-        plugin = ExchangeSubmit(
-            coursedir=CourseDirectory(config=plugin_config), config=plugin_config
-        )
+        plugin = ExchangeSubmit(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
 
         def api_request(*args, **kwargs):
             if args[0].startswith("assignments"):
@@ -997,16 +922,10 @@ def test_submit_extra_notebook_strict_means_fail(plugin_config, tmpdir):
                     },
                 )
             else:
-                with pytest.raises(
-                    ExchangeError, match=r"Assignment \w+ not submitted"
-                ):
+                with pytest.raises(ExchangeError, match=r"Assignment \w+ not submitted"):
                     pth = str(tmpdir.mkdir("submit_several").realpath())
-                    assert args[0] == (
-                        f"submission?course_id={course_id}&assignment_id={assignment_id1}"
-                    )
-                    assert (
-                        "method" not in kwargs or kwargs.get("method").lower() == "post"
-                    )
+                    assert args[0] == (f"submission?course_id={course_id}&assignment_id={assignment_id1}")
+                    assert "method" not in kwargs or kwargs.get("method").lower() == "post"
                     files = kwargs.get("files")
                     assert "assignment" in files
                     assert "assignment.tar.gz" == files["assignment"][0]
@@ -1042,9 +961,7 @@ def test_submit_two_releases_newest_first(plugin_config, tmpdir):
             os.path.join(assignment_id1, basename(notebook1_filename)),
         )
 
-        plugin = ExchangeSubmit(
-            coursedir=CourseDirectory(config=plugin_config), config=plugin_config
-        )
+        plugin = ExchangeSubmit(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
 
         def api_request(*args, **kwargs):
             if args[0].startswith("assignments"):
@@ -1096,9 +1013,7 @@ def test_submit_two_releases_newest_first(plugin_config, tmpdir):
                 )
             else:
                 pth = str(tmpdir.mkdir("submit_several").realpath())
-                assert args[0] == (
-                    f"submission?course_id={course_id}&assignment_id={assignment_id1}"
-                )
+                assert args[0] == (f"submission?course_id={course_id}&assignment_id={assignment_id1}")
                 assert "method" not in kwargs or kwargs.get("method").lower() == "post"
                 files = kwargs.get("files")
                 assert "assignment" in files
@@ -1134,9 +1049,7 @@ def test_submit_two_releases_newest_last(plugin_config, tmpdir):
             os.path.join(assignment_id1, basename(notebook1_filename)),
         )
 
-        plugin = ExchangeSubmit(
-            coursedir=CourseDirectory(config=plugin_config), config=plugin_config
-        )
+        plugin = ExchangeSubmit(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
 
         def api_request(*args, **kwargs):
             if args[0].startswith("assignments"):
@@ -1188,9 +1101,7 @@ def test_submit_two_releases_newest_last(plugin_config, tmpdir):
                 )
             else:
                 pth = str(tmpdir.mkdir("submit_several").realpath())
-                assert args[0] == (
-                    f"submission?course_id={course_id}&assignment_id={assignment_id1}"
-                )
+                assert args[0] == (f"submission?course_id={course_id}&assignment_id={assignment_id1}")
                 assert "method" not in kwargs or kwargs.get("method").lower() == "post"
                 files = kwargs.get("files")
                 assert "assignment" in files
@@ -1227,9 +1138,7 @@ def test_submit_warning_wrong_notebook(plugin_config, tmpdir):
             os.path.join(assignment_id1, basename(notebook1_filename)),
         )
 
-        plugin = ExchangeSubmit(
-            coursedir=CourseDirectory(config=plugin_config), config=plugin_config
-        )
+        plugin = ExchangeSubmit(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
 
         def api_request(*args, **kwargs):
             if args[0].startswith("assignments"):
@@ -1285,12 +1194,8 @@ def test_submit_warning_wrong_notebook(plugin_config, tmpdir):
                     match=r"Possible missing notebooks and/or extra notebooks",
                 ):
                     pth = str(tmpdir.mkdir("submit_several").realpath())
-                    assert args[0] == (
-                        f"submission?course_id={course_id}&assignment_id={assignment_id1}"
-                    )
-                    assert (
-                        "method" not in kwargs or kwargs.get("method").lower() == "post"
-                    )
+                    assert args[0] == (f"submission?course_id={course_id}&assignment_id={assignment_id1}")
+                    assert "method" not in kwargs or kwargs.get("method").lower() == "post"
                     files = kwargs.get("files")
                     assert "assignment" in files
                     assert "assignment.tar.gz" == files["assignment"][0]
@@ -1321,13 +1226,9 @@ def test_submit_with_multiple_assignments_newest_first(plugin_config, tmpdir):
     plugin_config.CourseDirectory.assignment_id = assignment_id3
 
     os.makedirs(assignment_id3, exist_ok=True)
-    copyfile(
-        notebook1_filename, os.path.join(assignment_id3, basename(notebook1_filename))
-    )
+    copyfile(notebook1_filename, os.path.join(assignment_id3, basename(notebook1_filename)))
 
-    plugin = ExchangeSubmit(
-        coursedir=CourseDirectory(config=plugin_config), config=plugin_config
-    )
+    plugin = ExchangeSubmit(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
     try:
 
         def api_request(*args, **kwargs):
@@ -1500,9 +1401,7 @@ def test_submit_with_multiple_assignments_newest_first(plugin_config, tmpdir):
                 )
             else:
                 pth = str(tmpdir.mkdir("submit_several").realpath())
-                assert args[0] == (
-                    f"submission?course_id={course_id}&assignment_id=assign_1_3"
-                )
+                assert args[0] == (f"submission?course_id={course_id}&assignment_id=assign_1_3")
                 assert "method" not in kwargs or kwargs.get("method").lower() == "post"
                 files = kwargs.get("files")
                 assert "assignment" in files
@@ -1533,13 +1432,9 @@ def test_submit_with_multiple_assignments_oldest_first(plugin_config, tmpdir):
     plugin_config.CourseDirectory.assignment_id = assignment_id3
 
     os.makedirs(assignment_id3, exist_ok=True)
-    copyfile(
-        notebook1_filename, os.path.join(assignment_id3, basename(notebook1_filename))
-    )
+    copyfile(notebook1_filename, os.path.join(assignment_id3, basename(notebook1_filename)))
 
-    plugin = ExchangeSubmit(
-        coursedir=CourseDirectory(config=plugin_config), config=plugin_config
-    )
+    plugin = ExchangeSubmit(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
     try:
 
         def api_request(*args, **kwargs):
@@ -1712,9 +1607,7 @@ def test_submit_with_multiple_assignments_oldest_first(plugin_config, tmpdir):
                 )
             else:
                 pth = str(tmpdir.mkdir("submit_several").realpath())
-                assert args[0] == (
-                    f"submission?course_id={course_id}&assignment_id=assign_1_3"
-                )
+                assert args[0] == (f"submission?course_id={course_id}&assignment_id=assign_1_3")
                 assert "method" not in kwargs or kwargs.get("method").lower() == "post"
                 files = kwargs.get("files")
                 assert "assignment" in files
@@ -1750,9 +1643,7 @@ def test_submit_fails_oversize(plugin_config, tmpdir):
             os.path.join(assignment_id1, basename(notebook1_filename)),
         )
 
-        plugin = ExchangeSubmit(
-            coursedir=CourseDirectory(config=plugin_config), config=plugin_config
-        )
+        plugin = ExchangeSubmit(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
 
         # Set the max-buffer-size to 50 bytes
         plugin.max_buffer_size = 50
@@ -1791,9 +1682,7 @@ def test_submit_fails_oversize(plugin_config, tmpdir):
                 )
             else:
                 pth = str(tmpdir.mkdir("submit_several").realpath())
-                assert args[0] == (
-                    f"submission?course_id={course_id}&assignment_id={assignment_id1}"
-                )
+                assert args[0] == (f"submission?course_id={course_id}&assignment_id={assignment_id1}")
                 assert "method" not in kwargs or kwargs.get("method").lower() == "post"
                 files = kwargs.get("files")
                 assert "assignment" in files

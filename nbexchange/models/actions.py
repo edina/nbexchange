@@ -48,13 +48,9 @@ class Action(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(Integer, ForeignKey("user.id", ondelete="CASCADE"), index=True)
-    assignment_id = Column(
-        Integer, ForeignKey("assignment.id", ondelete="CASCADE"), index=True
-    )
+    assignment_id = Column(Integer, ForeignKey("assignment.id", ondelete="CASCADE"), index=True)
     action = Column(Enum(AssignmentActions), nullable=False, index=True)
-    location = Column(
-        Unicode(200), nullable=True
-    )  # Location for the file of this action
+    location = Column(Unicode(200), nullable=True)  # Location for the file of this action
     checksum = Column(Unicode(200), nullable=True)  # Checksum for the saved file
     timestamp = Column(DateTime(timezone=True), default=datetime.utcnow)
 
@@ -95,14 +91,10 @@ class Action(Base):
         Returns None if not found
         """
         if log:
-            log.debug(
-                f"Action.find_most_recent_action - code:{assignment_id} (action:{action})"
-            )
+            log.debug(f"Action.find_most_recent_action - code:{assignment_id} (action:{action})")
         if assignment_id is None or not isinstance(assignment_id, int):
             raise TypeError(f"assignment_id must be defined, and an Int")
-        if action is not None and not (
-            isinstance(action, str) or isinstance(action, AssignmentActions)
-        ):
+        if action is not None and not (isinstance(action, str) or isinstance(action, AssignmentActions)):
             raise TypeError(f"action, if defined, must be a string")
         filters = [cls.assignment_id == assignment_id]
         if action:

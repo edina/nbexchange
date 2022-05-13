@@ -99,9 +99,7 @@ class Assignment(Base):
         return db.query(cls).filter(*filters).order_by(cls.id.desc()).first()
 
     @classmethod
-    def find_for_course(
-        cls, db, course_id, active=True, log=None, action=None, path=None
-    ):
+    def find_for_course(cls, db, course_id, active=True, log=None, action=None, path=None):
         """Find the list of assignments for a course.
 
         assignments = orm.Assignment.find_for_course(
@@ -118,9 +116,7 @@ class Assignment(Base):
         Returns None if not found.
         """
         if log:
-            log.debug(
-                f"Assignment.find_for_course - course_id:{course_id}, active:{active}, action:{action}"
-            )
+            log.debug(f"Assignment.find_for_course - course_id:{course_id}, active:{active}, action:{action}")
 
         if course_id and not isinstance(course_id, int):
             raise TypeError(f"Course_id, if specified, must be an Int")

@@ -30,9 +30,7 @@ class ExchangeCollect(abc.ExchangeCollect, Exchange):
         r = self.api_request(
             f"collection?course_id={quote_plus(self.coursedir.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}&path={quote_plus(submission['path'])}"
         )
-        self.log.debug(
-            f"Got back {r.status_code}  {r.headers['content-type']} after file download"
-        )
+        self.log.debug(f"Got back {r.status_code}  {r.headers['content-type']} after file download")
 
         if r.status_code > 399:
             self.fail(
@@ -92,9 +90,7 @@ class ExchangeCollect(abc.ExchangeCollect, Exchange):
 
         submissions = data["value"]
 
-        self.log.debug(
-            f"ExchangeCollect.do_collection found the following items: {submissions}"
-        )
+        self.log.debug(f"ExchangeCollect.do_collection found the following items: {submissions}")
 
         if len(submissions) == 0:
             self.log.warning(
@@ -128,25 +124,17 @@ class ExchangeCollect(abc.ExchangeCollect, Exchange):
                 if not os.path.exists(os.path.dirname(local_dest_path)):
                     os.makedirs(os.path.dirname(local_dest_path))
 
-                self.log.debug(
-                    f"ExchangeCollect.do_collection - collection dest : {local_dest_path}"
-                )
+                self.log.debug(f"ExchangeCollect.do_collection - collection dest : {local_dest_path}")
 
                 take_a_copy = False
                 updated_version = False
                 if os.path.isdir(local_dest_path):
-                    existing_timestamp = self.coursedir.get_existing_timestamp(
-                        local_dest_path
-                    )
+                    existing_timestamp = self.coursedir.get_existing_timestamp(local_dest_path)
                     existing_timestamp = (
-                        existing_timestamp.strftime(self.timestamp_format)
-                        if existing_timestamp
-                        else None
+                        existing_timestamp.strftime(self.timestamp_format) if existing_timestamp else None
                     )
                     new_timestamp = submission["timestamp"]
-                    if self.update and (
-                        existing_timestamp is None or new_timestamp > existing_timestamp
-                    ):
+                    if self.update and (existing_timestamp is None or new_timestamp > existing_timestamp):
                         take_a_copy = True
                         updated_version = True
                 else:
@@ -154,23 +142,15 @@ class ExchangeCollect(abc.ExchangeCollect, Exchange):
 
                 if take_a_copy:
                     if updated_version:
-                        self.log.info(
-                            f"Updating submission: {student_id} {self.coursedir.assignment_id}"
-                        )
+                        self.log.info(f"Updating submission: {student_id} {self.coursedir.assignment_id}")
                         # clear existing
                         shutil.rmtree(local_dest_path)
                     else:
-                        self.log.info(
-                            f"Collecting submission: {student_id} {self.coursedir.assignment_id}"
-                        )
+                        self.log.info(f"Collecting submission: {student_id} {self.coursedir.assignment_id}")
 
-                    with Gradebook(
-                        self.coursedir.db_url, self.coursedir.course_id
-                    ) as gb:
+                    with Gradebook(self.coursedir.db_url, self.coursedir.course_id) as gb:
                         try:
-                            gb.update_or_create_student(
-                                student_id, first_name=first_name, last_name=last_name
-                            )
+                            gb.update_or_create_student(student_id, first_name=first_name, last_name=last_name)
                         except MissingEntry:
                             self.log.info(
                                 f"Unable to update: {student_id} with first_name={first_name}, last_name={last_name}"
@@ -178,9 +158,7 @@ class ExchangeCollect(abc.ExchangeCollect, Exchange):
                     self.download(submission, local_dest_path)
                 else:
                     if self.update:
-                        self.log.info(
-                            f"No newer submission to collect: {student_id} {self.coursedir.assignment_id}"
-                        )
+                        self.log.info(f"No newer submission to collect: {student_id} {self.coursedir.assignment_id}")
                     else:
                         self.log.info(
                             f"Submission already exists, use --update to update: {student_id} {self.coursedir.assignment_id}"

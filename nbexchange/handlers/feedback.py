@@ -55,9 +55,7 @@ class FeedbackHandler(BaseHandler):
 
         with scoped_session() as session:
 
-            course = Course.find_by_code(
-                db=session, code=course_id, org_id=this_user["org_id"], log=self.log
-            )
+            course = Course.find_by_code(db=session, code=course_id, org_id=this_user["org_id"], log=self.log)
             if not course:
                 note = f"Course {course_id} not found"
                 self.log.info(note)
@@ -65,9 +63,7 @@ class FeedbackHandler(BaseHandler):
                 # return
                 raise web.HTTPError(404, note)
 
-            assignment = AssignmentModel.find_by_code(
-                db=session, code=assignment_id, course_id=course.id, log=self.log
-            )
+            assignment = AssignmentModel.find_by_code(db=session, code=assignment_id, course_id=course.id, log=self.log)
             if not assignment:
                 note = f"Assignment {assignment_id} for Course {course_id} not found"
                 self.log.info(note)
@@ -75,9 +71,7 @@ class FeedbackHandler(BaseHandler):
                 # return
                 raise web.HTTPError(404, note)
 
-            student = User.find_by_name(
-                db=session, name=this_user["name"], log=self.log
-            )
+            student = User.find_by_name(db=session, name=this_user["name"], log=self.log)
 
             res = Feedback.find_all_for_student(
                 db=session,
@@ -88,9 +82,7 @@ class FeedbackHandler(BaseHandler):
             feedbacks = []
             for r in res:
                 f = {}
-                notebook = Notebook.find_by_pk(
-                    db=session, pk=r.notebook_id, log=self.log
-                )
+                notebook = Notebook.find_by_pk(db=session, pk=r.notebook_id, log=self.log)
                 if notebook is not None:
                     feedback_name = "{0}.html".format(notebook.name)
                 else:
@@ -123,14 +115,7 @@ class FeedbackHandler(BaseHandler):
         The endpoint return {'success': true} for all successful feedback releases.
         """
 
-        [
-            course_id,
-            assignment_id,
-            notebook_id,
-            student_id,
-            timestamp,
-            checksum,
-        ] = self.get_params(
+        [course_id, assignment_id, notebook_id, student_id, timestamp, checksum,] = self.get_params(
             [
                 "course_id",
                 "assignment_id",
@@ -141,15 +126,10 @@ class FeedbackHandler(BaseHandler):
             ]
         )
 
-        if not (
-            course_id
-            and assignment_id
-            and notebook_id
-            and student_id
-            and timestamp
-            and checksum
-        ):
-            note = "Feedback call requires a course id, assignment id, notebook name, student id, checksum and timestamp."
+        if not (course_id and assignment_id and notebook_id and student_id and timestamp and checksum):
+            note = (
+                "Feedback call requires a course id, assignment id, notebook name, student id, checksum and timestamp."
+            )
             self.log.debug(note)
             self.finish({"success": False, "note": note})
             return
@@ -162,9 +142,7 @@ class FeedbackHandler(BaseHandler):
             self.finish({"success": False, "note": note})
             return
 
-        if (
-            "instructor" != this_user["current_role"].casefold()
-        ):  # we may need to revisit this
+        if "instructor" != this_user["current_role"].casefold():  # we may need to revisit this
             note = f"User not an instructor to course {course_id}"
             self.log.info(note)
             self.finish({"success": False, "note": note})
@@ -174,15 +152,11 @@ class FeedbackHandler(BaseHandler):
 
             # Start building feedback object
 
-            course = Course.find_by_code(
-                db=session, code=course_id, org_id=this_user["org_id"], log=self.log
-            )
+            course = Course.find_by_code(db=session, code=course_id, org_id=this_user["org_id"], log=self.log)
 
             if not course:
                 self.log.info(f"Could not find requested resource course {course_id}")
-                raise web.HTTPError(
-                    404, f"Could not find requested resource course {course_id}"
-                )
+                raise web.HTTPError(404, f"Could not find requested resource course {course_id}")
 
             assignment = AssignmentModel.find_by_code(
                 db=session,
@@ -196,9 +170,7 @@ class FeedbackHandler(BaseHandler):
                 self.log.info(note)
                 raise web.HTTPError(404, note)
 
-            notebook = Notebook.find_by_name(
-                db=session, name=notebook_id, assignment_id=assignment.id, log=self.log
-            )
+            notebook = Notebook.find_by_name(db=session, name=notebook_id, assignment_id=assignment.id, log=self.log)
             if not notebook:
                 note = f"Could not find requested resource notebook {notebook_id}"
                 self.log.info(note)
@@ -220,9 +192,7 @@ class FeedbackHandler(BaseHandler):
 
             # Check whether there is an HTML file attached to the request
             if not self.request.files:
-                self.log.warning(
-                    f"Error: No file supplied in upload"
-                )  # TODO: improve error message
+                self.log.warning(f"Error: No file supplied in upload")  # TODO: improve error message
                 raise web.HTTPError(412)  # precondition failed
 
             try:

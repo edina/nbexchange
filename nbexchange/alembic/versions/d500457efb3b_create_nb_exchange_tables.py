@@ -32,9 +32,7 @@ def upgrade():
         "user",
         sa.Column("id", sa.Integer, primary_key=True),
         sa.Column("org_id", sa.Integer, nullable=False, index=True),
-        sa.Column(
-            "hubuser_id", sa.Integer, nullable=False, index=True
-        ),  # code from jupyterhub
+        sa.Column("hubuser_id", sa.Integer, nullable=False, index=True),  # code from jupyterhub
         sa.Column("username", sa.Unicode(200), nullable=False, index=True),
     )
     op.create_unique_constraint("uq_users", "user", ["username", "org_id"])
@@ -55,9 +53,7 @@ def upgrade():
     op.create_table(
         "subscription",
         sa.Column("id", sa.Integer, primary_key=True),
-        sa.Column(
-            "user_id", sa.Integer, sa.ForeignKey("user.id"), nullable=False, index=True
-        ),
+        sa.Column("user_id", sa.Integer, sa.ForeignKey("user.id"), nullable=False, index=True),
         sa.Column(
             "course_id",
             sa.Integer,
@@ -67,9 +63,7 @@ def upgrade():
         ),
         sa.Column("role", sa.Unicode(50), nullable=False),
     )
-    op.create_unique_constraint(
-        "uq_subscription", "subscription", ["user_id", "course_id", "role"]
-    )
+    op.create_unique_constraint("uq_subscription", "subscription", ["user_id", "course_id", "role"])
 
     # assignments for a course - there can be more than one
     # assigment_code is what comes from formgrader
@@ -91,9 +85,7 @@ def upgrade():
     op.create_table(
         "action",
         sa.Column("id", sa.Integer, primary_key=True),
-        sa.Column(
-            "user_id", sa.Integer, sa.ForeignKey("user.id"), nullable=False, index=True
-        ),
+        sa.Column("user_id", sa.Integer, sa.ForeignKey("user.id"), nullable=False, index=True),
         sa.Column(
             "assignment_id",
             sa.Integer,

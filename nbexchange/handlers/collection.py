@@ -34,9 +34,7 @@ class Collections(BaseHandler):
 
         models = []
 
-        [course_code, assignment_code, user_id] = self.get_params(
-            ["course_id", "assignment_id", "user_id"]
-        )
+        [course_code, assignment_code, user_id] = self.get_params(["course_id", "assignment_id", "user_id"])
 
         if not (course_code and assignment_code):
             note = "Collections call requires both a course code and an assignment code"
@@ -47,9 +45,9 @@ class Collections(BaseHandler):
         # set up some regex segments for use later on
         # fr is combining f-string substitution with re's raw-string
         re_action = r"submitted"
-        re_course = fr"{course_code}"
-        re_assignment = fr"{assignment_code}"
-        re_user = fr"{user_id}" if user_id else r"[^/]+"
+        re_course = rf"{course_code}"
+        re_assignment = rf"{assignment_code}"
+        re_user = rf"{user_id}" if user_id else r"[^/]+"
 
         # Who is my user?
         this_user = self.nbex_user
@@ -63,9 +61,7 @@ class Collections(BaseHandler):
             self.log.info(note)
             self.finish({"success": False, "note": note})
             return
-        if (
-            not "instructor" == this_user["current_role"].casefold()
-        ):  # we may need to revisit this
+        if not "instructor" == this_user["current_role"].casefold():  # we may need to revisit this
             note = f"User not an instructor to course {course_code}"
             self.log.info(note)
             self.finish({"success": False, "note": note})
@@ -73,9 +69,7 @@ class Collections(BaseHandler):
 
         # Find the course being referred to
         with scoped_session() as session:
-            course = Course.find_by_code(
-                db=session, code=course_code, org_id=this_user["org_id"], log=self.log
-            )
+            course = Course.find_by_code(db=session, code=course_code, org_id=this_user["org_id"], log=self.log)
             if not course:
                 note = f"Course {course_code} does not exist"
                 self.log.info(note)
@@ -119,12 +113,8 @@ class Collections(BaseHandler):
                         "status": action.action.value,  # currently called 'action' in our db
                         "path": action.location,
                         # 'name' in db, 'notebook_id' id nbgrader
-                        "notebooks": [
-                            {"notebook_id": x.name} for x in assignment.notebooks
-                        ],
-                        "timestamp": action.timestamp.strftime(
-                            "%Y-%m-%d %H:%M:%S.%f %Z"
-                        ),
+                        "notebooks": [{"notebook_id": x.name} for x in assignment.notebooks],
+                        "timestamp": action.timestamp.strftime("%Y-%m-%d %H:%M:%S.%f %Z"),
                     }
                 )
 
@@ -152,14 +142,10 @@ class Collection(BaseHandler):
     @authenticated
     def get(self):
 
-        [course_code, assignment_code, path] = self.get_params(
-            ["course_id", "assignment_id", "path"]
-        )
+        [course_code, assignment_code, path] = self.get_params(["course_id", "assignment_id", "path"])
 
         if not (course_code and assignment_code and path):
-            note = (
-                "Collection call requires a course code, an assignment code, and a path"
-            )
+            note = "Collection call requires a course code, an assignment code, and a path"
             self.log.info(note)
             self.finish({"success": False, "note": note})
             return
@@ -178,9 +164,7 @@ class Collection(BaseHandler):
             return
         self.log.info(f"user: {this_user}")
 
-        if (
-            not "instructor" == this_user["current_role"].casefold()
-        ):  # we may need to revisit this
+        if not "instructor" == this_user["current_role"].casefold():  # we may need to revisit this
             note = f"User not an instructor to course {course_code}"
             self.log.info(note)
             self.finish({"success": False, "note": note})
@@ -188,9 +172,7 @@ class Collection(BaseHandler):
 
         # Find the course being referred to
         with scoped_session() as session:
-            course = Course.find_by_code(
-                db=session, code=course_code, org_id=this_user["org_id"], log=self.log
-            )
+            course = Course.find_by_code(db=session, code=course_code, org_id=this_user["org_id"], log=self.log)
             if not course:
                 note = f"Course {course_code} does not exist"
                 self.log.info(note)

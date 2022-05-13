@@ -36,9 +36,9 @@ class Submission(BaseHandler):
     @authenticated
     def post(self):
 
-        if "Content-Length" in self.request.headers and int(
-            self.request.headers["Content-Length"]
-        ) > int(self.max_buffer_size):
+        if "Content-Length" in self.request.headers and int(self.request.headers["Content-Length"]) > int(
+            self.max_buffer_size
+        ):
             note = "File upload oversize, and rejected. Please reduce the files in your submission and try again."
             self.log.info(note)
             self.finish({"success": False, "note": note})
@@ -65,14 +65,10 @@ class Submission(BaseHandler):
         # The course will exist: the user object creates it if it doesn't exist
         #  - and we know the user is subscribed to the course as an instructor (above)
         with scoped_session() as session:
-            course = Course.find_by_code(
-                db=session, code=course_code, org_id=this_user["org_id"], log=self.log
-            )
+            course = Course.find_by_code(db=session, code=course_code, org_id=this_user["org_id"], log=self.log)
 
             # We need to find this assignment, or make a new one.
-            assignment = Assignment.find_by_code(
-                db=session, code=assignment_code, course_id=course.id
-            )
+            assignment = Assignment.find_by_code(db=session, code=assignment_code, course_id=course.id)
             if assignment is None:
                 note = f"User not fetched assignment {assignment_code}"
                 self.log.info(note)
@@ -94,9 +90,7 @@ class Submission(BaseHandler):
             )
 
             if not self.request.files:
-                self.log.warning(
-                    f"Error: No file supplies in upload"
-                )  # TODO: improve error message
+                self.log.warning(f"Error: No file supplies in upload")  # TODO: improve error message
                 raise web.HTTPError(412)  # precondition failed
 
             try:
@@ -129,9 +123,7 @@ class Submission(BaseHandler):
 
             # Check the file exists on disk
             if not (
-                os.path.exists(release_file)
-                and os.access(release_file, os.R_OK)
-                and os.path.getsize(release_file) > 0
+                os.path.exists(release_file) and os.access(release_file, os.R_OK) and os.path.getsize(release_file) > 0
             ):
                 note = "File upload failed."
                 self.log.info(note)
@@ -147,9 +139,7 @@ class Submission(BaseHandler):
                 return
 
             # now commit the assignment, and get it back to find the id
-            assignment = Assignment.find_by_code(
-                db=session, code=assignment_code, course_id=course.id
-            )
+            assignment = Assignment.find_by_code(db=session, code=assignment_code, course_id=course.id)
 
             # Record the action.
             # Note we record the path to the files.

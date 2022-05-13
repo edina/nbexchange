@@ -60,9 +60,7 @@ class Course(Base):
         org_id = int(float(org_id)) if org_id else None
         if org_id is None:
             raise ValueError(f"org_id needs to be defined, and a number")
-        return (
-            db.query(cls).filter(cls.course_code == code, cls.org_id == org_id).first()
-        )
+        return db.query(cls).filter(cls.course_code == code, cls.org_id == org_id).first()
 
     @classmethod
     def find_by_org(cls, db, org_id, log=None):

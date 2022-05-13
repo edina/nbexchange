@@ -17,17 +17,11 @@ depends_on = None
 
 def upgrade():
     with op.batch_alter_table("action") as batch_op:
-        batch_op.add_column(
-            sa.Column("checksum", sa.Unicode(length=200), nullable=True)
-        )
-        batch_op.alter_column(
-            "action", existing_type=sa.VARCHAR(length=9), nullable=False
-        )
+        batch_op.add_column(sa.Column("checksum", sa.Unicode(length=200), nullable=True))
+        batch_op.alter_column("action", existing_type=sa.VARCHAR(length=9), nullable=False)
 
 
 def downgrade():
     with op.batch_alter_table("action") as batch_op:
-        batch_op.alter_column(
-            "action", existing_type=sa.VARCHAR(length=9), nullable=True
-        )
+        batch_op.alter_column("action", existing_type=sa.VARCHAR(length=9), nullable=True)
         batch_op.drop_column("checksum")

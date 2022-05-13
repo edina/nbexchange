@@ -21,8 +21,6 @@ def test_post_assignments0(app):
 # subscribed user makes no difference (501, because we've hard-coded it)
 @pytest.mark.gen_test
 def test_post_assignments1(app):
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_kiz_instructor
-    ):
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(app.url + "/assignments?course_id=course_2")
     assert r.status_code == 501

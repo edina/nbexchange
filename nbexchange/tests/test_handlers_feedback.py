@@ -37,16 +37,11 @@ def test_feedback_unauthenticated(app):
 
 @pytest.mark.gen_test
 def test_feedback_authenticated_no_params(app, clear_database):
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_kiz_instructor
-    ):
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.get(app.url + "/feedback")
     response_data = r.json()
     assert response_data["success"] == False
-    assert (
-        response_data["note"]
-        == "Feedback call requires an assignment id and a course id"
-    )
+    assert response_data["note"] == "Feedback call requires an assignment id and a course id"
 
 
 @pytest.mark.gen_test
@@ -56,9 +51,7 @@ def test_feedback_authenticated_with_params(app, clear_database):
 
     url = f"/feedback?assignment_id={assignment_id}&course_id={course_id}"
 
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_kiz_instructor
-    ):
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.get(app.url + url)
 
     assert r.status_code == 404
@@ -86,22 +79,15 @@ def test_feedback_post_broken_nbex_user(app, clear_database, caplog):
         f"&checksum=faked"
     )
 
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_kiz  # No course details
-    ):
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz):  # No course details
         r = yield async_requests.post(app.url + url)
     assert r.status_code == 500
-    assert (
-        "Both current_course ('None') and current_role ('None') must have values. User was '1-kiz'"
-        in caplog.text
-    )
+    assert "Both current_course ('None') and current_role ('None') must have values. User was '1-kiz'" in caplog.text
 
 
 @pytest.mark.gen_test
 def test_feedback_post_authenticated_no_params(app, clear_database):
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_kiz_instructor
-    ):
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(app.url + "/feedback", files=feedbacks)
     response_data = r.json()
     assert response_data["success"] is False
@@ -115,9 +101,7 @@ def test_feedback_post_authenticated_no_params(app, clear_database):
 def test_feedback_post_authenticated_no_assignment_id(app, clear_database):
     url = f"/feedback?course_id=faked&notebook=faked&student=faked&timestamp=faked&checksum=faked"
 
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_kiz_instructor
-    ):
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(app.url + url, files=feedbacks)
     response_data = r.json()
     assert response_data["success"] is False
@@ -132,9 +116,7 @@ def test_feedback_post_authenticated_no_course_id(app, clear_database):
     assignment_id = "my_assignment"
     url = f"/feedback?assignment_id={assignment_id}&notebook=faked&student=faked&timestamp=faked&checksum=faked"
 
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_kiz_instructor
-    ):
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(app.url + url, files=feedbacks)
     response_data = r.json()
     assert response_data["success"] is False
@@ -149,9 +131,7 @@ def test_feedback_post_authenticated_no_notebook(app, clear_database):
     assignment_id = "my_assignment"
     url = f"/feedback?assignment_id={assignment_id}&course_id=faked&student=faked&timestamp=faked&checksum=faked"
 
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_kiz_instructor
-    ):
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(app.url + url, files=feedbacks)
     response_data = r.json()
     assert response_data["success"] is False
@@ -166,9 +146,7 @@ def test_feedback_post_authenticated_no_student(app, clear_database):
     assignment_id = "my_assignment"
     url = f"/feedback?assignment_id={assignment_id}&course_id=faked&notebook=faked&timestamp=faked&checksum=faked"
 
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_kiz_instructor
-    ):
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(app.url + url, files=feedbacks)
     response_data = r.json()
     assert response_data["success"] is False
@@ -183,9 +161,7 @@ def test_feedback_post_authenticated_no_timestamp(app, clear_database):
     assignment_id = "my_assignment"
     url = f"/feedback?assignment_id={assignment_id}&course_id=faked&notebook=faked&student=faked&checksum=faked"
 
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_kiz_instructor
-    ):
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(app.url + url, files=feedbacks)
     response_data = r.json()
     assert response_data["success"] is False
@@ -200,9 +176,7 @@ def test_feedback_post_authenticated_no_checksum(app, clear_database):
     assignment_id = "my_assignment"
     url = f"/feedback?assignment_id={assignment_id}&course_id=faked&notebook=faked&student=faked&timestamp=faked"
 
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_kiz_instructor
-    ):
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(app.url + url, files=feedbacks)
     response_data = r.json()
     assert response_data["success"] is False
@@ -225,9 +199,7 @@ def test_feedback_post_authenticated_with_params(app, clear_database):
         f"&checksum=faked"
     )
 
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_kiz_instructor
-    ):
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(app.url + url, files=feedbacks)
 
     assert r.status_code == 404
@@ -246,23 +218,17 @@ def test_feedback_post_authenticated_with_incorrect_assignment_id(app, clear_dat
     )
     # XXX: Doing this in a separate function doesn't work for some reason (Exchange doesn't get called)
     kwargs = {"data": {"notebooks": [notebook]}}
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_kiz_instructor
-    ):
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
-            app.url
-            + f"/assignment?course_id={course_id}&assignment_id={assignment_id}",
+            app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}",
             files=files,
             **kwargs,
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
-        r = yield async_requests.get(
-            app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}"
-        )
+        r = yield async_requests.get(app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.post(
-            app.url
-            + f"/submission?course_id={course_id}&assignment_id={assignment_id}",
+            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id}",
             files=files,
         )
 
@@ -275,9 +241,7 @@ def test_feedback_post_authenticated_with_incorrect_assignment_id(app, clear_dat
         f"&checksum={checksum}"
     )
 
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_kiz_instructor
-    ):
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(app.url + url, files=feedbacks)
     assert r.status_code == 404
 
@@ -296,23 +260,17 @@ def test_feedback_post_authenticated_with_incorrect_notebook_id(app, clear_datab
 
     # XXX: Doing this in a separate function doesn't work for some reason (Exchange doesn't get called)
     kwargs = {"data": {"notebooks": [notebook]}}
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_kiz_instructor
-    ):
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
-            app.url
-            + f"/assignment?course_id={course_id}&assignment_id={assignment_id}",
+            app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}",
             files=files,
             **kwargs,
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
-        r = yield async_requests.get(
-            app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}"
-        )
+        r = yield async_requests.get(app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.post(
-            app.url
-            + f"/submission?course_id={course_id}&assignment_id={assignment_id}",
+            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id}",
             files=files,
         )
 
@@ -325,9 +283,7 @@ def test_feedback_post_authenticated_with_incorrect_notebook_id(app, clear_datab
         f"&checksum={checksum}"
     )
 
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_kiz_instructor
-    ):
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(app.url + url, files=feedbacks)
     assert r.status_code == 404
 
@@ -346,23 +302,17 @@ def test_feedback_post_authenticated_with_incorrect_student_id(app, clear_databa
 
     # XXX: Doing this in a separate function doesn't work for some reason (Exchange doesn't get called)
     kwargs = {"data": {"notebooks": [notebook]}}
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_kiz_instructor
-    ):
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
-            app.url
-            + f"/assignment?course_id={course_id}&assignment_id={assignment_id}",
+            app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}",
             files=files,
             **kwargs,
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
-        r = yield async_requests.get(
-            app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}"
-        )
+        r = yield async_requests.get(app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.post(
-            app.url
-            + f"/submission?course_id={course_id}&assignment_id={assignment_id}",
+            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id}",
             files=files,
         )
 
@@ -375,9 +325,7 @@ def test_feedback_post_authenticated_with_incorrect_student_id(app, clear_databa
         f"&checksum={checksum}"
     )
 
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_kiz_instructor
-    ):
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(app.url + url, files=feedbacks)
     assert r.status_code == 404
 
@@ -398,23 +346,17 @@ def test_feedback_post_authenticated_with_incorrect_checksum(app, clear_database
 
     # XXX: Doing this in a separate function doesn't work for some reason (Exchange doesn't get called)
     kwargs = {"data": {"notebooks": [notebook]}}
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_kiz_instructor
-    ):
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
-            app.url
-            + f"/assignment?course_id={course_id}&assignment_id={assignment_id}",
+            app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}",
             files=files,
             **kwargs,
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
-        r = yield async_requests.get(
-            app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}"
-        )
+        r = yield async_requests.get(app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.post(
-            app.url
-            + f"/submission?course_id={course_id}&assignment_id={assignment_id}",
+            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id}",
             files=files,
         )
 
@@ -427,9 +369,7 @@ def test_feedback_post_authenticated_with_incorrect_checksum(app, clear_database
         f"&checksum=faked"
     )
 
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_kiz_instructor
-    ):
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(app.url + url, files=feedbacks)
     assert r.status_code == 403
 
@@ -448,23 +388,17 @@ def test_feedback_post_authenticated_with_correct_params(app, clear_database):
 
     # XXX: Doing this in a separate function doesn't work for some reason (Exchange doesn't get called)
     kwargs = {"data": {"notebooks": [notebook]}}
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_kiz_instructor
-    ):
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
-            app.url
-            + f"/assignment?course_id={course_id}&assignment_id={assignment_id}",
+            app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}",
             files=files,
             **kwargs,
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
-        r = yield async_requests.get(
-            app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}"
-        )
+        r = yield async_requests.get(app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.post(
-            app.url
-            + f"/submission?course_id={course_id}&assignment_id={assignment_id}",
+            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id}",
             files=files,
         )
 
@@ -477,9 +411,7 @@ def test_feedback_post_authenticated_with_correct_params(app, clear_database):
         f"&checksum={checksum}"
     )
 
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_kiz_instructor
-    ):
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(app.url + url, files=feedbacks)
     assert r.status_code == 200
     response_data = r.json()
@@ -487,9 +419,7 @@ def test_feedback_post_authenticated_with_correct_params(app, clear_database):
 
 
 @pytest.mark.gen_test
-def test_feedback_post_authenticated_with_correct_params_incorrect_instructor(
-    app, clear_database
-):
+def test_feedback_post_authenticated_with_correct_params_incorrect_instructor(app, clear_database):
     assignment_id = "assign_a"
     course_id = "course_2"
     notebook = "notebook"
@@ -502,23 +432,17 @@ def test_feedback_post_authenticated_with_correct_params_incorrect_instructor(
 
     # XXX: Doing this in a separate function doesn't work for some reason (Exchange doesn't get called)
     kwargs = {"data": {"notebooks": [notebook]}}
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_kiz_instructor
-    ):
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
-            app.url
-            + f"/assignment?course_id={course_id}&assignment_id={assignment_id}",
+            app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}",
             files=files,
             **kwargs,
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
-        r = yield async_requests.get(
-            app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}"
-        )
+        r = yield async_requests.get(app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.post(
-            app.url
-            + f"/submission?course_id={course_id}&assignment_id={assignment_id}",
+            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id}",
             files=files,
         )
 
@@ -531,9 +455,7 @@ def test_feedback_post_authenticated_with_correct_params_incorrect_instructor(
         f"&checksum={checksum}"
     )
 
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_lkihlman_instructor
-    ):
+    with patch.object(BaseHandler, "get_current_user", return_value=user_lkihlman_instructor):
         r = yield async_requests.post(app.url + url, files=feedbacks)
 
     response_data = r.json()
@@ -542,9 +464,7 @@ def test_feedback_post_authenticated_with_correct_params_incorrect_instructor(
 
 
 @pytest.mark.gen_test
-def test_feedback_post_authenticated_with_correct_params_student_submitter(
-    app, clear_database
-):
+def test_feedback_post_authenticated_with_correct_params_student_submitter(app, clear_database):
     assignment_id = "assign_a"
     course_id = "course_2"
     notebook = "notebook"
@@ -557,23 +477,17 @@ def test_feedback_post_authenticated_with_correct_params_student_submitter(
 
     # XXX: Doing this in a separate function doesn't work for some reason (Exchange doesn't get called)
     kwargs = {"data": {"notebooks": [notebook]}}
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_kiz_instructor
-    ):
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
-            app.url
-            + f"/assignment?course_id={course_id}&assignment_id={assignment_id}",
+            app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}",
             files=files,
             **kwargs,
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
-        r = yield async_requests.get(
-            app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}"
-        )
+        r = yield async_requests.get(app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.post(
-            app.url
-            + f"/submission?course_id={course_id}&assignment_id={assignment_id}",
+            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id}",
             files=files,
         )
 
@@ -608,23 +522,17 @@ def test_feedback_get_authenticated_with_incorrect_student(app, clear_database):
 
     # XXX: Doing this in a separate function doesn't work for some reason (Exchange doesn't get called)
     kwargs = {"data": {"notebooks": [notebook]}}
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_kiz_instructor
-    ):
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
-            app.url
-            + f"/assignment?course_id={course_id}&assignment_id={assignment_id}",
+            app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}",
             files=files,
             **kwargs,
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
-        r = yield async_requests.get(
-            app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}"
-        )
+        r = yield async_requests.get(app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.post(
-            app.url
-            + f"/submission?course_id={course_id}&assignment_id={assignment_id}",
+            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id}",
             files=files,
         )
 
@@ -637,16 +545,12 @@ def test_feedback_get_authenticated_with_incorrect_student(app, clear_database):
         f"&checksum={checksum}"
     )
 
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_kiz_instructor
-    ):
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(app.url + url, files=feedbacks)
 
     url = f"/feedback?assignment_id={assignment_id}&course_id={course_id}"
 
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_brobbere_student
-    ):
+    with patch.object(BaseHandler, "get_current_user", return_value=user_brobbere_student):
         r = yield async_requests.get(app.url + url)
 
     assert r.status_code == 200
@@ -670,23 +574,17 @@ def test_feedback_get_authenticated_with_correct_params(app, clear_database):
 
     # XXX: Doing this in a separate function doesn't work for some reason (Exchange doesn't get called)
     kwargs = {"data": {"notebooks": [notebook]}}
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_kiz_instructor
-    ):
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
-            app.url
-            + f"/assignment?course_id={course_id}&assignment_id={assignment_id}",
+            app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}",
             files=files,
             **kwargs,
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
-        r = yield async_requests.get(
-            app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}"
-        )
+        r = yield async_requests.get(app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.post(
-            app.url
-            + f"/submission?course_id={course_id}&assignment_id={assignment_id}",
+            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id}",
             files=files,
         )
 
@@ -698,9 +596,7 @@ def test_feedback_get_authenticated_with_correct_params(app, clear_database):
         f"&timestamp={timestamp}"
         f"&checksum={checksum}"
     )
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_kiz_instructor
-    ):
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(app.url + url, files=feedbacks)
 
     url = f"/feedback?assignment_id={assignment_id}&course_id={course_id}"
@@ -712,9 +608,7 @@ def test_feedback_get_authenticated_with_correct_params(app, clear_database):
     response_data = r.json()
     assert response_data["success"] is True
     assert len(response_data["feedback"]) >= 1
-    assert response_data["feedback"][0].get("content") == feedback_base64.decode(
-        "utf-8"
-    )
+    assert response_data["feedback"][0].get("content") == feedback_base64.decode("utf-8")
 
 
 @pytest.mark.gen_test
@@ -731,23 +625,17 @@ def test_feedback_get_broken_nbex_user(app, clear_database, caplog):
 
     # XXX: Doing this in a separate function doesn't work for some reason (Exchange doesn't get called)
     kwargs = {"data": {"notebooks": [notebook]}}
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_kiz_instructor
-    ):
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
-            app.url
-            + f"/assignment?course_id={course_id}&assignment_id={assignment_id}",
+            app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}",
             files=files,
             **kwargs,
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
-        r = yield async_requests.get(
-            app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}"
-        )
+        r = yield async_requests.get(app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.post(
-            app.url
-            + f"/submission?course_id={course_id}&assignment_id={assignment_id}",
+            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id}",
             files=files,
         )
 
@@ -759,9 +647,7 @@ def test_feedback_get_broken_nbex_user(app, clear_database, caplog):
         f"&timestamp={timestamp}"
         f"&checksum={checksum}"
     )
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_kiz_instructor
-    ):
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(app.url + url, files=feedbacks)
 
     url = f"/feedback?assignment_id={assignment_id}&course_id={course_id}"
@@ -771,10 +657,7 @@ def test_feedback_get_broken_nbex_user(app, clear_database, caplog):
         r = yield async_requests.get(app.url + url)
 
     assert r.status_code == 500
-    assert (
-        "Both current_course ('None') and current_role ('None') must have values. User was '1-kiz'"
-        in caplog.text
-    )
+    assert "Both current_course ('None') and current_role ('None') must have values. User was '1-kiz'" in caplog.text
 
 
 # test feedback picks up the correct assignment when two courses have the same assignment name
@@ -797,17 +680,13 @@ def test_feedback_get_correct_assignment_across_courses(app, clear_database):
     kwargs = {"data": {"notebooks": [notebook]}}
 
     # release assignment on course 1 & 2
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_kiz_instructor
-    ):
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + f"/assignment?course_id={course_1}&assignment_id={assignment_id}",
             files=files,
             **kwargs,
         )
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_kiz_instructor
-    ):
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + f"/assignment?course_id={course_2}&assignment_id={assignment_id}",
             files=files,
@@ -816,9 +695,7 @@ def test_feedback_get_correct_assignment_across_courses(app, clear_database):
 
     # Now fetch & submit on course 2 as student
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
-        r = yield async_requests.get(
-            app.url + f"/assignment?course_id={course_2}&assignment_id={assignment_id}"
-        )
+        r = yield async_requests.get(app.url + f"/assignment?course_id={course_2}&assignment_id={assignment_id}")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.post(
             app.url + f"/submission?course_id={course_2}&assignment_id={assignment_id}",
@@ -834,9 +711,7 @@ def test_feedback_get_correct_assignment_across_courses(app, clear_database):
         f"&timestamp={timestamp}"
         f"&checksum={checksum}"
     )
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_kiz_instructor
-    ):
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(app.url + url, files=feedbacks)
 
     url = f"/feedback?assignment_id={assignment_id}&course_id={course_1}"
@@ -855,6 +730,4 @@ def test_feedback_get_correct_assignment_across_courses(app, clear_database):
     response_data = r.json()
     assert response_data["success"] is True
     assert len(response_data["feedback"]) >= 1
-    assert response_data["feedback"][0].get("content") == feedback_base64.decode(
-        "utf-8"
-    )
+    assert response_data["feedback"][0].get("content") == feedback_base64.decode("utf-8")

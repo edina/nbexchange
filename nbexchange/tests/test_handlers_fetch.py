@@ -44,59 +44,40 @@ def test_fetch_requires_auth_user(app):
 # Requires both params (none)
 @pytest.mark.gen_test
 def test_fetch_fails_no_parama(app, clear_database):
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_kiz_instructor
-    ):
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.get(app.url + "/assignment")
     response_data = r.json()
     assert response_data["success"] == False
-    assert (
-        response_data["note"]
-        == "Assigment call requires both a course code and an assignment code!!"
-    )
+    assert response_data["note"] == "Assigment call requires both a course code and an assignment code!!"
 
 
 # Requires both params (just course)
 @pytest.mark.gen_test
 def test_fetch_fails_missing_assignment(app, clear_database):
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_kiz_instructor
-    ):
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.get(app.url + "/assignment?course_id=course_a")
     assert r.status_code == 200
     response_data = r.json()
     assert response_data["success"] == False
-    assert (
-        response_data["note"]
-        == "Assigment call requires both a course code and an assignment code!!"
-    )
+    assert response_data["note"] == "Assigment call requires both a course code and an assignment code!!"
 
 
 # Requires both params (just assignment)
 @pytest.mark.gen_test
 def test_fetch_fails_missing_course(app, clear_database):
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_kiz_instructor
-    ):
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.get(app.url + "/assignment?assignment_id=assign_a")
     assert r.status_code == 200
     response_data = r.json()
     assert response_data["success"] == False
-    assert (
-        response_data["note"]
-        == "Assigment call requires both a course code and an assignment code!!"
-    )
+    assert response_data["note"] == "Assigment call requires both a course code and an assignment code!!"
 
 
 # both params, incorrect course
 @pytest.mark.gen_test
 def test_fetch_fails_user_not_subscribed(app, clear_database):
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_kiz_instructor
-    ):
-        r = yield async_requests.get(
-            app.url + "/assignment?course_id=course_1&assignment_id=assign_a"
-        )
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
+        r = yield async_requests.get(app.url + "/assignment?course_id=course_1&assignment_id=assign_a")
     assert r.status_code == 200
     response_data = r.json()
     assert response_data["success"] == False
@@ -106,13 +87,8 @@ def test_fetch_fails_user_not_subscribed(app, clear_database):
 # both params, correct course, assignment does not exist
 @pytest.mark.gen_test
 def test_fetch_fails_assignment_not_exists(app, clear_database):
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_kiz_instructor
-    ):
-        r = yield async_requests.get(
-            app.url
-            + "/assignment?course_id=course_2&assignment_id=assign_does_not_exist"
-        )
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
+        r = yield async_requests.get(app.url + "/assignment?course_id=course_2&assignment_id=assign_does_not_exist")
     assert r.status_code == 200
     response_data = r.json()
     assert response_data["success"] == False
@@ -122,12 +98,9 @@ def test_fetch_fails_assignment_not_exists(app, clear_database):
 # Picks up the first attribute if more than 1 (wrong course)
 @pytest.mark.gen_test
 def test_fetch_duplicate_param_first_is_wrong(app, clear_database):
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_brobbere_student
-    ):
+    with patch.object(BaseHandler, "get_current_user", return_value=user_brobbere_student):
         r = yield async_requests.get(
-            app.url
-            + "/assignment?course_id=course_a&course_id=cource_2&assignment_id=assign_a"
+            app.url + "/assignment?course_id=course_a&course_id=cource_2&assignment_id=assign_a"
         )
     assert r.status_code == 200
     response_data = r.json()
@@ -138,12 +111,9 @@ def test_fetch_duplicate_param_first_is_wrong(app, clear_database):
 # Picks up the first attribute if more than 1 (right course)
 @pytest.mark.gen_test
 def test_fetch_duplicate_param_first_is_right(app, clear_database):
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_brobbere_student
-    ):
+    with patch.object(BaseHandler, "get_current_user", return_value=user_brobbere_student):
         r = yield async_requests.get(
-            app.url
-            + "/assignment?course_id=course_2&course_id=cource_a&assignment_id=assign_does_not_exist"
+            app.url + "/assignment?course_id=course_2&course_id=cource_a&assignment_id=assign_does_not_exist"
         )
     assert r.status_code == 200
     response_data = r.json()
@@ -155,19 +125,13 @@ def test_fetch_duplicate_param_first_is_right(app, clear_database):
 # (needs to be released before it can be fetched )
 @pytest.mark.gen_test
 def test_instructor_can_fetch(app, clear_database):
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_kiz_instructor
-    ):
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
             files=files,
         )
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_kiz_instructor
-    ):
-        r = yield async_requests.get(
-            app.url + "/assignment?course_id=course_2&assignment_id=assign_a"
-        )
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
+        r = yield async_requests.get(app.url + "/assignment?course_id=course_2&assignment_id=assign_a")
     assert r.status_code == 200
     assert r.headers["Content-Type"] == "application/gzip"
     assert int(r.headers["Content-Length"]) > 0
@@ -177,21 +141,16 @@ def test_instructor_can_fetch(app, clear_database):
 # (needs to be released before it can be fetched )
 @pytest.mark.gen_test
 def test_fetch_broken_nbex_user(app, clear_database, caplog):
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_kiz_instructor
-    ):
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
             files=files,
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz):
-        r = yield async_requests.get(
-            app.url + "/assignment?course_id=course_2&assignment_id=assign_a"
-        )
+        r = yield async_requests.get(app.url + "/assignment?course_id=course_2&assignment_id=assign_a")
         assert r.status_code == 500
         assert (
-            "Both current_course ('None') and current_role ('None') must have values. User was '1-kiz'"
-            in caplog.text
+            "Both current_course ('None') and current_role ('None') must have values. User was '1-kiz'" in caplog.text
         )
 
 
@@ -199,19 +158,13 @@ def test_fetch_broken_nbex_user(app, clear_database, caplog):
 # (needs to be released before it can be fetched )
 @pytest.mark.gen_test
 def test_student_can_fetch(app, clear_database):
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_kiz_instructor
-    ):
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
             files=files,
         )
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_brobbere_student
-    ):
-        r = yield async_requests.get(
-            app.url + "/assignment?course_id=course_2&assignment_id=assign_a"
-        )
+    with patch.object(BaseHandler, "get_current_user", return_value=user_brobbere_student):
+        r = yield async_requests.get(app.url + "/assignment?course_id=course_2&assignment_id=assign_a")
     assert r.status_code == 200
     assert r.headers["Content-Type"] == "application/gzip"
     assert int(r.headers["Content-Length"]) > 0
@@ -220,9 +173,7 @@ def test_student_can_fetch(app, clear_database):
 # Confirm that a fetch always matches the last release
 @pytest.mark.gen_test
 def test_fetch_after_rerelease_gets_different_file(app, clear_database):
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_kiz_instructor
-    ):
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
             files=files,
@@ -235,26 +186,16 @@ def test_fetch_after_rerelease_gets_different_file(app, clear_database):
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
             files=files,
         )
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_brobbere_student
-    ):
-        r = yield async_requests.get(
-            app.url + "/assignment?&course_id=course_2&assignment_id=assign_a"
-        )
+    with patch.object(BaseHandler, "get_current_user", return_value=user_brobbere_student):
+        r = yield async_requests.get(app.url + "/assignment?&course_id=course_2&assignment_id=assign_a")
         r = yield async_requests.get(app.url + "/assignments?course_id=course_2")
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_kiz_instructor
-    ):
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
             files=files,
         )
-    with patch.object(
-        BaseHandler, "get_current_user", return_value=user_brobbere_student
-    ):
-        r = yield async_requests.get(
-            app.url + "/assignment?&course_id=course_2&assignment_id=assign_a"
-        )
+    with patch.object(BaseHandler, "get_current_user", return_value=user_brobbere_student):
+        r = yield async_requests.get(app.url + "/assignment?&course_id=course_2&assignment_id=assign_a")
         r = yield async_requests.get(app.url + "/assignments?course_id=course_2")
     assert r.status_code == 200
     response_data = r.json()

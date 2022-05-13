@@ -51,9 +51,7 @@ class Notebook(Base):
 
         """
         if log:
-            log.debug(
-                f"Notebook.find_by_name - assignment_id:{assignment_id}, name:{name})"
-            )
+            log.debug(f"Notebook.find_by_name - assignment_id:{assignment_id}, name:{name})")
         if assignment_id is None or not isinstance(assignment_id, int):
             raise TypeError(f"assignment_id must be defined, and an Int")
         if name is None or not isinstance(name, str):
@@ -75,9 +73,7 @@ class Notebook(Base):
 
         """
         if log:
-            log.debug(
-                f"Notebook.find_all_for_assignment - assignment_id:{assignment_id}"
-            )
+            log.debug(f"Notebook.find_all_for_assignment - assignment_id:{assignment_id}")
         if assignment_id is None or not isinstance(assignment_id, int):
             raise TypeError(f"assignment_id must be defined, and an Int")
 

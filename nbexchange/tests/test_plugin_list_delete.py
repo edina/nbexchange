@@ -23,9 +23,7 @@ def test_list_delete(plugin_config, tmpdir):
     plugin_config.CourseDirectory.assignment_id = "assign_1_1"
     plugin_config.ExchangeList.remove = True
 
-    plugin = ExchangeList(
-        coursedir=CourseDirectory(config=plugin_config), config=plugin_config
-    )
+    plugin = ExchangeList(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
 
     def api_request(*args, **kwargs):
         assert args[0] == ("assignment?course_id=no_course&assignment_id=assign_1_1")

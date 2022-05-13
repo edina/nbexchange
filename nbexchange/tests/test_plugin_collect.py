@@ -3,8 +3,8 @@ import logging
 import os
 import shutil
 import tarfile
-from shutil import copyfile
 import urllib.parse
+from shutil import copyfile
 
 import pytest
 from mock import patch

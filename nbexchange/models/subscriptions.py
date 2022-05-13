@@ -3,8 +3,8 @@ from sqlalchemy import (
     ForeignKey,
     Integer,
     Unicode,
-    UniqueConstraint,
     UnicodeText,
+    UniqueConstraint,
 )
 from sqlalchemy.orm import relationship
 

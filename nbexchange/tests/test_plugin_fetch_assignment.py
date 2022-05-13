@@ -5,7 +5,6 @@ import re
 import shutil
 import tarfile
 import urllib.parse
-
 from shutil import copyfile
 
 import pytest

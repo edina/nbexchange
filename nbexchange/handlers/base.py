@@ -77,6 +77,8 @@ class BaseHandler(web.RequestHandler):
             self.log.info(note)
             raise ValueError(note)
 
+        self.org_id = org_id
+
         with scoped_session() as session:
             user = User.find_by_name(db=session, name=hub_username, log=self.log)
             if user is None:

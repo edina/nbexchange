@@ -210,7 +210,7 @@ class Assignment(BaseHandler):
                     raise Exception
 
                 self.log.info(
-                    f"Adding action {AssignmentActions.fetched.value} for user {this_user['id']} against assignment {assignment.id}"  # noqa E501
+                    f"Adding action {AssignmentActions.fetched.value} for user {this_user['id']} against assignment {assignment.id}"  # noqa: E501
                 )
                 action = Action(
                     user_id=this_user["id"],
@@ -233,7 +233,7 @@ class Assignment(BaseHandler):
         if "Content-Length" in self.request.headers and int(self.request.headers["Content-Length"]) > int(
             self.max_buffer_size
         ):
-            note = "File upload oversize, and rejected. Please reduce the contents of the assignment, re-generate, and re-release"  # noqa E501
+            note = "File upload oversize, and rejected. Please reduce the contents of the assignment, re-generate, and re-release"  # noqa: E501
             self.log.info(note)
             self.finish({"success": False, "note": note})
             return
@@ -343,7 +343,7 @@ class Assignment(BaseHandler):
             # We shouldn't get here, but a double-check is good
             if os.path.getsize(release_file) > self.max_buffer_size:
                 os.remove(release_file)
-                note = "File upload oversize, and rejected. Please reduce the contents of the assignment, re-generate, and re-release"  # noqa E501
+                note = "File upload oversize, and rejected. Please reduce the contents of the assignment, re-generate, and re-release"  # noqa: E501
                 self.log.info(note)
                 self.finish({"success": False, "note": note})
                 return
@@ -362,7 +362,7 @@ class Assignment(BaseHandler):
             # Record the action.
             # Note we record the path to the files.
             self.log.info(
-                f"Adding action {AssignmentActions.released.value} for user {this_user['id']} against assignment {assignment.id}"  # noqa E501
+                f"Adding action {AssignmentActions.released.value} for user {this_user['id']} against assignment {assignment.id}"  # noqa: E501
             )
             action = Action(
                 user_id=this_user["id"],
@@ -380,7 +380,7 @@ class Assignment(BaseHandler):
         [course_code, assignment_code, purge] = self.get_params(["course_id", "assignment_id", "purge"])
 
         self.log.debug(
-            f"Called DELETE /assignment with arguments: course {course_code}, assignment {assignment_code}, and purge {purge}"  # noqa E501
+            f"Called DELETE /assignment with arguments: course {course_code}, assignment {assignment_code}, and purge {purge}"  # noqa: E501
         )
         if not (course_code and assignment_code):
             note = "Unreleasing an Assigment requires a course code and an assignment code"

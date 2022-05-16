@@ -67,7 +67,7 @@ class BaseHandler(web.RequestHandler):
 
         # Raising an error appears to have no detrimental affect when running.
         if not (current_course and current_role):
-            note = f"Both current_course ('{current_course}') and current_role ('{current_role}') must have values. User was '{hub_username}'"  # noqa E501
+            note = f"Both current_course ('{current_course}') and current_role ('{current_role}') must have values. User was '{hub_username}'"  # noqa: E501
             self.log.info(note)
             raise ValueError(note)
 

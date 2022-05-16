@@ -97,7 +97,7 @@ class NbExchange(PrometheusMixIn, Application):
     @default("log_format")
     def _log_format_default(self):
         """override default log format to include time"""
-        return "%(color)s[%(levelname)1.1s %(asctime)s.%(msecs).03d %(name)s %(module)s:%(lineno)d]%(end_color)s %(message)s"  # noqa E501
+        return "%(color)s[%(levelname)1.1s %(asctime)s.%(msecs).03d %(name)s %(module)s:%(lineno)d]%(end_color)s %(message)s"  # noqa: E501
 
     @staticmethod
     def add_url_prefix(prefix, handlers):

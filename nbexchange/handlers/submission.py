@@ -144,7 +144,7 @@ class Submission(BaseHandler):
             # Record the action.
             # Note we record the path to the files.
             self.log.info(
-                f"Adding action {AssignmentActions.submitted.value} for user {this_user['id']} against assignment {assignment.id}"  # noqa E501
+                f"Adding action {AssignmentActions.submitted.value} for user {this_user['id']} against assignment {assignment.id}"  # noqa: E501
             )
             action = Action(
                 user_id=this_user["id"],

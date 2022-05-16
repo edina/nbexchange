@@ -27,13 +27,13 @@ class ExchangeCollect(abc.ExchangeCollect, Exchange):
     def download(self, submission, dest_path):
         self.log.debug(f"ExchangeCollect.download - record {submission} to {dest_path}")
         r = self.api_request(
-            f"collection?course_id={quote_plus(self.coursedir.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}&path={quote_plus(submission['path'])}"  # noqa E501
+            f"collection?course_id={quote_plus(self.coursedir.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}&path={quote_plus(submission['path'])}"  # noqa: E501
         )
         self.log.debug(f"Got back {r.status_code}  {r.headers['content-type']} after file download")
 
         if r.status_code > 399:
             self.fail(
-                f"Error failing to collect for assignment {self.coursedir.assignment_id} on course {self.coursedir.course_id}: status code {r.status_code}: error {r.content}"  # noqa E501
+                f"Error failing to collect for assignment {self.coursedir.assignment_id} on course {self.coursedir.course_id}: status code {r.status_code}: error {r.content}"  # noqa: E501
             )
 
         if r.headers["content-type"] == "application/gzip":
@@ -46,22 +46,22 @@ class ExchangeCollect(abc.ExchangeCollect, Exchange):
             except Exception as e:  # TODO: exception handling
                 if hasattr(e, "message"):
                     self.fail(
-                        f"Error unpacking download for {self.coursedir.assignment_id} on course {self.coursedir.course_id}: {e.message}"  # noqa E501
+                        f"Error unpacking download for {self.coursedir.assignment_id} on course {self.coursedir.course_id}: {e.message}"  # noqa: E501
                     )
                 else:
                     self.fail(
-                        f"Error unpacking download for {self.coursedir.assignment_id} on course {self.coursedir.course_id}: {e}"  # noqa E501
+                        f"Error unpacking download for {self.coursedir.assignment_id} on course {self.coursedir.course_id}: {e}"  # noqa: E501
                     )
         else:
             # Fails, even if the json response is a success (for now)
             data = r.json()
             if not data["success"]:
                 self.fail(
-                    f"Error failing to collect for assignment {self.coursedir.assignment_id} on course {self.coursedir.course_id}"  # noqa E501
+                    f"Error failing to collect for assignment {self.coursedir.assignment_id} on course {self.coursedir.course_id}"  # noqa: E501
                 )
             else:
                 self.fail(
-                    f"Error failing to collect for assignment {self.coursedir.assignment_id} on course {self.coursedir.course_id}: {data['note']}"  # noqa E501
+                    f"Error failing to collect for assignment {self.coursedir.assignment_id} on course {self.coursedir.course_id}: {data['note']}"  # noqa: E501
                 )
 
     def do_collect(self):
@@ -71,7 +71,7 @@ class ExchangeCollect(abc.ExchangeCollect, Exchange):
         If coursedir.student_id, then we're only looking for that user"""
 
         # Get a list of submissions
-        url = f"collections?course_id={quote_plus(self.coursedir.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}"  # noqa E501
+        url = f"collections?course_id={quote_plus(self.coursedir.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}"  # noqa: E501
         if self.coursedir.student_id != "*":
             url = url + f"&user_id={quote_plus(self.coursedir.student_id)}"
         r = self.api_request(url)
@@ -97,7 +97,7 @@ class ExchangeCollect(abc.ExchangeCollect, Exchange):
             )
         else:
             self.log.debug(
-                f"Processing {len(submissions)} submissions of '{self.coursedir.assignment_id}' for course '{self.coursedir.course_id}'"  # noqa E501
+                f"Processing {len(submissions)} submissions of '{self.coursedir.assignment_id}' for course '{self.coursedir.course_id}'"  # noqa: E501
             )
 
         for submission in submissions:
@@ -160,7 +160,7 @@ class ExchangeCollect(abc.ExchangeCollect, Exchange):
                         self.log.info(f"No newer submission to collect: {student_id} {self.coursedir.assignment_id}")
                     else:
                         self.log.info(
-                            f"Submission already exists, use --update to update: {student_id} {self.coursedir.assignment_id}"  # noqa E501
+                            f"Submission already exists, use --update to update: {student_id} {self.coursedir.assignment_id}"  # noqa: E501
                         )
 
     def copy_files(self):

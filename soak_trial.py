@@ -58,12 +58,12 @@ class nbexchangeSoakTest:
             "--jwt_secret",
             type=str,
             default="asecretkey",
-            help="The JWT token is encoded with a specific SECRET_KEY. This must match the environment you are testing. Defaults to the highly imaginative 'asecretkey'",  # noqa E501
+            help="The JWT token is encoded with a specific SECRET_KEY. This must match the environment you are testing. Defaults to the highly imaginative 'asecretkey'",  # noqa: E501
         )
         parser.add_argument(
             "-k",
             "--keep_data",
-            help="Whether to clear all the users & actions from the database (and files from disk) or not. Defaults to False - purge",  # noqa E501
+            help="Whether to clear all the users & actions from the database (and files from disk) or not. Defaults to False - purge",  # noqa: E501
             action="store_true",
         )
         parser.add_argument(
@@ -102,7 +102,7 @@ class nbexchangeSoakTest:
         }
         logging.basicConfig(
             level=levels[self.args.log.lower()],
-            format="%(asctime)s,%(msecs)d %(levelname)-8s [%(pathname)s:%(lineno)d in function %(funcName)s] %(message)s",  # noqa E501
+            format="%(asctime)s,%(msecs)d %(levelname)-8s [%(pathname)s:%(lineno)d in function %(funcName)s] %(message)s",  # noqa: E501
             datefmt="%Y-%m-%d:%H:%M:%S",
         )
         self.log = logging.getLogger(__name__)
@@ -112,7 +112,7 @@ class nbexchangeSoakTest:
         self.assignment_code = str(uuid.uuid4())
 
         self.log.debug(
-            f"class variables: course_code: {self.course_code}, assignment_code: {self.assignment_code}, cluster: {self.args.cluster}, namespace: {self.args.namespace}, jwt_secret: {self.args.jwt_secret}, student_count: {self.args.student_count}",  # noqa E501
+            f"class variables: course_code: {self.course_code}, assignment_code: {self.assignment_code}, cluster: {self.args.cluster}, namespace: {self.args.namespace}, jwt_secret: {self.args.jwt_secret}, student_count: {self.args.student_count}",  # noqa: E501
         )
 
         # Check we have some values
@@ -125,7 +125,7 @@ class nbexchangeSoakTest:
             self.args.student_count,
         ):
             sys.exit(
-                "Missing a value from one of assignment_code, course_code, cluster, jwt_secret, namespace, student_count"  # noqa E501
+                "Missing a value from one of assignment_code, course_code, cluster, jwt_secret, namespace, student_count"  # noqa: E501
             )
 
         self.log.debug("Poke the cluster to see what we can fine")
@@ -193,10 +193,10 @@ class nbexchangeSoakTest:
             self.log.disabled = False
             if r.status_code == 200:
                 print(
-                    "## *NOTE*: Got a response from *something* on port 9000, please confirm it's the Kubernetes proxy we want ##"  # noqa E501
+                    "## *NOTE*: Got a response from *something* on port 9000, please confirm it's the Kubernetes proxy we want ##"  # noqa: E501
                 )
                 print(
-                    "##         If not, remove it... and follow the commands below..                                           ##"  # noqa E501
+                    "##         If not, remove it... and follow the commands below..                                           ##"  # noqa: E501
                 )
         except Exception:
             pass
@@ -208,7 +208,7 @@ class nbexchangeSoakTest:
         # ## port forwarding, hack ends
 
         self.log.info(
-            f"Looking good: Going to test {self.args.student_count} students in cluster '{self.args.cluster}', using nbexchange '{self.exchange_server}'",  # noqa E501
+            f"Looking good: Going to test {self.args.student_count} students in cluster '{self.args.cluster}', using nbexchange '{self.exchange_server}'",  # noqa: E501
         )
         self.log.info("End of setup phase")
 
@@ -326,7 +326,7 @@ class nbexchangeSoakTest:
                 found_files = os.listdir(str(unpack_dir))
                 if sorted(found_files) != sorted([self.notebook_name, self.data_file]):
                     self.log.warning(
-                        f"Student {username} failed to unpack assignment {self.assignment_code} into {unpack_dir} - seeing {found_files}"  # noqa E501
+                        f"Student {username} failed to unpack assignment {self.assignment_code} into {unpack_dir} - seeing {found_files}"  # noqa: E501
                     )
         self.log.info("student_fetch done")
 
@@ -440,7 +440,7 @@ class nbexchangeSoakTest:
 
                         self.log.debug(f"collect {submission} to {local_dest_path}")
                         r = self.api_request(
-                            f"collection?course_id={quote_plus(self.course_code)}&assignment_id={quote_plus(self.assignment_code)}&path={quote_plus(submission['path'])}",  # noqa E501
+                            f"collection?course_id={quote_plus(self.course_code)}&assignment_id={quote_plus(self.assignment_code)}&path={quote_plus(submission['path'])}",  # noqa: E501
                             jwt_token=user_jwt_token,
                         )
                         self.log.debug(f"Got back {r.status_code}  {r.headers['content-type']} after file download")
@@ -458,7 +458,7 @@ class nbexchangeSoakTest:
                         found_files = os.listdir(str(local_dest_path))
                         if sorted(found_files) != sorted([self.notebook_name, self.data_file, "timestamp.txt"]):
                             self.log.warning(
-                                f"Instructor {username} failed to unpack assignment {self.assignment_code} for {student_id} into {local_dest_path} - seeing {found_files}"  # noqa E501
+                                f"Instructor {username} failed to unpack assignment {self.assignment_code} for {student_id} into {local_dest_path} - seeing {found_files}"  # noqa: E501
                             )
                         else:
                             self.log.info(f"collected {student_id}")
@@ -660,7 +660,7 @@ class nbexchangeSoakTest:
                     found_files = os.listdir(str(student_feedback_dir))
                     if found_files != [self.feedback_name]:
                         self.log.warning(
-                            f"Student {username} failed to fetch feedback for {self.assignment_code} into {student_feedback_dir} - seeing {found_files}"  # noqa E501
+                            f"Student {username} failed to fetch feedback for {self.assignment_code} into {student_feedback_dir} - seeing {found_files}"  # noqa: E501
                         )
             else:
                 self.log.debug(content.get("note", "could not get feedback"))
@@ -715,7 +715,7 @@ class nbexchangeSoakTest:
             for student in self.student_list:
                 self.student_fetch_feedback(username=student)
             self.log.info(
-                f"Finished: An assignment with {self.args.student_count} students has done 'release_assignment', 'fetch_assignment', 'submit', 'collect', 'release_feedback', and 'fetch_assignment'.",  # noqa E501
+                f"Finished: An assignment with {self.args.student_count} students has done 'release_assignment', 'fetch_assignment', 'submit', 'collect', 'release_feedback', and 'fetch_assignment'.",  # noqa: E501
             )
         except Exception:
             self.log.warning("Something went wrong... still tidying up though")

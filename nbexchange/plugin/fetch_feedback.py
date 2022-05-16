@@ -27,7 +27,7 @@ class ExchangeFetchFeedback(abc.ExchangeFetchFeedback, Exchange):
     def download(self):
         self.log.debug(f"Download feedback for {quote_plus(self.coursedir.notebook_id)} from {self.service_url}")
         r = self.api_request(
-            f"feedback?course_id={quote_plus(self.coursedir.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}"  # noqa E501
+            f"feedback?course_id={quote_plus(self.coursedir.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}"  # noqa: E501
         )
         self.log.debug(f"Got back {r.status_code} {r.headers['content-type']} after file download")
         content = r.json()

@@ -196,7 +196,7 @@ class Collection(BaseHandler):
                     raise Exception
 
                 self.log.info(
-                    f"Adding action {AssignmentActions.collected.value} for user {this_user['id']} against assignment {assignment.id}"  # noqa E501
+                    f"Adding action {AssignmentActions.collected.value} for user {this_user['id']} against assignment {assignment.id}"  # noqa: E501
                 )
                 action = Action(
                     user_id=this_user["id"],

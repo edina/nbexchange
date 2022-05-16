@@ -88,7 +88,7 @@ def test_collect_methods(plugin_config, tmpdir):
         dest_path = f"{plugin_config.CourseDirectory.submitted_directory}/123/{ass_1_3}"
         with pytest.raises(
             Exception,
-            match=rf"Error unpacking download for {ass_1_3} on course {course_id}: file could not be opened successfully",  # noqa E501
+            match=rf"Error unpacking download for {ass_1_3} on course {course_id}: file could not be opened successfully",  # noqa: E501
         ):
             plugin.download(submission, dest_path)
 
@@ -132,7 +132,7 @@ def test_collect_normal(plugin_config, tmpdir):
             assert collection is False
             collection = True
             assert args[0] == (
-                f"collection?course_id={course_id}&assignment_id={ass_1_3}&path=%2Fsubmitted%2F{course_id}%2F{ass_1_3}%2F1%2F"  # noqa E501
+                f"collection?course_id={course_id}&assignment_id={ass_1_3}&path=%2Fsubmitted%2F{course_id}%2F{ass_1_3}%2F1%2F"  # noqa: E501
             )
             assert "method" not in kwargs or kwargs.get("method").lower() == "get"
             with tarfile.open(fileobj=tar_file, mode="w:gz") as tar_handle:
@@ -229,7 +229,7 @@ def test_collect_normal_update(plugin_config, tmpdir):
             assert collection is False
             collection = True
             assert args[0] == (
-                f"collection?course_id={course_id}&assignment_id={ass_1_2}&path=%2Fsubmitted%2F{course_id}%2F{ass_1_2}%2F1%2F"  # noqa E501
+                f"collection?course_id={course_id}&assignment_id={ass_1_2}&path=%2Fsubmitted%2F{course_id}%2F{ass_1_2}%2F1%2F"  # noqa: E501
             )
             assert "method" not in kwargs or kwargs.get("method").lower() == "get"
             with tarfile.open(fileobj=tar_file, mode="w:gz") as tar_handle:
@@ -336,7 +336,7 @@ def test_collect_normal_dont_update(plugin_config, tmpdir):
             assert collection is False
             collection = True
             assert args[0] == (
-                f"collection?course_id={course_id}&assignment_id={ass_1_4}&path=%2Fsubmitted%2F{course_id}%2F{ass_1_4}%2F1%2F"  # noqa E501
+                f"collection?course_id={course_id}&assignment_id={ass_1_4}&path=%2Fsubmitted%2F{course_id}%2F{ass_1_4}%2F1%2F"  # noqa: E501
             )
             assert "method" not in kwargs or kwargs.get("method").lower() == "get"
             with tarfile.open(fileobj=tar_file, mode="w:gz") as tar_handle:
@@ -443,7 +443,7 @@ def test_collect_normal_dont_update_old(plugin_config, tmpdir):
             assert collection is False
             collection = True
             assert args[0] == (
-                f"collection?course_id={course_id}&assignment_id={ass_1_5}&path=%2Fsubmitted%2F{course_id}%2F{ass_1_5}%2F1%2F"  # noqa E501
+                f"collection?course_id={course_id}&assignment_id={ass_1_5}&path=%2Fsubmitted%2F{course_id}%2F{ass_1_5}%2F1%2F"  # noqa: E501
             )
             assert "method" not in kwargs or kwargs.get("method").lower() == "get"
             with tarfile.open(fileobj=tar_file, mode="w:gz") as tar_handle:
@@ -525,7 +525,7 @@ def test_collect_normal_several(plugin_config, tmpdir):
             assert collection is False
             collection = True
             assert args[0] == (
-                f"collection?course_id={course_id}&assignment_id={ass_1_1}&path=%2Fsubmitted%2F{course_id}%2F{ass_1_1}%2F1%2F"  # noqa E501
+                f"collection?course_id={course_id}&assignment_id={ass_1_1}&path=%2Fsubmitted%2F{course_id}%2F{ass_1_1}%2F1%2F"  # noqa: E501
             )
             assert "method" not in kwargs or kwargs.get("method").lower() == "get"
             with tarfile.open(fileobj=tar_file, mode="w:gz") as tar_handle:
@@ -616,7 +616,7 @@ def test_collect_normal_gradebook_called(plugin_config, tmpdir):
             assert collection is False
             collection = True
             assert args[0] == (
-                f"collection?course_id={course_id}&assignment_id={ass_1_3}&path=%2Fsubmitted%2F{course_id}%2F{ass_1_3}%2F1%2F"  # noqa E501
+                f"collection?course_id={course_id}&assignment_id={ass_1_3}&path=%2Fsubmitted%2F{course_id}%2F{ass_1_3}%2F1%2F"  # noqa: E501
             )
             assert "method" not in kwargs or kwargs.get("method").lower() == "get"
             with tarfile.open(fileobj=tar_file, mode="w:gz") as tar_handle:
@@ -700,7 +700,7 @@ def test_collect_normal_gradebook_called_no_space(plugin_config, tmpdir):
             assert collection is False
             collection = True
             assert args[0] == (
-                f"collection?course_id={course_id}&assignment_id={ass_1_3}&path=%2Fsubmitted%2F{course_id}%2F{ass_1_3}%2F1%2F"  # noqa E501
+                f"collection?course_id={course_id}&assignment_id={ass_1_3}&path=%2Fsubmitted%2F{course_id}%2F{ass_1_3}%2F1%2F"  # noqa: E501
             )
             assert "method" not in kwargs or kwargs.get("method").lower() == "get"
             with tarfile.open(fileobj=tar_file, mode="w:gz") as tar_handle:
@@ -783,7 +783,7 @@ def test_collect_normal_gradebook_called_no_full_name(plugin_config, tmpdir):
             assert collection is False
             collection = True
             assert args[0] == (
-                f"collection?course_id={course_id}&assignment_id={ass_1_3}&path=%2Fsubmitted%2F{course_id}%2F{ass_1_3}%2F1%2F"  # noqa E501
+                f"collection?course_id={course_id}&assignment_id={ass_1_3}&path=%2Fsubmitted%2F{course_id}%2F{ass_1_3}%2F1%2F"  # noqa: E501
             )
             assert "method" not in kwargs or kwargs.get("method").lower() == "get"
             with tarfile.open(fileobj=tar_file, mode="w:gz") as tar_handle:
@@ -876,7 +876,7 @@ def test_collect_normal_several_gradebook_called(plugin_config, tmpdir):
         else:
             num = "2" if collection else "1"
             assert args[0] == (
-                f"collection?course_id={course_id}&assignment_id={ass_1_1}&path=%2Fsubmitted%2F{course_id}%2F{ass_1_1}%2F{num}%2F"  # noqa E501
+                f"collection?course_id={course_id}&assignment_id={ass_1_1}&path=%2Fsubmitted%2F{course_id}%2F{ass_1_1}%2F{num}%2F"  # noqa: E501
             )
             collection = True
             assert "method" not in kwargs or kwargs.get("method").lower() == "get"
@@ -958,7 +958,7 @@ def test_collect_normal_several_full_name_none(plugin_config, tmpdir):
         else:
             num = "2" if collection else "1"
             assert args[0] == (
-                f"collection?course_id={course_id}&assignment_id={ass_1_1}&path=%2Fsubmitted%2F{course_id}%2F{ass_1_1}%2F{num}%2F"  # noqa E501
+                f"collection?course_id={course_id}&assignment_id={ass_1_1}&path=%2Fsubmitted%2F{course_id}%2F{ass_1_1}%2F{num}%2F"  # noqa: E501
             )
             collection = True
             assert "method" not in kwargs or kwargs.get("method").lower() == "get"
@@ -1080,7 +1080,7 @@ def test_collect_handles_500_failure(plugin_config, tmpdir):
             plugin.start()
         assert (
             str(e_info.value)
-            == f"Error failing to collect for assignment {ass_1_3} on course {course_id}: status code 500: error {http_error}"  # noqa E501
+            == f"Error failing to collect for assignment {ass_1_3} on course {course_id}: status code 500: error {http_error}"  # noqa: E501
         )
 
 
@@ -1151,7 +1151,7 @@ def test_collect_with_unicode(plugin_config, tmpdir):
             assert collections is False
             collections = True
             assert args[0] == (
-                f"collections?course_id={urllib.parse.quote_plus(course_id)}&assignment_id={urllib.parse.quote_plus(assignment_id)}"  # noqa E501
+                f"collections?course_id={urllib.parse.quote_plus(course_id)}&assignment_id={urllib.parse.quote_plus(assignment_id)}"  # noqa: E501
             )
             assert "method" not in kwargs or kwargs.get("method").lower() == "get"
             return type(
@@ -1176,7 +1176,7 @@ def test_collect_with_unicode(plugin_config, tmpdir):
             assert collection is False
             collection = True
             assert args[0] == (
-                f"collection?course_id={urllib.parse.quote_plus(course_id)}&assignment_id={urllib.parse.quote_plus(assignment_id)}&path=%2Fsubmitted%2F{urllib.parse.quote_plus(course_id)}%2F{urllib.parse.quote_plus(assignment_id)}%2F1%2F"  # noqa E501
+                f"collection?course_id={urllib.parse.quote_plus(course_id)}&assignment_id={urllib.parse.quote_plus(assignment_id)}&path=%2Fsubmitted%2F{urllib.parse.quote_plus(course_id)}%2F{urllib.parse.quote_plus(assignment_id)}%2F1%2F"  # noqa: E501
             )
             assert "method" not in kwargs or kwargs.get("method").lower() == "get"
             with tarfile.open(fileobj=tar_file, mode="w:gz") as tar_handle:
@@ -1230,7 +1230,7 @@ def test_collect_with_unicode_R2L_language(plugin_config, tmpdir):
             assert collections is False
             collections = True
             assert args[0] == (
-                f"collections?course_id={urllib.parse.quote_plus(course_id)}&assignment_id={urllib.parse.quote_plus(assignment_id)}"  # noqa E501
+                f"collections?course_id={urllib.parse.quote_plus(course_id)}&assignment_id={urllib.parse.quote_plus(assignment_id)}"  # noqa: E501
             )
             assert "method" not in kwargs or kwargs.get("method").lower() == "get"
             return type(
@@ -1255,7 +1255,7 @@ def test_collect_with_unicode_R2L_language(plugin_config, tmpdir):
             assert collection is False
             collection = True
             assert args[0] == (
-                f"collection?course_id={urllib.parse.quote_plus(course_id)}&assignment_id={urllib.parse.quote_plus(assignment_id)}&path=%2Fsubmitted%2F{urllib.parse.quote_plus(course_id)}%2F{urllib.parse.quote_plus(assignment_id)}%2F1%2F"  # noqa E501
+                f"collection?course_id={urllib.parse.quote_plus(course_id)}&assignment_id={urllib.parse.quote_plus(assignment_id)}&path=%2Fsubmitted%2F{urllib.parse.quote_plus(course_id)}%2F{urllib.parse.quote_plus(assignment_id)}%2F1%2F"  # noqa: E501
             )
             assert "method" not in kwargs or kwargs.get("method").lower() == "get"
             with tarfile.open(fileobj=tar_file, mode="w:gz") as tar_handle:

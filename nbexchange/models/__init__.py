@@ -9,10 +9,12 @@ from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
 
-from .actions import Action  # noqa F401
-from .assignments import Assignment  # noqa F401
-from .courses import Course  # noqa F401
-from .feedback import Feedback  # noqa F401
-from .notebooks import Notebook  # noqa F401
-from .subscriptions import Subscription  # noqa F401
-from .users import User  # noqa F401
+# E402 : module level import not at top of file
+# F401 : module imported but unused
+from .actions import Action  # noqa: E402 F401
+from .assignments import Assignment  # noqa: E402 F401
+from .courses import Course  # noqa: E402 F401
+from .feedback import Feedback  # noqa: E402 F401
+from .notebooks import Notebook  # noqa: E402 F401
+from .subscriptions import Subscription  # noqa: E402 F401
+from .users import User  # noqa: E402 F401

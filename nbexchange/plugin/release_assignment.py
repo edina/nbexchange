@@ -72,7 +72,7 @@ class ExchangeReleaseAssignment(abc.ExchangeReleaseAssignment, Exchange):
     def upload(self, file):
         files = {"assignment": ("assignment.tar.gz", file)}
 
-        url = f"assignment?course_id={quote_plus(self.coursedir.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}"  # noqa E501
+        url = f"assignment?course_id={quote_plus(self.coursedir.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}"  # noqa: E501
 
         r = self.api_request(url, method="POST", data={"notebooks": self.notebooks}, files=files)
         self.log.debug(f"Got back {r.status_code} after file upload")
@@ -94,7 +94,7 @@ class ExchangeReleaseAssignment(abc.ExchangeReleaseAssignment, Exchange):
             self.fail(
                 "Assignment {} not released. "
                 "The contents of your assignment are too large:\n"
-                "You may have data files, temporary files, and/or working files that should not be included - try deleting them."  # noqa E501
+                "You may have data files, temporary files, and/or working files that should not be included - try deleting them."  # noqa: E501
                 "".format(self.coursedir.assignment_id)
             )
         # Upload files to exchange

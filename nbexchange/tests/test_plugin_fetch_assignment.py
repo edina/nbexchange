@@ -57,7 +57,7 @@ def test_fetch_assignment_methods_init_dest(plugin_config, tmpdir):
     with pytest.raises(ExchangeError) as e_info:
         plugin.init_dest()
     assert (
-        f"You already have notebook documents in directory: {plugin_config.CourseDirectory.assignment_id}. Please remove them before fetching again"  # noqa E501
+        f"You already have notebook documents in directory: {plugin_config.CourseDirectory.assignment_id}. Please remove them before fetching again"  # noqa: E501
         in str(e_info.value)
     )
     shutil.rmtree(plugin.dest_path)
@@ -287,7 +287,7 @@ def test_fetch_folder_exists_with_ipynb(plugin_config, tmpdir):
                 plugin.start()
             assert (
                 str(e_info.value)
-                == "You already have notebook documents in directory: assign_1_3. Please remove them before fetching again"  # noqa E501
+                == "You already have notebook documents in directory: assign_1_3. Please remove them before fetching again"  # noqa: E501
             )
     finally:
         shutil.rmtree(plugin.dest_path)
@@ -357,7 +357,7 @@ def test_fetch_assignment_handles_500_failure(plugin_config):
                 plugin.start()
             assert (
                 str(e_info.value)
-                == f"Error failing to fetch assignment {ass_1_2} on course {course_id}: status code 500: error {http_error}"  # noqa E501
+                == f"Error failing to fetch assignment {ass_1_2} on course {course_id}: status code 500: error {http_error}"  # noqa: E501
             )
     finally:
         shutil.rmtree(plugin.dest_path)

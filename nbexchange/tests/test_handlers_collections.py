@@ -5,7 +5,7 @@ import pytest
 from mock import patch
 
 from nbexchange.handlers.base import BaseHandler
-from nbexchange.tests.utils import (  # noqa F401 "clear_database"
+from nbexchange.tests.utils import (  # noqa: F401 "clear_database"
     async_requests,
     clear_database,
     get_files_dict,
@@ -34,7 +34,7 @@ def test_collections_no_post_action(app):
 
 # subscribed user makes no difference (501, because we've hard-coded it)
 @pytest.mark.gen_test
-def test_collections_no_post_action_even_authenticated(app, clear_database):  # noqa F811
+def test_collections_no_post_action_even_authenticated(app, clear_database):  # noqa: F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(app.url + "/collections?course_id=course_2")
     assert r.status_code == 501
@@ -56,14 +56,14 @@ def test_collections_no_post_action_even_authenticated(app, clear_database):  # 
 
 # require authenticated user
 @pytest.mark.gen_test
-def test_collections_unauthenticated_user_blocked(app, clear_database):  # noqa F811
+def test_collections_unauthenticated_user_blocked(app, clear_database):  # noqa: F811
     r = yield async_requests.get(app.url + "/collections")
     assert r.status_code == 403
 
 
 # Requires both params (none)
 @pytest.mark.gen_test
-def test_collections_fails_with_no_parameters(app, clear_database):  # noqa F811
+def test_collections_fails_with_no_parameters(app, clear_database):  # noqa: F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.get(app.url + "/collections")
     response_data = r.json()
@@ -73,7 +73,7 @@ def test_collections_fails_with_no_parameters(app, clear_database):  # noqa F811
 
 # Requires both params (just course)
 @pytest.mark.gen_test
-def test_collections_fails_with_just_course_parameter(app, clear_database):  # noqa F811
+def test_collections_fails_with_just_course_parameter(app, clear_database):  # noqa: F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.get(app.url + "/collections?course_id=course_a")
     assert r.status_code == 200
@@ -84,7 +84,7 @@ def test_collections_fails_with_just_course_parameter(app, clear_database):  # n
 
 # Requires both params (just assignment)
 @pytest.mark.gen_test
-def test_collections_fails_with_just_assignment_parameter(app, clear_database):  # noqa F811
+def test_collections_fails_with_just_assignment_parameter(app, clear_database):  # noqa: F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.get(app.url + "/collections?assignment_id=assign_a")
     assert r.status_code == 200
@@ -95,7 +95,7 @@ def test_collections_fails_with_just_assignment_parameter(app, clear_database): 
 
 # both params, incorrect course
 @pytest.mark.gen_test
-def test_collections_fails_with_wrong_course_code(app, clear_database):  # noqa F811
+def test_collections_fails_with_wrong_course_code(app, clear_database):  # noqa: F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.get(app.url + "/collections?course_id=course_1&assignment_id=assign_a")
     assert r.status_code == 200
@@ -107,7 +107,7 @@ def test_collections_fails_with_wrong_course_code(app, clear_database):  # noqa 
 # both params, correct course, assignment does not exist
 # returns true, but empty
 @pytest.mark.gen_test
-def test_collections_zero_results_with_wrong_course(app, clear_database):  # noqa F811
+def test_collections_zero_results_with_wrong_course(app, clear_database):  # noqa: F811
 
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.get(app.url + "/collections?course_id=course_2&assignment_id=assign_b2")
@@ -121,7 +121,7 @@ def test_collections_zero_results_with_wrong_course(app, clear_database):  # noq
 # broken nbex_user throws a 500 error on the server
 # (needs to be submitted before it can be seen )
 @pytest.mark.gen_test
-def test_collections_broken_nbex_user(app, clear_database, caplog):  # noqa F811
+def test_collections_broken_nbex_user(app, clear_database, caplog):  # noqa: F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
@@ -136,7 +136,7 @@ def test_collections_broken_nbex_user(app, clear_database, caplog):  # noqa F811
 # both params, correct course, assignment does not exist - differnet user, same role
 # Passes, because instructor on course
 @pytest.mark.gen_test
-def test_collections_zero_results_instructor_autosubscribed_to_course(app, clear_database):  # noqa F811
+def test_collections_zero_results_instructor_autosubscribed_to_course(app, clear_database):  # noqa: F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_brobbere_instructor):
         r = yield async_requests.get(app.url + "/collections?course_id=course_2&assignment_id=assign_a")
     assert r.status_code == 200
@@ -148,7 +148,7 @@ def test_collections_zero_results_instructor_autosubscribed_to_course(app, clear
 
 # student cannot collect
 @pytest.mark.gen_test
-def test_collections_students_cannot_collect(app, clear_database):  # noqa F811
+def test_collections_students_cannot_collect(app, clear_database):  # noqa: F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.get(app.url + "/collections?course_id=course_2&assignment_id=assign_a")
     assert r.status_code == 200
@@ -159,7 +159,7 @@ def test_collections_students_cannot_collect(app, clear_database):  # noqa F811
 
 # Picks up the first attribute if more than 1 (wrong course)
 @pytest.mark.gen_test
-def test_collections_repeated_parameters_wrong_first(app, clear_database):  # noqa F811
+def test_collections_repeated_parameters_wrong_first(app, clear_database):  # noqa: F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_brobbere_instructor):
         r = yield async_requests.get(app.url + "/collections?course_id=course_1&course_2&assignment_id=assign_a")
     assert r.status_code == 200
@@ -170,7 +170,7 @@ def test_collections_repeated_parameters_wrong_first(app, clear_database):  # no
 
 # Picks up the first attribute if more than 1 (right course)
 @pytest.mark.gen_test
-def test_collections_repeated_parameters_right_first(app, clear_database):  # noqa F811
+def test_collections_repeated_parameters_right_first(app, clear_database):  # noqa: F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
@@ -188,7 +188,7 @@ def test_collections_repeated_parameters_right_first(app, clear_database):  # no
 
 
 @pytest.mark.gen_test
-def test_collections_with_two_users_submitting(app, clear_database):  # noqa F811
+def test_collections_with_two_users_submitting(app, clear_database):  # noqa: F811
     assignment_id_1 = "assign_a"
     assignment_id_2 = "b_assign"
     course_id = "course_2"
@@ -230,7 +230,7 @@ def test_collections_with_two_users_submitting(app, clear_database):  # noqa F81
 
 
 @pytest.mark.gen_test
-def test_collections_with_one_user_submits_2nd_time(app, clear_database):  # noqa F811
+def test_collections_with_one_user_submits_2nd_time(app, clear_database):  # noqa: F811
     assignment_id_1 = "assign_a"
     course_id = "course_2"
     notebook = "notebook"
@@ -265,7 +265,7 @@ def test_collections_with_one_user_submits_2nd_time(app, clear_database):  # noq
 
 
 @pytest.mark.gen_test
-def test_collections_with_named_user(app, clear_database):  # noqa F811
+def test_collections_with_named_user(app, clear_database):  # noqa: F811
     assignment_id_1 = "assign_a"
     course_id = "course_2"
     notebook = "notebook"
@@ -302,7 +302,7 @@ def test_collections_with_named_user(app, clear_database):  # noqa F811
 
 
 @pytest.mark.gen_test
-def test_collections_with_named_user_check_full_name(app, clear_database):  # noqa F811
+def test_collections_with_named_user_check_full_name(app, clear_database):  # noqa: F811
     assignment_id_1 = "assign_a"
     course_id = "course_2"
     notebook = "notebook"
@@ -337,7 +337,7 @@ def test_collections_with_named_user_check_full_name(app, clear_database):  # no
 
 
 @pytest.mark.gen_test
-def test_collections_with_named_user_check_full_name_missing(app, clear_database):  # noqa F811
+def test_collections_with_named_user_check_full_name_missing(app, clear_database):  # noqa: F811
     assignment_id_1 = "assign_a"
     course_id = "course_2"
     notebook = "notebook"
@@ -374,7 +374,7 @@ def test_collections_with_named_user_check_full_name_missing(app, clear_database
 
 # Reminder: actions are persistent, so the previous test set up most of the actions
 @pytest.mark.gen_test
-def test_collections_with_a_blank_feedback_path_injected(app, clear_database):  # noqa F811
+def test_collections_with_a_blank_feedback_path_injected(app, clear_database):  # noqa: F811
     assignment_id_1 = "assign_a"
     course_id = "course_2"
     notebook = "notebook"

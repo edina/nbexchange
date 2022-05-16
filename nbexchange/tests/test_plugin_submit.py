@@ -1703,7 +1703,7 @@ def test_submit_fails_oversize(plugin_config, tmpdir):
                 plugin.start()
             assert (
                 str(e_info.value)
-                == "Assignment assign_1_1 not submitted. The contents of your submission are too large:\nYou may have data files, temporary files, and/or working files that are not needed - try deleting them."  # noqa E501
+                == "Assignment assign_1_1 not submitted. The contents of your submission are too large:\nYou may have data files, temporary files, and/or working files that are not needed - try deleting them."  # noqa: E501
             )
 
     finally:

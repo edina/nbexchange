@@ -33,7 +33,7 @@ class NaasUserHandler(BaseUserHandler):
         # 1-xyz format back to 1_xyz
         transformed_username = result["username"].replace("_", "-", 1)
 
-        ## We need to strip out forward slashes from the username. If not, the created paths will be invalid
+        # We need to strip out forward slashes from the username. If not, the created paths will be invalid
         transformed_username = transformed_username.replace("/", "-")
 
         return {

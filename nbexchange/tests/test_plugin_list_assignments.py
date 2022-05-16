@@ -7,8 +7,6 @@ from shutil import copyfile
 import pytest
 from mock import patch
 from nbgrader.coursedir import CourseDirectory
-from nbgrader.exchange import ExchangeError
-from nbgrader.utils import make_unique_key, notebook_hash
 
 from nbexchange.plugin import Exchange, ExchangeList
 from nbexchange.tests.utils import get_feedback_file
@@ -65,13 +63,13 @@ def test_list_acknowledges_multi_marker_feature_flag(plugin_config, tmpdir, monk
         )
 
     with patch.object(Exchange, "api_request", side_effect=api_request):
-        called = plugin.start()
+        plugin.start()
     assert plugin.coursedir.submitted_directory == "collected"
 
     monkeypatch.setenv("NAAS_FEATURE_MULTI_MARKERS", "True")
     plugin = ExchangeList(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
     with patch.object(Exchange, "api_request", side_effect=api_request):
-        called = plugin.start()
+        plugin.start()
     assert plugin.coursedir.submitted_directory == "submitted"
 
 

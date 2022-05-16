@@ -4,7 +4,6 @@ import tempfile
 import time
 
 from dateutil import parser
-from nbgrader.utils import make_unique_key, notebook_hash
 from tornado import web
 
 from nbexchange.database import scoped_session
@@ -115,7 +114,7 @@ class FeedbackHandler(BaseHandler):
         The endpoint return {'success': true} for all successful feedback releases.
         """
 
-        [course_id, assignment_id, notebook_id, student_id, timestamp, checksum,] = self.get_params(
+        [course_id, assignment_id, notebook_id, student_id, timestamp, checksum] = self.get_params(
             [
                 "course_id",
                 "assignment_id",
@@ -183,16 +182,11 @@ class FeedbackHandler(BaseHandler):
                 self.log.info(note)
                 raise web.HTTPError(404, note)
 
-            # # raise Exception(f"{res}")
-            # self.log.info(f"Notebook: {notebook}")
-            # self.log.info(f"Student: {student}")
-            # self.log.info(f"Instructor: {this_user}")
-
             # TODO: check access. Is the user an instructor on the course to which the notebook belongs
 
             # Check whether there is an HTML file attached to the request
             if not self.request.files:
-                self.log.warning(f"Error: No file supplied in upload")  # TODO: improve error message
+                self.log.warning("Error: No file supplied in upload")  # TODO: improve error message
                 raise web.HTTPError(412)  # precondition failed
 
             try:

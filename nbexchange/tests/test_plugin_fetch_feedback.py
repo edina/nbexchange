@@ -35,7 +35,7 @@ def test_fetch_feedback_methods(plugin_config, tmpdir):
 
     plugin.init_src()
     with pytest.raises(AttributeError) as e_info:
-        foo = plugin.src_path
+        plugin.src_path
     assert str(e_info.value) == "'ExchangeFetchFeedback' object has no attribute 'src_path'"
 
     plugin.init_dest()
@@ -58,7 +58,7 @@ def test_fetch_feedback_dir_created(plugin_config, tmpdir):
     plugin = ExchangeFetchFeedback(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
 
     def api_request(*args, **kwargs):
-        assert args[0] == (f"feedback?course_id=no_course&assignment_id=assign_1")
+        assert args[0] == ("feedback?course_id=no_course&assignment_id=assign_1")
         return type(
             "Response",
             (object,),
@@ -70,7 +70,7 @@ def test_fetch_feedback_dir_created(plugin_config, tmpdir):
         )
 
     with patch.object(Exchange, "api_request", side_effect=api_request):
-        called = plugin.start()
+        plugin.start()
         assert os.path.isdir(os.path.join(plugin_config.Exchange.assignment_dir, assignment_id, "feedback"))
 
 
@@ -86,7 +86,7 @@ def test_fetch_feedback_dir_created_with_course_id(plugin_config, tmpdir):
     plugin = ExchangeFetchFeedback(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
 
     def api_request(*args, **kwargs):
-        assert args[0] == (f"feedback?course_id=no_course&assignment_id=assign_1")
+        assert args[0] == ("feedback?course_id=no_course&assignment_id=assign_1")
         return type(
             "Response",
             (object,),
@@ -98,7 +98,7 @@ def test_fetch_feedback_dir_created_with_course_id(plugin_config, tmpdir):
         )
 
     with patch.object(Exchange, "api_request", side_effect=api_request):
-        called = plugin.start()
+        plugin.start()
         assert os.path.isdir(
             os.path.join(
                 plugin_config.Exchange.assignment_dir,
@@ -118,7 +118,7 @@ def test_fetch_feedback_fetch_normal(plugin_config, tmpdir):
     plugin = ExchangeFetchFeedback(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
 
     def api_request(*args, **kwargs):
-        assert args[0] == (f"feedback?course_id=no_course&assignment_id=assign_1")
+        assert args[0] == ("feedback?course_id=no_course&assignment_id=assign_1")
         assert "method" not in kwargs or kwargs.get("method").lower() == "get"
         return type(
             "Response",
@@ -140,7 +140,7 @@ def test_fetch_feedback_fetch_normal(plugin_config, tmpdir):
         )
 
     with patch.object(Exchange, "api_request", side_effect=api_request):
-        called = plugin.start()
+        plugin.start()
         assert os.path.exists(os.path.join(plugin.dest_path, "2020-01-01 00:00:00.100 00:00", "test_feedback.html"))
 
 
@@ -153,7 +153,7 @@ def test_fetch_feedback_fetch_several_normal(plugin_config, tmpdir):
     plugin = ExchangeFetchFeedback(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
 
     def api_request(*args, **kwargs):
-        assert args[0] == (f"feedback?course_id=no_course&assignment_id=assign_1")
+        assert args[0] == ("feedback?course_id=no_course&assignment_id=assign_1")
         assert "method" not in kwargs or kwargs.get("method").lower() == "get"
         return type(
             "Response",
@@ -180,7 +180,7 @@ def test_fetch_feedback_fetch_several_normal(plugin_config, tmpdir):
         )
 
     with patch.object(Exchange, "api_request", side_effect=api_request):
-        called = plugin.start()
+        plugin.start()
 
         assert os.path.exists(os.path.join(plugin.dest_path, "2020-01-01 00:00:01 00:00", "test_feedback1.html"))
         assert os.path.exists(os.path.join(plugin.dest_path, "2020-01-01 00:00:00 00:00", "test_feedback2.html"))

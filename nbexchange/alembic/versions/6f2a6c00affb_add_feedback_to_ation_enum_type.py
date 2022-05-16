@@ -5,7 +5,6 @@ Revises: 2805bf7747e5
 Create Date: 2020-10-21 13:55:01.264068
 
 """
-from datetime import datetime
 from enum import Enum
 
 import sqlalchemy as sa
@@ -62,6 +61,8 @@ def upgrade():
 
 
 def downgrade():
+
+    connection = op.get_bind()
 
     if connection.dialect.name == "postgresql":
         pass

@@ -1,12 +1,4 @@
-from sqlalchemy import (
-    Boolean,
-    Column,
-    ForeignKey,
-    Integer,
-    Text,
-    Unicode,
-    UniqueConstraint,
-)
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, Text, UniqueConstraint
 from sqlalchemy.orm import relationship
 
 from nbexchange.models import Base
@@ -36,7 +28,7 @@ class Assignment(Base):
     assignment_code = Column(Text(), nullable=False, index=True)
     active = Column(Boolean, default=True, nullable=False)
 
-    ## course <-> assignment mappings
+    # course <-> assignment mappings
     # each assignment has just one parent course
     course_id = Column(Integer, ForeignKey("course.id", ondelete="CASCADE"), index=True)
     # can set 'course.assignments'
@@ -56,11 +48,11 @@ class Assignment(Base):
         if log:
             log.debug(f"Assignment.find_by_pk - pk:{pk}")
         if pk is None:
-            raise ValueError(f"Primary Key needs to be defined")
+            raise ValueError("Primary Key needs to be defined")
         if isinstance(pk, int):
             return db.query(cls).filter(cls.id == pk).first()
         else:
-            raise TypeError(f"Primary Keys are required to be Ints")
+            raise TypeError("Primary Keys are required to be Ints")
 
     @classmethod
     def find_by_code(cls, db, code, course_id=None, active=True, log=None, action=None):
@@ -82,13 +74,13 @@ class Assignment(Base):
                 f"Assignment.find_by_code - code:{code} (course_id:{course_id}, active:{active}, action:{action})"
             )
         if code is None:
-            raise ValueError(f"code needs to be defined")
+            raise ValueError("code needs to be defined")
         if course_id is None:
-            raise ValueError(f"course_id needs to be defined")
+            raise ValueError("course_id needs to be defined")
         if not isinstance(code, str):
-            raise TypeError(f"code must be an Str")
+            raise TypeError("code must be an Str")
         if not isinstance(course_id, int):
-            raise TypeError(f"Course_id must be an Int")
+            raise TypeError("Course_id must be an Int")
         filters = [
             cls.assignment_code == code,
             cls.course_id == course_id,
@@ -119,7 +111,7 @@ class Assignment(Base):
             log.debug(f"Assignment.find_for_course - course_id:{course_id}, active:{active}, action:{action}")
 
         if course_id and not isinstance(course_id, int):
-            raise TypeError(f"Course_id, if specified, must be an Int")
+            raise TypeError("Course_id, if specified, must be an Int")
         filters = [cls.course_id == course_id, cls.active == active]
         if action:
             filters.append(cls.actions.any(Action.action == action))

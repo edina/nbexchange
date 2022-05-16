@@ -3,12 +3,10 @@ import io
 import os
 import shutil
 import tarfile
-import tempfile
 from urllib.parse import quote_plus
 
 import nbgrader.exchange.abc as abc
 from nbgrader.api import new_uuid
-from traitlets import Bool
 
 from .exchange import Exchange
 
@@ -62,13 +60,13 @@ class ExchangeFetchAssignment(abc.ExchangeFetchAssignment, Exchange):
     def download(self):
         self.log.debug(f"Download from {self.service_url}")
         r = self.api_request(
-            f"assignment?course_id={quote_plus(self.coursedir.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}"
+            f"assignment?course_id={quote_plus(self.coursedir.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}"  # noqa E501
         )
         self.log.debug(f"Got back {r.status_code}  {r.headers['content-type']} after file download")
 
         if r.status_code > 399:
             self.fail(
-                f"Error failing to fetch assignment {self.coursedir.assignment_id} on course {self.coursedir.course_id}: status code {r.status_code}: error {r.content}"
+                f"Error failing to fetch assignment {self.coursedir.assignment_id} on course {self.coursedir.course_id}: status code {r.status_code}: error {r.content}"  # noqa E501
             )
 
         if r.headers["content-type"] == "application/gzip":
@@ -81,22 +79,22 @@ class ExchangeFetchAssignment(abc.ExchangeFetchAssignment, Exchange):
             except Exception as e:  # TODO: exception handling
                 if hasattr(e, "message"):
                     self.fail(
-                        f"Error unpacking download for {self.coursedir.assignment_id} on course {self.coursedir.course_id}: {e.message}"
+                        f"Error unpacking download for {self.coursedir.assignment_id} on course {self.coursedir.course_id}: {e.message}"  # noqa E501
                     )
                 else:
                     self.fail(
-                        f"Error unpacking download for {self.coursedir.assignment_id} on course {self.coursedir.course_id}: {e}"
+                        f"Error unpacking download for {self.coursedir.assignment_id} on course {self.coursedir.course_id}: {e}"  # noqa E501
                     )
         else:
             # Fails, even if the json response is a success (for now)
             data = r.json()
             if not data["success"]:
                 self.fail(
-                    f"Error failing to fetch assignment {self.coursedir.assignment_id} on course {self.coursedir.course_id}"
+                    f"Error failing to fetch assignment {self.coursedir.assignment_id} on course {self.coursedir.course_id}"  # noqa E501
                 )
             else:
                 self.fail(
-                    f"Error failing to fetch assignment {self.coursedir.assignment_id} on course {self.coursedir.course_id}: {data['note']}"
+                    f"Error failing to fetch assignment {self.coursedir.assignment_id} on course {self.coursedir.course_id}: {data['note']}"  # noqa E501
                 )
 
     def copy_if_missing(self, src, dest, ignore=None):

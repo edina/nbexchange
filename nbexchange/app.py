@@ -97,7 +97,7 @@ class NbExchange(PrometheusMixIn, Application):
     @default("log_format")
     def _log_format_default(self):
         """override default log format to include time"""
-        return "%(color)s[%(levelname)1.1s %(asctime)s.%(msecs).03d %(name)s %(module)s:%(lineno)d]%(end_color)s %(message)s"
+        return "%(color)s[%(levelname)1.1s %(asctime)s.%(msecs).03d %(name)s %(module)s:%(lineno)d]%(end_color)s %(message)s"  # noqa E501
 
     @staticmethod
     def add_url_prefix(prefix, handlers):
@@ -116,7 +116,8 @@ class NbExchange(PrometheusMixIn, Application):
         # and all of its ancenstors until propagate is set to False.
         self.log.propagate = False
 
-        _formatter = self._log_formatter_cls(fmt=self.log_format, datefmt=self.log_datefmt)
+        # Is this actually used anywhere? flake says it isn't
+        # _formatter = self._log_formatter_cls(fmt=self.log_format, datefmt=self.log_datefmt)
 
         # hook up tornado 3's loggers to our app handlers
         for log in (app_log, access_log, gen_log):
@@ -183,7 +184,7 @@ class NbExchange(PrometheusMixIn, Application):
             )
         except OperationalError as e:
             self.log.error(f"Failed to connect to db: {self.db_url}")
-            self.log.debug(f"Database error was:", exc_info=True)
+            self.log.debug(f"Database error was: {e}", exc_info=True)
             if self.db_url.startswith("sqlite:///"):
                 self._check_db_path(self.db_url.split(":///", 1)[1])
             self.log.critical(

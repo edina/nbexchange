@@ -5,7 +5,6 @@ import base64
 import io
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
-from urllib.parse import urljoin
 
 import pytest
 import requests

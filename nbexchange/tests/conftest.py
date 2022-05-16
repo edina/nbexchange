@@ -4,7 +4,6 @@ import os
 from getpass import getuser
 
 import pytest
-import requests
 from pytest_docker_tools import build, container
 from tornado import ioloop
 from traitlets.config.loader import PyFileConfigLoader

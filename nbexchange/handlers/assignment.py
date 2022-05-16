@@ -38,7 +38,7 @@ class Assignments(BaseHandler):
         [course_code] = self.get_params(["course_id"])
 
         if not course_code:
-            note = f"Assigment call requires a course id"
+            note = "Assigment call requires a course id"
             self.log.info(note)
             self.finish({"success": False, "note": note, "value": []})
             return
@@ -68,7 +68,7 @@ class Assignments(BaseHandler):
             assignments = AssignmentModel.find_for_course(db=session, course_id=course.id, log=self.log)
 
             for assignment in assignments:
-                self.log.debug(f"==========")
+                self.log.debug("==========")
                 self.log.debug(f"Assignment: {assignment}")
                 for action in assignment.actions:
                     # For every action that is not "released" checked if the user id matches
@@ -146,7 +146,7 @@ class Assignment(BaseHandler):
 
         this_user = self.nbex_user
 
-        if not course_code in this_user["courses"]:
+        if course_code not in this_user["courses"]:
             note = f"User not subscribed to course {course_code}"
             self.log.info(note)
             self.finish({"success": False, "note": note})
@@ -204,13 +204,13 @@ class Assignment(BaseHandler):
                         data = handle.read()
                 except Exception as e:  # TODO: exception handling
                     self.log.warning(f"Error: {e}")  # TODO: improve error message
-                    self.log.info(f"Unable to open file")
+                    self.log.info("Unable to open file")
 
                     # error 500??
                     raise Exception
 
                 self.log.info(
-                    f"Adding action {AssignmentActions.fetched.value} for user {this_user['id']} against assignment {assignment.id}"
+                    f"Adding action {AssignmentActions.fetched.value} for user {this_user['id']} against assignment {assignment.id}"  # noqa E501
                 )
                 action = Action(
                     user_id=this_user["id"],
@@ -233,7 +233,7 @@ class Assignment(BaseHandler):
         if "Content-Length" in self.request.headers and int(self.request.headers["Content-Length"]) > int(
             self.max_buffer_size
         ):
-            note = "File upload oversize, and rejected. Please reduce the contents of the assignment, re-generate, and re-release"
+            note = "File upload oversize, and rejected. Please reduce the contents of the assignment, re-generate, and re-release"  # noqa E501
             self.log.info(note)
             self.finish({"success": False, "note": note})
             return
@@ -243,14 +243,14 @@ class Assignment(BaseHandler):
             f"Called POST /assignment with arguments: course {course_code} and  assignment {assignment_code}"
         )
         if not (course_code and assignment_code):
-            note = f"Posting an Assigment requires a course code and an assignment code"
+            note = "Posting an Assigment requires a course code and an assignment code"
             self.log.info(note)
             self.finish({"success": False, "note": note})
             return
 
         this_user = self.nbex_user
 
-        if not course_code in this_user["courses"]:
+        if course_code not in this_user["courses"]:
             note = f"User not subscribed to course {course_code}"
             self.log.info(note)
             self.finish({"success": False, "note": note})
@@ -300,7 +300,7 @@ class Assignment(BaseHandler):
             )
 
             if not self.request.files:
-                self.log.warning(f"Error: No file supplies in upload")  # TODO: improve error message
+                self.log.warning("Error: No file supplied in upload")  # TODO: improve error message
                 raise web.HTTPError(412)  # precondition failed
 
             try:
@@ -327,7 +327,7 @@ class Assignment(BaseHandler):
             except Exception as e:  # TODO: exception handling
                 self.log.warning(f"Error: {e}")  # TODO: improve error message
 
-                self.log.info(f"Upload failed")
+                self.log.info("Upload failed")
                 # error 500??
                 raise Exception
 
@@ -343,7 +343,7 @@ class Assignment(BaseHandler):
             # We shouldn't get here, but a double-check is good
             if os.path.getsize(release_file) > self.max_buffer_size:
                 os.remove(release_file)
-                note = "File upload oversize, and rejected. Please reduce the contents of the assignment, re-generate, and re-release"
+                note = "File upload oversize, and rejected. Please reduce the contents of the assignment, re-generate, and re-release"  # noqa E501
                 self.log.info(note)
                 self.finish({"success": False, "note": note})
                 return
@@ -362,7 +362,7 @@ class Assignment(BaseHandler):
             # Record the action.
             # Note we record the path to the files.
             self.log.info(
-                f"Adding action {AssignmentActions.released.value} for user {this_user['id']} against assignment {assignment.id}"
+                f"Adding action {AssignmentActions.released.value} for user {this_user['id']} against assignment {assignment.id}"  # noqa E501
             )
             action = Action(
                 user_id=this_user["id"],
@@ -380,23 +380,23 @@ class Assignment(BaseHandler):
         [course_code, assignment_code, purge] = self.get_params(["course_id", "assignment_id", "purge"])
 
         self.log.debug(
-            f"Called DELETE /assignment with arguments: course {course_code}, assignment {assignment_code}, and purge {purge}"
+            f"Called DELETE /assignment with arguments: course {course_code}, assignment {assignment_code}, and purge {purge}"  # noqa E501
         )
         if not (course_code and assignment_code):
-            note = f"Unreleasing an Assigment requires a course code and an assignment code"
+            note = "Unreleasing an Assigment requires a course code and an assignment code"
             self.log.info(note)
             self.finish({"success": False, "note": note})
             return
 
         this_user = self.nbex_user
 
-        if not course_code in this_user["courses"]:
+        if course_code not in this_user["courses"]:
             note = f"User not subscribed to course {course_code}"
             self.log.info(note)
             self.finish({"success": False, "note": note})
             return
 
-        if not "instructor" in map(str.casefold, this_user["courses"][course_code]):
+        if "instructor" not in map(str.casefold, this_user["courses"][course_code]):
             note = f"User not an instructor to course {course_code}"
             self.log.info(note)
             self.finish({"success": False, "note": note})

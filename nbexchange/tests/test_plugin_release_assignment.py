@@ -1,17 +1,13 @@
-import datetime
 import logging
 import os
 import re
-import shutil
 from shutil import copyfile
 
 import pytest
 from mock import patch
 from nbgrader.coursedir import CourseDirectory
 from nbgrader.exchange import ExchangeError
-from nbgrader.utils import make_unique_key, notebook_hash
 
-import nbexchange
 from nbexchange.plugin import Exchange, ExchangeReleaseAssignment
 from nbexchange.tests.utils import get_feedback_file
 
@@ -84,7 +80,7 @@ def test_release_assignment_methods_init_dest(plugin_config, tmpdir, caplog):
 
     plugin = ExchangeReleaseAssignment(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
     with pytest.raises(ExchangeError) as e_info:
-        foo = plugin.init_dest()
+        plugin.init_dest()
         assert str(e_info.value) == "No course id specified. Re-run with --course flag."
 
 
@@ -112,7 +108,7 @@ def test_release_assignment_methods_the_rest(plugin_config, tmpdir, caplog):
 
     plugin.init_src()
     with pytest.raises(AttributeError) as e_info:
-        foo = plugin.dest_path
+        plugin.dest_path
         assert str(e_info.value) == "'ExchangeReleaseAssignment' object has no attribute 'dest_path'"
 
     file = plugin.tar_source()
@@ -144,7 +140,7 @@ def test_release_assignment_normal(plugin_config, tmpdir):
     plugin = ExchangeReleaseAssignment(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
 
     def api_request(*args, **kwargs):
-        assert args[0] == (f"assignment?course_id=no_course" f"&assignment_id=assign_1")
+        assert args[0] == ("assignment?course_id=no_course&assignment_id=assign_1")
         assert kwargs.get("method").lower() == "post"
         assert kwargs.get("data").get("notebooks") == ["release"]
         assert "assignment" in kwargs.get("files")
@@ -208,7 +204,7 @@ def test_release_assignment_several_normal(plugin_config, tmpdir):
     plugin = ExchangeReleaseAssignment(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
 
     def api_request(*args, **kwargs):
-        assert args[0] == (f"assignment?course_id=no_course" f"&assignment_id=assign_1")
+        assert args[0] == ("assignment?course_id=no_course&assignment_id=assign_1")
         assert kwargs.get("method").lower() == "post"
         assert kwargs.get("data").get("notebooks") == ["release1", "release2"]
         assert "assignment" in kwargs.get("files")
@@ -293,7 +289,7 @@ def test_release_oversize_blocked(plugin_config, tmpdir):
     plugin.max_buffer_size = 50
 
     def api_request(*args, **kwargs):
-        assert args[0] == (f"assignment?course_id=no_course" f"&assignment_id=assign_1")
+        assert args[0] == ("assignment?course_id=no_course&assignment_id=assign_1")
         assert kwargs.get("method").lower() == "post"
         assert kwargs.get("data").get("notebooks") == ["release"]
         assert "assignment" in kwargs.get("files")
@@ -311,5 +307,5 @@ def test_release_oversize_blocked(plugin_config, tmpdir):
             plugin.start()
         assert (
             str(e_info.value)
-            == "Assignment assign_1 not released. The contents of your assignment are too large:\nYou may have data files, temporary files, and/or working files that should not be included - try deleting them."
+            == "Assignment assign_1 not released. The contents of your assignment are too large:\nYou may have data files, temporary files, and/or working files that should not be included - try deleting them."  # noqa E501
         )

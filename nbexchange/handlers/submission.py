@@ -49,14 +49,14 @@ class Submission(BaseHandler):
             f"Called POST /submission with arguments: course {course_code} and  assignment {assignment_code}"
         )
         if not (course_code and assignment_code):
-            note = f"Submission call requires both a course code and an assignment code"
+            note = "Submission call requires both a course code and an assignment code"
             self.log.info(note)
             self.finish({"success": False, "note": note})
             return
 
         this_user = self.nbex_user
 
-        if not course_code in this_user["courses"]:
+        if course_code not in this_user["courses"]:
             note = f"User not subscribed to course {course_code}"
             self.log.info(note)
             self.finish({"success": False, "note": note})
@@ -90,7 +90,7 @@ class Submission(BaseHandler):
             )
 
             if not self.request.files:
-                self.log.warning(f"Error: No file supplies in upload")  # TODO: improve error message
+                self.log.warning("Error: No file supplies in upload")  # TODO: improve error message
                 raise web.HTTPError(412)  # precondition failed
 
             try:
@@ -117,7 +117,7 @@ class Submission(BaseHandler):
             except Exception as e:  # TODO: exception handling
                 self.log.warning(f"Error: {e}")  # TODO: improve error message
 
-                self.log.info(f"Upload failed")
+                self.log.info("Upload failed")
                 # error 500??
                 raise web.HTTPError(418)
 
@@ -144,7 +144,7 @@ class Submission(BaseHandler):
             # Record the action.
             # Note we record the path to the files.
             self.log.info(
-                f"Adding action {AssignmentActions.submitted.value} for user {this_user['id']} against assignment {assignment.id}"
+                f"Adding action {AssignmentActions.submitted.value} for user {this_user['id']} against assignment {assignment.id}"  # noqa E501
             )
             action = Action(
                 user_id=this_user["id"],

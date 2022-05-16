@@ -1,11 +1,7 @@
-import datetime
 import glob
-import io
 import json
 import os
 import re
-import shutil
-import tempfile
 from urllib.parse import quote_plus
 
 import nbgrader.exchange.abc as abc

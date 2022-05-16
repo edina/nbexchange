@@ -4,7 +4,8 @@ from abc import ABC, abstractmethod
 from tornado import web
 
 
-# Updated after looking at https://clamytoe.github.io/articles/2020/Mar/12/testing-abcs-with-abstract-methods-with-pytest/
+# Updated after looking at
+# https://clamytoe.github.io/articles/2020/Mar/12/testing-abcs-with-abstract-methods-with-pytest/
 class BaseUserHandler(ABC):
     @abstractmethod
     def get_current_user(self, request: web.RequestHandler) -> dict:

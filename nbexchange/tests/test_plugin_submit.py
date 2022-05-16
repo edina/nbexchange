@@ -11,7 +11,6 @@ import pytest
 from mock import patch
 from nbgrader.coursedir import CourseDirectory
 from nbgrader.exchange import ExchangeError
-from nbgrader.utils import make_unique_key, notebook_hash
 
 from nbexchange.plugin import Exchange, ExchangeSubmit
 from nbexchange.tests.utils import get_feedback_file
@@ -52,7 +51,7 @@ def test_submit_methods(plugin_config, tmpdir, caplog):
     assert re.search(r"nbexchange/assign_1_1$", plugin.src_path)
     plugin.init_dest()
     with pytest.raises(AttributeError) as e_info:
-        foo = plugin.dest_path
+        plugin.dest_path
         assert str(e_info.value) == "'ExchangeReleaseAssignment' object has no attribute 'dest_path'"
     file = plugin.tar_source()
     assert len(file) > 1000
@@ -198,7 +197,7 @@ def test_submit_single_item(plugin_config, tmpdir):
                 )
 
         with patch.object(Exchange, "api_request", side_effect=api_request):
-            called = plugin.start()
+            plugin.start()
     finally:
         shutil.rmtree(assignment_id1)
 
@@ -271,12 +270,12 @@ def test_submit_single_item_with_path_includes_course(plugin_config, tmpdir):
                 )
 
         with patch.object(Exchange, "api_request", side_effect=api_request):
-            called = plugin.start()
+            plugin.start()
     finally:
         shutil.rmtree(os.path.join(course_id, assignment_id1))
 
 
-## What does this *DO*?
+# What does this *DO*?
 @pytest.mark.gen_test
 def test_submit_fail(plugin_config, tmpdir):
     try:
@@ -337,7 +336,7 @@ def test_submit_fail(plugin_config, tmpdir):
                 )
 
         with pytest.raises(ExchangeError) as e_info, patch.object(Exchange, "api_request", side_effect=api_request):
-            called = plugin.start()
+            plugin.start()
         assert str(e_info.value) == "failure note"
     finally:
         shutil.rmtree(assignment_id1)
@@ -415,7 +414,7 @@ def test_submit_multiple_notebooks_in_assignment(plugin_config, tmpdir):
                 )
 
         with patch.object(Exchange, "api_request", side_effect=api_request):
-            called = plugin.start()
+            plugin.start()
     finally:
         shutil.rmtree(assignment_id3)
 
@@ -485,7 +484,7 @@ def test_submit_fail_no_folder(plugin_config, tmpdir):
 
         with pytest.raises(ExchangeError, match=r"Assignment not found at"):
             with patch.object(Exchange, "api_request", side_effect=api_request):
-                called = plugin.start()
+                plugin.start()
     finally:
         pass  # shutil.rmtree(assignment_id1)
 
@@ -558,7 +557,7 @@ def test_submit_warning_no_notebook(plugin_config, tmpdir):
                     )
 
             with patch.object(Exchange, "api_request", side_effect=api_request):
-                called = plugin.start()
+                plugin.start()
 
     finally:
         shutil.rmtree(assignment_id1)
@@ -636,7 +635,7 @@ def test_submit_warning_wrong_notebook(plugin_config, tmpdir):
                     )
 
             with patch.object(Exchange, "api_request", side_effect=api_request):
-                called = plugin.start()
+                plugin.start()
 
     finally:
         shutil.rmtree(assignment_id1)
@@ -709,7 +708,7 @@ def test_submit_no_notebook_strict_means_fail(plugin_config, tmpdir):
                     )
 
             with patch.object(Exchange, "api_request", side_effect=api_request):
-                called = plugin.start()
+                plugin.start()
 
     finally:
         shutil.rmtree(assignment_id1)
@@ -785,7 +784,7 @@ def test_submit_wrong_notebook_strict_means_faile(plugin_config, tmpdir):
                     )
 
             with patch.object(Exchange, "api_request", side_effect=api_request):
-                called = plugin.start()
+                plugin.start()
 
     finally:
         shutil.rmtree(assignment_id1)
@@ -793,7 +792,7 @@ def test_submit_wrong_notebook_strict_means_faile(plugin_config, tmpdir):
 
 # Failure: assignment folder exists, but extra files
 @pytest.mark.gen_test
-def test_submit_warning_wrong_notebook(plugin_config, tmpdir):
+def test_submit_warning_wrong_notebook_two(plugin_config, tmpdir):
     try:
 
         plugin_config.CourseDirectory.course_id = course_id
@@ -866,7 +865,7 @@ def test_submit_warning_wrong_notebook(plugin_config, tmpdir):
                     )
 
             with patch.object(Exchange, "api_request", side_effect=api_request):
-                called = plugin.start()
+                plugin.start()
 
     finally:
         shutil.rmtree(assignment_id1)
@@ -942,7 +941,7 @@ def test_submit_extra_notebook_strict_means_fail(plugin_config, tmpdir):
                     )
 
             with patch.object(Exchange, "api_request", side_effect=api_request):
-                called = plugin.start()
+                plugin.start()
 
     finally:
         shutil.rmtree(assignment_id1)
@@ -1031,7 +1030,7 @@ def test_submit_two_releases_newest_first(plugin_config, tmpdir):
                 )
 
         with patch.object(Exchange, "api_request", side_effect=api_request):
-            called = plugin.start()
+            plugin.start()
     finally:
         shutil.rmtree(assignment_id1)
 
@@ -1119,14 +1118,14 @@ def test_submit_two_releases_newest_last(plugin_config, tmpdir):
                 )
 
         with patch.object(Exchange, "api_request", side_effect=api_request):
-            called = plugin.start()
+            plugin.start()
     finally:
         shutil.rmtree(assignment_id1)
 
 
 # Failure: assignment folder exists, but wrong files
 @pytest.mark.gen_test
-def test_submit_warning_wrong_notebook(plugin_config, tmpdir):
+def test_submit_warning_wrong_notebook_three(plugin_config, tmpdir):
     try:
 
         plugin_config.CourseDirectory.course_id = course_id
@@ -1212,7 +1211,7 @@ def test_submit_warning_wrong_notebook(plugin_config, tmpdir):
                     )
 
             with patch.object(Exchange, "api_request", side_effect=api_request):
-                called = plugin.start()
+                plugin.start()
 
     finally:
         shutil.rmtree(assignment_id1)
@@ -1419,7 +1418,7 @@ def test_submit_with_multiple_assignments_newest_first(plugin_config, tmpdir):
                 )
 
         with patch.object(Exchange, "api_request", side_effect=api_request):
-            called = plugin.start()
+            plugin.start()
     finally:
         shutil.rmtree(assignment_id3)
 
@@ -1625,7 +1624,7 @@ def test_submit_with_multiple_assignments_oldest_first(plugin_config, tmpdir):
                 )
 
         with patch.object(Exchange, "api_request", side_effect=api_request):
-            called = plugin.start()
+            plugin.start()
     finally:
         shutil.rmtree(assignment_id3)
 
@@ -1701,10 +1700,10 @@ def test_submit_fails_oversize(plugin_config, tmpdir):
 
         with patch.object(Exchange, "api_request", side_effect=api_request):
             with pytest.raises(ExchangeError) as e_info:
-                called = plugin.start()
+                plugin.start()
             assert (
                 str(e_info.value)
-                == "Assignment assign_1_1 not submitted. The contents of your submission are too large:\nYou may have data files, temporary files, and/or working files that are not needed - try deleting them."
+                == "Assignment assign_1_1 not submitted. The contents of your submission are too large:\nYou may have data files, temporary files, and/or working files that are not needed - try deleting them."  # noqa E501
             )
 
     finally:

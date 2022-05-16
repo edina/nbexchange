@@ -9,8 +9,6 @@ get used by the handlers:
 User -> Course -> Subscription -> Assignment -> Action -> Notebook -> Feedback
 
 """
-import pickle
-
 import pytest
 from sqlalchemy.exc import IntegrityError
 
@@ -127,7 +125,7 @@ def assignment_a2ovi(db):
     return orm_thing
 
 
-### User tests
+# ## User tests
 
 # Need to put this in to clear the database from the handler tests
 def test_empty_db(db):
@@ -193,7 +191,7 @@ def test_user_params(db, user_kaylee):
         found_1 = User.find_by_org(id=user_kaylee.org_id, db=db)
 
 
-### Course tests
+# ## Course tests
 # Remember Users are already in the DB
 
 
@@ -276,13 +274,13 @@ def test_course_params(db, course_strange):
 
     # test for unbexpected param
     with pytest.raises(TypeError):
-        found_by_pk = Course.find_by_pk(primary_key=course_strange.id, db=db)
+        Course.find_by_pk(primary_key=course_strange.id, db=db)
     with pytest.raises(TypeError):
         found_by_code = Course.find_by_code(course_code=course_strange.course_code, org_id=course_strange.org_id, db=db)
     with pytest.raises(TypeError):
         found_by_code = Course.find_by_code(code=course_strange.course_code, id=course_strange.org_id, db=db)
     with pytest.raises(TypeError):
-        found_by_org = Course.find_by_org(id=course_strange.org_id, db=db)
+        Course.find_by_org(id=course_strange.org_id, db=db)
 
 
 def test_multiple_courses(db, course_quirk, course_strange, course_charm):
@@ -294,7 +292,7 @@ def test_multiple_courses(db, course_quirk, course_strange, course_charm):
     assert len(courses) == 0
 
 
-### Subscription tests
+# ## Subscription tests
 # Remember Users and Courses are already in the DB
 
 
@@ -313,7 +311,7 @@ def test_subscription(db, course_strange, user_johaannes):
     orm_subscription = Subscription(role=role)
     db.add(orm_subscription)
     db.commit()
-    ### Why did that work??
+    # ## Why did that work??
 
     orm_subscription.user_id = user_johaannes.id
     orm_subscription.course_id = course_strange.id
@@ -356,7 +354,7 @@ def test_subscription_find_by_set(db, course_strange, user_johaannes):
     assert found_sub.course_id == course_strange.id
 
 
-### Assignment tests
+# ## Assignment tests
 # Remember Users, Courses, and Subscriptions are already in the DB
 
 
@@ -439,7 +437,7 @@ def test_assignment_find_for_course(db, course_strange, assignment_false, assign
     assignment_false.active = False
 
 
-### Action tests
+# ## Action tests
 # Remember Users, Courses, Subscriptions, and Assignments are already in the DB
 
 # a couple of "will not make" tests
@@ -461,7 +459,7 @@ def test_action_object_creation_errors(db, course_strange, assignment_tree, user
         db.commit()
     db.rollback()
 
-    ##### Why won't you work in github Actions, you bar steward
+    # #### Why won't you work in github Actions, you bar steward
     # action = Action(
     #     user_id=user_johaannes.id,
     #     assignment_id=assignment_tree.id,
@@ -477,7 +475,7 @@ def test_action_object_creation_errors(db, course_strange, assignment_tree, user
         action=AssignmentActions.released,
         location="/some/random/path/to/a/file.tzg",
     )
-    ## Why does that work??
+    # # Why does that work??
 
     db.add(orm_action)
     db.commit()
@@ -531,7 +529,7 @@ def test_action_find_by_action(db):
     found_recent = Action.find_most_recent_action(db, found_by_pk.assignment_id, AssignmentActions.released)
     assert found_recent.action == found_by_pk.action
     found_recent = Action.find_most_recent_action(db, found_by_pk.assignment_id, AssignmentActions.feedback_fetched)
-    assert found_recent == None
+    assert found_recent is None
 
 
 def test_action_find_by_action_distinguish_actions(db, assignment_tree, user_johaannes):
@@ -585,13 +583,13 @@ def test_action_can_restrict_assignment_searches(db, assignment_tree):
         course_id=assignment_tree.course_id,
         action=AssignmentActions.feedback_released,
     )
-    assert found == None
+    assert found is None
 
 
-### Notebook tests
+# ## Notebook tests
 # Remember Users, Courses, Subscriptions, Assignments, and Actions are already in the DB
 
-###########
+
 def test_notebook_base_mathods_and_find_by_pk(db, assignment_tree):
 
     # name is required
@@ -626,7 +624,7 @@ def test_notebook_base_mathods_and_find_by_pk(db, assignment_tree):
     found_by_pk = Notebook.find_by_pk(db, orm_notebook.id)
     assert found_by_pk.id == orm_notebook.id
 
-    ## relationships
+    # # relationships
     assert found_by_pk.assignment.id == assignment_tree.id
 
     found_by_pk = Notebook.find_by_pk(db, orm_notebook.id + 10)
@@ -746,19 +744,19 @@ def test_feedback_find_notebook_for_student(db, assignment_tree, user_johaannes)
 
 def test_feedback_find_all_for_student(db, assignment_tree, user_johaannes):
     # previous subscriptions, actions, feedback, and notebooks still in the db
-    notebook = Notebook.find_by_name(db, "Exam 2", assignment_tree.id)
+    Notebook.find_by_name(db, "Exam 2", assignment_tree.id)
 
     with pytest.raises(TypeError):
-        feedback = Feedback.find_all_for_student()
+        Feedback.find_all_for_student()
     with pytest.raises(TypeError):
-        feedback = Feedback.find_all_for_student(db)
+        Feedback.find_all_for_student(db)
     with pytest.raises(TypeError):
-        feedback = Feedback.find_all_for_student(db, "Johannes")
+        Feedback.find_all_for_student(db, "Johannes")
     with pytest.raises(TypeError):
-        feedback = Feedback.find_all_for_student(db, user_johaannes.id, "tree 1")
+        Feedback.find_all_for_student(db, user_johaannes.id, "tree 1")
 
 
-def test_feedback_find_all_for_student(db, assignment_tree, user_johaannes, user_kaylee):
+def test_feedback_find_all_for_student_again(db, assignment_tree, user_johaannes, user_kaylee):
     notebook = Notebook.find_by_name(db, "Exam 2", assignment_tree.id)
     released = Action.find_most_recent_action(db, assignment_tree.id, AssignmentActions.fetched)
     orm_feedback = Feedback(

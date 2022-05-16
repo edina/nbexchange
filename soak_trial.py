@@ -58,12 +58,12 @@ class nbexchangeSoakTest:
             "--jwt_secret",
             type=str,
             default="asecretkey",
-            help="The JWT token is encoded with a specific SECRET_KEY. This must match the environment you are testing. Defaults to the highly imaginative 'asecretkey'",
+            help="The JWT token is encoded with a specific SECRET_KEY. This must match the environment you are testing. Defaults to the highly imaginative 'asecretkey'",  # noqa E501
         )
         parser.add_argument(
             "-k",
             "--keep_data",
-            help="Whether to clear all the users & actions from the database (and files from disk) or not. Defaults to False - purge",
+            help="Whether to clear all the users & actions from the database (and files from disk) or not. Defaults to False - purge",  # noqa E501
             action="store_true",
         )
         parser.add_argument(
@@ -102,7 +102,7 @@ class nbexchangeSoakTest:
         }
         logging.basicConfig(
             level=levels[self.args.log.lower()],
-            format="%(asctime)s,%(msecs)d %(levelname)-8s [%(pathname)s:%(lineno)d in function %(funcName)s] %(message)s",
+            format="%(asctime)s,%(msecs)d %(levelname)-8s [%(pathname)s:%(lineno)d in function %(funcName)s] %(message)s",  # noqa E501
             datefmt="%Y-%m-%d:%H:%M:%S",
         )
         self.log = logging.getLogger(__name__)
@@ -112,7 +112,7 @@ class nbexchangeSoakTest:
         self.assignment_code = str(uuid.uuid4())
 
         self.log.debug(
-            f"class variables: course_code: {self.course_code}, assignment_code: {self.assignment_code}, cluster: {self.args.cluster}, namespace: {self.args.namespace}, jwt_secret: {self.args.jwt_secret}, student_count: {self.args.student_count}",
+            f"class variables: course_code: {self.course_code}, assignment_code: {self.assignment_code}, cluster: {self.args.cluster}, namespace: {self.args.namespace}, jwt_secret: {self.args.jwt_secret}, student_count: {self.args.student_count}",  # noqa E501
         )
 
         # Check we have some values
@@ -125,7 +125,7 @@ class nbexchangeSoakTest:
             self.args.student_count,
         ):
             sys.exit(
-                "Missing a value from one of assignment_code, course_code, cluster, jwt_secret, namespace, student_count"
+                "Missing a value from one of assignment_code, course_code, cluster, jwt_secret, namespace, student_count"  # noqa E501
             )
 
         self.log.debug("Poke the cluster to see what we can fine")
@@ -153,7 +153,7 @@ class nbexchangeSoakTest:
             if re.search(r"nbexchange", item.metadata.name):
                 items.append(item)
         if not items:
-            sys.exit(f"Failed to find an nbexchange server in the cluster")
+            sys.exit("Failed to find an nbexchange server in the cluster")
         if len(items) > 1:
             sys.exit(f"There are too many exchange servers in the cluster: {items}")
         self.exchange_server = items[0].metadata.name
@@ -165,7 +165,7 @@ class nbexchangeSoakTest:
         self.log.debug(f"created students: {self.student_list}")
 
         # Check for k8 port-forwarding, and ask for it to be set up if needed
-        #### I really wish this had worked..... but it just times out.
+        # ### I really wish this had worked..... but it just times out.
         # self.log.debug(f"setting up the port forwarding magick")
         # # lifted from https://github.com/kubernetes-client/python/blob/master/examples/pod_portforward.py
         # # Monkey patch urllib3.util.connection.create_connection
@@ -179,12 +179,12 @@ class nbexchangeSoakTest:
         #     return pf.socket(9000)
         # urllib3_connection.create_connection = kubernetes_create_connection
         # self.log.debug(f"... done")
-        ####
-        ### port forwarding, the hack
+        # ###
+        # ## port forwarding, hack starts
         print("\nSet up port forwarding")
         try:
             url = ""
-            self.log.debug(f"call self.api_request")
+            self.log.debug("call self.api_request")
             self.log.disabled = True
             r = self.api_request(
                 url,
@@ -193,24 +193,24 @@ class nbexchangeSoakTest:
             self.log.disabled = False
             if r.status_code == 200:
                 print(
-                    "## *NOTE*: Got a response from *something* on port 9000, please confirm it's the Kubernetes proxy we want ##"
+                    "## *NOTE*: Got a response from *something* on port 9000, please confirm it's the Kubernetes proxy we want ##"  # noqa E501
                 )
                 print(
-                    "##         If not, remove it... and follow the commands below..                                           ##"
+                    "##         If not, remove it... and follow the commands below..                                           ##"  # noqa E501
                 )
-        except:
+        except Exception:
             pass
         print("Please open a new terminal and run the following command(s):\n")
         if active_context["name"] != self.args.cluster:
             print(f"    kubectl config use-context {self.args.cluster}")
         print(f"    kubectl port-forward pod/{self.exchange_server}  9000:9000\n")
         input(".... and wait for the command to say it's forwarding - then press enter here to continue")
-        ### port forwarding, hack ends
+        # ## port forwarding, hack ends
 
         self.log.info(
-            f"Looking good: Going to test {self.args.student_count} students in cluster '{self.args.cluster}', using nbexchange '{self.exchange_server}'",
+            f"Looking good: Going to test {self.args.student_count} students in cluster '{self.args.cluster}', using nbexchange '{self.exchange_server}'",  # noqa E501
         )
-        self.log.info(f"End of setup phase")
+        self.log.info("End of setup phase")
 
     def make_jwt_token(self, username, role):
         self.log.debug(f"make_jwt_token called - username: {username}, role: {role}")
@@ -241,14 +241,14 @@ class nbexchangeSoakTest:
         try:
             if method == "GET":
                 get_req = partial(requests.get, url, headers=headers, cookies=cookies)
-                self.log.debug(f"make GET request")
+                self.log.debug("make GET request")
                 return get_req(*args, **kwargs)
             elif method == "POST":
                 post_req = partial(requests.post, url, headers=headers, cookies=cookies)
-                self.log.debug(f"make POST request")
+                self.log.debug("make POST request")
                 return post_req(*args, **kwargs)
             elif method == "DELETE":
-                self.log.debug(f"make DELETE request")
+                self.log.debug("make DELETE request")
                 delete_req = partial(requests.delete, url, headers=headers, cookies=cookies)
                 return delete_req(*args, **kwargs)
             else:
@@ -263,7 +263,7 @@ class nbexchangeSoakTest:
             user_jwt_token = self.make_jwt_token(username, "Instructor")
             self.log.debug(f"user_token: {user_jwt_token}")
 
-            self.log.debug(f"make the tar file object")
+            self.log.debug("make the tar file object")
             tar_file = io.BytesIO()
 
             with tarfile.open(fileobj=tar_file, mode="w:gz") as tar_handle:
@@ -274,7 +274,7 @@ class nbexchangeSoakTest:
             url = (
                 f"assignment?course_id={quote_plus(self.course_code)}&assignment_id={quote_plus(self.assignment_code)}"
             )
-            self.log.debug(f"call self.api_request")
+            self.log.debug("call self.api_request")
 
             r = self.api_request(
                 url,
@@ -292,7 +292,7 @@ class nbexchangeSoakTest:
                 self.log.info(f"Release failed: {data['note']}")
             if data != {"success": True, "note": "Released"}:
                 self.log.warning(f"Release response not as expects: {data} != {{'success': True, 'note': 'Released'}}")
-        self.log.info(f"Assignment released")
+        self.log.info("Assignment released")
 
     def student_fetch(self, username=None):
         self.log.info(f"student_fetch called - username: {username}")
@@ -321,14 +321,14 @@ class nbexchangeSoakTest:
             except Exception as e:
                 self.log.exception(e)
             else:
-                self.log.debug(f"data unpacked")
+                self.log.debug("data unpacked")
 
                 found_files = os.listdir(str(unpack_dir))
                 if sorted(found_files) != sorted([self.notebook_name, self.data_file]):
                     self.log.warning(
-                        f"Student {username} failed to unpack assignment {self.assignment_code} into {unpack_dir} - seeing {found_files}"
+                        f"Student {username} failed to unpack assignment {self.assignment_code} into {unpack_dir} - seeing {found_files}"  # noqa E501
                     )
-        self.log.info(f"student_fetch done")
+        self.log.info("student_fetch done")
 
     def student_submit(self, username=None):
         self.log.info(f"student_submit called - username: {username}")
@@ -364,7 +364,7 @@ class nbexchangeSoakTest:
             url = (
                 f"submission?course_id={quote_plus(self.course_code)}&assignment_id={quote_plus(self.assignment_code)}"
             )
-            self.log.debug(f"call self.api_request")
+            self.log.debug("call self.api_request")
 
             r = self.api_request(
                 url,
@@ -382,7 +382,7 @@ class nbexchangeSoakTest:
                 self.log.info(f"Release failed: {data['note']}")
             if data != {"success": True, "note": "Submitted"}:
                 self.log.warning(f"Release response not as expects: {data} != {{'success': True, 'note': 'Submitted'}}")
-        self.log.info(f"student_submit done")
+        self.log.info("student_submit done")
 
     # This is a tad complex: it has to get the list of submissions, and then
     # loop over them, downloading each one in turn
@@ -393,7 +393,7 @@ class nbexchangeSoakTest:
             self.log.debug(f"user_token: {user_jwt_token}")
 
             # Get a list of submissions
-            self.log.debug(f"get a listing of collectable assignments")
+            self.log.debug("get a listing of collectable assignments")
             url = (
                 f"collections?course_id={quote_plus(self.course_code)}&assignment_id={quote_plus(self.assignment_code)}"
             )
@@ -403,7 +403,7 @@ class nbexchangeSoakTest:
             try:
                 data = r.json()
             except json.decoder.JSONDecodeError:
-                self.log.error(f"Got back an invalid response when listing assignments")
+                self.log.error("Got back an invalid response when listing assignments")
                 return []
 
             if not data["success"]:
@@ -424,7 +424,7 @@ class nbexchangeSoakTest:
                 # Work out the user-name from the path:
                 # '/some/path/submitted/course_2/tree 1/1_kiz/1544109991/fdc8c4ae-b3e0-4db6-859d-17852d65ec08.gz'
                 regex = (
-                    f"/submitted/" + re.escape(self.course_code) + "/" + re.escape(self.assignment_code) + "/([^/]+)/"
+                    "/submitted/" + re.escape(self.course_code) + "/" + re.escape(self.assignment_code) + "/([^/]+)/"
                 )
                 m = re.search(regex, submission["path"])
                 if m:
@@ -440,7 +440,7 @@ class nbexchangeSoakTest:
 
                         self.log.debug(f"collect {submission} to {local_dest_path}")
                         r = self.api_request(
-                            f"collection?course_id={quote_plus(self.course_code)}&assignment_id={quote_plus(self.assignment_code)}&path={quote_plus(submission['path'])}",
+                            f"collection?course_id={quote_plus(self.course_code)}&assignment_id={quote_plus(self.assignment_code)}&path={quote_plus(submission['path'])}",  # noqa E501
                             jwt_token=user_jwt_token,
                         )
                         self.log.debug(f"Got back {r.status_code}  {r.headers['content-type']} after file download")
@@ -458,7 +458,7 @@ class nbexchangeSoakTest:
                         found_files = os.listdir(str(local_dest_path))
                         if sorted(found_files) != sorted([self.notebook_name, self.data_file, "timestamp.txt"]):
                             self.log.warning(
-                                f"Instructor {username} failed to unpack assignment {self.assignment_code} for {student_id} into {local_dest_path} - seeing {found_files}"
+                                f"Instructor {username} failed to unpack assignment {self.assignment_code} for {student_id} into {local_dest_path} - seeing {found_files}"  # noqa E501
                             )
                         else:
                             self.log.info(f"collected {student_id}")
@@ -504,7 +504,7 @@ class nbexchangeSoakTest:
                                 f"Failed to fake feedback into {local_feedback_path} - seeing {found_files}"
                             )
 
-        self.log.info(f"instructor_collect done")
+        self.log.info("instructor_collect done")
 
     # feedback was generated by the collect process
     def instructor_release_feedback(self, username=None):
@@ -619,7 +619,7 @@ class nbexchangeSoakTest:
 
                 self.log.info(f"Uploaded feedback for {student_id} on assignment {self.assignment_code}.")
 
-        self.log.info(f"instructor_release_feedback done")
+        self.log.info("instructor_release_feedback done")
 
     def student_fetch_feedback(self, username=None):
         self.log.info(f"student_fetch_feedback called - username: {username}")
@@ -660,12 +660,12 @@ class nbexchangeSoakTest:
                     found_files = os.listdir(str(student_feedback_dir))
                     if found_files != [self.feedback_name]:
                         self.log.warning(
-                            f"Student {username} failed to fetch feedback for {self.assignment_code} into {student_feedback_dir} - seeing {found_files}"
+                            f"Student {username} failed to fetch feedback for {self.assignment_code} into {student_feedback_dir} - seeing {found_files}"  # noqa E501
                         )
             else:
                 self.log.debug(content.get("note", "could not get feedback"))
 
-        self.log.info(f"student_fetch_feedback done")
+        self.log.info("student_fetch_feedback done")
 
     # This requires additional code in the handlers
     def tidy_up(self, username=None):
@@ -678,7 +678,7 @@ class nbexchangeSoakTest:
                 f"assignment?course_id={quote_plus(self.course_code)}&assignment_id={quote_plus(self.assignment_code)}"
             )
             if not self.args.keep_data:
-                self.log.info(f"We're purging the data.... so deleting files too")
+                self.log.info("We're purging the data.... so deleting files too")
                 url += "&purge=True"
                 path = "/tmp/load_test"
                 if os.path.isdir(path):
@@ -686,12 +686,12 @@ class nbexchangeSoakTest:
 
             self.log.debug(f"call self.api_request with url: {url}")
 
-            r = self.api_request(
+            self.api_request(
                 url,
                 method="DELETE",
                 jwt_token=user_jwt_token,
             )
-        self.log.info(f"tidy_up ended")
+        self.log.info("tidy_up ended")
 
     def main(self):
         self.setup()
@@ -715,17 +715,15 @@ class nbexchangeSoakTest:
             for student in self.student_list:
                 self.student_fetch_feedback(username=student)
             self.log.info(
-                f"Finished: An assignment with {self.args.student_count} students has done 'release_assignment', 'fetch_assignment', 'submit', 'collect', 'release_feedback', and 'fetch_assignment'.",
+                f"Finished: An assignment with {self.args.student_count} students has done 'release_assignment', 'fetch_assignment', 'submit', 'collect', 'release_feedback', and 'fetch_assignment'.",  # noqa E501
             )
-        except:
+        except Exception:
             self.log.warning("Something went wrong... still tidying up though")
         self.tidy_up(username="1-instructor")
         self.log.warning(
             f"""
         SQL Tidy-up instructions, until the new 'purge' code is in the exchange
-
             delete from from assignment where assignment_code = '{self.assignment_code}';
-        
         """
         )
 

@@ -1,11 +1,4 @@
-from sqlalchemy import (
-    Column,
-    ForeignKey,
-    Integer,
-    Unicode,
-    UnicodeText,
-    UniqueConstraint,
-)
+from sqlalchemy import Column, ForeignKey, Integer, UnicodeText, UniqueConstraint
 from sqlalchemy.orm import relationship
 
 from nbexchange.models import Base
@@ -46,11 +39,11 @@ class Subscription(Base):
         if log:
             log.debug(f"Subscription.find_by_pk - pk:{pk}")
         if pk is None:
-            raise ValueError(f"Primary Key needs to be defined")
+            raise ValueError("Primary Key needs to be defined")
         if isinstance(pk, int):
             return db.query(cls).filter(cls.id == pk).first()
         else:
-            raise TypeError(f"Primary Keys are required to be Ints")
+            raise TypeError("Primary Keys are required to be Ints")
 
     @classmethod
     def find_by_set(cls, db, user_id, course_id, role, log=None):

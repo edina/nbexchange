@@ -39,14 +39,14 @@ class ExchangeList(abc.ExchangeList, Exchange):
             r = self.api_request(f"assignments?course_id={quote_plus(self.coursedir.course_id)}")
         else:
             """List assignments for all courses"""
-            r = self.api_request(f"assignments")
+            r = self.api_request("assignments")
 
         self.log.debug(f"Got back {r} when listing assignments")
 
         try:
             assignments = r.json()
         except json.decoder.JSONDecodeError:
-            self.log.error(f"Got back an invalid response when listing assignments")
+            self.log.error("Got back an invalid response when listing assignments")
             return []
 
         return assignments["value"]
@@ -265,12 +265,12 @@ class ExchangeList(abc.ExchangeList, Exchange):
                     my_assignments.append(held_assignments[assignment_type][assignment_id])
 
         if self.inbound or self.cached:
-            _get_key = lambda info: (
+            _get_key = lambda info: (  # noqa E731 'do not assign a lambda expression, use a def'
                 info["course_id"],
                 info["student_id"],
                 info["assignment_id"],
             )
-            _match_key = lambda info, key: (
+            _match_key = lambda info, key: (  # noqa E731 'do not assign a lambda expression, use a def'
                 info["course_id"] == key[0] and info["student_id"] == key[1] and info["assignment_id"] == key[2]
             )
             assignment_keys = sorted(list(set([_get_key(info) for info in my_assignments])))
@@ -294,7 +294,7 @@ class ExchangeList(abc.ExchangeList, Exchange):
 
     def list_files(self):
         """List files"""
-        self.log.debug(f"ExchaneList.list_file starting")
+        self.log.debug("ExchaneList.list_file starting")
 
         assignments = self.parse_assignments()
         return assignments
@@ -303,7 +303,7 @@ class ExchangeList(abc.ExchangeList, Exchange):
         if self.coursedir.course_id:
             """Delete assignment"""
 
-            url = f"assignment?course_id={quote_plus(self.coursedir.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}"
+            url = f"assignment?course_id={quote_plus(self.coursedir.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}"  # noqa E501
 
             r = self.api_request(url, method="DELETE")
 

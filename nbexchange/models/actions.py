@@ -70,11 +70,11 @@ class Action(Base):
             log.debug(f"Action.find_by_pk - pk:{pk}")
 
         if pk is None:
-            raise ValueError(f"Primary Key needs to be defined")
+            raise ValueError("Primary Key needs to be defined")
         if isinstance(pk, int):
             return db.query(cls).filter(cls.id == pk).first()
         else:
-            raise TypeError(f"Primary Keys are required to be Ints")
+            raise TypeError("Primary Keys are required to be Ints")
 
     @classmethod
     def find_most_recent_action(cls, db, assignment_id, action=None, log=None):
@@ -93,9 +93,9 @@ class Action(Base):
         if log:
             log.debug(f"Action.find_most_recent_action - code:{assignment_id} (action:{action})")
         if assignment_id is None or not isinstance(assignment_id, int):
-            raise TypeError(f"assignment_id must be defined, and an Int")
+            raise TypeError("assignment_id must be defined, and an Int")
         if action is not None and not (isinstance(action, str) or isinstance(action, AssignmentActions)):
-            raise TypeError(f"action, if defined, must be a string")
+            raise TypeError("action, if defined, must be a string")
         filters = [cls.assignment_id == assignment_id]
         if action:
             filters.append(cls.action == action)

@@ -5,35 +5,30 @@ Create Date: 2020-06-23 13:58:38.781382
 """
 from datetime import datetime
 
-import sqlalchemy as sa
 from alembic import op
-from sqlalchemy import orm
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, Unicode, orm
 
 # revision identifiers, used by Alembic.
 from sqlalchemy.engine.reflection import Inspector
+
+from nbexchange.models import Base
 
 revision = "2805bf7747e5"
 down_revision = "f26d6a79159d"
 branch_labels = None
 depends_on = None
 
-from datetime import datetime
-
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, Unicode
-
-from nbexchange.models import Base
-
 
 def try_convert(datestr, default):
     try:
         return datetime.fromisoformat(datestr)
-    except:
+    except Exception:
         try:
             return datetime.strptime(datestr, "%Y-%m-%d %H:%M:%S.%f %Z")
-        except:
+        except Exception:
             try:
                 return datetime.strptime(datestr, "%Y-%m-%d %H:%M:%S.%f").isoformat()
-            except:
+            except Exception:
                 return default
 
 

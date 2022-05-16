@@ -10,7 +10,7 @@ logger = logging.getLogger(__file__)
 logger.setLevel(logging.ERROR)
 
 
-##### POST /assignments  ######
+# #### POST /assignments  ##### #
 # No method available (501, because we've hard-coded it)
 @pytest.mark.gen_test
 def test_post_assignments0(app):

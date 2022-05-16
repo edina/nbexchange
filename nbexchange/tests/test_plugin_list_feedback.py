@@ -7,8 +7,6 @@ from shutil import copyfile
 import pytest
 from mock import patch
 from nbgrader.coursedir import CourseDirectory
-from nbgrader.exchange import ExchangeError
-from nbgrader.utils import make_unique_key, notebook_hash
 
 from nbexchange.plugin import Exchange, ExchangeList
 from nbexchange.tests.utils import get_feedback_file
@@ -746,7 +744,7 @@ def test_list_feedback_available(plugin_config, tmpdir):
                                     "feedback_timestamp": "2020-01-01 00:02:00.2 00:00",
                                     "has_exchange_feedback": True,
                                     "has_local_feedback": True,
-                                    "local_feedback_path": f"{assignment_id}/feedback/2020-01-01%2000%3A02%3A00.2%2000%3A00/{root_notebook_name}.html",
+                                    "local_feedback_path": f"{assignment_id}/feedback/2020-01-01%2000%3A02%3A00.2%2000%3A00/{root_notebook_name}.html",  # noqa E501
                                     "feedback_updated": False,
                                     "notebook_id": root_notebook_name,
                                 }
@@ -841,7 +839,7 @@ def test_list_feedback_available_with_path_includes_course(plugin_config, tmpdir
                                     "feedback_timestamp": "2020-01-01 00:02:00.2 00:00",
                                     "has_exchange_feedback": True,
                                     "has_local_feedback": True,
-                                    "local_feedback_path": f"{course_code}/{assignment_id}/feedback/2020-01-01%2000%3A02%3A00.2%2000%3A00/{root_notebook_name}.html",
+                                    "local_feedback_path": f"{course_code}/{assignment_id}/feedback/2020-01-01%2000%3A02%3A00.2%2000%3A00/{root_notebook_name}.html",  # noqa E501
                                     "feedback_updated": False,
                                     "notebook_id": root_notebook_name,
                                 }
@@ -850,7 +848,7 @@ def test_list_feedback_available_with_path_includes_course(plugin_config, tmpdir
                             "feedback_updated": False,
                             "has_exchange_feedback": True,
                             "has_local_feedback": True,
-                            "local_feedback_path": f"{course_code}/{assignment_id}/feedback/2020-01-01%2000%3A02%3A00.2%2000%3A00",
+                            "local_feedback_path": f"{course_code}/{assignment_id}/feedback/2020-01-01%2000%3A02%3A00.2%2000%3A00",  # noqa E501
                         }
                     ],
                 }

@@ -5,7 +5,7 @@ import pytest
 from mock import patch
 
 from nbexchange.handlers.base import BaseHandler
-from nbexchange.tests.utils import (
+from nbexchange.tests.utils import (  # noqa F401 "clear_database"
     async_requests,
     clear_database,
     get_files_dict,
@@ -17,7 +17,11 @@ from nbexchange.tests.utils import (
 logger = logging.getLogger(__file__)
 logger.setLevel(logging.ERROR)
 
-##### POST /assignment (upload/release assignment) ######
+# set up the file to be uploaded
+files = get_files_dict(sys.argv[0])  # ourself :)
+
+
+# #### POST /assignment (upload/release assignment) ##### #
 
 #################################
 #
@@ -33,61 +37,58 @@ logger.setLevel(logging.ERROR)
 
 # require authenticated user (404 because the bounce to login fails)
 @pytest.mark.gen_test
-def test_post_requires_authenticated_user(app, clear_database):
+def test_post_requires_authenticated_user(app, clear_database):  # noqa F811
     with patch.object(BaseHandler, "get_current_user", return_value={}):
         r = yield async_requests.post(app.url + "/assignment")
     assert r.status_code == 403  # why not 404???
 
 
-# set up the file to be uploaded
-files = get_files_dict(sys.argv[0])  # ourself :)
-
 # Requires both params (none)
 @pytest.mark.gen_test
-def test_post_no_params(app, clear_database):
+def test_post_no_params(app, clear_database):  # noqa F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(app.url + "/assignment")
     response_data = r.json()
-    assert response_data["success"] == False
+    assert response_data["success"] is False
     assert response_data["note"] == "Posting an Assigment requires a course code and an assignment code"
 
 
 # Requires both params (just course)
 @pytest.mark.gen_test
-def test_post_missing_assignment(app, clear_database):
+def test_post_missing_assignment(app, clear_database):  # noqa F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(app.url + "/assignment?course_id=course_a")
     assert r.status_code == 200
     response_data = r.json()
-    assert response_data["success"] == False
+    assert response_data["success"] is False
     assert response_data["note"] == "Posting an Assigment requires a course code and an assignment code"
 
 
 # Requires both params (just assignment)
 @pytest.mark.gen_test
-def test_post_missing_course(app, clear_database):
+def test_post_missing_course(app, clear_database):  # noqa F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(app.url + "/assignment?assignment_id=assign_a")
     assert r.status_code == 200
     response_data = r.json()
-    assert response_data["success"] == False
+    assert response_data["success"] is False
     assert response_data["note"] == "Posting an Assigment requires a course code and an assignment code"
 
 
 # Student cannot release
 @pytest.mark.gen_test
-def test_post_student_cannot_release(app, clear_database):
+def test_post_student_cannot_release(app, clear_database):  # noqa F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.post(app.url + "/assignment?course_id=course_2&assignment_id=assign_a")
     assert r.status_code == 200
     response_data = r.json()
-    assert response_data["success"] == False
+    assert response_data["success"] is False
     assert response_data["note"] == "User not an instructor to course course_2"
 
 
 # instructor can release
 @pytest.mark.gen_test
-def test_post_release_ok(app, clear_database):
+def test_post_release_ok(app, clear_database):  # noqa F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
@@ -95,12 +96,12 @@ def test_post_release_ok(app, clear_database):
         )
     assert r.status_code == 200
     response_data = r.json()
-    assert response_data["success"] == True
+    assert response_data["success"] is True
     assert response_data["note"] == "Released"
 
 
 @pytest.mark.gen_test
-def test_post_release_broken_nbex_user(app, clear_database, caplog):
+def test_post_release_broken_nbex_user(app, clear_database, caplog):  # noqa F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
@@ -112,7 +113,7 @@ def test_post_release_broken_nbex_user(app, clear_database, caplog):
 
 # fails if no file is part of post request
 @pytest.mark.gen_test
-def test_post_no_file_provided(app, clear_database):
+def test_post_no_file_provided(app, clear_database):  # noqa F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(app.url + "/assignment?course_id=course_2&assignment_id=assign_a")
     assert r.status_code == 412
@@ -120,18 +121,18 @@ def test_post_no_file_provided(app, clear_database):
 
 # Instructor, wrong course, cannot release
 @pytest.mark.gen_test
-def test_post_wrong_course(app, clear_database):
+def test_post_wrong_course(app, clear_database):  # noqa F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(app.url + "/assignment?course_id=course_1&assignment_id=assign_a")
     assert r.status_code == 200
     response_data = r.json()
-    assert response_data["success"] == False
+    assert response_data["success"] is False
     assert response_data["note"] == "User not subscribed to course course_1"
 
 
 # instructor releasing - Picks up the first attribute if more than 1 (wrong course)
 @pytest.mark.gen_test
-def test_post_picks_first_instance_of_param_gets_it_wrong(app, clear_database):
+def test_post_picks_first_instance_of_param_gets_it_wrong(app, clear_database):  # noqa F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_1&course_id=course_2&assignment_id=assign_a",
@@ -139,13 +140,13 @@ def test_post_picks_first_instance_of_param_gets_it_wrong(app, clear_database):
         )
     assert r.status_code == 200
     response_data = r.json()
-    assert response_data["success"] == False
+    assert response_data["success"] is False
     assert response_data["note"] == "User not subscribed to course course_1"
 
 
 # instructor releasing - Picks up the first attribute if more than 1 (right course)
 @pytest.mark.gen_test
-def test_post_picks_first_instance_of_param_gets_it_right(app, clear_database):
+def test_post_picks_first_instance_of_param_gets_it_right(app, clear_database):  # noqa F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&course_id=course_1&assignment_id=assign_a",
@@ -153,14 +154,14 @@ def test_post_picks_first_instance_of_param_gets_it_right(app, clear_database):
         )
     assert r.status_code == 200
     response_data = r.json()
-    assert response_data["success"] == True
+    assert response_data["success"] is True
     assert response_data["note"] == "Released"
 
 
 # Confirm 3 releases lists 3 actions, with 3 different locations
 # @pytest.mark.skip
 @pytest.mark.gen_test
-def test_post_location_different_each_time(app, clear_database):
+def test_post_location_different_each_time(app, clear_database):  # noqa F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
@@ -177,7 +178,7 @@ def test_post_location_different_each_time(app, clear_database):
         r = yield async_requests.get(app.url + "/assignments?course_id=course_2")
     assert r.status_code == 200
     response_data = r.json()
-    assert response_data["success"] == True
+    assert response_data["success"] is True
     assert "note" not in response_data  # just that it's missing
     paths = list(map(lambda assignment: assignment["path"], response_data["value"]))
     actions = list(map(lambda assignment: assignment["status"], response_data["value"]))
@@ -190,7 +191,7 @@ def test_post_location_different_each_time(app, clear_database):
 
 
 @pytest.mark.gen_test
-def test_blocks_filesize(app, clear_database):
+def test_blocks_filesize(app, clear_database):  # noqa F811
     with patch.object(BaseHandler, "max_buffer_size", return_value=int(50)):
         with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
             r = yield async_requests.post(
@@ -199,8 +200,8 @@ def test_blocks_filesize(app, clear_database):
             )
     assert r.status_code == 200
     response_data = r.json()
-    assert response_data["success"] == False
+    assert response_data["success"] is False
     assert (
         response_data["note"]
-        == "File upload oversize, and rejected. Please reduce the contents of the assignment, re-generate, and re-release"
+        == "File upload oversize, and rejected. Please reduce the contents of the assignment, re-generate, and re-release"  # noqa E501
     )

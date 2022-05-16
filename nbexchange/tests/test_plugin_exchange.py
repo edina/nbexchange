@@ -21,7 +21,7 @@ be mocking it when testing the other classes.
 def test_defaults():
     plugin = Exchange()
 
-    assert plugin.path_includes_course == False
+    assert plugin.path_includes_course is False
     assert plugin.assignment_dir == "."
     assert plugin.base_service_url == "https://noteable.edina.ac.uk"
     assert plugin.service_url() == "https://noteable.edina.ac.uk/services/nbexchange/"

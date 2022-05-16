@@ -1,5 +1,3 @@
-import re
-
 from tornado import web
 
 from nbexchange.database import scoped_session
@@ -41,13 +39,6 @@ class Collections(BaseHandler):
             self.log.info(note)
             self.finish({"success": False, "note": note})
             return
-
-        # set up some regex segments for use later on
-        # fr is combining f-string substitution with re's raw-string
-        re_action = r"submitted"
-        re_course = rf"{course_code}"
-        re_assignment = rf"{assignment_code}"
-        re_user = rf"{user_id}" if user_id else r"[^/]+"
 
         # Who is my user?
         this_user = self.nbex_user
@@ -205,7 +196,7 @@ class Collection(BaseHandler):
                     raise Exception
 
                 self.log.info(
-                    f"Adding action {AssignmentActions.collected.value} for user {this_user['id']} against assignment {assignment.id}"
+                    f"Adding action {AssignmentActions.collected.value} for user {this_user['id']} against assignment {assignment.id}"  # noqa E501
                 )
                 action = Action(
                     user_id=this_user["id"],

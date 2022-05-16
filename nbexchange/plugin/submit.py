@@ -53,7 +53,7 @@ class ExchangeSubmit(abc.ExchangeSubmit, Exchange):
         self.log.debug(f"ExchangeSubmit uploading to: {self.service_url()}")
         files = {"assignment": ("assignment.tar.gz", file)}
         r = self.api_request(
-            f"submission?course_id={quote_plus(self.coursedir.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}",
+            f"submission?course_id={quote_plus(self.coursedir.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}",  # noqa E501
             method="POST",
             files=files,
         )
@@ -128,7 +128,7 @@ class ExchangeSubmit(abc.ExchangeSubmit, Exchange):
             self.fail(
                 "Assignment {} not submitted. "
                 "The contents of your submission are too large:\n"
-                "You may have data files, temporary files, and/or working files that are not needed - try deleting them."
+                "You may have data files, temporary files, and/or working files that are not needed - try deleting them."  # noqa E501
                 "".format(self.coursedir.assignment_id)
             )
         # Upload files to exchange

@@ -25,12 +25,12 @@ class User(Base):
     full_name = Column(Text, nullable=True)
     org_id = Column(Integer, nullable=False, index=True)
 
-    ## User <-> Course Relationship
+    # User <-> Course Relationship
     # One to Many. One user has multiple courses
     courses = relationship("Subscription", back_populates="user")
 
-    # ## User <-> Assignments Relationship
-    # # One to Many. One user has multiple assignments
+    # User <-> Assignments Relationship
+    # One to Many. One user has multiple assignments
     actions = relationship("Action", back_populates="user")
 
     @classmethod
@@ -45,11 +45,11 @@ class User(Base):
             log.debug(f"User.find_by_pk - pk:{pk}")
 
         if pk is None:
-            raise ValueError(f"Primary Key needs to be defined")
+            raise ValueError("Primary Key needs to be defined")
         if isinstance(pk, int):
             return db.query(cls).filter(cls.id == pk).first()
         else:
-            raise TypeError(f"Primary Keys are required to be Ints")
+            raise TypeError("Primary Keys are required to be Ints")
 
     @classmethod
     def find_by_name(cls, db, name, log=None):
@@ -62,7 +62,7 @@ class User(Base):
         if log:
             log.debug(f"User.find_by_name - name:{name}")
         if name is None:
-            raise ValueError(f"Name needs to be defined")
+            raise ValueError("Name needs to be defined")
         return db.query(cls).filter(cls.name == name).first()
 
     @classmethod
@@ -77,7 +77,7 @@ class User(Base):
             log.debug(f"User.find_by_org - id:{org_id}")
         org_id = int(float(org_id)) if org_id else None
         if org_id is None:
-            raise ValueError(f"org_id needs to be defined, and a number")
+            raise ValueError("org_id needs to be defined, and a number")
         return list(db.query(cls).filter(cls.org_id == org_id))
 
     def __repr__(self):

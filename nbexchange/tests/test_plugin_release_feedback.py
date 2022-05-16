@@ -45,7 +45,7 @@ def test_release_feedback_methods(plugin_config, tmpdir):
     assert re.search(r"test_release_feedback_methods0/feedback_test/1/assign_1$", plugin.src_path)
 
     with pytest.raises(ExchangeError) as e_info:
-        foo = plugin.init_dest()
+        plugin.init_dest()
         assert str(e_info.value) == "No course id specified. Re-run with --course flag."
 
 
@@ -124,10 +124,9 @@ def test_release_feedback_fetch_normal(plugin_config, tmpdir):
         )
 
     with patch.object(Exchange, "api_request", side_effect=api_request):
-        called = plugin.start()
+        plugin.start()
 
 
-####this one
 @pytest.mark.gen_test
 def test_release_feedback_fetch_several_normal(plugin_config, tmpdir):
     # set up the submitted & feeback directories
@@ -224,7 +223,7 @@ def test_release_feedback_fetch_several_normal(plugin_config, tmpdir):
         )
 
     with patch.object(Exchange, "api_request", side_effect=api_request):
-        called = plugin.start()
+        plugin.start()
         assert seen_feedback1 and seen_feedback2
 
 
@@ -285,5 +284,5 @@ def test_release_feedback_fetch_fail(plugin_config, tmpdir):
 
     with patch.object(Exchange, "api_request", side_effect=api_request):
         with pytest.raises(ExchangeError) as e_info:
-            called = plugin.start()
+            plugin.start()
         assert str(e_info.value) == "failure note"

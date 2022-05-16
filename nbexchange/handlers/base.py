@@ -1,5 +1,4 @@
 import functools
-import os
 import re
 from typing import Awaitable, Callable, Optional
 from urllib.parse import unquote, unquote_plus
@@ -68,7 +67,7 @@ class BaseHandler(web.RequestHandler):
 
         # Raising an error appears to have no detrimental affect when running.
         if not (current_course and current_role):
-            note = f"Both current_course ('{current_course}') and current_role ('{current_role}') must have values. User was '{hub_username}'"
+            note = f"Both current_course ('{current_course}') and current_role ('{current_role}') must have values. User was '{hub_username}'"  # noqa E501
             self.log.info(note)
             raise ValueError(note)
 
@@ -104,7 +103,7 @@ class BaseHandler(web.RequestHandler):
             courses = {}
 
             for subscription in user.courses:
-                if not subscription.course.course_code in courses:
+                if subscription.course.course_code not in courses:
                     courses[subscription.course.course_code] = {}
                 courses[subscription.course.course_code][subscription.role] = 1
 

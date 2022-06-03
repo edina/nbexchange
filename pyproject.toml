@@ -36,7 +36,8 @@ dependencies = [
   "jupyterhub>=1.4.1",
 #  "nbgrader @ git+https://github.com/jupyter/nbgrader.git@c04f9c497eed5e481b57e557ef61989e073c5415",
 #  "nbgrader @ git+https://github.com/jupyter/nbgrader.git@2249d20355fcaf404628adae66c85e5b1f85fcf2", # master @ 07/05/2022 (0.7.0-release)
-  "nbgrader==0.7.0", # From pypi! dated May 7th 2022 too
+#  "nbgrader==0.7.0", # From pypi! dated May 7th 2022 too
+  "nbgrader @ git+https://github.com/jupyter/nbgrader.git@1bf2c37c26d97cfdd9d52ee533641a5b4966be64", # PR with nbgrader for 'lab
   "psycopg2-binary>=2.8.6",
   "pyjwt<2",
   "sentry-sdk==1.1.0",

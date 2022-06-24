@@ -155,7 +155,6 @@ def test_release_assignment_normal(plugin_config, tmpdir):
 
     with patch.object(Exchange, "api_request", side_effect=api_request):
         plugin.start()
-        print(f"plugin.src_path: {plugin.src_path}")
         assert re.search(r"test_release_assignment_normal0/release_test/./assign_1$", plugin.src_path)
 
 

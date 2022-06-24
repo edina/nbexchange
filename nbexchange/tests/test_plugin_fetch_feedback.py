@@ -39,7 +39,6 @@ def test_fetch_feedback_methods(plugin_config, tmpdir):
     assert str(e_info.value) == "'ExchangeFetchFeedback' object has no attribute 'src_path'"
 
     plugin.init_dest()
-    print(f"plugin.dest_path:{plugin.dest_path}")
     assert re.search(
         r"test_fetch_feedback_methods0/feedback_test/assign_1/feedback$",
         plugin.dest_path,

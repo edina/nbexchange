@@ -213,23 +213,19 @@ def test_feedback_post_authenticated_with_incorrect_assignment_id(app, clear_dat
     student = user_kiz_student
     timestamp = datetime.datetime.utcnow().isoformat(" ")
     checksum = notebook_hash(
-        feedback_filename,
-        make_unique_key(course_id, assignment_id, notebook, student["name"], timestamp),
+        feedback_filename, make_unique_key(course_id, assignment_id, notebook, student["name"], timestamp)
     )
     # XXX: Doing this in a separate function doesn't work for some reason (Exchange doesn't get called)
     kwargs = {"data": {"notebooks": [notebook]}}
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
-            app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}",
-            files=files,
-            **kwargs,
+            app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}", files=files, **kwargs
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.get(app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.post(
-            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id}",
-            files=files,
+            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id}", files=files
         )
 
     url = (
@@ -254,24 +250,20 @@ def test_feedback_post_authenticated_with_incorrect_notebook_id(app, clear_datab
     student = user_kiz_student
     timestamp = datetime.datetime.utcnow().isoformat(" ")
     checksum = notebook_hash(
-        feedback_filename,
-        make_unique_key(course_id, assignment_id, notebook, student["name"], timestamp),
+        feedback_filename, make_unique_key(course_id, assignment_id, notebook, student["name"], timestamp)
     )
 
     # XXX: Doing this in a separate function doesn't work for some reason (Exchange doesn't get called)
     kwargs = {"data": {"notebooks": [notebook]}}
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
-            app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}",
-            files=files,
-            **kwargs,
+            app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}", files=files, **kwargs
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.get(app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.post(
-            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id}",
-            files=files,
+            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id}", files=files
         )
 
     url = (
@@ -296,24 +288,20 @@ def test_feedback_post_authenticated_with_incorrect_student_id(app, clear_databa
     student = user_brobbere_student
     timestamp = datetime.datetime.utcnow().isoformat(" ")
     checksum = notebook_hash(
-        feedback_filename,
-        make_unique_key(course_id, assignment_id, notebook, student["name"], timestamp),
+        feedback_filename, make_unique_key(course_id, assignment_id, notebook, student["name"], timestamp)
     )
 
     # XXX: Doing this in a separate function doesn't work for some reason (Exchange doesn't get called)
     kwargs = {"data": {"notebooks": [notebook]}}
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
-            app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}",
-            files=files,
-            **kwargs,
+            app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}", files=files, **kwargs
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.get(app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.post(
-            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id}",
-            files=files,
+            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id}", files=files
         )
 
     url = (
@@ -339,25 +327,19 @@ def test_feedback_post_authenticated_with_incorrect_checksum(app, clear_database
     notebook = "notebook"
     student = user_kiz_student
     timestamp = datetime.datetime.utcnow().isoformat(" ")
-    notebook_hash(
-        feedback_filename,
-        make_unique_key(course_id, assignment_id, notebook, student["name"], timestamp),
-    )
+    notebook_hash(feedback_filename, make_unique_key(course_id, assignment_id, notebook, student["name"], timestamp))
 
     # XXX: Doing this in a separate function doesn't work for some reason (Exchange doesn't get called)
     kwargs = {"data": {"notebooks": [notebook]}}
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
-            app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}",
-            files=files,
-            **kwargs,
+            app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}", files=files, **kwargs
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.get(app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.post(
-            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id}",
-            files=files,
+            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id}", files=files
         )
 
     url = (
@@ -382,24 +364,20 @@ def test_feedback_post_authenticated_with_correct_params(app, clear_database):  
     student = user_kiz_student
     timestamp = datetime.datetime.utcnow().isoformat(" ")
     checksum = notebook_hash(
-        feedback_filename,
-        make_unique_key(course_id, assignment_id, notebook, student["name"], timestamp),
+        feedback_filename, make_unique_key(course_id, assignment_id, notebook, student["name"], timestamp)
     )
 
     # XXX: Doing this in a separate function doesn't work for some reason (Exchange doesn't get called)
     kwargs = {"data": {"notebooks": [notebook]}}
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
-            app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}",
-            files=files,
-            **kwargs,
+            app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}", files=files, **kwargs
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.get(app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.post(
-            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id}",
-            files=files,
+            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id}", files=files
         )
 
     url = (
@@ -426,24 +404,20 @@ def test_feedback_post_authenticated_with_correct_params_incorrect_instructor(ap
     student = user_kiz_student
     timestamp = datetime.datetime.utcnow().isoformat(" ")
     checksum = notebook_hash(
-        feedback_filename,
-        make_unique_key(course_id, assignment_id, notebook, student["name"], timestamp),
+        feedback_filename, make_unique_key(course_id, assignment_id, notebook, student["name"], timestamp)
     )
 
     # XXX: Doing this in a separate function doesn't work for some reason (Exchange doesn't get called)
     kwargs = {"data": {"notebooks": [notebook]}}
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
-            app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}",
-            files=files,
-            **kwargs,
+            app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}", files=files, **kwargs
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.get(app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.post(
-            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id}",
-            files=files,
+            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id}", files=files
         )
 
     url = (
@@ -471,24 +445,20 @@ def test_feedback_post_authenticated_with_correct_params_student_submitter(app, 
     student = user_kiz_student
     timestamp = datetime.datetime.utcnow().isoformat(" ")
     checksum = notebook_hash(
-        feedback_filename,
-        make_unique_key(course_id, assignment_id, notebook, student["name"], timestamp),
+        feedback_filename, make_unique_key(course_id, assignment_id, notebook, student["name"], timestamp)
     )
 
     # XXX: Doing this in a separate function doesn't work for some reason (Exchange doesn't get called)
     kwargs = {"data": {"notebooks": [notebook]}}
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
-            app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}",
-            files=files,
-            **kwargs,
+            app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}", files=files, **kwargs
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.get(app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.post(
-            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id}",
-            files=files,
+            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id}", files=files
         )
 
     url = (
@@ -516,24 +486,20 @@ def test_feedback_get_authenticated_with_incorrect_student(app, clear_database):
     student = user_kiz_student
     timestamp = datetime.datetime.utcnow().isoformat(" ")
     checksum = notebook_hash(
-        feedback_filename,
-        make_unique_key(course_id, assignment_id, notebook, student["name"], timestamp),
+        feedback_filename, make_unique_key(course_id, assignment_id, notebook, student["name"], timestamp)
     )
 
     # XXX: Doing this in a separate function doesn't work for some reason (Exchange doesn't get called)
     kwargs = {"data": {"notebooks": [notebook]}}
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
-            app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}",
-            files=files,
-            **kwargs,
+            app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}", files=files, **kwargs
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.get(app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.post(
-            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id}",
-            files=files,
+            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id}", files=files
         )
 
     url = (
@@ -568,24 +534,20 @@ def test_feedback_get_authenticated_with_correct_params(app, clear_database):  #
     student = user_kiz_student
     timestamp = datetime.datetime.utcnow().isoformat(" ")
     checksum = notebook_hash(
-        feedback_filename,
-        make_unique_key(course_id, assignment_id, notebook, student["name"], timestamp),
+        feedback_filename, make_unique_key(course_id, assignment_id, notebook, student["name"], timestamp)
     )
 
     # XXX: Doing this in a separate function doesn't work for some reason (Exchange doesn't get called)
     kwargs = {"data": {"notebooks": [notebook]}}
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
-            app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}",
-            files=files,
-            **kwargs,
+            app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}", files=files, **kwargs
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.get(app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.post(
-            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id}",
-            files=files,
+            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id}", files=files
         )
 
     url = (
@@ -619,24 +581,20 @@ def test_feedback_get_broken_nbex_user(app, clear_database, caplog):  # noqa: F8
     student = user_kiz_student
     timestamp = datetime.datetime.utcnow().isoformat(" ")
     checksum = notebook_hash(
-        feedback_filename,
-        make_unique_key(course_id, assignment_id, notebook, student["name"], timestamp),
+        feedback_filename, make_unique_key(course_id, assignment_id, notebook, student["name"], timestamp)
     )
 
     # XXX: Doing this in a separate function doesn't work for some reason (Exchange doesn't get called)
     kwargs = {"data": {"notebooks": [notebook]}}
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
-            app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}",
-            files=files,
-            **kwargs,
+            app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}", files=files, **kwargs
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.get(app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.post(
-            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id}",
-            files=files,
+            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id}", files=files
         )
 
     url = (
@@ -673,8 +631,7 @@ def test_feedback_get_correct_assignment_across_courses(app, clear_database):  #
     student = user_kiz_student
     timestamp = datetime.datetime.utcnow().isoformat(" ")
     checksum = notebook_hash(
-        feedback_filename,
-        make_unique_key(course_2, assignment_id, notebook, student["name"], timestamp),
+        feedback_filename, make_unique_key(course_2, assignment_id, notebook, student["name"], timestamp)
     )
     # XXX: Doing this in a separate function doesn't work for some reason (Exchange doesn't get called)
     kwargs = {"data": {"notebooks": [notebook]}}
@@ -682,15 +639,11 @@ def test_feedback_get_correct_assignment_across_courses(app, clear_database):  #
     # release assignment on course 1 & 2
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
-            app.url + f"/assignment?course_id={course_1}&assignment_id={assignment_id}",
-            files=files,
-            **kwargs,
+            app.url + f"/assignment?course_id={course_1}&assignment_id={assignment_id}", files=files, **kwargs
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
-            app.url + f"/assignment?course_id={course_2}&assignment_id={assignment_id}",
-            files=files,
-            **kwargs,
+            app.url + f"/assignment?course_id={course_2}&assignment_id={assignment_id}", files=files, **kwargs
         )
 
     # Now fetch & submit on course 2 as student
@@ -698,8 +651,7 @@ def test_feedback_get_correct_assignment_across_courses(app, clear_database):  #
         r = yield async_requests.get(app.url + f"/assignment?course_id={course_2}&assignment_id={assignment_id}")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.post(
-            app.url + f"/submission?course_id={course_2}&assignment_id={assignment_id}",
-            files=files,
+            app.url + f"/submission?course_id={course_2}&assignment_id={assignment_id}", files=files
         )
 
     # Instructor releases for course 2

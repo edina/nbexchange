@@ -83,10 +83,7 @@ class Collections(BaseHandler):
 
             self.log.debug(f"Assignment: {assignment}")
 
-            filters = [
-                Action.assignment_id == assignment.id,
-                Action.action == AssignmentActions.submitted.value,
-            ]
+            filters = [Action.assignment_id == assignment.id, Action.action == AssignmentActions.submitted.value]
 
             if user_id:
                 student = session.query(User).filter(User.name == user_id).first()
@@ -173,11 +170,7 @@ class Collection(BaseHandler):
             # We need to key off the assignment, but we're actually looking
             # for the action with a action and a specific path
             assignments = AssignmentModel.find_for_course(
-                db=session,
-                course_id=course.id,
-                log=self.log,
-                action=AssignmentActions.submitted.value,
-                path=path,
+                db=session, course_id=course.id, log=self.log, action=AssignmentActions.submitted.value, path=path
             )
 
             self.set_header("Content-Type", "application/gzip")

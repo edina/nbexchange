@@ -123,10 +123,7 @@ def test_collections_zero_results_with_wrong_course(app, clear_database):  # noq
 @pytest.mark.gen_test
 def test_collections_broken_nbex_user(app, clear_database, caplog):  # noqa: F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
-        r = yield async_requests.post(
-            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
-        )
+        r = yield async_requests.post(app.url + "/assignment?course_id=course_2&assignment_id=assign_a", files=files)
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz):
         r = yield async_requests.get(app.url + "/collections?course_id=course_2&assignment_id=assign_a")
     assert r.status_code == 500
@@ -173,8 +170,7 @@ def test_collections_repeated_parameters_wrong_first(app, clear_database):  # no
 def test_collections_repeated_parameters_right_first(app, clear_database):  # noqa: F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
-            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            app.url + "/assignment?course_id=course_2&assignment_id=assign_a", files=files
         )  # Release
     with patch.object(BaseHandler, "get_current_user", return_value=user_brobbere_instructor):
         r = yield async_requests.get(
@@ -199,25 +195,19 @@ def test_collections_with_two_users_submitting(app, clear_database):  # noqa: F8
     kwargs = {"data": {"notebooks": [notebook]}}
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
-            app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id_1}",
-            files=files,
-            **kwargs,
+            app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id_1}", files=files, **kwargs
         )  # Release
         r = yield async_requests.post(
-            app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id_2}",
-            files=files,
-            **kwargs,
+            app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id_2}", files=files, **kwargs
         )  # Release 2nd assignment
     # Submissions check for a released action, not a fetched one
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.post(
-            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id_1}",
-            files=files,
+            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id_1}", files=files
         )  # submit
     with patch.object(BaseHandler, "get_current_user", return_value=user_brobbere_student):
         r = yield async_requests.post(
-            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id_1}",
-            files=files,
+            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id_1}", files=files
         )  # submit 2nd user
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.get(
@@ -240,20 +230,16 @@ def test_collections_with_one_user_submits_2nd_time(app, clear_database):  # noq
     kwargs = {"data": {"notebooks": [notebook]}}
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
-            app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id_1}",
-            files=files,
-            **kwargs,
+            app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id_1}", files=files, **kwargs
         )  # Released
     # Submissions check for a released action, not a fetched one
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.post(
-            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id_1}",
-            files=files,
+            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id_1}", files=files
         )  # Submitted
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.post(
-            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id_1}",
-            files=files,
+            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id_1}", files=files
         )  # Submitted 2nd time
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.get(
@@ -276,20 +262,16 @@ def test_collections_with_named_user(app, clear_database):  # noqa: F811
     kwargs = {"data": {"notebooks": [notebook]}}
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
-            app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id_1}",
-            files=files,
-            **kwargs,
+            app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id_1}", files=files, **kwargs
         )  # Released
     # Submissions check for a released action, not a fetched one
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.post(
-            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id_1}",
-            files=files,
+            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id_1}", files=files
         )  # Submitted
     with patch.object(BaseHandler, "get_current_user", return_value=user_brobbere_student):
         r = yield async_requests.post(
-            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id_1}",
-            files=files,
+            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id_1}", files=files
         )  # Submitted 2nd user
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.get(
@@ -313,15 +295,12 @@ def test_collections_with_named_user_check_full_name(app, clear_database):  # no
     kwargs = {"data": {"notebooks": [notebook]}}
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
-            app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id_1}",
-            files=files,
-            **kwargs,
+            app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id_1}", files=files, **kwargs
         )  # Released
     # Submissions check for a released action, not a fetched one
     with patch.object(BaseHandler, "get_current_user", return_value=user_zik_student):
         r = yield async_requests.post(
-            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id_1}",
-            files=files,
+            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id_1}", files=files
         )
 
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
@@ -348,15 +327,12 @@ def test_collections_with_named_user_check_full_name_missing(app, clear_database
     kwargs = {"data": {"notebooks": [notebook]}}
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
-            app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id_1}",
-            files=files,
-            **kwargs,
+            app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id_1}", files=files, **kwargs
         )  # Released
     # Submissions check for a released action, not a fetched one
     with patch.object(BaseHandler, "get_current_user", return_value=user_brobbere_student):
         r = yield async_requests.post(
-            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id_1}",
-            files=files,
+            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id_1}", files=files
         )
 
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
@@ -384,25 +360,20 @@ def test_collections_with_a_blank_feedback_path_injected(app, clear_database):  
     kwargs = {"data": {"notebooks": [notebook]}}
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
-            app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id_1}",
-            files=files,
-            **kwargs,
+            app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id_1}", files=files, **kwargs
         )  # Released
     # Submissions check for a released action, not a fetched one
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.post(
-            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id_1}",
-            files=files,
+            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id_1}", files=files
         )  # Submitted
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.post(
-            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id_1}",
-            files=files,
+            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id_1}", files=files
         )  # Submitted 2nd time
     with patch.object(BaseHandler, "get_current_user", return_value=user_brobbere_student):
         r = yield async_requests.post(
-            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id_1}",
-            files=files,
+            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id_1}", files=files
         )  # Submitted 2nd user
 
     # Now manually inject a `feedback_fetched` action

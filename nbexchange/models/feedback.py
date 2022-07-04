@@ -88,8 +88,5 @@ class Feedback(Base):
             raise TypeError("assignment_id must be defined, and an Int")
         if student_id is None or not isinstance(student_id, int):
             raise TypeError("notebook_id must be defined, and an Int")
-        filters = [
-            Notebook.assignment_id == assignment_id,
-            cls.student_id == student_id,
-        ]
+        filters = [Notebook.assignment_id == assignment_id, cls.student_id == student_id]
         return db.query(cls).join(Notebook).filter(*filters).all()

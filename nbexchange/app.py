@@ -65,11 +65,9 @@ class NbExchange(PrometheusMixIn, Application):
     base_url = os.environ.get("JUPYTERHUB_SERVICE_PREFIX", "/services/nbexchange/")
     base_storage_location = os.environ.get("NBEX_BASE_STORE", "/tmp/courses")
     # naas_url = os.environ.get("NAAS_URL", "https://127.0.0.1:8080")
-    user_plugin_class = Type(
-        NaasUserHandler,
-        klass=BaseUserHandler,
-        help="The class to use for handling users",
-    ).tag(config=True)
+    user_plugin_class = Type(NaasUserHandler, klass=BaseUserHandler, help="The class to use for handling users").tag(
+        config=True
+    )
 
     debug = bool(int(os.environ.get("DEBUG", 0)))
 
@@ -176,11 +174,7 @@ class NbExchange(PrometheusMixIn, Application):
 
         try:
             nbexchange.dbutil.setup_db(
-                self.db_url,
-                reset=self.reset_db,
-                echo=self.debug_db,
-                log=self.log,
-                **self.db_kwargs,
+                self.db_url, reset=self.reset_db, echo=self.debug_db, log=self.log, **self.db_kwargs
             )
         except OperationalError as e:
             self.log.error(f"Failed to connect to db: {self.db_url}")

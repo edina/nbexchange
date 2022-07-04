@@ -70,19 +70,13 @@ class ExchangeReleaseFeedback(abc.ExchangeReleaseFeedback, Exchange):
 
             feedback_dir = os.path.split(html_file)[0]
             submission_dir = self.coursedir.format_path(
-                self.coursedir.submitted_directory,
-                student_id,
-                self.coursedir.assignment_id,
+                self.coursedir.submitted_directory, student_id, self.coursedir.assignment_id
             )
 
             timestamp = open(os.path.join(feedback_dir, "timestamp.txt")).read().strip()
             nbfile = os.path.join(submission_dir, "{}.ipynb".format(notebook_id))
             unique_key = make_unique_key(
-                self.coursedir.course_id,
-                self.coursedir.assignment_id,
-                notebook_id,
-                student_id,
-                timestamp,
+                self.coursedir.course_id, self.coursedir.assignment_id, notebook_id, student_id, timestamp
             )
 
             self.log.debug("Unique key is: {}".format(unique_key))
@@ -92,22 +86,11 @@ class ExchangeReleaseFeedback(abc.ExchangeReleaseFeedback, Exchange):
 
             self.log.info(
                 "Releasing feedback for student '{}' on assignment '{}/{}/{}' ({})".format(
-                    student_id,
-                    self.coursedir.course_id,
-                    self.coursedir.assignment_id,
-                    notebook_id,
-                    timestamp,
+                    student_id, self.coursedir.course_id, self.coursedir.assignment_id, notebook_id, timestamp
                 )
             )
 
-            self.upload(
-                html_file,
-                self.coursedir.assignment_id,
-                student_id,
-                notebook_id,
-                timestamp,
-                checksum,
-            )
+            self.upload(html_file, self.coursedir.assignment_id, student_id, notebook_id, timestamp, checksum)
 
     def upload(self, html_file, assignment_id, student, notebook, timestamp, checksum):
 

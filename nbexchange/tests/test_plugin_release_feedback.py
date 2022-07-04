@@ -56,50 +56,29 @@ def test_release_feedback_fetch_normal(plugin_config, tmpdir):
     plugin_config.CourseDirectory.submitted_directory = str(tmpdir.mkdir("submitted_test").realpath())
     plugin_config.CourseDirectory.assignment_id = assignment_id
     os.makedirs(
-        os.path.join(plugin_config.CourseDirectory.feedback_directory, student_id, assignment_id),
-        exist_ok=True,
+        os.path.join(plugin_config.CourseDirectory.feedback_directory, student_id, assignment_id), exist_ok=True
     )
     os.makedirs(
-        os.path.join(plugin_config.CourseDirectory.submitted_directory, student_id, assignment_id),
-        exist_ok=True,
+        os.path.join(plugin_config.CourseDirectory.submitted_directory, student_id, assignment_id), exist_ok=True
     )
 
     feedback_filename_uploaded = os.path.join(
-        plugin_config.CourseDirectory.feedback_directory,
-        student_id,
-        assignment_id,
-        "feedback.html",
+        plugin_config.CourseDirectory.feedback_directory, student_id, assignment_id, "feedback.html"
     )
     copyfile(feedback1_filename, feedback_filename_uploaded)
 
     copyfile(
         notebook1_filename,
-        os.path.join(
-            plugin_config.CourseDirectory.submitted_directory,
-            student_id,
-            assignment_id,
-            "feedback.ipynb",
-        ),
+        os.path.join(plugin_config.CourseDirectory.submitted_directory, student_id, assignment_id, "feedback.ipynb"),
     )
     with open(
-        os.path.join(
-            plugin_config.CourseDirectory.feedback_directory,
-            student_id,
-            assignment_id,
-            "timestamp.txt",
-        ),
-        "w",
+        os.path.join(plugin_config.CourseDirectory.feedback_directory, student_id, assignment_id, "timestamp.txt"), "w"
     ) as fp:
         fp.write("2020-01-01 00:00:00.0 UTC")
 
     unique_key = make_unique_key("no_course", assignment_id, "feedback", student_id, "2020-01-01 00:00:00.0 UTC")
     checksum = notebook_hash(
-        os.path.join(
-            plugin_config.CourseDirectory.submitted_directory,
-            student_id,
-            assignment_id,
-            "feedback.ipynb",
-        ),
+        os.path.join(plugin_config.CourseDirectory.submitted_directory, student_id, assignment_id, "feedback.ipynb"),
         unique_key,
     )
 
@@ -117,11 +96,7 @@ def test_release_feedback_fetch_normal(plugin_config, tmpdir):
         assert kwargs.get("method").lower() == "post"
         assert "feedback" in kwargs.get("files")
         assert ("feedback.html", open(feedback_filename_uploaded).read()) == kwargs.get("files").get("feedback")
-        return type(
-            "Request",
-            (object,),
-            {"status_code": 200, "json": (lambda: {"success": True})},
-        )
+        return type("Request", (object,), {"status_code": 200, "json": (lambda: {"success": True})})
 
     with patch.object(Exchange, "api_request", side_effect=api_request):
         plugin.start()
@@ -145,34 +120,23 @@ def test_release_feedback_fetch_several_normal(plugin_config, tmpdir):
     # * feedback_directory is where the generated .html feeback was written to
     feedback1_filename_uploaded = os.path.join(feedback_directory, student_id, assignment_id, "feedback1.html")
     copyfile(feedback1_filename, feedback1_filename_uploaded)
-    copyfile(
-        notebook1_filename,
-        os.path.join(submitted_directory, student_id, assignment_id, "feedback1.ipynb"),
-    )
+    copyfile(notebook1_filename, os.path.join(submitted_directory, student_id, assignment_id, "feedback1.ipynb"))
 
     feedback2_filename_uploaded = os.path.join(feedback_directory, student_id, assignment_id, "feedback2.html")
     copyfile(feedback2_filename, feedback2_filename_uploaded)
-    copyfile(
-        notebook2_filename,
-        os.path.join(submitted_directory, student_id, assignment_id, "feedback2.ipynb"),
-    )
+    copyfile(notebook2_filename, os.path.join(submitted_directory, student_id, assignment_id, "feedback2.ipynb"))
     # ...... don't forget the timestamp for the submission
-    with open(
-        os.path.join(feedback_directory, student_id, assignment_id, "timestamp.txt"),
-        "w",
-    ) as fp:
+    with open(os.path.join(feedback_directory, student_id, assignment_id, "timestamp.txt"), "w") as fp:
         fp.write("2020-01-01 00:01:00.0 UTC")
 
     # this makes the unique key & checksums for the submission
     unique_key1 = make_unique_key("no_course", assignment_id, "feedback1", student_id, "2020-01-01 00:01:00.0 UTC")
     checksum1 = notebook_hash(
-        os.path.join(submitted_directory, student_id, assignment_id, "feedback1.ipynb"),
-        unique_key1,
+        os.path.join(submitted_directory, student_id, assignment_id, "feedback1.ipynb"), unique_key1
     )
     unique_key2 = make_unique_key("no_course", assignment_id, "feedback2", student_id, "2020-01-01 00:01:00.0 UTC")
     checksum2 = notebook_hash(
-        os.path.join(submitted_directory, student_id, assignment_id, "feedback2.ipynb"),
-        unique_key2,
+        os.path.join(submitted_directory, student_id, assignment_id, "feedback2.ipynb"), unique_key2
     )
 
     plugin = ExchangeReleaseFeedback(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
@@ -194,9 +158,7 @@ def test_release_feedback_fetch_several_normal(plugin_config, tmpdir):
             )
             assert kwargs.get("method").lower() == "post"
             assert "feedback" in kwargs.get("files")
-            assert ("feedback.html", open(feedback1_filename_uploaded).read(),) == kwargs.get(
-                "files"
-            ).get("feedback")
+            assert ("feedback.html", open(feedback1_filename_uploaded).read()) == kwargs.get("files").get("feedback")
 
         elif "feedback2" in args[0]:
             assert seen_feedback2 is False
@@ -211,16 +173,10 @@ def test_release_feedback_fetch_several_normal(plugin_config, tmpdir):
             )
             assert kwargs.get("method").lower() == "post"
             assert "feedback" in kwargs.get("files")
-            assert ("feedback.html", open(feedback2_filename_uploaded).read(),) == kwargs.get(
-                "files"
-            ).get("feedback")
+            assert ("feedback.html", open(feedback2_filename_uploaded).read()) == kwargs.get("files").get("feedback")
         else:
             assert False
-        return type(
-            "Request",
-            (object,),
-            {"status_code": 200, "json": (lambda: {"success": True})},
-        )
+        return type("Request", (object,), {"status_code": 200, "json": (lambda: {"success": True})})
 
     with patch.object(Exchange, "api_request", side_effect=api_request):
         plugin.start()
@@ -234,39 +190,23 @@ def test_release_feedback_fetch_fail(plugin_config, tmpdir):
     plugin_config.CourseDirectory.submitted_directory = str(tmpdir.mkdir("submitted_test").realpath())
     plugin_config.CourseDirectory.assignment_id = assignment_id
     os.makedirs(
-        os.path.join(plugin_config.CourseDirectory.feedback_directory, student_id, assignment_id),
-        exist_ok=True,
+        os.path.join(plugin_config.CourseDirectory.feedback_directory, student_id, assignment_id), exist_ok=True
     )
     os.makedirs(
-        os.path.join(plugin_config.CourseDirectory.submitted_directory, student_id, assignment_id),
-        exist_ok=True,
+        os.path.join(plugin_config.CourseDirectory.submitted_directory, student_id, assignment_id), exist_ok=True
     )
 
     feedback_filename_uploaded = os.path.join(
-        plugin_config.CourseDirectory.feedback_directory,
-        student_id,
-        assignment_id,
-        "feedback.html",
+        plugin_config.CourseDirectory.feedback_directory, student_id, assignment_id, "feedback.html"
     )
     copyfile(feedback1_filename, feedback_filename_uploaded)
 
     copyfile(
         notebook1_filename,
-        os.path.join(
-            plugin_config.CourseDirectory.submitted_directory,
-            student_id,
-            assignment_id,
-            "feedback.ipynb",
-        ),
+        os.path.join(plugin_config.CourseDirectory.submitted_directory, student_id, assignment_id, "feedback.ipynb"),
     )
     with open(
-        os.path.join(
-            plugin_config.CourseDirectory.feedback_directory,
-            student_id,
-            assignment_id,
-            "timestamp.txt",
-        ),
-        "w",
+        os.path.join(plugin_config.CourseDirectory.feedback_directory, student_id, assignment_id, "timestamp.txt"), "w"
     ) as fp:
         fp.write("2020-01-01 00:00:00.0 UTC")
 
@@ -274,12 +214,7 @@ def test_release_feedback_fetch_fail(plugin_config, tmpdir):
 
     def api_request(*args, **kwargs):
         return type(
-            "Request",
-            (object,),
-            {
-                "status_code": 200,
-                "json": (lambda: {"success": False, "note": "failure note"}),
-            },
+            "Request", (object,), {"status_code": 200, "json": (lambda: {"success": False, "note": "failure note"})}
         )
 
     with patch.object(Exchange, "api_request", side_effect=api_request):

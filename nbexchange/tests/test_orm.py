@@ -206,16 +206,13 @@ def test_course_basic_requirements(db, user_kaylee):
     db.rollback()
     orm_course = Course(
         # org_id=user_kaylee.org_id,
-        course_code="Strange",
+        course_code="Strange"
     )
     db.add(orm_course)
     with pytest.raises(IntegrityError):
         db.commit()
     db.rollback()
-    orm_course = Course(
-        org_id=user_kaylee.org_id,
-        course_code="Strange",
-    )
+    orm_course = Course(org_id=user_kaylee.org_id, course_code="Strange")
     db.add(orm_course)
     db.commit()
     assert orm_course.course_code == "Strange"
@@ -374,7 +371,7 @@ def test_assignment(db, course_strange):
 
     orm_assignment = AssignmentModel(
         # assignment_code="tree 1",
-        course_id=course_strange.id,
+        course_id=course_strange.id
     )
     db.add(orm_assignment)
     with pytest.raises(IntegrityError):
@@ -449,11 +446,7 @@ def test_action_object_creation_errors(db, course_strange, assignment_tree, user
     db.add(orm_subscription)
     db.commit()
 
-    action = Action(
-        user_id=user_johaannes.id,
-        assignment_id=assignment_tree.id,
-        location=release_file,
-    )
+    action = Action(user_id=user_johaannes.id, assignment_id=assignment_tree.id, location=release_file)
     db.add(action)
     with pytest.raises(IntegrityError):
         db.commit()
@@ -471,10 +464,7 @@ def test_action_object_creation_errors(db, course_strange, assignment_tree, user
     #     db.commit()
     # db.rollback()
 
-    orm_action = Action(
-        action=AssignmentActions.released,
-        location="/some/random/path/to/a/file.tzg",
-    )
+    orm_action = Action(action=AssignmentActions.released, location="/some/random/path/to/a/file.tzg")
     # # Why does that work??
 
     db.add(orm_action)
@@ -595,17 +585,14 @@ def test_notebook_base_mathods_and_find_by_pk(db, assignment_tree):
     # name is required
     orm_notebook = Notebook(
         # name="Test 1",
-        assignment_id=assignment_tree.id,
+        assignment_id=assignment_tree.id
     )
     db.add(orm_notebook)
     with pytest.raises(IntegrityError):
         db.commit()
     db.rollback()
 
-    orm_notebook = Notebook(
-        name="Test 1",
-        assignment_id=assignment_tree.id,
-    )
+    orm_notebook = Notebook(name="Test 1", assignment_id=assignment_tree.id)
     db.add(orm_notebook)
     db.commit()
 
@@ -633,10 +620,7 @@ def test_notebook_base_mathods_and_find_by_pk(db, assignment_tree):
 
 def test_notebook_find_by_name(db, assignment_tree):
 
-    orm_notebook = Notebook(
-        name="Exam 2",
-        assignment_id=assignment_tree.id,
-    )
+    orm_notebook = Notebook(name="Exam 2", assignment_id=assignment_tree.id)
     db.add(orm_notebook)
     db.commit()
 
@@ -803,10 +787,7 @@ def test_all_the_unicode(db, assignment_a2ovi, user_rur, course_strange):
     assert orm_subscription.course.course_title == "Damnation Alley"
 
     # release
-    orm_action = Action(
-        action=AssignmentActions.released,
-        location=release_file,
-    )
+    orm_action = Action(action=AssignmentActions.released, location=release_file)
     db.add(orm_action)
     db.commit()
     orm_action.user_id = user_rur.id
@@ -815,10 +796,7 @@ def test_all_the_unicode(db, assignment_a2ovi, user_rur, course_strange):
 
     # fetch
     orm_action = Action(
-        user_id=user_rur.id,
-        assignment_id=assignment_a2ovi.id,
-        action=AssignmentActions.fetched,
-        location=release_file,
+        user_id=user_rur.id, assignment_id=assignment_a2ovi.id, action=AssignmentActions.fetched, location=release_file
     )
     db.add(orm_action)
     db.commit()

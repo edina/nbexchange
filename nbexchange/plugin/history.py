@@ -1,13 +1,13 @@
 import glob
 import json
-import nbgrader.exchange.abc as abc
 import os
 import re
 import sys
+from urllib.parse import quote, quote_plus
 
+import nbgrader.exchange.abc as abc
 from dateutil import parser
 from traitlets import Bool, Unicode
-from urllib.parse import quote, quote_plus
 
 from .exchange import Exchange
 

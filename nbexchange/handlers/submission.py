@@ -97,10 +97,7 @@ class Submission(BaseHandler):
                 # Write the uploaded file to the desired location
                 file_info = self.request.files["assignment"][0]
 
-                filename, content_type = (
-                    file_info["filename"],
-                    file_info["content_type"],
-                )
+                filename, content_type = (file_info["filename"], file_info["content_type"])
                 note = f"Received file {filename}, of type {content_type}"
                 self.log.info(note)
                 extn = os.path.splitext(filename)[1]

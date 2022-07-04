@@ -12,12 +12,12 @@ from .exchange import Exchange, ExchangeError
 from .fetch import ExchangeFetch
 from .fetch_assignment import ExchangeFetchAssignment
 from .fetch_feedback import ExchangeFetchFeedback
+from .history import ExchangeHistory
 from .list import ExchangeList
 from .release import ExchangeRelease
 from .release_assignment import ExchangeReleaseAssignment
 from .release_feedback import ExchangeReleaseFeedback
 from .submit import ExchangeSubmit
-from .history import ExchangeHistory
 
 __all__ = [
     "Exchange",

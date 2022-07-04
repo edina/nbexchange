@@ -97,17 +97,11 @@ def test_post_submision_checks_subscription(app, clear_database):  # noqa: F811
 @pytest.mark.gen_test
 def test_post_submision_student_can_submit(app, clear_database):  # noqa: F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
-        r = yield async_requests.post(
-            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
-        )
+        r = yield async_requests.post(app.url + "/assignment?course_id=course_2&assignment_id=assign_a", files=files)
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.get(app.url + "/assignment?course_id=course_2&assignment_id=assign_a")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
-        r = yield async_requests.post(
-            app.url + "/submission?course_id=course_2&assignment_id=assign_a",
-            files=files,
-        )
+        r = yield async_requests.post(app.url + "/submission?course_id=course_2&assignment_id=assign_a", files=files)
     assert r.status_code == 200
     response_data = r.json()
     assert response_data["success"] is True
@@ -120,17 +114,11 @@ def test_post_submision_student_can_submit(app, clear_database):  # noqa: F811
 @pytest.mark.gen_test
 def test_post_submision_broken_nbex_user(app, clear_database, caplog):  # noqa: F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
-        r = yield async_requests.post(
-            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
-        )
+        r = yield async_requests.post(app.url + "/assignment?course_id=course_2&assignment_id=assign_a", files=files)
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.get(app.url + "/assignment?course_id=course_2&assignment_id=assign_a")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz):
-        r = yield async_requests.post(
-            app.url + "/submission?course_id=course_2&assignment_id=assign_a",
-            files=files,
-        )
+        r = yield async_requests.post(app.url + "/submission?course_id=course_2&assignment_id=assign_a", files=files)
     assert r.status_code == 500
     assert "Both current_course ('None') and current_role ('None') must have values. User was '1-kiz'" in caplog.text
 
@@ -141,17 +129,11 @@ def test_post_submision_broken_nbex_user(app, clear_database, caplog):  # noqa: 
 @pytest.mark.gen_test
 def test_post_submision_instructor_can_submit(app, clear_database):  # noqa: F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
-        r = yield async_requests.post(
-            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
-        )
+        r = yield async_requests.post(app.url + "/assignment?course_id=course_2&assignment_id=assign_a", files=files)
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.get(app.url + "/assignment?course_id=course_2&assignment_id=assign_a")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
-        r = yield async_requests.post(
-            app.url + "/submission?course_id=course_2&assignment_id=assign_a",
-            files=files,
-        )
+        r = yield async_requests.post(app.url + "/submission?course_id=course_2&assignment_id=assign_a", files=files)
     assert r.status_code == 200
     response_data = r.json()
     assert response_data["success"] is True
@@ -164,10 +146,7 @@ def test_post_submision_instructor_can_submit(app, clear_database):  # noqa: F81
 @pytest.mark.gen_test
 def test_post_submision_requires_files(app, clear_database):  # noqa: F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
-        r = yield async_requests.post(
-            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
-        )
+        r = yield async_requests.post(app.url + "/assignment?course_id=course_2&assignment_id=assign_a", files=files)
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.get(app.url + "/assignment?course_id=course_2&assignment_id=assign_a")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
@@ -181,16 +160,12 @@ def test_post_submision_requires_files(app, clear_database):  # noqa: F811
 @pytest.mark.gen_test
 def test_post_submision_picks_first_instance_of_param_a(app, clear_database):  # noqa: F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
-        r = yield async_requests.post(
-            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
-        )
+        r = yield async_requests.post(app.url + "/assignment?course_id=course_2&assignment_id=assign_a", files=files)
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.get(app.url + "/assignment?course_id=course_2&assignment_id=assign_a")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.post(
-            app.url + "/submission?course_id=course_1&course_2&assignment_id=assign_a",
-            files=files,
+            app.url + "/submission?course_id=course_1&course_2&assignment_id=assign_a", files=files
         )
     assert r.status_code == 200
     response_data = r.json()
@@ -204,17 +179,11 @@ def test_post_submision_picks_first_instance_of_param_a(app, clear_database):  #
 @pytest.mark.gen_test
 def test_post_submision_piks_first_instance_of_param_b(app, clear_database):  # noqa: F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
-        r = yield async_requests.post(
-            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
-        )
+        r = yield async_requests.post(app.url + "/assignment?course_id=course_2&assignment_id=assign_a", files=files)
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.get(app.url + "/assignment?course_id=course_2&assignment_id=assign_a")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
-        r = yield async_requests.post(
-            app.url + "/submission?course_id=course_2&assignment_id=assign_a",
-            files=files,
-        )
+        r = yield async_requests.post(app.url + "/submission?course_id=course_2&assignment_id=assign_a", files=files)
     assert r.status_code == 200
     response_data = r.json()
     assert response_data["success"] is True
@@ -226,15 +195,13 @@ def test_post_submision_oversize_blocked(app, clear_database):  # noqa: F811
     with patch.object(BaseHandler, "max_buffer_size", return_value=int(50)):
         with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
             r = yield async_requests.post(
-                app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-                files=files,
+                app.url + "/assignment?course_id=course_2&assignment_id=assign_a", files=files
             )
         with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
             r = yield async_requests.get(app.url + "/assignment?course_id=course_2&assignment_id=assign_a")
         with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
             r = yield async_requests.post(
-                app.url + "/submission?course_id=course_2&assignment_id=assign_a",
-                files=files,
+                app.url + "/submission?course_id=course_2&assignment_id=assign_a", files=files
             )
     assert r.status_code == 200
     response_data = r.json()

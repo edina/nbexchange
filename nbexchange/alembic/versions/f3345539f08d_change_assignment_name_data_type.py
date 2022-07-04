@@ -19,10 +19,7 @@ def upgrade():
 
     with op.batch_alter_table("assignment") as batch_op:
         batch_op.alter_column(
-            "assignment_code",
-            "assignment_code",
-            existing_type=sa.VARCHAR(length=50),
-            type_=sa.Text(),
+            "assignment_code", "assignment_code", existing_type=sa.VARCHAR(length=50), type_=sa.Text()
         )
 
 
@@ -30,8 +27,5 @@ def downgrade():
 
     with op.batch_alter_table("assignment") as batch_op:
         batch_op.alter_column(
-            "assignment_code",
-            "assignment_code",
-            existing_type=sa.Text(),
-            type_=sa.VARCHAR(length=50),
+            "assignment_code", "assignment_code", existing_type=sa.Text(), type_=sa.VARCHAR(length=50)
         )

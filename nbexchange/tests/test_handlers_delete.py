@@ -104,14 +104,8 @@ def test_delete_wrong_course_blocked(app, clear_database):  # noqa: F811
 @pytest.mark.gen_test
 def test_delete_instructor_delete(app, clear_database):  # noqa: F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
-        r = yield async_requests.post(
-            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
-        )
-        r = yield async_requests.delete(
-            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
-        )
+        r = yield async_requests.post(app.url + "/assignment?course_id=course_2&assignment_id=assign_a", files=files)
+        r = yield async_requests.delete(app.url + "/assignment?course_id=course_2&assignment_id=assign_a", files=files)
     assert r.status_code == 200
     response_data = r.json()
     assert response_data["success"] is True
@@ -121,15 +115,9 @@ def test_delete_instructor_delete(app, clear_database):  # noqa: F811
 @pytest.mark.gen_test
 def test_delete_broken_nbex_user(app, clear_database, caplog):  # noqa: F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
-        r = yield async_requests.post(
-            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
-        )
+        r = yield async_requests.post(app.url + "/assignment?course_id=course_2&assignment_id=assign_a", files=files)
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz):
-        r = yield async_requests.delete(
-            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
-        )
+        r = yield async_requests.delete(app.url + "/assignment?course_id=course_2&assignment_id=assign_a", files=files)
     assert r.status_code == 500
     assert "Both current_course ('None') and current_role ('None') must have values. User was '1-kiz'" in caplog.text
 
@@ -138,13 +126,9 @@ def test_delete_broken_nbex_user(app, clear_database, caplog):  # noqa: F811
 @pytest.mark.gen_test
 def test_delete_instructor_purge(app, clear_database):  # noqa: F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
-        r = yield async_requests.post(
-            app.url + "/assignment?course_id=course_2&assignment_id=assign_b",
-            files=files,
-        )
+        r = yield async_requests.post(app.url + "/assignment?course_id=course_2&assignment_id=assign_b", files=files)
         r = yield async_requests.delete(
-            app.url + "/assignment?course_id=course_2&assignment_id=assign_b&purge=True",
-            files=files,
+            app.url + "/assignment?course_id=course_2&assignment_id=assign_b&purge=True", files=files
         )
     assert r.status_code == 200
     response_data = r.json()
@@ -156,13 +140,9 @@ def test_delete_instructor_purge(app, clear_database):  # noqa: F811
 @pytest.mark.gen_test
 def test_delete_multiple_courses_listed_first_wrong_blocked(app, clear_database):  # noqa: F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
-        r = yield async_requests.post(
-            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
-        )
+        r = yield async_requests.post(app.url + "/assignment?course_id=course_2&assignment_id=assign_a", files=files)
         r = yield async_requests.delete(
-            app.url + "/assignment?course_id=course_1&course_id=course_2&assignment_id=assign_a",
-            files=files,
+            app.url + "/assignment?course_id=course_1&course_id=course_2&assignment_id=assign_a", files=files
         )
     assert r.status_code == 200
     response_data = r.json()
@@ -174,14 +154,8 @@ def test_delete_multiple_courses_listed_first_wrong_blocked(app, clear_database)
 @pytest.mark.gen_test
 def test_assignment_missing(app, clear_database):  # noqa: F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
-        r = yield async_requests.post(
-            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
-        )
-        r = yield async_requests.delete(
-            app.url + "/assignment?course_id=course_2&assignment_id=noexist",
-            files=files,
-        )
+        r = yield async_requests.post(app.url + "/assignment?course_id=course_2&assignment_id=assign_a", files=files)
+        r = yield async_requests.delete(app.url + "/assignment?course_id=course_2&assignment_id=noexist", files=files)
     assert r.status_code == 200
     response_data = r.json()
     assert response_data["success"] is False
@@ -192,13 +166,9 @@ def test_assignment_missing(app, clear_database):  # noqa: F811
 @pytest.mark.gen_test
 def test_delete_multiple_courses_listed_first_right_passes(app, clear_database):  # noqa: F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
-        r = yield async_requests.post(
-            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
-        )
+        r = yield async_requests.post(app.url + "/assignment?course_id=course_2&assignment_id=assign_a", files=files)
         r = yield async_requests.delete(
-            app.url + "/assignment?course_id=course_2&course_id=course_1&assignment_id=assign_a",
-            files=files,
+            app.url + "/assignment?course_id=course_2&course_id=course_1&assignment_id=assign_a", files=files
         )
     assert r.status_code == 200
     response_data = r.json()
@@ -210,14 +180,8 @@ def test_delete_multiple_courses_listed_first_right_passes(app, clear_database):
 @pytest.mark.gen_test
 def test_delete_assignment10(app, clear_database):  # noqa: F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
-        r = yield async_requests.post(
-            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
-        )
-        r = yield async_requests.delete(
-            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
-        )
+        r = yield async_requests.post(app.url + "/assignment?course_id=course_2&assignment_id=assign_a", files=files)
+        r = yield async_requests.delete(app.url + "/assignment?course_id=course_2&assignment_id=assign_a", files=files)
         r = yield async_requests.get(app.url + "/assignments?course_id=course_2")
     assert r.status_code == 200
     response_data = r.json()

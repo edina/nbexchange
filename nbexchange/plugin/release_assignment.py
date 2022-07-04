@@ -40,8 +40,7 @@ class ExchangeReleaseAssignment(abc.ExchangeReleaseAssignment, Exchange):
                 self.fail(f"Assignment found in '{source}' but not '{self.src_path}', run `nbgrader assign` first.")
             else:
                 self._assignment_not_found(
-                    self.src_path,
-                    self.coursedir.format_path(self.coursedir.release_directory, ".", "*"),
+                    self.src_path, self.coursedir.format_path(self.coursedir.release_directory, ".", "*")
                 )
         self.log.debug(f"ExchangeRelease.init_src ensuring {self.src_path} exists")
 

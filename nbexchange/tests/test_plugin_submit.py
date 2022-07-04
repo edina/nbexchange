@@ -41,10 +41,7 @@ def test_submit_methods(plugin_config, tmpdir, caplog):
     plugin_config.CourseDirectory.assignment_id = assignment_id1
 
     os.makedirs(assignment_id1, exist_ok=True)
-    copyfile(
-        notebook1_filename,
-        os.path.join(assignment_id1, basename(notebook1_filename)),
-    )
+    copyfile(notebook1_filename, os.path.join(assignment_id1, basename(notebook1_filename)))
 
     plugin = ExchangeSubmit(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
     plugin.init_src()
@@ -138,10 +135,7 @@ def test_submit_single_item(plugin_config, tmpdir):
         plugin_config.CourseDirectory.assignment_id = assignment_id1
 
         os.makedirs(assignment_id1, exist_ok=True)
-        copyfile(
-            notebook1_filename,
-            os.path.join(assignment_id1, basename(notebook1_filename)),
-        )
+        copyfile(notebook1_filename, os.path.join(assignment_id1, basename(notebook1_filename)))
 
         plugin = ExchangeSubmit(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
 
@@ -190,11 +184,7 @@ def test_submit_single_item(plugin_config, tmpdir):
 
                 assert os.path.exists(os.path.join(pth, "assignment-0.6.ipynb"))
                 assert os.path.exists(os.path.join(pth, "timestamp.txt"))
-                return type(
-                    "Request",
-                    (object,),
-                    {"status_code": 200, "json": (lambda: {"success": True})},
-                )
+                return type("Request", (object,), {"status_code": 200, "json": (lambda: {"success": True})})
 
         with patch.object(Exchange, "api_request", side_effect=api_request):
             plugin.start()
@@ -211,10 +201,7 @@ def test_submit_single_item_with_path_includes_course(plugin_config, tmpdir):
         plugin_config.Exchange.path_includes_course = True
 
         os.makedirs(os.path.join(course_id, assignment_id1), exist_ok=True)
-        copyfile(
-            notebook1_filename,
-            os.path.join(course_id, assignment_id1, basename(notebook1_filename)),
-        )
+        copyfile(notebook1_filename, os.path.join(course_id, assignment_id1, basename(notebook1_filename)))
 
         plugin = ExchangeSubmit(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
 
@@ -263,11 +250,7 @@ def test_submit_single_item_with_path_includes_course(plugin_config, tmpdir):
 
                 assert os.path.exists(os.path.join(pth, "assignment-0.6.ipynb"))
                 assert os.path.exists(os.path.join(pth, "timestamp.txt"))
-                return type(
-                    "Request",
-                    (object,),
-                    {"status_code": 200, "json": (lambda: {"success": True})},
-                )
+                return type("Request", (object,), {"status_code": 200, "json": (lambda: {"success": True})})
 
         with patch.object(Exchange, "api_request", side_effect=api_request):
             plugin.start()
@@ -283,10 +266,7 @@ def test_submit_fail(plugin_config, tmpdir):
         plugin_config.CourseDirectory.assignment_id = assignment_id1
 
         os.makedirs(assignment_id1, exist_ok=True)
-        copyfile(
-            notebook1_filename,
-            os.path.join(assignment_id1, basename(notebook1_filename)),
-        )
+        copyfile(notebook1_filename, os.path.join(assignment_id1, basename(notebook1_filename)))
 
         plugin = ExchangeSubmit(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
 
@@ -329,10 +309,7 @@ def test_submit_fail(plugin_config, tmpdir):
                 return type(
                     "Request",
                     (object,),
-                    {
-                        "status_code": 200,
-                        "json": (lambda: {"success": False, "note": "failure note"}),
-                    },
+                    {"status_code": 200, "json": (lambda: {"success": False, "note": "failure note"})},
                 )
 
         with pytest.raises(ExchangeError) as e_info, patch.object(Exchange, "api_request", side_effect=api_request):
@@ -407,11 +384,7 @@ def test_submit_multiple_notebooks_in_assignment(plugin_config, tmpdir):
                 assert os.path.exists(os.path.join(pth, "assignment-0.6.ipynb"))
                 assert os.path.exists(os.path.join(pth, "assignment-0.6-2.ipynb"))
                 assert os.path.exists(os.path.join(pth, "timestamp.txt"))
-                return type(
-                    "Request",
-                    (object,),
-                    {"status_code": 200, "json": (lambda: {"success": True})},
-                )
+                return type("Request", (object,), {"status_code": 200, "json": (lambda: {"success": True})})
 
         with patch.object(Exchange, "api_request", side_effect=api_request):
             plugin.start()
@@ -476,11 +449,7 @@ def test_submit_fail_no_folder(plugin_config, tmpdir):
 
                 assert os.path.exists(os.path.join(pth, "assignment-0.6.ipynb"))
                 assert os.path.exists(os.path.join(pth, "timestamp.txt"))
-                return type(
-                    "Request",
-                    (object,),
-                    {"status_code": 200, "json": (lambda: {"success": True})},
-                )
+                return type("Request", (object,), {"status_code": 200, "json": (lambda: {"success": True})})
 
         with pytest.raises(ExchangeError, match=r"Assignment not found at"):
             with patch.object(Exchange, "api_request", side_effect=api_request):
@@ -534,10 +503,7 @@ def test_submit_warning_no_notebook(plugin_config, tmpdir):
                     },
                 )
             else:
-                with pytest.warns(
-                    UserWarning,
-                    match=r"Possible missing notebooks and/or extra notebooks",
-                ):
+                with pytest.warns(UserWarning, match=r"Possible missing notebooks and/or extra notebooks"):
                     pth = str(tmpdir.mkdir("submit_several").realpath())
                     assert args[0] == (f"submission?course_id={course_id}&assignment_id={assignment_id1}")
                     assert "method" not in kwargs or kwargs.get("method").lower() == "post"
@@ -550,11 +516,7 @@ def test_submit_warning_no_notebook(plugin_config, tmpdir):
 
                     assert os.path.exists(os.path.join(pth, "assignment-0.6.ipynb"))
                     assert os.path.exists(os.path.join(pth, "timestamp.txt"))
-                    return type(
-                        "Request",
-                        (object,),
-                        {"status_code": 200, "json": (lambda: {"success": True})},
-                    )
+                    return type("Request", (object,), {"status_code": 200, "json": (lambda: {"success": True})})
 
             with patch.object(Exchange, "api_request", side_effect=api_request):
                 plugin.start()
@@ -572,10 +534,7 @@ def test_submit_warning_wrong_notebook(plugin_config, tmpdir):
         plugin_config.CourseDirectory.assignment_id = assignment_id1
 
         os.makedirs(assignment_id1, exist_ok=True)
-        copyfile(
-            notebook2_filename,
-            os.path.join(assignment_id1, basename(notebook1_filename)),
-        )
+        copyfile(notebook2_filename, os.path.join(assignment_id1, basename(notebook1_filename)))
 
         plugin = ExchangeSubmit(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
 
@@ -612,10 +571,7 @@ def test_submit_warning_wrong_notebook(plugin_config, tmpdir):
                     },
                 )
             else:
-                with pytest.warns(
-                    UserWarning,
-                    match=r"Possible missing notebooks and/or extra notebooks",
-                ):
+                with pytest.warns(UserWarning, match=r"Possible missing notebooks and/or extra notebooks"):
                     pth = str(tmpdir.mkdir("submit_several").realpath())
                     assert args[0] == (f"submission?course_id={course_id}&assignment_id={assignment_id1}")
                     assert "method" not in kwargs or kwargs.get("method").lower() == "post"
@@ -628,11 +584,7 @@ def test_submit_warning_wrong_notebook(plugin_config, tmpdir):
 
                     assert os.path.exists(os.path.join(pth, "assignment-0.6.ipynb"))
                     assert os.path.exists(os.path.join(pth, "timestamp.txt"))
-                    return type(
-                        "Request",
-                        (object,),
-                        {"status_code": 200, "json": (lambda: {"success": True})},
-                    )
+                    return type("Request", (object,), {"status_code": 200, "json": (lambda: {"success": True})})
 
             with patch.object(Exchange, "api_request", side_effect=api_request):
                 plugin.start()
@@ -701,11 +653,7 @@ def test_submit_no_notebook_strict_means_fail(plugin_config, tmpdir):
 
                     assert os.path.exists(os.path.join(pth, "assignment-0.6.ipynb"))
                     assert os.path.exists(os.path.join(pth, "timestamp.txt"))
-                    return type(
-                        "Request",
-                        (object,),
-                        {"status_code": 200, "json": (lambda: {"success": True})},
-                    )
+                    return type("Request", (object,), {"status_code": 200, "json": (lambda: {"success": True})})
 
             with patch.object(Exchange, "api_request", side_effect=api_request):
                 plugin.start()
@@ -724,10 +672,7 @@ def test_submit_wrong_notebook_strict_means_faile(plugin_config, tmpdir):
         plugin_config.CourseDirectory.assignment_id = assignment_id1
 
         os.makedirs(assignment_id1, exist_ok=True)
-        copyfile(
-            notebook2_filename,
-            os.path.join(assignment_id1, basename(notebook1_filename)),
-        )
+        copyfile(notebook2_filename, os.path.join(assignment_id1, basename(notebook1_filename)))
 
         plugin = ExchangeSubmit(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
 
@@ -777,11 +722,7 @@ def test_submit_wrong_notebook_strict_means_faile(plugin_config, tmpdir):
 
                     assert os.path.exists(os.path.join(pth, "assignment-0.6.ipynb"))
                     assert os.path.exists(os.path.join(pth, "timestamp.txt"))
-                    return type(
-                        "Request",
-                        (object,),
-                        {"status_code": 200, "json": (lambda: {"success": True})},
-                    )
+                    return type("Request", (object,), {"status_code": 200, "json": (lambda: {"success": True})})
 
             with patch.object(Exchange, "api_request", side_effect=api_request):
                 plugin.start()
@@ -799,14 +740,8 @@ def test_submit_warning_wrong_notebook_two(plugin_config, tmpdir):
         plugin_config.CourseDirectory.assignment_id = assignment_id1
 
         os.makedirs(assignment_id1, exist_ok=True)
-        copyfile(
-            notebook1_filename,
-            os.path.join(assignment_id1, basename(notebook1_filename)),
-        )
-        copyfile(
-            notebook2_filename,
-            os.path.join(assignment_id1, basename(notebook2_filename)),
-        )
+        copyfile(notebook1_filename, os.path.join(assignment_id1, basename(notebook1_filename)))
+        copyfile(notebook2_filename, os.path.join(assignment_id1, basename(notebook2_filename)))
         plugin = ExchangeSubmit(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
 
         def api_request(*args, **kwargs):
@@ -842,10 +777,7 @@ def test_submit_warning_wrong_notebook_two(plugin_config, tmpdir):
                     },
                 )
             else:
-                with pytest.warns(
-                    UserWarning,
-                    match=r"Possible missing notebooks and/or extra notebooks",
-                ):
+                with pytest.warns(UserWarning, match=r"Possible missing notebooks and/or extra notebooks"):
                     pth = str(tmpdir.mkdir("submit_several").realpath())
                     assert args[0] == (f"submission?course_id={course_id}&assignment_id={assignment_id1}")
                     assert "method" not in kwargs or kwargs.get("method").lower() == "post"
@@ -858,11 +790,7 @@ def test_submit_warning_wrong_notebook_two(plugin_config, tmpdir):
 
                     assert os.path.exists(os.path.join(pth, "assignment-0.6.ipynb"))
                     assert os.path.exists(os.path.join(pth, "timestamp.txt"))
-                    return type(
-                        "Request",
-                        (object,),
-                        {"status_code": 200, "json": (lambda: {"success": True})},
-                    )
+                    return type("Request", (object,), {"status_code": 200, "json": (lambda: {"success": True})})
 
             with patch.object(Exchange, "api_request", side_effect=api_request):
                 plugin.start()
@@ -881,10 +809,7 @@ def test_submit_extra_notebook_strict_means_fail(plugin_config, tmpdir):
         plugin_config.CourseDirectory.assignment_id = assignment_id1
 
         os.makedirs(assignment_id1, exist_ok=True)
-        copyfile(
-            notebook2_filename,
-            os.path.join(assignment_id1, basename(notebook1_filename)),
-        )
+        copyfile(notebook2_filename, os.path.join(assignment_id1, basename(notebook1_filename)))
 
         plugin = ExchangeSubmit(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
 
@@ -934,11 +859,7 @@ def test_submit_extra_notebook_strict_means_fail(plugin_config, tmpdir):
 
                     assert os.path.exists(os.path.join(pth, "assignment-0.6.ipynb"))
                     assert os.path.exists(os.path.join(pth, "timestamp.txt"))
-                    return type(
-                        "Request",
-                        (object,),
-                        {"status_code": 200, "json": (lambda: {"success": True})},
-                    )
+                    return type("Request", (object,), {"status_code": 200, "json": (lambda: {"success": True})})
 
             with patch.object(Exchange, "api_request", side_effect=api_request):
                 plugin.start()
@@ -955,10 +876,7 @@ def test_submit_two_releases_newest_first(plugin_config, tmpdir):
         plugin_config.CourseDirectory.assignment_id = assignment_id1
 
         os.makedirs(assignment_id1, exist_ok=True)
-        copyfile(
-            notebook1_filename,
-            os.path.join(assignment_id1, basename(notebook1_filename)),
-        )
+        copyfile(notebook1_filename, os.path.join(assignment_id1, basename(notebook1_filename)))
 
         plugin = ExchangeSubmit(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
 
@@ -1023,11 +941,7 @@ def test_submit_two_releases_newest_first(plugin_config, tmpdir):
 
                 assert os.path.exists(os.path.join(pth, "assignment-0.6.ipynb"))
                 assert os.path.exists(os.path.join(pth, "timestamp.txt"))
-                return type(
-                    "Request",
-                    (object,),
-                    {"status_code": 200, "json": (lambda: {"success": True})},
-                )
+                return type("Request", (object,), {"status_code": 200, "json": (lambda: {"success": True})})
 
         with patch.object(Exchange, "api_request", side_effect=api_request):
             plugin.start()
@@ -1043,10 +957,7 @@ def test_submit_two_releases_newest_last(plugin_config, tmpdir):
         plugin_config.CourseDirectory.assignment_id = assignment_id1
 
         os.makedirs(assignment_id1, exist_ok=True)
-        copyfile(
-            notebook1_filename,
-            os.path.join(assignment_id1, basename(notebook1_filename)),
-        )
+        copyfile(notebook1_filename, os.path.join(assignment_id1, basename(notebook1_filename)))
 
         plugin = ExchangeSubmit(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
 
@@ -1111,11 +1022,7 @@ def test_submit_two_releases_newest_last(plugin_config, tmpdir):
 
                 assert os.path.exists(os.path.join(pth, "assignment-0.6.ipynb"))
                 assert os.path.exists(os.path.join(pth, "timestamp.txt"))
-                return type(
-                    "Request",
-                    (object,),
-                    {"status_code": 200, "json": (lambda: {"success": True})},
-                )
+                return type("Request", (object,), {"status_code": 200, "json": (lambda: {"success": True})})
 
         with patch.object(Exchange, "api_request", side_effect=api_request):
             plugin.start()
@@ -1132,10 +1039,7 @@ def test_submit_warning_wrong_notebook_three(plugin_config, tmpdir):
         plugin_config.CourseDirectory.assignment_id = assignment_id1
 
         os.makedirs(assignment_id1, exist_ok=True)
-        copyfile(
-            notebook2_filename,
-            os.path.join(assignment_id1, basename(notebook1_filename)),
-        )
+        copyfile(notebook2_filename, os.path.join(assignment_id1, basename(notebook1_filename)))
 
         plugin = ExchangeSubmit(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
 
@@ -1188,10 +1092,7 @@ def test_submit_warning_wrong_notebook_three(plugin_config, tmpdir):
                     },
                 )
             else:
-                with pytest.warns(
-                    UserWarning,
-                    match=r"Possible missing notebooks and/or extra notebooks",
-                ):
+                with pytest.warns(UserWarning, match=r"Possible missing notebooks and/or extra notebooks"):
                     pth = str(tmpdir.mkdir("submit_several").realpath())
                     assert args[0] == (f"submission?course_id={course_id}&assignment_id={assignment_id1}")
                     assert "method" not in kwargs or kwargs.get("method").lower() == "post"
@@ -1204,11 +1105,7 @@ def test_submit_warning_wrong_notebook_three(plugin_config, tmpdir):
 
                     assert os.path.exists(os.path.join(pth, "assignment-0.6.ipynb"))
                     assert os.path.exists(os.path.join(pth, "timestamp.txt"))
-                    return type(
-                        "Request",
-                        (object,),
-                        {"status_code": 200, "json": (lambda: {"success": True})},
-                    )
+                    return type("Request", (object,), {"status_code": 200, "json": (lambda: {"success": True})})
 
             with patch.object(Exchange, "api_request", side_effect=api_request):
                 plugin.start()
@@ -1349,7 +1246,7 @@ def test_submit_with_multiple_assignments_newest_first(plugin_config, tmpdir):
                                                 "has_exchange_feedback": False,
                                                 "feedback_updated": False,
                                                 "feedback_timestamp": None,
-                                            },
+                                            }
                                         ],
                                         "timestamp": "2020-03-01 10:45:49.9 00:00",
                                     },
@@ -1411,11 +1308,7 @@ def test_submit_with_multiple_assignments_newest_first(plugin_config, tmpdir):
 
                 assert os.path.exists(os.path.join(pth, "assignment-0.6.ipynb"))
                 assert os.path.exists(os.path.join(pth, "timestamp.txt"))
-                return type(
-                    "Request",
-                    (object,),
-                    {"status_code": 200, "json": (lambda: {"success": True})},
-                )
+                return type("Request", (object,), {"status_code": 200, "json": (lambda: {"success": True})})
 
         with patch.object(Exchange, "api_request", side_effect=api_request):
             plugin.start()
@@ -1595,7 +1488,7 @@ def test_submit_with_multiple_assignments_oldest_first(plugin_config, tmpdir):
                                                 "has_exchange_feedback": False,
                                                 "feedback_updated": False,
                                                 "feedback_timestamp": None,
-                                            },
+                                            }
                                         ],
                                         "timestamp": "2020-03-01 10:45:49.9 00:00",
                                     },
@@ -1617,11 +1510,7 @@ def test_submit_with_multiple_assignments_oldest_first(plugin_config, tmpdir):
 
                 assert os.path.exists(os.path.join(pth, "assignment-0.6.ipynb"))
                 assert os.path.exists(os.path.join(pth, "timestamp.txt"))
-                return type(
-                    "Request",
-                    (object,),
-                    {"status_code": 200, "json": (lambda: {"success": True})},
-                )
+                return type("Request", (object,), {"status_code": 200, "json": (lambda: {"success": True})})
 
         with patch.object(Exchange, "api_request", side_effect=api_request):
             plugin.start()
@@ -1637,10 +1526,7 @@ def test_submit_fails_oversize(plugin_config, tmpdir):
         plugin_config.CourseDirectory.assignment_id = assignment_id1
 
         os.makedirs(assignment_id1, exist_ok=True)
-        copyfile(
-            notebook1_filename,
-            os.path.join(assignment_id1, basename(notebook1_filename)),
-        )
+        copyfile(notebook1_filename, os.path.join(assignment_id1, basename(notebook1_filename)))
 
         plugin = ExchangeSubmit(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
 
@@ -1692,11 +1578,7 @@ def test_submit_fails_oversize(plugin_config, tmpdir):
 
                 assert os.path.exists(os.path.join(pth, "assignment-0.6.ipynb"))
                 assert os.path.exists(os.path.join(pth, "timestamp.txt"))
-                return type(
-                    "Request",
-                    (object,),
-                    {"status_code": 200, "json": (lambda: {"success": True})},
-                )
+                return type("Request", (object,), {"status_code": 200, "json": (lambda: {"success": True})})
 
         with patch.object(Exchange, "api_request", side_effect=api_request):
             with pytest.raises(ExchangeError) as e_info:

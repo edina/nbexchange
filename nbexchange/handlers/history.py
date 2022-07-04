@@ -3,7 +3,7 @@
 # import uuid
 
 from sqlalchemy import desc
-from tornado import web, httputil
+from tornado import httputil, web
 
 import nbexchange.models.assignments
 import nbexchange.models.courses
@@ -80,11 +80,7 @@ class History(BaseHandler):
 
         # Find all the assignments this user should be able to see
         with scoped_session() as session:
-            rows = (
-                session.query(nbexchange.models.Subscription)
-                .filter_by(user_id=this_user["id"])
-                .all()
-            )
+            rows = session.query(nbexchange.models.Subscription).filter_by(user_id=this_user["id"]).all()
 
             for row in rows:
                 if not row.course.id in models:
@@ -121,29 +117,18 @@ class History(BaseHandler):
                                 or row.role == "Instructor"
                             ):
                                 b = dict()
-                                action_string = str(action.action).replace(
-                                    "AssignmentActions.", ""
-                                )
+                                action_string = str(action.action).replace("AssignmentActions.", "")
                                 if not action_string in a["action_summary"]:
                                     a["action_summary"][action_string] = 0
                                 a["action_summary"][action_string] += 1
                                 b["action"] = str(action.action)
-                                b["timestamp"] = action.timestamp.strftime(
-                                    "%Y-%m-%d %H:%M:%S.%f %Z"
-                                )
-                                user = nbexchange.models.users.User.find_by_pk(
-                                    db=session, pk=action.user_id
-                                )
+                                b["timestamp"] = action.timestamp.strftime("%Y-%m-%d %H:%M:%S.%f %Z")
+                                user = nbexchange.models.users.User.find_by_pk(db=session, pk=action.user_id)
                                 b["user"] = user.name
                                 a["actions"].append(b)
                         models[row.course.id]["assignments"].append(a)
 
-        self.finish(
-            {
-                "success": True,
-                "value": sorted(models.values(), key=lambda x: (x["course_id"])),
-            }
-        )
+        self.finish({"success": True, "value": sorted(models.values(), key=lambda x: (x["course_id"]))})
 
     # This has no authentiction wrapper, so false implication os service
     def post(self):

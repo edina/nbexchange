@@ -87,9 +87,7 @@ class ExchangeList(abc.ExchangeList, Exchange):
 
             if self.path_includes_course:
                 assignment_dir = os.path.join(
-                    self.assignment_dir,
-                    self.coursedir.course_id,
-                    assignment.get("assignment_id"),
+                    self.assignment_dir, self.coursedir.course_id, assignment.get("assignment_id")
                 )
 
             assignment["notebooks"] = []
@@ -176,8 +174,7 @@ class ExchangeList(abc.ExchangeList, Exchange):
                     continue
                 else:
                     latest = held_assignments["released"].get(
-                        assignment.get("assignment_id"),
-                        {"timestamp": "1990-01-01 00:00:00"},
+                        assignment.get("assignment_id"), {"timestamp": "1990-01-01 00:00:00"}
                     )
                     if assignment.get("timestamp") > latest.get("timestamp"):
                         held_assignments["released"][assignment.get("assignment_id")] = assignment
@@ -194,11 +191,7 @@ class ExchangeList(abc.ExchangeList, Exchange):
 
                 assignment_dir = os.path.join(assignment.get("assignment_id"), "feedback")
                 if self.path_includes_course:
-                    assignment_dir = os.path.join(
-                        self.coursedir.course_id,
-                        assignment.get("assignment_id"),
-                        "feedback",
-                    )
+                    assignment_dir = os.path.join(self.coursedir.course_id, assignment.get("assignment_id"), "feedback")
 
                 local_feedback_path = None
                 has_local_feedback = False
@@ -211,23 +204,12 @@ class ExchangeList(abc.ExchangeList, Exchange):
                     if nb_timestamp:
 
                         # get the individual notebook details
-                        if os.path.isdir(
-                            os.path.join(
-                                assignment_dir,
-                                nb_timestamp,
-                            )
-                        ):
+                        if os.path.isdir(os.path.join(assignment_dir, nb_timestamp)):
                             local_feedback_path = os.path.join(
-                                assignment_dir,
-                                quote(nb_timestamp),
-                                f"{notebook['notebook_id']}.html",
+                                assignment_dir, quote(nb_timestamp), f"{notebook['notebook_id']}.html"
                             )
                             has_local_feedback = os.path.isfile(
-                                os.path.join(
-                                    assignment_dir,
-                                    nb_timestamp,
-                                    f"{notebook['notebook_id']}.html",
-                                )
+                                os.path.join(assignment_dir, nb_timestamp, f"{notebook['notebook_id']}.html")
                             )
 
                     notebook["has_local_feedback"] = has_local_feedback
@@ -248,10 +230,7 @@ class ExchangeList(abc.ExchangeList, Exchange):
                 assignment["has_exchange_feedback"] = has_exchange_feedback
                 assignment["feedback_updated"] = feedback_updated
                 if has_local_feedback:
-                    assignment["local_feedback_path"] = os.path.join(
-                        assignment_dir,
-                        quote(nb_timestamp),
-                    )
+                    assignment["local_feedback_path"] = os.path.join(assignment_dir, quote(nb_timestamp))
                 else:
                     assignment["local_feedback_path"] = None
 

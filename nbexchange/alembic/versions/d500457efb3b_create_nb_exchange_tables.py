@@ -54,13 +54,7 @@ def upgrade():
         "subscription",
         sa.Column("id", sa.Integer, primary_key=True),
         sa.Column("user_id", sa.Integer, sa.ForeignKey("user.id"), nullable=False, index=True),
-        sa.Column(
-            "course_id",
-            sa.Integer,
-            sa.ForeignKey("course.id"),
-            nullable=False,
-            index=True,
-        ),
+        sa.Column("course_id", sa.Integer, sa.ForeignKey("course.id"), nullable=False, index=True),
         sa.Column("role", sa.Unicode(50), nullable=False),
     )
     op.create_unique_constraint("uq_subscription", "subscription", ["user_id", "course_id", "role"])
@@ -72,13 +66,7 @@ def upgrade():
         sa.Column("id", sa.Integer, primary_key=True),
         sa.Column("assignment_code", sa.Unicode(50), nullable=False, index=True),
         sa.Column("active", sa.Boolean, default=True, nullable=False),
-        sa.Column(
-            "course_id",
-            sa.Integer,
-            sa.ForeignKey("course.id"),
-            nullable=False,
-            index=True,
-        ),
+        sa.Column("course_id", sa.Integer, sa.ForeignKey("course.id"), nullable=False, index=True),
     )
 
     # Keeping a track of when assignments are pulled/posted
@@ -86,13 +74,7 @@ def upgrade():
         "action",
         sa.Column("id", sa.Integer, primary_key=True),
         sa.Column("user_id", sa.Integer, sa.ForeignKey("user.id"), nullable=False, index=True),
-        sa.Column(
-            "assignment_id",
-            sa.Integer,
-            sa.ForeignKey("assignment.id"),
-            nullable=False,
-            index=True,
-        ),
+        sa.Column("assignment_id", sa.Integer, sa.ForeignKey("assignment.id"), nullable=False, index=True),
         sa.Column(
             "action", sa.Enum(AssignmentActions), nullable=False, index=True
         ),  # constrain to 'release', 'download', 'submit'

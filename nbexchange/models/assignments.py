@@ -81,11 +81,7 @@ class Assignment(Base):
             raise TypeError("code must be an Str")
         if not isinstance(course_id, int):
             raise TypeError("Course_id must be an Int")
-        filters = [
-            cls.assignment_code == code,
-            cls.course_id == course_id,
-            cls.active == active,
-        ]
+        filters = [cls.assignment_code == code, cls.course_id == course_id, cls.active == active]
         if action:
             filters.append(cls.actions.any(Action.action == action))
         return db.query(cls).filter(*filters).order_by(cls.id.desc()).first()

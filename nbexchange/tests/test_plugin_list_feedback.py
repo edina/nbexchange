@@ -7,8 +7,6 @@ from shutil import copyfile
 import pytest
 from mock import patch
 from nbgrader.coursedir import CourseDirectory
-from nbgrader.exchange import ExchangeError
-from nbgrader.utils import make_unique_key, notebook_hash
 
 from nbexchange.plugin import Exchange, ExchangeList
 from nbexchange.tests.utils import get_feedback_file
@@ -19,33 +17,21 @@ logger.setLevel(logging.ERROR)
 root_notebook_name = "assignment-0.6"
 
 # notebook 1
-notebook1_filename = os.path.join(
-    os.path.dirname(__file__), "data", f"{root_notebook_name}.ipynb"
-)
+notebook1_filename = os.path.join(os.path.dirname(__file__), "data", f"{root_notebook_name}.ipynb")
 notebook1_file = get_feedback_file(notebook1_filename)
-feedback1_filename = os.path.join(
-    os.path.dirname(__file__), "data", f"{root_notebook_name}.html"
-)
+feedback1_filename = os.path.join(os.path.dirname(__file__), "data", f"{root_notebook_name}.html")
 feedback1_file = get_feedback_file(feedback1_filename)
 
 # notebook 2
-notebook2_filename = os.path.join(
-    os.path.dirname(__file__), "data", f"{root_notebook_name}-2.ipynb"
-)
+notebook2_filename = os.path.join(os.path.dirname(__file__), "data", f"{root_notebook_name}-2.ipynb")
 notebook2_file = get_feedback_file(notebook2_filename)
-feedback2_filename = os.path.join(
-    os.path.dirname(__file__), "data", f"{root_notebook_name}-2.html"
-)
+feedback2_filename = os.path.join(os.path.dirname(__file__), "data", f"{root_notebook_name}-2.html")
 feedback2_file = get_feedback_file(feedback2_filename)
 
 # notebook 3
-notebook3_filename = os.path.join(
-    os.path.dirname(__file__), "data", f"{root_notebook_name}-3.ipynb"
-)
+notebook3_filename = os.path.join(os.path.dirname(__file__), "data", f"{root_notebook_name}-3.ipynb")
 notebook3_file = get_feedback_file(notebook3_filename)
-feedback3_filename = os.path.join(
-    os.path.dirname(__file__), "data", f"{root_notebook_name}-3.html"
-)
+feedback3_filename = os.path.join(os.path.dirname(__file__), "data", f"{root_notebook_name}-3.html")
 feedback3_file = get_feedback_file(feedback3_filename)
 
 
@@ -54,9 +40,7 @@ def test_list_no_submitted_records(plugin_config, tmpdir):
     plugin_config.CourseDirectory.course_id = "no_course"
     plugin_config.ExchangeList.inbound = True
 
-    plugin = ExchangeList(
-        coursedir=CourseDirectory(config=plugin_config), config=plugin_config
-    )
+    plugin = ExchangeList(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
 
     def api_request(*args, **kwargs):
         assert args[0] == ("assignments?course_id=no_course")
@@ -118,9 +102,7 @@ def test_list_submit_one(plugin_config, tmpdir):
     plugin_config.CourseDirectory.course_id = "no_course"
     plugin_config.ExchangeList.inbound = True
 
-    plugin = ExchangeList(
-        coursedir=CourseDirectory(config=plugin_config), config=plugin_config
-    )
+    plugin = ExchangeList(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
 
     def api_request(*args, **kwargs):
         assert args[0] == ("assignments?course_id=no_course")
@@ -198,9 +180,7 @@ def test_list_submit_several_submissions(plugin_config, tmpdir):
     plugin_config.CourseDirectory.course_id = "no_course"
     plugin_config.ExchangeList.inbound = True
 
-    plugin = ExchangeList(
-        coursedir=CourseDirectory(config=plugin_config), config=plugin_config
-    )
+    plugin = ExchangeList(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
 
     def api_request(*args, **kwargs):
         assert args[0] == ("assignments?course_id=no_course")
@@ -354,9 +334,7 @@ def test_list_submit_multipule_students(plugin_config, tmpdir):
     plugin_config.CourseDirectory.course_id = "no_course"
     plugin_config.ExchangeList.inbound = True
 
-    plugin = ExchangeList(
-        coursedir=CourseDirectory(config=plugin_config), config=plugin_config
-    )
+    plugin = ExchangeList(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
 
     def api_request(*args, **kwargs):
         assert args[0] == ("assignments?course_id=no_course")
@@ -526,9 +504,7 @@ def test_list_submit_multiple_assignments(plugin_config, tmpdir):
     plugin_config.CourseDirectory.course_id = "no_course"
     plugin_config.ExchangeList.inbound = True
 
-    plugin = ExchangeList(
-        coursedir=CourseDirectory(config=plugin_config), config=plugin_config
-    )
+    plugin = ExchangeList(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
 
     def api_request(*args, **kwargs):
         assert args[0] == ("assignments?course_id=no_course")
@@ -712,9 +688,7 @@ def test_list_feedback_available(plugin_config, tmpdir):
             ),
         )
 
-        plugin = ExchangeList(
-            coursedir=CourseDirectory(config=plugin_config), config=plugin_config
-        )
+        plugin = ExchangeList(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
 
         def api_request(*args, **kwargs):
             assert args[0] == ("assignments?course_id=no_course")
@@ -770,7 +744,7 @@ def test_list_feedback_available(plugin_config, tmpdir):
                                     "feedback_timestamp": "2020-01-01 00:02:00.2 00:00",
                                     "has_exchange_feedback": True,
                                     "has_local_feedback": True,
-                                    "local_feedback_path": f"{assignment_id}/feedback/2020-01-01%2000%3A02%3A00.2%2000%3A00/{root_notebook_name}.html",
+                                    "local_feedback_path": f"{assignment_id}/feedback/2020-01-01%2000%3A02%3A00.2%2000%3A00/{root_notebook_name}.html",  # noqa: E501
                                     "feedback_updated": False,
                                     "notebook_id": root_notebook_name,
                                 }
@@ -799,9 +773,7 @@ def test_list_feedback_available_with_path_includes_course(plugin_config, tmpdir
         plugin_config.ExchangeList.inbound = True
         plugin_config.Exchange.path_includes_course = True
 
-        my_feedback_dir = (
-            f"{course_code}/{assignment_id}/feedback/2020-01-01 00:02:00.2 00:00"
-        )
+        my_feedback_dir = f"{course_code}/{assignment_id}/feedback/2020-01-01 00:02:00.2 00:00"
         os.makedirs(my_feedback_dir, exist_ok=True)
         copyfile(
             feedback1_filename,
@@ -811,9 +783,7 @@ def test_list_feedback_available_with_path_includes_course(plugin_config, tmpdir
             ),
         )
 
-        plugin = ExchangeList(
-            coursedir=CourseDirectory(config=plugin_config), config=plugin_config
-        )
+        plugin = ExchangeList(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
 
         def api_request(*args, **kwargs):
             assert args[0] == ("assignments?course_id=no_course")
@@ -869,7 +839,7 @@ def test_list_feedback_available_with_path_includes_course(plugin_config, tmpdir
                                     "feedback_timestamp": "2020-01-01 00:02:00.2 00:00",
                                     "has_exchange_feedback": True,
                                     "has_local_feedback": True,
-                                    "local_feedback_path": f"{course_code}/{assignment_id}/feedback/2020-01-01%2000%3A02%3A00.2%2000%3A00/{root_notebook_name}.html",
+                                    "local_feedback_path": f"{course_code}/{assignment_id}/feedback/2020-01-01%2000%3A02%3A00.2%2000%3A00/{root_notebook_name}.html",  # noqa: E501
                                     "feedback_updated": False,
                                     "notebook_id": root_notebook_name,
                                 }
@@ -878,7 +848,7 @@ def test_list_feedback_available_with_path_includes_course(plugin_config, tmpdir
                             "feedback_updated": False,
                             "has_exchange_feedback": True,
                             "has_local_feedback": True,
-                            "local_feedback_path": f"{course_code}/{assignment_id}/feedback/2020-01-01%2000%3A02%3A00.2%2000%3A00",
+                            "local_feedback_path": f"{course_code}/{assignment_id}/feedback/2020-01-01%2000%3A02%3A00.2%2000%3A00",  # noqa: E501
                         }
                     ],
                 }

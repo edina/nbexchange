@@ -17,9 +17,7 @@ class NaasUserHandler(BaseUserHandler):
             cookies[name] = request.get_cookie(name)
 
         if "noteable_auth" not in cookies:
-            logging.debug(
-                f"No noteable_auth cookie found - got {','.join(request.request.cookies)}"
-            )
+            logging.debug(f"No noteable_auth cookie found - got {','.join(request.request.cookies)}")
             return None
 
         encoded = cookies["noteable_auth"]
@@ -35,7 +33,7 @@ class NaasUserHandler(BaseUserHandler):
         # 1-xyz format back to 1_xyz
         transformed_username = result["username"].replace("_", "-", 1)
 
-        ## We need to strip out forward slashes from the username. If not, the created paths will be invalid
+        # We need to strip out forward slashes from the username. If not, the created paths will be invalid
         transformed_username = transformed_username.replace("/", "-")
 
         return {

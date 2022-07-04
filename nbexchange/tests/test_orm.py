@@ -10,8 +10,6 @@ User -> Course -> Subscription -> Assignment -> Action -> Notebook -> Feedback
 
 """
 import pytest
-import pickle
-
 from sqlalchemy.exc import IntegrityError
 
 # NOTE: All objects & relationships that are built up remain until the end of
@@ -29,9 +27,7 @@ from nbexchange.models.users import User
 def course_quirk(db):
     orm_thing = Course.find_by_code(db, code="quirk", org_id=2)
     if not orm_thing:
-        orm_thing = Course(
-            org_id=2, course_code="quirk", course_title="Spirit of the Age"
-        )
+        orm_thing = Course(org_id=2, course_code="quirk", course_title="Spirit of the Age")
         db.add(orm_thing)
         db.commit()
     return orm_thing
@@ -41,9 +37,7 @@ def course_quirk(db):
 def course_strange(db):
     orm_thing = Course.find_by_code(db, code="Strange", org_id=1)
     if not orm_thing:
-        orm_thing = Course(
-            org_id=1, course_code="Strange", course_title="Damnation Alley"
-        )
+        orm_thing = Course(org_id=1, course_code="Strange", course_title="Damnation Alley")
         db.add(orm_thing)
         db.commit()
     return orm_thing
@@ -53,9 +47,7 @@ def course_strange(db):
 def course_charm(db):
     orm_thing = Course.find_by_code(db, code="WEIRD", org_id=1)
     if not orm_thing:
-        orm_thing = Course(
-            org_id=1, course_code="WEIRD", course_title="Fable of a Failed Race"
-        )
+        orm_thing = Course(org_id=1, course_code="WEIRD", course_title="Fable of a Failed Race")
         db.add(orm_thing)
         db.commit()
     return orm_thing
@@ -114,13 +106,9 @@ def assignment_tree(db):
 
 @pytest.fixture
 def assignment_false(db):
-    orm_thing = AssignmentModel.find_by_code(
-        db=db, code="not used", course_id=1, active=False
-    )
+    orm_thing = AssignmentModel.find_by_code(db=db, code="not used", course_id=1, active=False)
     if not orm_thing:
-        orm_thing = AssignmentModel(
-            assignment_code="not used", course_id=1, active=False
-        )
+        orm_thing = AssignmentModel(assignment_code="not used", course_id=1, active=False)
         db.add(orm_thing)
         db.commit()
     return orm_thing
@@ -137,7 +125,7 @@ def assignment_a2ovi(db):
     return orm_thing
 
 
-### User tests
+# ## User tests
 
 # Need to put this in to clear the database from the handler tests
 def test_empty_db(db):
@@ -203,7 +191,7 @@ def test_user_params(db, user_kaylee):
         found_1 = User.find_by_org(id=user_kaylee.org_id, db=db)
 
 
-### Course tests
+# ## Course tests
 # Remember Users are already in the DB
 
 
@@ -261,14 +249,9 @@ def test_course(db, course_strange):
     with pytest.raises(ValueError):
         found_by_code = Course.find_by_code(db, course_strange.course_code, None)
 
-    found_by_code = Course.find_by_code(
-        db, course_strange.course_code, course_strange.org_id
-    )
+    found_by_code = Course.find_by_code(db, course_strange.course_code, course_strange.org_id)
     assert found_by_code.course_code == course_strange.course_code
-    assert (
-        str(found_by_code)
-        == f"Course/{course_strange.course_code} {course_strange.course_title}"
-    )
+    assert str(found_by_code) == f"Course/{course_strange.course_code} {course_strange.course_title}"
 
     # in real code, org_id is probably a string, so lets confirm that works
     found_by_code = Course.find_by_code(db, course_strange.course_code, "1")
@@ -276,38 +259,28 @@ def test_course(db, course_strange):
 
     found_by_code = Course.find_by_code(db, "SANE", course_strange.org_id)
     assert found_by_code is None
-    found_by_code = Course.find_by_code(
-        db, course_strange.course_code, course_strange.org_id + 10
-    )
+    found_by_code = Course.find_by_code(db, course_strange.course_code, course_strange.org_id + 10)
     assert found_by_code is None
 
 
 def test_course_params(db, course_strange):
     # confirm named arguments work even when reversed
-    found_by_code = Course.find_by_code(
-        org_id=course_strange.org_id, db=db, code=course_strange.course_code
-    )
+    found_by_code = Course.find_by_code(org_id=course_strange.org_id, db=db, code=course_strange.course_code)
     assert found_by_code.course_code == course_strange.course_code
 
     # confirm that putting the positional values the wrong way round will [probably] fail
     with pytest.raises(ValueError):
-        found_by_code = Course.find_by_code(
-            db, course_strange.org_id, course_strange.course_code
-        )
+        found_by_code = Course.find_by_code(db, course_strange.org_id, course_strange.course_code)
 
     # test for unbexpected param
     with pytest.raises(TypeError):
-        found_by_pk = Course.find_by_pk(primary_key=course_strange.id, db=db)
+        Course.find_by_pk(primary_key=course_strange.id, db=db)
     with pytest.raises(TypeError):
-        found_by_code = Course.find_by_code(
-            course_code=course_strange.course_code, org_id=course_strange.org_id, db=db
-        )
+        found_by_code = Course.find_by_code(course_code=course_strange.course_code, org_id=course_strange.org_id, db=db)
     with pytest.raises(TypeError):
-        found_by_code = Course.find_by_code(
-            code=course_strange.course_code, id=course_strange.org_id, db=db
-        )
+        found_by_code = Course.find_by_code(code=course_strange.course_code, id=course_strange.org_id, db=db)
     with pytest.raises(TypeError):
-        found_by_org = Course.find_by_org(id=course_strange.org_id, db=db)
+        Course.find_by_org(id=course_strange.org_id, db=db)
 
 
 def test_multiple_courses(db, course_quirk, course_strange, course_charm):
@@ -319,7 +292,7 @@ def test_multiple_courses(db, course_quirk, course_strange, course_charm):
     assert len(courses) == 0
 
 
-### Subscription tests
+# ## Subscription tests
 # Remember Users and Courses are already in the DB
 
 
@@ -338,7 +311,7 @@ def test_subscription(db, course_strange, user_johaannes):
     orm_subscription = Subscription(role=role)
     db.add(orm_subscription)
     db.commit()
-    ### Why did that work??
+    # ## Why did that work??
 
     orm_subscription.user_id = user_johaannes.id
     orm_subscription.course_id = course_strange.id
@@ -365,8 +338,7 @@ def test_subscription(db, course_strange, user_johaannes):
     assert orm_subscription.course.course_title == "Damnation Alley"
     assert orm_subscription.role == role
     assert (
-        str(orm_subscription)
-        == f"Subscription for user {user_johaannes.id} to course {course_strange.id} as a {role}"
+        str(orm_subscription) == f"Subscription for user {user_johaannes.id} to course {course_strange.id} as a {role}"
     )
 
 
@@ -382,7 +354,7 @@ def test_subscription_find_by_set(db, course_strange, user_johaannes):
     assert found_sub.course_id == course_strange.id
 
 
-### Assignment tests
+# ## Assignment tests
 # Remember Users, Courses, and Subscriptions are already in the DB
 
 
@@ -429,29 +401,18 @@ def test_assignment(db, course_strange):
 
     found_by_pk = AssignmentModel.find_by_pk(db, assignment_tree.id)
     assert found_by_pk.id == assignment_tree.id
-    assert (
-        str(found_by_pk)
-        == f"Assignment {assignment_tree.assignment_code} for course {assignment_tree.course_id}"
-    )
+    assert str(found_by_pk) == f"Assignment {assignment_tree.assignment_code} for course {assignment_tree.course_id}"
 
     found_by_pk = AssignmentModel.find_by_pk(db, assignment_tree.id + 10)
     assert found_by_pk is None
 
     with pytest.raises(ValueError):
-        found_by_code = AssignmentModel.find_by_code(
-            db, assignment_tree.assignment_code
-        )
+        found_by_code = AssignmentModel.find_by_code(db, assignment_tree.assignment_code)
     with pytest.raises(TypeError):
-        found_by_code = AssignmentModel.find_by_code(
-            db, assignment_tree.assignment_code, "abc"
-        )
+        found_by_code = AssignmentModel.find_by_code(db, assignment_tree.assignment_code, "abc")
     with pytest.raises(TypeError):
-        found_by_code = AssignmentModel.find_by_code(
-            db, assignment_tree, assignment_tree.course_id
-        )
-    found_by_code = AssignmentModel.find_by_code(
-        db, assignment_tree.assignment_code, assignment_tree.course_id
-    )
+        found_by_code = AssignmentModel.find_by_code(db, assignment_tree, assignment_tree.course_id)
+    found_by_code = AssignmentModel.find_by_code(db, assignment_tree.assignment_code, assignment_tree.course_id)
     assert found_by_code.assignment_code == assignment_tree.assignment_code
     found_by_code = AssignmentModel.find_by_code(db, "SANE", assignment_tree.course_id)
     assert found_by_code is None
@@ -467,9 +428,7 @@ def test_with_inactive_assignment(db, course_strange, assignment_false):
     assert course_strange.assignments[0].id == assignment_false.id
 
 
-def test_assignment_find_for_course(
-    db, course_strange, assignment_false, assignment_tree
-):
+def test_assignment_find_for_course(db, course_strange, assignment_false, assignment_tree):
     courses = AssignmentModel.find_for_course(db, course_strange.id)
     assert len(courses.all()) == 1
     assignment_false.active = True
@@ -478,19 +437,15 @@ def test_assignment_find_for_course(
     assignment_false.active = False
 
 
-### Action tests
+# ## Action tests
 # Remember Users, Courses, Subscriptions, and Assignments are already in the DB
 
 # a couple of "will not make" tests
-def test_action_object_creation_errors(
-    db, course_strange, assignment_tree, user_johaannes
-):
+def test_action_object_creation_errors(db, course_strange, assignment_tree, user_johaannes):
     role = "instructor"
     release_file = "/some/random/path/to/a/file.tzg"
 
-    orm_subscription = Subscription(
-        user_id=user_johaannes.id, course_id=course_strange.id, role=role
-    )
+    orm_subscription = Subscription(user_id=user_johaannes.id, course_id=course_strange.id, role=role)
     db.add(orm_subscription)
     db.commit()
 
@@ -504,7 +459,7 @@ def test_action_object_creation_errors(
         db.commit()
     db.rollback()
 
-    ##### Why won't you work in github Actions, you bar steward
+    # #### Why won't you work in github Actions, you bar steward
     # action = Action(
     #     user_id=user_johaannes.id,
     #     assignment_id=assignment_tree.id,
@@ -520,7 +475,7 @@ def test_action_object_creation_errors(
         action=AssignmentActions.released,
         location="/some/random/path/to/a/file.tzg",
     )
-    ## Why does that work??
+    # # Why does that work??
 
     db.add(orm_action)
     db.commit()
@@ -567,22 +522,14 @@ def test_action_find_by_action(db):
         found_by_pk = Action.find_most_recent_action(db, 1, dict())
 
     found_by_pk = Action.find_by_pk(db, 1)  # released
-    found_recent = Action.find_most_recent_action(
-        db, found_by_pk.assignment_id, found_by_pk.action
-    )
+    found_recent = Action.find_most_recent_action(db, found_by_pk.assignment_id, found_by_pk.action)
     assert found_recent.action == found_by_pk.action
-    found_recent = Action.find_most_recent_action(
-        db, found_by_pk.assignment_id, "released"
-    )
+    found_recent = Action.find_most_recent_action(db, found_by_pk.assignment_id, "released")
     assert found_recent.action == found_by_pk.action
-    found_recent = Action.find_most_recent_action(
-        db, found_by_pk.assignment_id, AssignmentActions.released
-    )
+    found_recent = Action.find_most_recent_action(db, found_by_pk.assignment_id, AssignmentActions.released)
     assert found_recent.action == found_by_pk.action
-    found_recent = Action.find_most_recent_action(
-        db, found_by_pk.assignment_id, AssignmentActions.feedback_fetched
-    )
-    assert found_recent == None
+    found_recent = Action.find_most_recent_action(db, found_by_pk.assignment_id, AssignmentActions.feedback_fetched)
+    assert found_recent is None
 
 
 def test_action_find_by_action_distinguish_actions(db, assignment_tree, user_johaannes):
@@ -604,14 +551,10 @@ def test_action_find_by_action_distinguish_actions(db, assignment_tree, user_joh
     assert found_recent.action == AssignmentActions.fetched
 
     # We can get different entries if we define the action
-    found_recent_a = Action.find_most_recent_action(
-        db, found_by_pk.assignment_id, AssignmentActions.fetched
-    )
+    found_recent_a = Action.find_most_recent_action(db, found_by_pk.assignment_id, AssignmentActions.fetched)
     assert found_recent_a.action == AssignmentActions.fetched
 
-    found_recent_b = Action.find_most_recent_action(
-        db, found_by_pk.assignment_id, AssignmentActions.released
-    )
+    found_recent_b = Action.find_most_recent_action(db, found_by_pk.assignment_id, AssignmentActions.released)
     assert found_recent_b.action == AssignmentActions.released
 
     assert found_recent_a.id != found_recent_b.id
@@ -625,9 +568,7 @@ def test_action_relationships(db, user_johaannes):
 
 
 def test_action_can_restrict_assignment_searches(db, assignment_tree):
-    found = AssignmentModel.find_by_code(
-        db, assignment_tree.assignment_code, assignment_tree.course_id
-    )
+    found = AssignmentModel.find_by_code(db, assignment_tree.assignment_code, assignment_tree.course_id)
     assert found.id == assignment_tree.id
     found = AssignmentModel.find_by_code(
         db=db,
@@ -642,13 +583,13 @@ def test_action_can_restrict_assignment_searches(db, assignment_tree):
         course_id=assignment_tree.course_id,
         action=AssignmentActions.feedback_released,
     )
-    assert found == None
+    assert found is None
 
 
-### Notebook tests
+# ## Notebook tests
 # Remember Users, Courses, Subscriptions, Assignments, and Actions are already in the DB
 
-###########
+
 def test_notebook_base_mathods_and_find_by_pk(db, assignment_tree):
 
     # name is required
@@ -683,7 +624,7 @@ def test_notebook_base_mathods_and_find_by_pk(db, assignment_tree):
     found_by_pk = Notebook.find_by_pk(db, orm_notebook.id)
     assert found_by_pk.id == orm_notebook.id
 
-    ## relationships
+    # # relationships
     assert found_by_pk.assignment.id == assignment_tree.id
 
     found_by_pk = Notebook.find_by_pk(db, orm_notebook.id + 10)
@@ -714,9 +655,7 @@ def test_notebook_find_by_name(db, assignment_tree):
     assert found_by_name.id == orm_notebook.id
     found_by_name = Notebook.find_by_name(db, "Exam 3", assignment_tree.id)
     assert found_by_name is None
-    found_by_name = Notebook.find_by_name(
-        db, assignment_id=assignment_tree.id, name="Exam 2"
-    )
+    found_by_name = Notebook.find_by_name(db, assignment_id=assignment_tree.id, name="Exam 2")
     assert found_by_name.id == orm_notebook.id
 
 
@@ -733,22 +672,16 @@ def test_notebook_find_all(db, assignment_tree):
         found_all_for_assignment = Notebook.find_all_for_assignment(db, "abc")
     found_all_for_assignment = Notebook.find_all_for_assignment(db, assignment_tree.id)
     assert len(found_all_for_assignment) == 2
-    found_all_for_assignment = Notebook.find_all_for_assignment(
-        assignment_id=assignment_tree.id, db=db
-    )
+    found_all_for_assignment = Notebook.find_all_for_assignment(assignment_id=assignment_tree.id, db=db)
     assert len(found_all_for_assignment) == 2
 
 
 # kylee = instructor, johaanes = student
-def test_feedback_base_mathods_and_find_by_pk(
-    db, assignment_tree, user_kaylee, user_johaannes
-):
+def test_feedback_base_mathods_and_find_by_pk(db, assignment_tree, user_kaylee, user_johaannes):
 
     # previous subscriptions & notebooks still in the db
     notebook = Notebook.find_by_name(db, "Exam 2", assignment_tree.id)
-    released = Action.find_most_recent_action(
-        db, assignment_tree.id, AssignmentActions.released
-    )
+    released = Action.find_most_recent_action(db, assignment_tree.id, AssignmentActions.released)
     orm_feedback = Feedback(
         notebook_id=notebook.id,
         instructor_id=user_kaylee.id,
@@ -805,33 +738,27 @@ def test_feedback_find_notebook_for_student(db, assignment_tree, user_johaannes)
     feedback = Feedback.find_notebook_for_student(db, notebook.id, user_johaannes.id)
     assert feedback.notebook_id == notebook.id
 
-    feedback = Feedback.find_notebook_for_student(
-        db, student_id=user_johaannes.id, notebook_id=notebook.id
-    )
+    feedback = Feedback.find_notebook_for_student(db, student_id=user_johaannes.id, notebook_id=notebook.id)
     assert feedback.notebook_id == notebook.id
 
 
 def test_feedback_find_all_for_student(db, assignment_tree, user_johaannes):
     # previous subscriptions, actions, feedback, and notebooks still in the db
+    Notebook.find_by_name(db, "Exam 2", assignment_tree.id)
+
+    with pytest.raises(TypeError):
+        Feedback.find_all_for_student()
+    with pytest.raises(TypeError):
+        Feedback.find_all_for_student(db)
+    with pytest.raises(TypeError):
+        Feedback.find_all_for_student(db, "Johannes")
+    with pytest.raises(TypeError):
+        Feedback.find_all_for_student(db, user_johaannes.id, "tree 1")
+
+
+def test_feedback_find_all_for_student_again(db, assignment_tree, user_johaannes, user_kaylee):
     notebook = Notebook.find_by_name(db, "Exam 2", assignment_tree.id)
-
-    with pytest.raises(TypeError):
-        feedback = Feedback.find_all_for_student()
-    with pytest.raises(TypeError):
-        feedback = Feedback.find_all_for_student(db)
-    with pytest.raises(TypeError):
-        feedback = Feedback.find_all_for_student(db, "Johannes")
-    with pytest.raises(TypeError):
-        feedback = Feedback.find_all_for_student(db, user_johaannes.id, "tree 1")
-
-
-def test_feedback_find_all_for_student(
-    db, assignment_tree, user_johaannes, user_kaylee
-):
-    notebook = Notebook.find_by_name(db, "Exam 2", assignment_tree.id)
-    released = Action.find_most_recent_action(
-        db, assignment_tree.id, AssignmentActions.fetched
-    )
+    released = Action.find_most_recent_action(db, assignment_tree.id, AssignmentActions.fetched)
     orm_feedback = Feedback(
         notebook_id=notebook.id,
         instructor_id=user_kaylee.id,
@@ -866,9 +793,7 @@ def test_all_the_unicode(db, assignment_a2ovi, user_rur, course_strange):
 
     role = "instructor"
     release_file = "/some/random/path/to/a/file.tzg"
-    orm_subscription = Subscription(
-        user_id=user_rur.id, course_id=course_strange.id, role=role
-    )
+    orm_subscription = Subscription(user_id=user_rur.id, course_id=course_strange.id, role=role)
     db.add(orm_subscription)
     assignment_a2ovi.course_id = course_strange.id
     db.commit()

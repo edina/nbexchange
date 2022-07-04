@@ -1,11 +1,10 @@
-"""Add item to Action Enum table 
+"""Add item to Action Enum table
 
 Revision ID: 20190202
 Revises: d500457efb3b
 Create Date: 2019-04-02 15:40
 
 """
-from datetime import datetime
 from enum import Enum
 
 import sqlalchemy as sa

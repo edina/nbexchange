@@ -1,7 +1,6 @@
 import io
 import os
 import sys
-
 from urllib.parse import quote_plus
 
 import nbgrader.exchange.abc as abc
@@ -54,7 +53,7 @@ class ExchangeSubmit(abc.ExchangeSubmit, Exchange):
         self.log.debug(f"ExchangeSubmit uploading to: {self.service_url()}")
         files = {"assignment": ("assignment.tar.gz", file)}
         r = self.api_request(
-            f"submission?course_id={quote_plus(self.coursedir.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}",
+            f"submission?course_id={quote_plus(self.coursedir.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}",  # noqa: E501
             method="POST",
             files=files,
         )
@@ -73,16 +72,11 @@ class ExchangeSubmit(abc.ExchangeSubmit, Exchange):
         latest_timestamp = "1990-01-01 00:00:00"
         for assignment in assignments:
             # We want the last released version of this assignments
-            if (
-                self.coursedir.assignment_id == assignment["assignment_id"]
-                and assignment.get("status") == "released"
-            ):
+            if self.coursedir.assignment_id == assignment["assignment_id"] and assignment.get("status") == "released":
                 if assignment.get("timestamp") > latest_timestamp:
                     latest_timestamp = assignment.get("timestamp")
                     released_notebooks = [
-                        n["notebook_id"] + ".ipynb"
-                        for n in assignment["notebooks"]
-                        if "notebook_id" in n
+                        n["notebook_id"] + ".ipynb" for n in assignment["notebooks"] if "notebook_id" in n
                     ]
                 else:
                     continue
@@ -134,7 +128,7 @@ class ExchangeSubmit(abc.ExchangeSubmit, Exchange):
             self.fail(
                 "Assignment {} not submitted. "
                 "The contents of your submission are too large:\n"
-                "You may have data files, temporary files, and/or working files that are not needed - try deleting them."
+                "You may have data files, temporary files, and/or working files that are not needed - try deleting them."  # noqa: E501
                 "".format(self.coursedir.assignment_id)
             )
         # Upload files to exchange

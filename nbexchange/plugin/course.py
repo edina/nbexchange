@@ -1,7 +1,4 @@
-import glob
 import json
-import os
-import sys
 
 from .exchange import Exchange
 
@@ -24,19 +21,17 @@ class ExchangeCourse(Exchange):
 
     def query_exchange(self):
         """List of all courses"""
-        r = self.api_request(f"courses")
+        r = self.api_request("courses")
 
         self.log.debug(f"Got back {r} when listing courses")
 
         try:
             courses = r.json()
         except json.decoder.JSONDecodeError:
-            self.log.error(f"Got back an invalid response when listing courses")
+            self.log.error("Got back an invalid response when listing courses")
             return []
 
-        self.log.debug(
-            f"ExchangeList.query_exchange - Got back {courses} when listing courses"
-        )
+        self.log.debug(f"ExchangeList.query_exchange - Got back {courses} when listing courses")
 
         return courses["value"]
 

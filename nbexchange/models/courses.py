@@ -26,11 +26,11 @@ class Course(Base):
     course_code = Column(Unicode(200), nullable=False, index=True)
     course_title = Column(Unicode(200), nullable=True, index=True)
 
-    ## course <-> user relationship
+    # course <-> user relationship
     # One to Many. One Course to many users. Each relationship has additional data
     subscribers = relationship("Subscription", back_populates="course")
 
-    ## course <-> assignment relationship
+    # course <-> assignment relationship
     # One to Many. One Course, many assignments. Can set assignmnt.course
     assignments = relationship("Assignment", back_populates="course")
 
@@ -42,11 +42,11 @@ class Course(Base):
         if log:
             log.debug(f"Course.find_by_pk - pk:{pk}")
         if pk is None:
-            raise ValueError(f"Primary Key needs to be defined")
+            raise ValueError("Primary Key needs to be defined")
         if isinstance(pk, int):
             return db.query(cls).filter(cls.id == pk).first()
         else:
-            raise TypeError(f"Primary Keys are required to be Ints")
+            raise TypeError("Primary Keys are required to be Ints")
 
     @classmethod
     def find_by_code(cls, db, code, org_id, log=None):
@@ -56,13 +56,11 @@ class Course(Base):
         if log:
             log.debug(f"Course.find_by_code - code:{code} (org_id:{org_id})")
         if code is None:
-            raise ValueError(f"code needs to be defined")
+            raise ValueError("code needs to be defined")
         org_id = int(float(org_id)) if org_id else None
         if org_id is None:
-            raise ValueError(f"org_id needs to be defined, and a number")
-        return (
-            db.query(cls).filter(cls.course_code == code, cls.org_id == org_id).first()
-        )
+            raise ValueError("org_id needs to be defined, and a number")
+        return db.query(cls).filter(cls.course_code == code, cls.org_id == org_id).first()
 
     @classmethod
     def find_by_org(cls, db, org_id, log=None):
@@ -73,7 +71,7 @@ class Course(Base):
             log.debug(f"Course.find_by_org - id:{org_id}")
         org_id = int(float(org_id)) if org_id else None
         if org_id is None:
-            raise ValueError(f"org_id needs to be defined, and a number")
+            raise ValueError("org_id needs to be defined, and a number")
         return list(db.query(cls).filter(cls.org_id == org_id))
 
     def __repr__(self):

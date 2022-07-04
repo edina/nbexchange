@@ -17,19 +17,17 @@ class NoteableApiError(Exception):
 class NoteableAuthPlugin(BaseAuthPlugin):
     def query_exchange(self):
         """List all courses"""
-        r = Exchange.api_request(self, f"courses")  # use method in Exchange
+        r = Exchange.api_request(self, "courses")  # use method in Exchange
 
         self.log.debug(f"Got back {r} when listing courses")
 
         try:
             response_data = r.json()
         except json.decoder.JSONDecodeError:
-            self.log.error(f"Got back an invalid response when listing courses")
+            self.log.error("Got back an invalid response when listing courses")
             return []
 
-        self.log.debug(
-            f"NoteableAuthPlugin.query_exchange - Got back {response_data} when listing courses"
-        )
+        self.log.debug(f"NoteableAuthPlugin.query_exchange - Got back {response_data} when listing courses")
 
         courses = list(map(lambda item: item["course_code"], response_data["value"]))
         return courses

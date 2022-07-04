@@ -5,35 +5,30 @@ Create Date: 2020-06-23 13:58:38.781382
 """
 from datetime import datetime
 
-import sqlalchemy as sa
 from alembic import op
-from sqlalchemy import orm
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, Unicode, orm
 
 # revision identifiers, used by Alembic.
 from sqlalchemy.engine.reflection import Inspector
+
+from nbexchange.models import Base
 
 revision = "2805bf7747e5"
 down_revision = "f26d6a79159d"
 branch_labels = None
 depends_on = None
 
-from datetime import datetime
-
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, Unicode
-
-from nbexchange.models import Base
-
 
 def try_convert(datestr, default):
     try:
         return datetime.fromisoformat(datestr)
-    except:
+    except Exception:
         try:
             return datetime.strptime(datestr, "%Y-%m-%d %H:%M:%S.%f %Z")
-        except:
+        except Exception:
             try:
                 return datetime.strptime(datestr, "%Y-%m-%d %H:%M:%S.%f").isoformat()
-            except:
+            except Exception:
                 return default
 
 
@@ -44,20 +39,12 @@ def upgrade():
         __tablename__ = "feedback"
         id = Column(Integer(), primary_key=True, autoincrement=True)
         notebook = None
-        notebook_id = Column(
-            Integer(), ForeignKey("notebook.id", ondelete="CASCADE"), index=True
-        )
+        notebook_id = Column(Integer(), ForeignKey("notebook.id", ondelete="CASCADE"), index=True)
         instructor = None
-        instructor_id = Column(
-            Integer, ForeignKey("user.id", ondelete="CASCADE"), index=True
-        )
+        instructor_id = Column(Integer, ForeignKey("user.id", ondelete="CASCADE"), index=True)
         student = None
-        student_id = Column(
-            Integer, ForeignKey("user.id", ondelete="CASCADE"), index=True
-        )
-        location = Column(
-            Unicode(200), nullable=True
-        )  # Location for the file of this action
+        student_id = Column(Integer, ForeignKey("user.id", ondelete="CASCADE"), index=True)
+        location = Column(Unicode(200), nullable=True)  # Location for the file of this action
         checksum = Column(Unicode(200), nullable=True)  # Checksum for the feedback file
         timestamp = Column(Unicode(12), nullable=False)
         created_at = Column(DateTime, default=datetime.utcnow)
@@ -98,17 +85,11 @@ def downgrade():
         __tablename__ = "feedback_2"
         id = Column(Integer(), primary_key=True, autoincrement=True)
         notebook = None
-        notebook_id = Column(
-            Integer(), ForeignKey("notebook.id", ondelete="CASCADE"), index=True
-        )
+        notebook_id = Column(Integer(), ForeignKey("notebook.id", ondelete="CASCADE"), index=True)
         instructor = None
-        instructor_id = Column(
-            Integer, ForeignKey("user.id", ondelete="CASCADE"), index=True
-        )
+        instructor_id = Column(Integer, ForeignKey("user.id", ondelete="CASCADE"), index=True)
         student = None
-        student_id = Column(
-            Integer, ForeignKey("user.id", ondelete="CASCADE"), index=True
-        )
+        student_id = Column(Integer, ForeignKey("user.id", ondelete="CASCADE"), index=True)
         location = Column(Unicode(200), nullable=True)
         checksum = Column(Unicode(200), nullable=True)  # Checksum for the feedback file
         timestamp = Column(DateTime(timezone=True), nullable=False)

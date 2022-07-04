@@ -5,7 +5,6 @@ Revises: 2805bf7747e5
 Create Date: 2020-10-21 13:55:01.264068
 
 """
-from datetime import datetime
 from enum import Enum
 
 import sqlalchemy as sa
@@ -46,12 +45,8 @@ def upgrade():
         # Alembic runs these by default in a transaction so will fail without it
         # https://stackoverflow.com/questions/14845203/altering-an-enum-field-using-alembic
         op.execute("COMMIT")
-        op.execute(
-            "ALTER TYPE assignmentactions ADD VALUE IF NOT EXISTS 'feedback_released'"
-        )
-        op.execute(
-            "ALTER TYPE assignmentactions ADD VALUE IF NOT EXISTS 'feedback_fetched'"
-        )
+        op.execute("ALTER TYPE assignmentactions ADD VALUE IF NOT EXISTS 'feedback_released'")
+        op.execute("ALTER TYPE assignmentactions ADD VALUE IF NOT EXISTS 'feedback_fetched'")
 
     else:
 
@@ -66,6 +61,8 @@ def upgrade():
 
 
 def downgrade():
+
+    connection = op.get_bind()
 
     if connection.dialect.name == "postgresql":
         pass

@@ -300,9 +300,7 @@ def check_db_revision(engine, log=None):
 
     # check database schema version
     # it should always be defined at this point
-    alembic_revision = engine.execute(
-        "SELECT version_num FROM alembic_version"
-    ).first()[0]
+    alembic_revision = engine.execute("SELECT version_num FROM alembic_version").first()[0]
     if alembic_revision == head:
         log.debug(f"database schema version found: {alembic_revision}")
         pass
@@ -325,10 +323,7 @@ def mysql_large_prefix_check(engine):
             'variable_name like "innodb_file_format";'
         ).fetchall()
     )
-    if (
-        variables["innodb_file_format"] == "Barracuda"
-        and variables["innodb_large_prefix"] == "ON"
-    ):
+    if variables["innodb_file_format"] == "Barracuda" and variables["innodb_large_prefix"] == "ON":
         return True
     else:
         return False

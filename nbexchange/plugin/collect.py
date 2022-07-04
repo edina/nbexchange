@@ -1,7 +1,6 @@
 import io
 import json
 import os
-import re
 import shutil
 import tarfile
 from urllib.parse import quote_plus
@@ -28,15 +27,13 @@ class ExchangeCollect(abc.ExchangeCollect, Exchange):
     def download(self, submission, dest_path):
         self.log.debug(f"ExchangeCollect.download - record {submission} to {dest_path}")
         r = self.api_request(
-            f"collection?course_id={quote_plus(self.coursedir.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}&path={quote_plus(submission['path'])}"
+            f"collection?course_id={quote_plus(self.coursedir.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}&path={quote_plus(submission['path'])}"  # noqa: E501
         )
-        self.log.debug(
-            f"Got back {r.status_code}  {r.headers['content-type']} after file download"
-        )
+        self.log.debug(f"Got back {r.status_code}  {r.headers['content-type']} after file download")
 
         if r.status_code > 399:
             self.fail(
-                f"Error failing to collect for assignment {self.coursedir.assignment_id} on course {self.coursedir.course_id}: status code {r.status_code}: error {r.content}"
+                f"Error failing to collect for assignment {self.coursedir.assignment_id} on course {self.coursedir.course_id}: status code {r.status_code}: error {r.content}"  # noqa: E501
             )
 
         if r.headers["content-type"] == "application/gzip":
@@ -49,22 +46,22 @@ class ExchangeCollect(abc.ExchangeCollect, Exchange):
             except Exception as e:  # TODO: exception handling
                 if hasattr(e, "message"):
                     self.fail(
-                        f"Error unpacking download for {self.coursedir.assignment_id} on course {self.coursedir.course_id}: {e.message}"
+                        f"Error unpacking download for {self.coursedir.assignment_id} on course {self.coursedir.course_id}: {e.message}"  # noqa: E501
                     )
                 else:
                     self.fail(
-                        f"Error unpacking download for {self.coursedir.assignment_id} on course {self.coursedir.course_id}: {e}"
+                        f"Error unpacking download for {self.coursedir.assignment_id} on course {self.coursedir.course_id}: {e}"  # noqa: E501
                     )
         else:
             # Fails, even if the json response is a success (for now)
             data = r.json()
             if not data["success"]:
                 self.fail(
-                    f"Error failing to collect for assignment {self.coursedir.assignment_id} on course {self.coursedir.course_id}"
+                    f"Error failing to collect for assignment {self.coursedir.assignment_id} on course {self.coursedir.course_id}"  # noqa: E501
                 )
             else:
                 self.fail(
-                    f"Error failing to collect for assignment {self.coursedir.assignment_id} on course {self.coursedir.course_id}: {data['note']}"
+                    f"Error failing to collect for assignment {self.coursedir.assignment_id} on course {self.coursedir.course_id}: {data['note']}"  # noqa: E501
                 )
 
     def do_collect(self):
@@ -74,7 +71,7 @@ class ExchangeCollect(abc.ExchangeCollect, Exchange):
         If coursedir.student_id, then we're only looking for that user"""
 
         # Get a list of submissions
-        url = f"collections?course_id={quote_plus(self.coursedir.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}"
+        url = f"collections?course_id={quote_plus(self.coursedir.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}"  # noqa: E501
         if self.coursedir.student_id != "*":
             url = url + f"&user_id={quote_plus(self.coursedir.student_id)}"
         r = self.api_request(url)
@@ -84,7 +81,7 @@ class ExchangeCollect(abc.ExchangeCollect, Exchange):
         try:
             data = r.json()
         except json.decoder.JSONDecodeError:
-            self.log.error(f"Got back an invalid response when listing assignments")
+            self.log.error("Got back an invalid response when listing assignments")
             return []
 
         if not data["success"]:
@@ -92,9 +89,7 @@ class ExchangeCollect(abc.ExchangeCollect, Exchange):
 
         submissions = data["value"]
 
-        self.log.debug(
-            f"ExchangeCollect.do_collection found the following items: {submissions}"
-        )
+        self.log.debug(f"ExchangeCollect.do_collection found the following items: {submissions}")
 
         if len(submissions) == 0:
             self.log.warning(
@@ -102,7 +97,7 @@ class ExchangeCollect(abc.ExchangeCollect, Exchange):
             )
         else:
             self.log.debug(
-                f"Processing {len(submissions)} submissions of '{self.coursedir.assignment_id}' for course '{self.coursedir.course_id}'"
+                f"Processing {len(submissions)} submissions of '{self.coursedir.assignment_id}' for course '{self.coursedir.course_id}'"  # noqa: E501
             )
 
         for submission in submissions:
@@ -128,25 +123,17 @@ class ExchangeCollect(abc.ExchangeCollect, Exchange):
                 if not os.path.exists(os.path.dirname(local_dest_path)):
                     os.makedirs(os.path.dirname(local_dest_path))
 
-                self.log.debug(
-                    f"ExchangeCollect.do_collection - collection dest : {local_dest_path}"
-                )
+                self.log.debug(f"ExchangeCollect.do_collection - collection dest : {local_dest_path}")
 
                 take_a_copy = False
                 updated_version = False
                 if os.path.isdir(local_dest_path):
-                    existing_timestamp = self.coursedir.get_existing_timestamp(
-                        local_dest_path
-                    )
+                    existing_timestamp = self.coursedir.get_existing_timestamp(local_dest_path)
                     existing_timestamp = (
-                        existing_timestamp.strftime(self.timestamp_format)
-                        if existing_timestamp
-                        else None
+                        existing_timestamp.strftime(self.timestamp_format) if existing_timestamp else None
                     )
                     new_timestamp = submission["timestamp"]
-                    if self.update and (
-                        existing_timestamp is None or new_timestamp > existing_timestamp
-                    ):
+                    if self.update and (existing_timestamp is None or new_timestamp > existing_timestamp):
                         take_a_copy = True
                         updated_version = True
                 else:
@@ -154,23 +141,15 @@ class ExchangeCollect(abc.ExchangeCollect, Exchange):
 
                 if take_a_copy:
                     if updated_version:
-                        self.log.info(
-                            f"Updating submission: {student_id} {self.coursedir.assignment_id}"
-                        )
+                        self.log.info(f"Updating submission: {student_id} {self.coursedir.assignment_id}")
                         # clear existing
                         shutil.rmtree(local_dest_path)
                     else:
-                        self.log.info(
-                            f"Collecting submission: {student_id} {self.coursedir.assignment_id}"
-                        )
+                        self.log.info(f"Collecting submission: {student_id} {self.coursedir.assignment_id}")
 
-                    with Gradebook(
-                        self.coursedir.db_url, self.coursedir.course_id
-                    ) as gb:
+                    with Gradebook(self.coursedir.db_url, self.coursedir.course_id) as gb:
                         try:
-                            gb.update_or_create_student(
-                                student_id, first_name=first_name, last_name=last_name
-                            )
+                            gb.update_or_create_student(student_id, first_name=first_name, last_name=last_name)
                         except MissingEntry:
                             self.log.info(
                                 f"Unable to update: {student_id} with first_name={first_name}, last_name={last_name}"
@@ -178,12 +157,10 @@ class ExchangeCollect(abc.ExchangeCollect, Exchange):
                     self.download(submission, local_dest_path)
                 else:
                     if self.update:
-                        self.log.info(
-                            f"No newer submission to collect: {student_id} {self.coursedir.assignment_id}"
-                        )
+                        self.log.info(f"No newer submission to collect: {student_id} {self.coursedir.assignment_id}")
                     else:
                         self.log.info(
-                            f"Submission already exists, use --update to update: {student_id} {self.coursedir.assignment_id}"
+                            f"Submission already exists, use --update to update: {student_id} {self.coursedir.assignment_id}"  # noqa: E501
                         )
 
     def copy_files(self):

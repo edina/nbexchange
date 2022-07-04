@@ -16,26 +16,21 @@ class Feedback(Base):
 
     # notebook = None
     #: Unique id of :attr:`~nbexchange.orm.Notebook.assignment`
-    notebook_id = Column(
-        Integer(), ForeignKey("notebook.id", ondelete="CASCADE"), index=True
-    )
+    notebook_id = Column(Integer(), ForeignKey("notebook.id", ondelete="CASCADE"), index=True)
 
     # instructor = None
-    instructor_id = Column(
-        Integer, ForeignKey("user.id", ondelete="CASCADE"), index=True
-    )
+    instructor_id = Column(Integer, ForeignKey("user.id", ondelete="CASCADE"), index=True)
 
     # student = None
     student_id = Column(Integer, ForeignKey("user.id", ondelete="CASCADE"), index=True)
 
-    location = Column(
-        Unicode(200), nullable=True
-    )  # Location for the file of this action
+    location = Column(Unicode(200), nullable=True)  # Location for the file of this action
     checksum = Column(Unicode(200), nullable=True)  # Checksum for the feedback file
     timestamp = Column(DateTime(timezone=True), nullable=False)
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
 
-    # relationships: a specific piece of feedback is for a specific notebook, for a specific student and a specific instructor
+    # relationships: a specific piece of feedback is for a specific notebook, for a specific
+    # student and a specific instructor
     notebook = relationship("Notebook")
     instructor = relationship("User", foreign_keys=[instructor_id])
     student = relationship("User", foreign_keys=[student_id])
@@ -52,16 +47,14 @@ class Feedback(Base):
             log.debug(f"Feedback.find_by_pk - pk:{pk}")
 
         if pk is None:
-            raise ValueError(f"Primary Key needs to be defined")
+            raise ValueError("Primary Key needs to be defined")
         if isinstance(pk, int):
             return db.query(cls).filter(cls.id == pk).first()
         else:
-            raise TypeError(f"Primary Keys are required to be Ints")
+            raise TypeError("Primary Keys are required to be Ints")
 
     @classmethod
-    def find_notebook_for_student(
-        cls, db, notebook_id, student_id, log=None, action=None
-    ):
+    def find_notebook_for_student(cls, db, notebook_id, student_id, log=None, action=None):
         """Find the most recent piece of feedback for a given student/notebook combo
 
         feedback = orm.Feedback.find_notebook_for_student(
@@ -71,13 +64,11 @@ class Feedback(Base):
         Returns None if not found
         """
         if log:
-            log.debug(
-                f"Feedback.find_notebook_for_student - notebook_id:{notebook_id}, student_id:{student_id}"
-            )
+            log.debug(f"Feedback.find_notebook_for_student - notebook_id:{notebook_id}, student_id:{student_id}")
         if notebook_id is None or not isinstance(notebook_id, int):
-            raise TypeError(f"notebook_id must be defined, and an Int")
+            raise TypeError("notebook_id must be defined, and an Int")
         if student_id is None or not isinstance(student_id, int):
-            raise TypeError(f"notebook_id must be defined, and an Int")
+            raise TypeError("notebook_id must be defined, and an Int")
         filters = [cls.notebook_id == notebook_id, cls.student_id == student_id]
         return db.query(cls).filter(*filters).order_by(cls.id.desc()).first()
 
@@ -92,13 +83,11 @@ class Feedback(Base):
         Returns None if not found
         """
         if log:
-            log.debug(
-                f"Feedback.find_all_for_student - assignment_id:{assignment_id}, student_id:{student_id}"
-            )
+            log.debug(f"Feedback.find_all_for_student - assignment_id:{assignment_id}, student_id:{student_id}")
         if assignment_id is None or not isinstance(assignment_id, int):
-            raise TypeError(f"assignment_id must be defined, and an Int")
+            raise TypeError("assignment_id must be defined, and an Int")
         if student_id is None or not isinstance(student_id, int):
-            raise TypeError(f"notebook_id must be defined, and an Int")
+            raise TypeError("notebook_id must be defined, and an Int")
         filters = [
             Notebook.assignment_id == assignment_id,
             cls.student_id == student_id,

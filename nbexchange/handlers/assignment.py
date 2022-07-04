@@ -38,7 +38,7 @@ class Assignments(BaseHandler):
         [course_code] = self.get_params(["course_id"])
 
         if not course_code:
-            note = f"Assigment call requires a course id"
+            note = "Assigment call requires a course id"
             self.log.info(note)
             self.finish({"success": False, "note": note, "value": []})
             return
@@ -58,31 +58,22 @@ class Assignments(BaseHandler):
 
         # Find the course being referred to
         with scoped_session() as session:
-            course = Course.find_by_code(
-                db=session, code=course_code, org_id=this_user["org_id"], log=self.log
-            )
+            course = Course.find_by_code(db=session, code=course_code, org_id=this_user["org_id"], log=self.log)
             if not course:
                 note = f"Course {course_code} does not exist"
                 self.log.info(note)
                 self.finish({"success": False, "note": note, "value": []})
                 return
 
-            assignments = AssignmentModel.find_for_course(
-                db=session, course_id=course.id, log=self.log
-            )
+            assignments = AssignmentModel.find_for_course(db=session, course_id=course.id, log=self.log)
 
             for assignment in assignments:
-                self.log.debug(f"==========")
+                self.log.debug("==========")
                 self.log.debug(f"Assignment: {assignment}")
                 for action in assignment.actions:
                     # For every action that is not "released" checked if the user id matches
-                    if (
-                        action.action != AssignmentActions.released
-                        and this_user.get("id") != action.user_id
-                    ):
-                        self.log.debug(
-                            f"ormuser: {this_user.get('id')} - actionUser {action.user_id}"
-                        )
+                    if action.action != AssignmentActions.released and this_user.get("id") != action.user_id:
+                        self.log.debug(f"ormuser: {this_user.get('id')} - actionUser {action.user_id}")
                         self.log.debug("Action does not belong to user, skip action")
                         continue
                     notebooks = []
@@ -99,9 +90,7 @@ class Assignments(BaseHandler):
                             )
                             if feedback:
                                 feedback_available = bool(feedback)
-                                feedback_timestamp = feedback.timestamp.strftime(
-                                    "%Y-%m-%d %H:%M:%S.%f %Z"
-                                )
+                                feedback_timestamp = feedback.timestamp.strftime("%Y-%m-%d %H:%M:%S.%f %Z")
 
                         notebooks.append(
                             {
@@ -119,9 +108,7 @@ class Assignments(BaseHandler):
                             "status": action.action.value,  # currently called 'action' in our db
                             "path": action.location,
                             "notebooks": notebooks,
-                            "timestamp": action.timestamp.strftime(
-                                "%Y-%m-%d %H:%M:%S.%f %Z"
-                            ),
+                            "timestamp": action.timestamp.strftime("%Y-%m-%d %H:%M:%S.%f %Z"),
                         }
                     )
 
@@ -159,7 +146,7 @@ class Assignment(BaseHandler):
 
         this_user = self.nbex_user
 
-        if not course_code in this_user["courses"]:
+        if course_code not in this_user["courses"]:
             note = f"User not subscribed to course {course_code}"
             self.log.info(note)
             self.finish({"success": False, "note": note})
@@ -167,9 +154,7 @@ class Assignment(BaseHandler):
 
         # Find the course being referred to
         with scoped_session() as session:
-            course = Course.find_by_code(
-                db=session, code=course_code, org_id=this_user["org_id"], log=self.log
-            )
+            course = Course.find_by_code(db=session, code=course_code, org_id=this_user["org_id"], log=self.log)
             if course is None:
                 note = f"Course {course_code} does not exist"
                 self.log.info(note)
@@ -219,13 +204,13 @@ class Assignment(BaseHandler):
                         data = handle.read()
                 except Exception as e:  # TODO: exception handling
                     self.log.warning(f"Error: {e}")  # TODO: improve error message
-                    self.log.info(f"Unable to open file")
+                    self.log.info("Unable to open file")
 
                     # error 500??
                     raise Exception
 
                 self.log.info(
-                    f"Adding action {AssignmentActions.fetched.value} for user {this_user['id']} against assignment {assignment.id}"
+                    f"Adding action {AssignmentActions.fetched.value} for user {this_user['id']} against assignment {assignment.id}"  # noqa: E501
                 )
                 action = Action(
                     user_id=this_user["id"],
@@ -245,10 +230,10 @@ class Assignment(BaseHandler):
     def post(self):
 
         # Do a content-length check, before we go any further
-        if "Content-Length" in self.request.headers and int(
-            self.request.headers["Content-Length"]
-        ) > int(self.max_buffer_size):
-            note = "File upload oversize, and rejected. Please reduce the contents of the assignment, re-generate, and re-release"
+        if "Content-Length" in self.request.headers and int(self.request.headers["Content-Length"]) > int(
+            self.max_buffer_size
+        ):
+            note = "File upload oversize, and rejected. Please reduce the contents of the assignment, re-generate, and re-release"  # noqa: E501
             self.log.info(note)
             self.finish({"success": False, "note": note})
             return
@@ -258,22 +243,20 @@ class Assignment(BaseHandler):
             f"Called POST /assignment with arguments: course {course_code} and  assignment {assignment_code}"
         )
         if not (course_code and assignment_code):
-            note = f"Posting an Assigment requires a course code and an assignment code"
+            note = "Posting an Assigment requires a course code and an assignment code"
             self.log.info(note)
             self.finish({"success": False, "note": note})
             return
 
         this_user = self.nbex_user
 
-        if not course_code in this_user["courses"]:
+        if course_code not in this_user["courses"]:
             note = f"User not subscribed to course {course_code}"
             self.log.info(note)
             self.finish({"success": False, "note": note})
             return
 
-        if (
-            not "instructor" == this_user["current_role"].casefold()
-        ):  # we may need to revisit this
+        if not "instructor" == this_user["current_role"].casefold():  # we may need to revisit this
             note = f"User not an instructor to course {course_code}"
             self.log.info(note)
             self.finish({"success": False, "note": note})
@@ -282,14 +265,10 @@ class Assignment(BaseHandler):
         # The course will exist: the user object creates it if it doesn't exist
         #  - and we know the user is subscribed to the course as an instructor (above)
         with scoped_session() as session:
-            course = Course.find_by_code(
-                db=session, code=course_code, org_id=this_user["org_id"], log=self.log
-            )
+            course = Course.find_by_code(db=session, code=course_code, org_id=this_user["org_id"], log=self.log)
 
             # We need to find this assignment, or make a new one.
-            assignment = AssignmentModel.find_by_code(
-                db=session, code=assignment_code, course_id=course.id
-            )
+            assignment = AssignmentModel.find_by_code(db=session, code=assignment_code, course_id=course.id)
 
             if assignment is None:
                 # Look for inactive assignments
@@ -298,13 +277,9 @@ class Assignment(BaseHandler):
                 )
 
             if assignment is None:
-                self.log.info(
-                    f"New Assignment details: assignment_code:{assignment_code}, course_id:{course.id}"
-                )
+                self.log.info(f"New Assignment details: assignment_code:{assignment_code}, course_id:{course.id}")
                 # defaults active
-                assignment = AssignmentModel(
-                    assignment_code=assignment_code, course_id=course.id
-                )
+                assignment = AssignmentModel(assignment_code=assignment_code, course_id=course.id)
                 session.add(assignment)
                 # deliberately no commit: we need to be able to roll-back if there's no data!
 
@@ -325,9 +300,7 @@ class Assignment(BaseHandler):
             )
 
             if not self.request.files:
-                self.log.warning(
-                    f"Error: No file supplies in upload"
-                )  # TODO: improve error message
+                self.log.warning("Error: No file supplied in upload")  # TODO: improve error message
                 raise web.HTTPError(412)  # precondition failed
 
             try:
@@ -354,15 +327,13 @@ class Assignment(BaseHandler):
             except Exception as e:  # TODO: exception handling
                 self.log.warning(f"Error: {e}")  # TODO: improve error message
 
-                self.log.info(f"Upload failed")
+                self.log.info("Upload failed")
                 # error 500??
                 raise Exception
 
             # Check the file exists on disk
             if not (
-                os.path.exists(release_file)
-                and os.access(release_file, os.R_OK)
-                and os.path.getsize(release_file) > 0
+                os.path.exists(release_file) and os.access(release_file, os.R_OK) and os.path.getsize(release_file) > 0
             ):
                 note = "File upload failed."
                 self.log.info(note)
@@ -372,15 +343,13 @@ class Assignment(BaseHandler):
             # We shouldn't get here, but a double-check is good
             if os.path.getsize(release_file) > self.max_buffer_size:
                 os.remove(release_file)
-                note = "File upload oversize, and rejected. Please reduce the contents of the assignment, re-generate, and re-release"
+                note = "File upload oversize, and rejected. Please reduce the contents of the assignment, re-generate, and re-release"  # noqa: E501
                 self.log.info(note)
                 self.finish({"success": False, "note": note})
                 return
 
             # now commit the assignment, and get it back to find the id
-            assignment = AssignmentModel.find_by_code(
-                db=session, code=assignment_code, course_id=course.id
-            )
+            assignment = AssignmentModel.find_by_code(db=session, code=assignment_code, course_id=course.id)
 
             # Record the notebooks associated with this assignment
             notebooks = self.get_arguments("notebooks")
@@ -393,7 +362,7 @@ class Assignment(BaseHandler):
             # Record the action.
             # Note we record the path to the files.
             self.log.info(
-                f"Adding action {AssignmentActions.released.value} for user {this_user['id']} against assignment {assignment.id}"
+                f"Adding action {AssignmentActions.released.value} for user {this_user['id']} against assignment {assignment.id}"  # noqa: E501
             )
             action = Action(
                 user_id=this_user["id"],
@@ -408,28 +377,26 @@ class Assignment(BaseHandler):
     @authenticated
     def delete(self):
 
-        [course_code, assignment_code, purge] = self.get_params(
-            ["course_id", "assignment_id", "purge"]
-        )
+        [course_code, assignment_code, purge] = self.get_params(["course_id", "assignment_id", "purge"])
 
         self.log.debug(
-            f"Called DELETE /assignment with arguments: course {course_code}, assignment {assignment_code}, and purge {purge}"
+            f"Called DELETE /assignment with arguments: course {course_code}, assignment {assignment_code}, and purge {purge}"  # noqa: E501
         )
         if not (course_code and assignment_code):
-            note = f"Unreleasing an Assigment requires a course code and an assignment code"
+            note = "Unreleasing an Assigment requires a course code and an assignment code"
             self.log.info(note)
             self.finish({"success": False, "note": note})
             return
 
         this_user = self.nbex_user
 
-        if not course_code in this_user["courses"]:
+        if course_code not in this_user["courses"]:
             note = f"User not subscribed to course {course_code}"
             self.log.info(note)
             self.finish({"success": False, "note": note})
             return
 
-        if not "instructor" in map(str.casefold, this_user["courses"][course_code]):
+        if "instructor" not in map(str.casefold, this_user["courses"][course_code]):
             note = f"User not an instructor to course {course_code}"
             self.log.info(note)
             self.finish({"success": False, "note": note})
@@ -437,13 +404,9 @@ class Assignment(BaseHandler):
 
         note = f"Assignment '{assignment_code}' on course '{course_code}' marked as unreleased"
         with scoped_session() as session:
-            course = Course.find_by_code(
-                db=session, code=course_code, org_id=this_user["org_id"], log=self.log
-            )
+            course = Course.find_by_code(db=session, code=course_code, org_id=this_user["org_id"], log=self.log)
 
-            assignment = AssignmentModel.find_by_code(
-                db=session, code=assignment_code, course_id=course.id
-            )
+            assignment = AssignmentModel.find_by_code(db=session, code=assignment_code, course_id=course.id)
 
             if not assignment:
                 note = f"Missing assignment for {assignment_code} and {course_code}, cannot delete"

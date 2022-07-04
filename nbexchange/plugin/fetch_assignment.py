@@ -3,12 +3,10 @@ import io
 import os
 import shutil
 import tarfile
-import tempfile
 from urllib.parse import quote_plus
 
 import nbgrader.exchange.abc as abc
 from nbgrader.api import new_uuid
-from traitlets import Bool
 
 from .exchange import Exchange
 
@@ -30,9 +28,7 @@ class ExchangeFetchAssignment(abc.ExchangeFetchAssignment, Exchange):
 
     # where the downloaded files are placed
     def init_src(self):
-        self.log.debug(
-            f"ExchangeFetch.init_src using {self.coursedir.course_id} {self.coursedir.assignment_id}"
-        )
+        self.log.debug(f"ExchangeFetch.init_src using {self.coursedir.course_id} {self.coursedir.assignment_id}")
 
         location = os.path.join(
             "/tmp/",
@@ -53,11 +49,7 @@ class ExchangeFetchAssignment(abc.ExchangeFetchAssignment, Exchange):
             root = self.coursedir.assignment_id
         self.dest_path = os.path.abspath(os.path.join(self.assignment_dir, root))
         # Lets check there are no notebooks already in the dest_path dir
-        if (
-            os.path.isdir(self.dest_path)
-            and glob.glob(self.dest_path + "/*.ipynb")
-            and not self.replace_missing_files
-        ):
+        if os.path.isdir(self.dest_path) and glob.glob(self.dest_path + "/*.ipynb") and not self.replace_missing_files:
             self.fail(
                 f"You already have notebook documents in directory: {root}. Please remove them before fetching again"
             )
@@ -68,15 +60,13 @@ class ExchangeFetchAssignment(abc.ExchangeFetchAssignment, Exchange):
     def download(self):
         self.log.debug(f"Download from {self.service_url}")
         r = self.api_request(
-            f"assignment?course_id={quote_plus(self.coursedir.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}"
+            f"assignment?course_id={quote_plus(self.coursedir.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}"  # noqa: E501
         )
-        self.log.debug(
-            f"Got back {r.status_code}  {r.headers['content-type']} after file download"
-        )
+        self.log.debug(f"Got back {r.status_code}  {r.headers['content-type']} after file download")
 
         if r.status_code > 399:
             self.fail(
-                f"Error failing to fetch assignment {self.coursedir.assignment_id} on course {self.coursedir.course_id}: status code {r.status_code}: error {r.content}"
+                f"Error failing to fetch assignment {self.coursedir.assignment_id} on course {self.coursedir.course_id}: status code {r.status_code}: error {r.content}"  # noqa: E501
             )
 
         if r.headers["content-type"] == "application/gzip":
@@ -89,22 +79,22 @@ class ExchangeFetchAssignment(abc.ExchangeFetchAssignment, Exchange):
             except Exception as e:  # TODO: exception handling
                 if hasattr(e, "message"):
                     self.fail(
-                        f"Error unpacking download for {self.coursedir.assignment_id} on course {self.coursedir.course_id}: {e.message}"
+                        f"Error unpacking download for {self.coursedir.assignment_id} on course {self.coursedir.course_id}: {e.message}"  # noqa: E501
                     )
                 else:
                     self.fail(
-                        f"Error unpacking download for {self.coursedir.assignment_id} on course {self.coursedir.course_id}: {e}"
+                        f"Error unpacking download for {self.coursedir.assignment_id} on course {self.coursedir.course_id}: {e}"  # noqa: E501
                     )
         else:
             # Fails, even if the json response is a success (for now)
             data = r.json()
             if not data["success"]:
                 self.fail(
-                    f"Error failing to fetch assignment {self.coursedir.assignment_id} on course {self.coursedir.course_id}"
+                    f"Error failing to fetch assignment {self.coursedir.assignment_id} on course {self.coursedir.course_id}"  # noqa: E501
                 )
             else:
                 self.fail(
-                    f"Error failing to fetch assignment {self.coursedir.assignment_id} on course {self.coursedir.course_id}: {data['note']}"
+                    f"Error failing to fetch assignment {self.coursedir.assignment_id} on course {self.coursedir.course_id}: {data['note']}"  # noqa: E501
                 )
 
     def copy_if_missing(self, src, dest, ignore=None):
@@ -133,13 +123,9 @@ class ExchangeFetchAssignment(abc.ExchangeFetchAssignment, Exchange):
         """Copy the src dir to the dest dir omitting the self.coursedir.ignore globs."""
         self.download()
         if os.path.isdir(self.dest_path):
-            self.copy_if_missing(
-                src, dest, ignore=shutil.ignore_patterns(*self.coursedir.ignore)
-            )
+            self.copy_if_missing(src, dest, ignore=shutil.ignore_patterns(*self.coursedir.ignore))
         else:
-            shutil.copytree(
-                src, dest, ignore=shutil.ignore_patterns(*self.coursedir.ignore)
-            )
+            shutil.copytree(src, dest, ignore=shutil.ignore_patterns(*self.coursedir.ignore))
         # clear tmp having downloaded file
         shutil.rmtree(self.src_path)
 
@@ -147,6 +133,4 @@ class ExchangeFetchAssignment(abc.ExchangeFetchAssignment, Exchange):
         self.log.debug(f"Source: {self.src_path}")
         self.log.debug(f"Destination: {self.dest_path}")
         self.do_copy(self.src_path, self.dest_path)
-        self.log.debug(
-            f"Fetched as: {self.coursedir.course_id} {self.coursedir.assignment_id}"
-        )
+        self.log.debug(f"Fetched as: {self.coursedir.course_id} {self.coursedir.assignment_id}")

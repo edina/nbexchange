@@ -1,0 +1,14 @@
+[flake8]
+exclude = 
+    .cache,
+    .direnv,
+    .htmlconv,
+    .git,
+    .pytest_cache,
+    .vscode,
+    __pycache__,
+    build,
+    venv
+max-line-length = 120
+extend-ignore = E203
+select = C,E,F,W,DJ,TC

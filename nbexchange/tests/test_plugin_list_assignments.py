@@ -7,8 +7,6 @@ from shutil import copyfile
 import pytest
 from mock import patch
 from nbgrader.coursedir import CourseDirectory
-from nbgrader.exchange import ExchangeError
-from nbgrader.utils import make_unique_key, notebook_hash
 
 from nbexchange.plugin import Exchange, ExchangeList
 from nbexchange.tests.utils import get_feedback_file
@@ -16,27 +14,19 @@ from nbexchange.tests.utils import get_feedback_file
 logger = logging.getLogger(__file__)
 logger.setLevel(logging.ERROR)
 
-notebook1_filename = os.path.join(
-    os.path.dirname(__file__), "data", "assignment-0.6.ipynb"
-)
+notebook1_filename = os.path.join(os.path.dirname(__file__), "data", "assignment-0.6.ipynb")
 notebook1_file = get_feedback_file(notebook1_filename)
 
-notebook2_filename = os.path.join(
-    os.path.dirname(__file__), "data", "assignment-0.6-2.ipynb"
-)
+notebook2_filename = os.path.join(os.path.dirname(__file__), "data", "assignment-0.6-2.ipynb")
 notebook2_file = get_feedback_file(notebook2_filename)
 
 
 @pytest.mark.gen_test
-def test_list_acknowledges_multi_marker_feature_flag(
-    plugin_config, tmpdir, monkeypatch
-):
+def test_list_acknowledges_multi_marker_feature_flag(plugin_config, tmpdir, monkeypatch):
     plugin_config.CourseDirectory.course_id = "no_course"
     plugin_config.ExchangeList.inbound = True
 
-    plugin = ExchangeList(
-        coursedir=CourseDirectory(config=plugin_config), config=plugin_config
-    )
+    plugin = ExchangeList(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
 
     def api_request(*args, **kwargs):
         assert args[0] == ("assignments?course_id=no_course")
@@ -73,15 +63,13 @@ def test_list_acknowledges_multi_marker_feature_flag(
         )
 
     with patch.object(Exchange, "api_request", side_effect=api_request):
-        called = plugin.start()
+        plugin.start()
     assert plugin.coursedir.submitted_directory == "collected"
 
     monkeypatch.setenv("NAAS_FEATURE_MULTI_MARKERS", "True")
-    plugin = ExchangeList(
-        coursedir=CourseDirectory(config=plugin_config), config=plugin_config
-    )
+    plugin = ExchangeList(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
     with patch.object(Exchange, "api_request", side_effect=api_request):
-        called = plugin.start()
+        plugin.start()
     assert plugin.coursedir.submitted_directory == "submitted"
 
 
@@ -90,9 +78,7 @@ def test_list_acknowledges_multi_marker_feature_flag(
 def test_list_normal(plugin_config, tmpdir):
     plugin_config.CourseDirectory.course_id = "no_course"
 
-    plugin = ExchangeList(
-        coursedir=CourseDirectory(config=plugin_config), config=plugin_config
-    )
+    plugin = ExchangeList(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
 
     def api_request(*args, **kwargs):
         assert args[0] == ("assignments?course_id=no_course")
@@ -155,9 +141,7 @@ def test_list_normal(plugin_config, tmpdir):
 def test_list_normal_multiple(plugin_config, tmpdir):
     plugin_config.CourseDirectory.course_id = "no_course"
 
-    plugin = ExchangeList(
-        coursedir=CourseDirectory(config=plugin_config), config=plugin_config
-    )
+    plugin = ExchangeList(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
 
     def api_request(*args, **kwargs):
         assert args[0] == ("assignments?course_id=no_course")
@@ -254,9 +238,7 @@ def test_list_normal_multiple_released(plugin_config, tmpdir):
     try:
         plugin_config.CourseDirectory.course_id = "no_course"
 
-        plugin = ExchangeList(
-            coursedir=CourseDirectory(config=plugin_config), config=plugin_config
-        )
+        plugin = ExchangeList(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
 
         def api_request(*args, **kwargs):
             assert args[0] == ("assignments?course_id=no_course")
@@ -370,9 +352,7 @@ def test_list_normal_multiple_released_duplicates(plugin_config, tmpdir):
     try:
         plugin_config.CourseDirectory.course_id = "no_course"
 
-        plugin = ExchangeList(
-            coursedir=CourseDirectory(config=plugin_config), config=plugin_config
-        )
+        plugin = ExchangeList(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
 
         def api_request(*args, **kwargs):
             assert args[0] == ("assignments?course_id=no_course")
@@ -487,13 +467,9 @@ def test_list_fetched(plugin_config, tmpdir):
         plugin_config.CourseDirectory.course_id = "no_course"
 
         os.makedirs("assign_1_3", exist_ok=True)
-        copyfile(
-            notebook1_filename, os.path.join("assign_1_3", basename(notebook1_filename))
-        )
+        copyfile(notebook1_filename, os.path.join("assign_1_3", basename(notebook1_filename)))
 
-        plugin = ExchangeList(
-            coursedir=CourseDirectory(config=plugin_config), config=plugin_config
-        )
+        plugin = ExchangeList(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
 
         def api_request(*args, **kwargs):
             assert args[0] == ("assignments?course_id=no_course")
@@ -585,9 +561,7 @@ def test_list_fetched_with_path_includes_course(plugin_config, tmpdir):
             os.path.join("no_course", "assign_1_3", basename(notebook1_filename)),
         )
 
-        plugin = ExchangeList(
-            coursedir=CourseDirectory(config=plugin_config), config=plugin_config
-        )
+        plugin = ExchangeList(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
 
         def api_request(*args, **kwargs):
             assert args[0] == ("assignments?course_id=no_course")
@@ -673,13 +647,9 @@ def test_list_fetched_rerelease_ignored(plugin_config, tmpdir):
         plugin_config.CourseDirectory.course_id = "no_course"
 
         os.makedirs("assign_1_3", exist_ok=True)
-        copyfile(
-            notebook1_filename, os.path.join("assign_1_3", basename(notebook1_filename))
-        )
+        copyfile(notebook1_filename, os.path.join("assign_1_3", basename(notebook1_filename)))
 
-        plugin = ExchangeList(
-            coursedir=CourseDirectory(config=plugin_config), config=plugin_config
-        )
+        plugin = ExchangeList(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
 
         def api_request(*args, **kwargs):
             assert args[0] == ("assignments?course_id=no_course")
@@ -781,13 +751,9 @@ def test_list_multiple_fetch(plugin_config, tmpdir):
         plugin_config.CourseDirectory.course_id = "no_course"
 
         os.makedirs("assign_1_3", exist_ok=True)
-        copyfile(
-            notebook1_filename, os.path.join("assign_1_3", basename(notebook1_filename))
-        )
+        copyfile(notebook1_filename, os.path.join("assign_1_3", basename(notebook1_filename)))
 
-        plugin = ExchangeList(
-            coursedir=CourseDirectory(config=plugin_config), config=plugin_config
-        )
+        plugin = ExchangeList(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
 
         def api_request(*args, **kwargs):
             assert args[0] == ("assignments?course_id=no_course")
@@ -889,13 +855,9 @@ def test_list_fetch_without_release_ignored(plugin_config, tmpdir):
         plugin_config.CourseDirectory.course_id = "no_course"
 
         os.makedirs("assign_1_3", exist_ok=True)
-        copyfile(
-            notebook1_filename, os.path.join("assign_1_3", basename(notebook1_filename))
-        )
+        copyfile(notebook1_filename, os.path.join("assign_1_3", basename(notebook1_filename)))
 
-        plugin = ExchangeList(
-            coursedir=CourseDirectory(config=plugin_config), config=plugin_config
-        )
+        plugin = ExchangeList(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
 
         def api_request(*args, **kwargs):
             assert args[0] == ("assignments?course_id=no_course")

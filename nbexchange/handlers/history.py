@@ -2,9 +2,7 @@
 # import time
 # import uuid
 
-from sqlalchemy import desc
-from tornado import httputil, web
-
+from tornado import web
 import nbexchange.models.assignments
 import nbexchange.models.courses
 import nbexchange.models.notebooks
@@ -83,9 +81,8 @@ class History(BaseHandler):
             rows = session.query(nbexchange.models.Subscription).filter_by(user_id=this_user["id"]).all()
 
             for row in rows:
-                if not row.course.id in models:
+                if row.course.id not in models:
                     models[row.course.id] = {}
-                data = dict()
                 models[row.course.id]["role"] = dict()
                 models[row.course.id]["user_id"] = dict()
                 models[row.course.id]["assignments"] = list()
@@ -118,7 +115,7 @@ class History(BaseHandler):
                             ):
                                 b = dict()
                                 action_string = str(action.action).replace("AssignmentActions.", "")
-                                if not action_string in a["action_summary"]:
+                                if action_string not in a["action_summary"]:
                                     a["action_summary"][action_string] = 0
                                 a["action_summary"][action_string] += 1
                                 b["action"] = str(action.action)

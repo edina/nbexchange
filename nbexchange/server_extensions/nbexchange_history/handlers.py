@@ -2,19 +2,16 @@ import contextlib
 import json
 import os
 import traceback
-from textwrap import dedent
 from urllib.parse import urlparse
 
 from jupyter_core.paths import jupyter_config_path
-from nbgrader import __version__ as nbgrader_version
 from nbgrader.apps import NbGrader
 from nbgrader.auth import Authenticator
 from nbgrader.exchange import ExchangeError
 from notebook.base.handlers import IPythonHandler
 from notebook.utils import url_path_join as ujoin
 from tornado import web
-from traitlets import Unicode, default
-from traitlets.config import Config, LoggingConfigurable
+from traitlets.config import LoggingConfigurable
 
 from ...plugin import ExchangeHistory
 
@@ -63,9 +60,6 @@ class HistoryList(LoggingConfigurable):
 
     @contextlib.contextmanager
     def get_history_config(self):
-        config = self.load_config()
-
-        lister = ExchangeHistory(config=config)
 
         app = NbGrader()
         app.config_file_paths.append(os.getcwd())

@@ -71,7 +71,7 @@ class NbExchange(PrometheusMixIn, Application):
         help="The class to use for handling users",
     ).tag(config=True)
 
-    debug = bool(int(os.environ.get("DEBUG", 0)))
+    debug = 1 #bool(int(os.environ.get("DEBUG", 0)))
 
     ip = Unicode("0.0.0.0").tag(config=True)
 

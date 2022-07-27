@@ -7,17 +7,17 @@ A Jupyterhub service that replaces the nbgrader Exchange.
 <!-- TOC -->
 
 - [Highlights of nbexchange](#highlights-of-nbexchange)
-    - [Compatibility](#compatibility)
+  - [Compatibility](#compatibility)
+- [What's in the code](#whats-in-the-code)
 - [Documentation](#documentation)
-    - [Database relationships](#database-relationships)
+  - [Database relationships](#database-relationships)
 - [Installing](#installing)
-    - [Configuration](#configuration)
-    - [How to](#how-to)
+  - [Helm Configuration](#helm-configuration)
 - [Contributing](#contributing)
-- [Configuration](#configuration-1)
-    - [Configuring `nbexchange`](#configuring-nbexchange)
-    - [Configuring `nbgrader`](#configuring-nbgrader)
-    - [Releasing new versions](#releasing-new-versions)
+- [Configuration](#configuration)
+  - [Configuring `nbexchange`](#configuring-nbexchange)
+  - [Configuring `nbgrader`](#configuring-nbgrader)
+  - [Releasing new versions](#releasing-new-versions)
 
 <!-- /TOC -->
 
@@ -34,10 +34,24 @@ In doing this, the exchange is the authoritative place to get a list of what's w
 It's provides an external store for released & submitted assignments, and [soon] the feeback cycle.
 
 Following the lead of other Jupyter services, it is a `tornado` application.
-
 ## Compatibility
 
 This version is compatible with `nbgrader` >= 0.6.2
+
+# What's in the code
+
+This package contains three separate components:
+
+- There's the actual nbexchange app, the component that handles the exchange of assignments.
+  - It is, like much of the Jupyter ecosystem, a `tornado` application
+  - `nbexchange/app.py` is the main class for the service
+  - The handlers for the API calls all live in `nbexchange/handlers/`, and the authentication routine is in `nbexchange/handlers/auth/`
+- There's a suite of plugins for `nbgrader`, in the appropriately named `nbexchange/plugin/`. If/As nbgrader changes, these need to be changed to match. These get installed in a jupyter notebook, but don't care about Classic vs Lab
+- There's an additional extension for showing the _history_ of activity for a course / assignment. This is specific & unique to nbexchange.
+  - It gets installed in a jupyter notebook, and needs enabled as normal.
+  - It is only aware of the Classic interface, and does not work in the Lab UI.
+  - The notebook server-side (python code) is in `nbexchange/server_extensions/`
+  - The notebook client-side (javascript code) is in `nbexchange/nbextensions/nbexchange_history`
 
 # Documentation
 

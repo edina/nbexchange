@@ -96,7 +96,6 @@ default_handlers = [(r"/history", HistoryListHandler)]
 
 
 def load_jupyter_server_extension(nbapp):
-    self.log.info("SERVER - Load juyter server extension")
     """Load the nbserver"""
     nbapp.log.info("Loading the history_list nbexchange serverextension")
     webapp = nbapp.web_app

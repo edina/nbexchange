@@ -34,7 +34,7 @@ define([
     // Remove all 'div' elements under the #history_list element
     CourseList.prototype.clear_list = function (loading) {
         // this.history_root_selector.children('div').remove
-        var foo = this.history_root_selector;
+        // var foo = this.history_root_selector;
     };
 
     CourseList.prototype.bind_events = function () {
@@ -68,11 +68,12 @@ define([
 
     CourseList.prototype.load_list = function (callback) {
         console.log("CLIENT - Load list")
+        console.log("CLIENT - Callback:")
         console.log(callback)
         this.callback = callback;
-        console.log("CLIENT - Load list 2")
+        console.log("CLIENT - [Before] Clear List")
         this.clear_list(true);
-        console.log("CLIENT - Load list 3")
+        console.log("CLIENT - Set settings")
         var settings = {
             cache : false,
             type : "GET",
@@ -80,9 +81,12 @@ define([
             success : $.proxy(this.handle_load_list, this),
             error : utils.log_ajax_error,
         };
-        console.log("CLIENT - Load list 4")
+        console.log("CLIENT - Done settings")
+        console.log("CLIENT - Base URL:")
+        console.log(this.base_url)
         var url = utils.url_path_join(this.base_url, 'history');
-        console.log("CLIENT - Load list 5")
+        console.log("CLIENT - Set url")
+        console.log("CLIENT - Start AJAX")
         ajax(url, settings);
     };
 

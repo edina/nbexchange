@@ -40,7 +40,7 @@ define([
     CourseList.prototype.bind_events = function () {
         var that = this;
         this.refresh_element.click(function () {
-            console.log("CLIENT - Refresh clicked")
+            console.log("CLIENT - Refresh clicked");
             this.clear_list(true);
             var settings = {
                 cache : false,
@@ -56,24 +56,24 @@ define([
 
 
     CourseList.prototype.enable_list = function () {
-        console.log("CLIENT - Enable list")
+        console.log("CLIENT - Enable list");
         this.dropdown_element.removeAttr("disabled");
     };
 
 
     CourseList.prototype.disable_list = function () {
-        console.log("CLIENT - Disable list")
+        console.log("CLIENT - Disable list");
         this.dropdown_element.attr("disabled", "disabled");
     };
 
     CourseList.prototype.load_list = function (callback) {
-        console.log("CLIENT - Load list")
-        console.log("CLIENT - Callback:")
-        console.log(callback)
+        console.log("CLIENT - Load list");
+        console.log("CLIENT - Callback:");
+        console.log(callback);
         this.callback = callback;
-        console.log("CLIENT - [Before] Clear List")
+        console.log("CLIENT - [Before] Clear List");
         this.clear_list(true);
-        console.log("CLIENT - Set settings")
+        console.log("CLIENT - Set settings");
         var settings = {
             cache : false,
             type : "GET",
@@ -81,26 +81,26 @@ define([
             success : $.proxy(this.handle_load_list, this),
             error : utils.log_ajax_error,
         };
-        console.log("CLIENT - Done settings")
-        console.log("CLIENT - Base URL:")
+        console.log("CLIENT - Done settings");
+        console.log("CLIENT - Base URL:");
         console.log(this.base_url)
         var url = utils.url_path_join(this.base_url, 'history');
-        console.log("CLIENT - Set url")
-        console.log("CLIENT - Start AJAX")
+        console.log("CLIENT - Set url");
+        console.log("CLIENT - Start AJAX");
         ajax(url, settings);
     };
 
     // Not sure what to do with this yet - I need to consider
     // showing errors
     CourseList.prototype.show_error = function (error) {
-        console.log("CLIENT - Show Error")
+        console.log("CLIENT - Show Error");
         var elems = [this.assignment_element];
         var i;
 
     };
 
     CourseList.prototype.handle_load_list = function (data, status, xhr) {
-        console.log("CLIENT - Handle load list")
+        console.log("CLIENT - Handle load list");
         if (data.success) {
             this.load_list_success(data.value);
         } else {
@@ -109,7 +109,7 @@ define([
     };
 
     CourseList.prototype.load_list_success = function (data) {
-        console.log("CLIENT - Load list list")
+        console.log("CLIENT - Load list list");
         this.clear_list();
         $('#nbexchange-history_box_loading').attr("style", "display: none;");
         var len = data.length;
@@ -129,7 +129,7 @@ define([
 
         // Add collapse arrows to links created in History.prototype.make_link
         $('.history-assignment-link').each(function(index, el) {
-            console.log("CLIENT - Add collapse arror")
+            console.log("CLIENT - Add collapse arror");
             var $link = $(el);
             var $icon = $('<i />')
                 .addClass('fa fa-caret-down')
@@ -180,12 +180,12 @@ define([
     };
 
     Course.prototype.style = function () {
-        console.log("CLIENT - Style")
+        console.log("CLIENT - Style");
         this.element.addClass('panel').addClass("panel-default");
     };
 
     Course.prototype.escape_id = function () {
-        console.log("CLIENT - Escape ID")
+        console.log("CLIENT - Escape ID");
         // construct the id from the course id, and also prepend the id with
         // "nbexcghange" (this also ensures that the first character is always
         // a letter, as required by HTML 4)
@@ -200,7 +200,7 @@ define([
     };
 
     Course.prototype.make_box = function (element) {
-        console.log("CLIENT - prototype Make box")
+        console.log("CLIENT - prototype Make box");
         var title_text = this.data.course_title;
         if (this.data.isInstructor) {
             title_text += ' (Instructor)'
@@ -252,12 +252,12 @@ define([
     };
 
     History.prototype.style = function () {
-        console.log("CLIENT - History style")
+        console.log("CLIENT - History style");
         this.assignment_element.addClass('list_item').addClass("row");
     };
 
     History.prototype.escape_id = function () {
-        console.log("CLIENT - Escape ID")
+        console.log("CLIENT - Escape ID");
         // construct the id from the course id and the assignment id, and also
         // prepend the id with "nbgrader" (this also ensures that the first
         // character is always a letter, as required by HTML 4)
@@ -273,7 +273,7 @@ define([
     };
 
     History.prototype.make_row = function () {
-        console.log("CLIENT - Make row")
+        console.log("CLIENT - Make row");
 
         var row = $('<div/>').addClass('col-md-12');
         var link = this.make_link();
@@ -336,7 +336,7 @@ define([
     };
 
     History.prototype.make_link = function () {
-        console.log("CLIENT - Make link")
+        console.log("CLIENT - Make link");
         var container = $('<span/>').addClass('item_name col-sm-6');
 
         var id = this.escape_id();

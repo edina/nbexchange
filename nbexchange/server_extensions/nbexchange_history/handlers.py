@@ -29,7 +29,7 @@ static = os.path.join(os.path.dirname(__file__), "static")
 class BaseHistorytHandler(IPythonHandler):
     @property
     def manager(self):
-        self.log.info("SERVER - manager(self)")
+        #self.log.info("SERVER - manager(self)")
         return self.settings["history_list_manager"]
 
 
@@ -42,7 +42,7 @@ class HistoryListHandler(BaseHistorytHandler):
 class HistoryList(LoggingConfigurable):
     @property
     def assignment_dir(self):
-        self.log.info("SERVER - Assignment dir")
+        #self.log.info("SERVER - Assignment dir")
         return self.settings["assignment_dir"]
 
     def get_base_url(self):
@@ -51,7 +51,7 @@ class HistoryList(LoggingConfigurable):
         return base_url.rstrip("/")
 
     def load_config(self):
-        self.log.info("Load History")
+        #self.log.info("Load History")
         paths = jupyter_config_path()
         paths.insert(0, os.getcwd())
 
@@ -63,7 +63,7 @@ class HistoryList(LoggingConfigurable):
 
     @contextlib.contextmanager
     def get_history_config(self):
-        self.log.info("SERVER - Get History Config")
+        #self.log.info("SERVER - Get History Config")
 
         app = NbGrader()
         app.config_file_paths.append(os.getcwd())
@@ -73,7 +73,7 @@ class HistoryList(LoggingConfigurable):
 
     def list_history(self):
 
-        self.log.info("SERVER - List History")
+        #self.log.info("SERVER - List History")
         retvalue = {"success": False, "value": "No history to list"}
         with self.get_history_config() as config:
             try:
@@ -82,7 +82,7 @@ class HistoryList(LoggingConfigurable):
                 courses = lister.start()
 
             except Exception as e:
-                self.log.error(traceback.format_exc())
+                #self.log.error(traceback.format_exc())
                 if isinstance(e, ExchangeError):
                     retvalue = {"success": False, "value": "NBExchange failed to find plugins."}
                 else:

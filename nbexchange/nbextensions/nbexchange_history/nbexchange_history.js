@@ -68,6 +68,7 @@ define([
 
     CourseList.prototype.load_list = function (callback) {
         console.log("CLIENT - Load list")
+        console.log(callback)
         this.callback = callback;
         console.log("CLIENT - Load list 2")
         this.clear_list(true);

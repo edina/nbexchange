@@ -69,7 +69,9 @@ define([
     CourseList.prototype.load_list = function (callback) {
         console.log("CLIENT - Load list")
         this.callback = callback;
+        console.log("CLIENT - Load list 2")
         this.clear_list(true);
+        console.log("CLIENT - Load list 3")
         var settings = {
             cache : false,
             type : "GET",
@@ -77,7 +79,9 @@ define([
             success : $.proxy(this.handle_load_list, this),
             error : utils.log_ajax_error,
         };
+        console.log("CLIENT - Load list 4")
         var url = utils.url_path_join(this.base_url, 'history');
+        console.log("CLIENT - Load list 5")
         ajax(url, settings);
     };
 

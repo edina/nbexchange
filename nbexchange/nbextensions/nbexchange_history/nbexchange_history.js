@@ -101,6 +101,7 @@ define([
 
     CourseList.prototype.handle_load_list = function (data, status, xhr) {
         console.log("CLIENT - Handle load list");
+        console.log("CLIENT - load list data: " + data);
         if (data.success) {
             this.load_list_success(data.value);
         } else {
@@ -116,6 +117,7 @@ define([
         console.log("CLIENT - Hide loading box");
         var len = data.length;
         console.log("CLIENT - Set len: " + len);
+        console.log("CLIENT - Data: " + data);
 
         // make the list of course boxes
         if (len==0) {

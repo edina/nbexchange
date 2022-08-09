@@ -109,10 +109,13 @@ define([
     };
 
     CourseList.prototype.load_list_success = function (data) {
-        console.log("CLIENT - Load list list");
+        console.log("CLIENT - Load list");
         this.clear_list();
+        console.log("CLIENT - Cleared List");
         $('#nbexchange-history_box_loading').attr("style", "display: none;");
+        console.log("CLIENT - Hide loading box");
         var len = data.length;
+        console.log("CLIENT - Set len: " + len);
 
         // make the list of course boxes
         if (len==0) {
@@ -120,6 +123,8 @@ define([
         } else {
             for (var i=0; i<len; i++) {
                 var element = $('<div/>');
+
+        console.log("CLIENT - Element to add");
                 var item = new Course(element, data[i], this.history_root_selector,
                                         $.proxy(this.handle_load_list, this),
                                         this.options);

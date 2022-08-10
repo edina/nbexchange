@@ -10,6 +10,7 @@ define([
     "use strict";
     console.log("CLIENT - first function");
     var ajax = utils.ajax || $.ajax;
+    console.log(ajax);
     // Notebook v4.3.1 enabled xsrf so use notebooks ajax that includes the
     // xsrf token in the header data
 
@@ -17,15 +18,19 @@ define([
     // each block then calls a routine to make the assignments & actions
     var CourseList = function (history_root_selector, refresh_selector, options) {
         this.history_root_selector = history_root_selector;
+        console.log(history_root_selector);
         this.refresh_selector = refresh_selector;
+        console.log(refresh_selector);
 
         this.history_root_selector = $(history_root_selector);
         this.refresh_element = $(refresh_selector);
+        console.log(this.refresh_element);
 
         this.bind_events()
 
         options = options || {};
         this.options = options;
+        console.log(options);
         this.base_url = options.base_url || utils.get_body_data("baseUrl");
 
         this.data = undefined;

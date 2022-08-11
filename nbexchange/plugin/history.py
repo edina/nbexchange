@@ -28,7 +28,7 @@ class ExchangeHistory(Exchange):
         self.log.debug("Start getting api request")
         r = self.api_request(f'{"history"}')
         self.log.debug(f"Got back {r} when getting history")
-
+        self.log.debug(type(r))
         try:
             self.log.debug("DO SOMETHING")
             self.log.debug(r)

@@ -25,10 +25,14 @@ class ExchangeHistory(Exchange):
 
         (it doesn't care about feedback or collected actions)
         """
+        self.log.debug("Start getting api request")
         r = self.api_request(f'{"history"}')
         self.log.debug(f"Got back {r} when getting history")
 
         try:
+            self.log.debug(r)
+            self.log.debug("ABOVE IS 'r' BELOW IS JSON()")
+            self.log.debug(r.json())
             history = r.json()
         except json.decoder.JSONDecodeError:
             self.log.error(f'{"Got back an invalid response when getting history"}')

@@ -89,7 +89,7 @@ class HistoryList(LoggingConfigurable):
                 courses = lister.start()
 
             except Exception as e:
-                # self.log.error(traceback.format_exc())
+                self.log.error(traceback.format_exc())
                 if isinstance(e, ExchangeError):
                     retvalue = {"success": False, "value": "NBExchange failed to find plugins."}
                 else:

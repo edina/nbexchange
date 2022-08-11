@@ -39,7 +39,8 @@ class ExchangeHistory(Exchange):
             self.log.error(f'{"Got back an invalid response when getting history"}')
             return []
 
-        return history["value"]
+        #return history["value"]
+        pass
 
     def copy_files(self):
         pass

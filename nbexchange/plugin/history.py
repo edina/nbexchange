@@ -30,10 +30,11 @@ class ExchangeHistory(Exchange):
         self.log.debug(f"Got back {r} when getting history")
 
         try:
+            self.log.debug("DO SOMETHING")
             self.log.debug(r)
             self.log.debug("ABOVE IS 'r' BELOW IS JSON()")
-            self.log.debug(r.json())
-            history = r.json()
+            #self.log.debug(r.json())
+            #history = r.json()
         except json.decoder.JSONDecodeError:
             self.log.error(f'{"Got back an invalid response when getting history"}')
             return []

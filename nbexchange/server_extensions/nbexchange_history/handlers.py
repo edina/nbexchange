@@ -81,12 +81,11 @@ class HistoryList(LoggingConfigurable):
         retvalue = {"success": False, "value": "No history to list"}
         with self.get_history_config() as config:
             try:
-                
-        self.log.info("SERVER - authenticator")
+                self.log.info("SERVER - authenticator")
                 authenticator = Authenticator(config=config)
-        self.log.info("SERVER - Listener")
+                self.log.info("SERVER - Listener")
                 lister = ExchangeHistory(authenticator=authenticator, config=config)
-        self.log.info("SERVER - Start listener")
+                self.log.info("SERVER - Start listener")
                 courses = lister.start()
 
             except Exception as e:

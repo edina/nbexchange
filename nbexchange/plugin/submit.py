@@ -67,7 +67,7 @@ class ExchangeSubmit(abc.ExchangeSubmit, Exchange):
     def check_filename_diff(self):
         # List of filenames, no paths
         released_notebooks = []
-
+        self.log.info("SERVER - Query the Exchange")
         assignments = ExchangeList.query_exchange(self)
         latest_timestamp = "1990-01-01 00:00:00"
         for assignment in assignments:

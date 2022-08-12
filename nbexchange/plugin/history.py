@@ -6,15 +6,15 @@ from .exchange import Exchange
 class ExchangeHistory(Exchange):
     self.log.info("SERVER - Called the Exhange class")
     def do_copy(self, src, dest):
+        self.log.info("SERVER - Do Copy")
         pass
 
-    self.log.info("SERVER - Done Copy")
     def init_src(self):
+        self.log.info("SERVER - Init src")
         pass
-    self.log.info("SERVER - Done Init src")
 
     def init_dest(self):
-    self.log.info("SERVER - Done Init dest")
+        self.log.info("SERVER - Init dest")
         pass
 
     # the list of assignments the exchange knows about

@@ -4,7 +4,7 @@ from .exchange import Exchange
 
 
 class ExchangeHistory(Exchange):
-    self.log.info("SERVER - Called the Exhange class")
+
     def do_copy(self, src, dest):
         self.log.info("SERVER - Do Copy")
         pass
@@ -19,7 +19,6 @@ class ExchangeHistory(Exchange):
 
     # the list of assignments the exchange knows about
     history = []
-    self.log.info("SERVER - Created history array")
 
     def query_exchange(self):
         """

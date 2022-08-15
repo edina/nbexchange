@@ -88,7 +88,7 @@ class HistoryList(LoggingConfigurable):
                 self.log.info(authenticator)
                 self.log.info("SERVER - config")
                 lister = ExchangeHistory(authenticator=authenticator, config=config)
-                self.log.ingo(config)
+                self.log.info(config)
                 self.log.info("SERVER - Start lister")
                 self.log.info(lister)
                 courses = lister.start()

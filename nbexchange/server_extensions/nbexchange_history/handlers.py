@@ -67,8 +67,10 @@ class HistoryList(LoggingConfigurable):
 
         app = NbGrader()
         self.log.info("SERVER - Set app to nbgrader")
+        self.log.info(app)
         app.config_file_paths.append(os.getcwd())
         self.log.info("SERVER - getcwd")
+        self.log.info(app.config_file_paths)
         app.load_config_file()
 
         self.log.info("SERVER - Load Config file")
@@ -83,9 +85,12 @@ class HistoryList(LoggingConfigurable):
             try:
                 self.log.info("SERVER - authenticator")
                 authenticator = Authenticator(config=config)
-                self.log.info("SERVER - Listener")
+                self.log.info(authenticator)
+                self.log.info("SERVER - config")
                 lister = ExchangeHistory(authenticator=authenticator, config=config)
-                self.log.info("SERVER - Start listener")
+                self.log.ingo(config)
+                self.log.info("SERVER - Start lister")
+                self.log.info(lister)
                 courses = lister.start()
 
             except Exception as e:

@@ -52,6 +52,4 @@ class ExchangeHistory(Exchange):
 
     def start(self):
         self.log.info("SERVER - start def")
-        self.log.info(self)
-        self.log.info(self.api_request(f'{"history"}'))
-        return self.query_exchange(self)
+        return self.query_exchange()

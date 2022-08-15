@@ -22,22 +22,14 @@ class ExchangeHistory(Exchange):
 
     def query_exchange(self):
         self.log.info("query_exchange function call")
-        """
-        This queries the database for all the assignments for a course
-
-        if self.inbound or self.cached are true, it returns all the 'submitted'
-        items, else it returns all the 'released' ones.
-
-        (it doesn't care about feedback or collected actions)
-        """
-        self.log.debug("Start getting api request")
+        self.log.info("Start getting api request")
         r = self.api_request(f'{"history"}')
-        self.log.debug(f"Got back {r} when getting history")
-        self.log.debug(type(r))
+        self.log.info(f"Got back {r} when getting history")
+        self.log.info(type(r))
         try:
-            self.log.debug("DO SOMETHING")
-            self.log.debug(r)
-            self.log.debug("ABOVE IS 'r' BELOW IS JSON()")
+            self.log.info("DO SOMETHING")
+            self.log.info(r)
+            self.log.info("ABOVE IS 'r' BELOW IS JSON()")
             #self.log.debug(r.json())
             #history = r.json()
         except json.decoder.JSONDecodeError:

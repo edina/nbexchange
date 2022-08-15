@@ -48,15 +48,16 @@ which is normally Jupyter's notebook_dir.
 
     def api_request(self, path, method="GET", *args, **kwargs):
 
-        jwt_token = os.environ.get("NAAS_JWT")
-
+        self.log.info("DO API REQUEST")
         cookies = dict()
         headers = dict()
 
+        self.log.info("JWT TOKEN = " + jwt_token)
         if jwt_token:
             cookies["noteable_auth"] = jwt_token
 
         url = self.service_url() + path
+        self.log.info("URL = " + url)
 
         self.log.debug(f"Exchange.api_request calling exchange with url {url}")
 

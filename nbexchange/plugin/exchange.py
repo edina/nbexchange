@@ -52,8 +52,9 @@ which is normally Jupyter's notebook_dir.
         cookies = dict()
         headers = dict()
 
-        self.log.info("JWT TOKEN = " + jwt_token)
+        self.log.info("JWT TOKEN = ")
         if jwt_token:
+            self.log.info(jwt_token)
             cookies["noteable_auth"] = jwt_token
 
         url = self.service_url() + path

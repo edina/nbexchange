@@ -21,6 +21,7 @@ class ExchangeHistory(Exchange):
     history = []
 
     def query_exchange(self):
+        self.log.info("query_exchange function call")
         """
         This queries the database for all the assignments for a course
 

@@ -30,7 +30,7 @@ class ExchangeHistory(Exchange):
             self.log.info("DO SOMETHING")
             self.log.info(r)
             self.log.info("ABOVE IS 'r' BELOW IS JSON()")
-            self.log.debug(r.json())
+            self.log.info(r.json())
             history = r.json()
             self.log.info("HISTORY VAR IS SET")
             return history["value"]

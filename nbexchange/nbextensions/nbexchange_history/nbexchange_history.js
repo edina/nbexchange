@@ -38,8 +38,8 @@ define([
 
     // Remove all 'div' elements under the #history_list element
     CourseList.prototype.clear_list = function (loading) {
-        // this.history_root_selector.children('div').remove
-        // var foo = this.history_root_selector;
+         this.history_root_selector.children('div').remove
+         var foo = this.history_root_selector;
     };
 
     CourseList.prototype.bind_events = function () {
@@ -131,7 +131,8 @@ define([
             for (var i=0; i<len; i++) {
                 var element = $('<div/>');
 
-        console.log("CLIENT - Element to add");
+        console.log("CLIENT - Element to add:");
+        console.log(element);
                 var item = new Course(element, data[i], this.history_root_selector,
                                         $.proxy(this.handle_load_list, this),
                                         this.options);

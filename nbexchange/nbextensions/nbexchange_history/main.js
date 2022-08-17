@@ -66,6 +66,7 @@ define([
                 .click(function (e) {
                     window.history.pushState(null, null, '#history');
                     history_list.load_list();
+                    $(".tab-content").append(history_list);
                 })
             )
         );

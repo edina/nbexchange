@@ -328,6 +328,7 @@ define([
 
         children.append($('<div/>').addClass('list_item row'));
         for (var i=0; i<this.assignment_data.actions.length; i++) {
+            console.log("CLIENT - APPEND timestamp/action/user");
             var action_timestamp = this.assignment_data.actions[i].timestamp.replace(/\.\d+$/, '')
             var action_text = this.assignment_data.actions[i].action.replace('AssignmentActions.', '');
 
@@ -345,6 +346,8 @@ define([
         }
 
         this.assignment_element.empty().append(row).append(children);
+
+        document.getElementById("history").appendChild(row);
 
     };
 

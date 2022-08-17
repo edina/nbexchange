@@ -66,7 +66,10 @@ define([
                 .click(function (e) {
                     window.history.pushState(null, null, '#history');
                     history_list.load_list();
-                    $(".tab-content").append(history_list);
+                    console.log("HISTORY LIST")
+                    console.log(history_list);
+                    console.log(history_list.CourseList);
+                    $("#history").append(history_list);
                 })
             )
         );

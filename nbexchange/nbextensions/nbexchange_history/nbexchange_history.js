@@ -189,6 +189,7 @@ define([
         this.options = options;
         this.base_url = options.base_url || utils.get_body_data("baseUrl");
         this.style();
+        console.log("CLIENT - Call make box");
         this.make_box(element);
     };
 
@@ -346,8 +347,6 @@ define([
         }
 
         this.assignment_element.empty().append(row).append(children);
-
-        document.getElementById("history").appendChild(row);
 
     };
 

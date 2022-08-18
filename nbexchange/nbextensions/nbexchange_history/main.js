@@ -68,6 +68,7 @@ define([
                     history_list.load_list();
                     console.log("HISTORY LIST")
                     console.log(history_list);
+                    console.log("HISTORY LIST > Course List")
                     console.log(history_list.CourseList);
                     $("#history").append(history_list);
                 })

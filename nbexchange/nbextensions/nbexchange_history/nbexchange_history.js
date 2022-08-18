@@ -143,7 +143,8 @@ define([
                 var element = $('<div/>');
                 element.text('foo');
                 console.log(element);
-                this.history_root_selector.append(element);
+                //this.history_root_selector.append(element);
+                $("#history_list").append(element);
             //}
             console.log("TOTAL history_root_selector thingies:")
             console.log(this.history_root_selector)

@@ -108,6 +108,7 @@ define([
         console.log("CLIENT - Handle load list");
         console.log("CLIENT - load list data: " + data);
         if (data.success) {
+            console.log("CourseList.prototype.handle_load_list called")
             this.load_list_success(data.value);
         } else {
             this.show_error(data.value);
@@ -122,20 +123,26 @@ define([
         console.log("CLIENT - Hide loading box");
         var len = data.length;
         console.log("CLIENT - Set len: " + len);
-        console.log("CLIENT - Data: " + data);
+        console.log("CLIENT - Data: ");
+        console.log(data);
 
         // make the list of course boxes
         if (len==0) {
             $('#nbexchange-history_box_placeholder').attr("style", "");
         } else {
+            /*
             for (var i=0; i<len; i++) {
+                console.log("ADDING DIV TO PAGE")
                 var element = $('<div/>');
 
                 console.log("CLIENT - Element to add:");
                 console.log(element);
                 var item = new Course(element, data[i], this.history_root_selector,
                                         $.proxy(this.handle_load_list, this),
-                                        this.options);
+                                        this.options);*/
+                var element = $('<div/>');
+                element.text('foo');
+                console.log(element);
                 this.history_root_selector.append(element);
             }
             console.log("TOTAL history_root_selector thingies:")

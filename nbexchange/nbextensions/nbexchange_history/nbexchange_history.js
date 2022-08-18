@@ -130,7 +130,6 @@ define([
         if (len==0) {
             $('#nbexchange-history_box_placeholder').attr("style", "");
         } else {
-            /*
             for (var i=0; i<len; i++) {
                 console.log("ADDING DIV TO PAGE")
                 var element = $('<div/>');
@@ -139,13 +138,10 @@ define([
                 console.log(element);
                 var item = new Course(element, data[i], this.history_root_selector,
                                         $.proxy(this.handle_load_list, this),
-                                        this.options);*/
-                var element = $('<div/>');
-                element.text('foo');
-                console.log(element);
-                //this.history_root_selector.append(element);
+                                        this.options);
+                this.history_root_selector.append(element);
                 $("#history_list").append(element);
-            //}
+            }
             console.log("TOTAL history_root_selector thingies:")
             console.log(this.history_root_selector)
         };

@@ -131,13 +131,15 @@ define([
             for (var i=0; i<len; i++) {
                 var element = $('<div/>');
 
-        console.log("CLIENT - Element to add:");
-        console.log(element);
+                console.log("CLIENT - Element to add:");
+                console.log(element);
                 var item = new Course(element, data[i], this.history_root_selector,
                                         $.proxy(this.handle_load_list, this),
                                         this.options);
                 this.history_root_selector.append(element);
             }
+            console.log("TOTAL history_root_selector thingies:")
+            console.log(this.history_root_selector)
         };
 
         // Add collapse arrows to links created in History.prototype.make_link

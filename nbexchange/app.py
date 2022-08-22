@@ -69,8 +69,7 @@ class NbExchange(PrometheusMixIn, Application):
         config=True
     )
 
-    # debug = bool(int(os.environ.get("DEBUG", 0)))
-    debug = bool(int(1))
+    debug = 1 #bool(int(os.environ.get("DEBUG", 0)))
 
     ip = Unicode("0.0.0.0").tag(config=True)
 

@@ -273,7 +273,7 @@ define([
         var summary_text = '';
         
         console.log("summary_text_list DATA");
-        console.log(this.data);
+        console.log(summary_text_list);
             
         if (this.assignment_data.action_summary.fetched) {
             summary_text_list.push('Released:' + this.assignment_data.action_summary.released);

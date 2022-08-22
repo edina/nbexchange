@@ -30,11 +30,11 @@ class ExchangeHistory(Exchange):
 
         try:
             history = r.json()
+            return history["value"]
         except json.decoder.JSONDecodeError:
             self.log.error(f'{"Got back an invalid response when getting history"}')
             return []
-
-        return history["value"]
+        pass
 
     def copy_files(self):
         pass

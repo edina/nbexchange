@@ -271,10 +271,10 @@ define([
         row.append(link);
         var summary_text_list = [];
         var summary_text = '';
-        if (this.data.isInstructor) {
-            console.log("ROW DATA");
-            console.log(this.data);
-        }
+        
+        console.log("summary_text_list DATA");
+        console.log(this.data);
+            
         if (this.assignment_data.action_summary.fetched) {
             summary_text_list.push('Released:' + this.assignment_data.action_summary.released);
         };

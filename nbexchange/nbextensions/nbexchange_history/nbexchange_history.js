@@ -100,6 +100,7 @@ define([
         // make the list of course boxes
         if (len==0) {
             $('#nbexchange-history_box_placeholder').attr("style", "");
+            $('#history_list').append('<div><p>No History to show</p></div>');
         } else {
             for (var i=0; i<len; i++) {
                 var element = $('<div/>');

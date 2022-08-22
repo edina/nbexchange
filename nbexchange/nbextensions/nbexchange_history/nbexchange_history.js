@@ -271,10 +271,10 @@ define([
         row.append(link);
         var summary_text_list = [];
         var summary_text = '';
-        
-        console.log("summary_text_list DATA");
-        console.log(summary_text_list);
-            
+
+        console.log("assigment data: ");
+        console.log(this.assignment_data);
+
         if (this.assignment_data.action_summary.fetched) {
             summary_text_list.push('Released:' + this.assignment_data.action_summary.released);
         };

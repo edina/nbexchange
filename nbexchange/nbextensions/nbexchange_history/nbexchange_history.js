@@ -8,7 +8,6 @@ define([
     'base/js/dialog',
 ], function(Jupyter, $, utils, dialog) {
     "use strict";
-    console.log("CLIENT - first function");
     var ajax = utils.ajax || $.ajax;
     console.log(ajax);
     // Notebook v4.3.1 enabled xsrf so use notebooks ajax that includes the
@@ -45,7 +44,6 @@ define([
     CourseList.prototype.bind_events = function () {
         var that = this;
         this.refresh_element.click(function () {
-            console.log("CLIENT - Refresh clicked");
             this.clear_list(true);
             var settings = {
                 cache : false,
@@ -61,24 +59,18 @@ define([
 
 
     CourseList.prototype.enable_list = function () {
-        console.log("CLIENT - Enable list");
         this.dropdown_element.removeAttr("disabled");
     };
 
 
     CourseList.prototype.disable_list = function () {
-        console.log("CLIENT - Disable list");
         this.dropdown_element.attr("disabled", "disabled");
     };
 
     CourseList.prototype.load_list = function (callback) {
-        console.log("CLIENT - Load list");
-        console.log("CLIENT - Callback:");
         console.log(callback);
         this.callback = callback;
-        console.log("CLIENT - [Before] Clear List");
         this.clear_list(true);
-        console.log("CLIENT - Set settings");
         var settings = {
             cache : false,
             type : "GET",
@@ -86,27 +78,20 @@ define([
             success : $.proxy(this.handle_load_list, this),
             error : utils.log_ajax_error,
         };
-        console.log("CLIENT - Done settings");
-        console.log("CLIENT - Base URL:");
         console.log(this.base_url)
         var url = utils.url_path_join(this.base_url, 'history');
-        console.log("CLIENT - Set url");
-        console.log("CLIENT - Start AJAX");
         ajax(url, settings);
     };
 
     // Not sure what to do with this yet - I need to consider
     // showing errors
     CourseList.prototype.show_error = function (error) {
-        console.log("CLIENT - Show Error");
         var elems = [this.assignment_element];
         var i;
 
     };
 
     CourseList.prototype.handle_load_list = function (data, status, xhr) {
-        console.log("CLIENT - Handle load list");
-        console.log("CLIENT - load list data: " + data);
         if (data.success) {
             console.log("CourseList.prototype.handle_load_list called")
             this.load_list_success(data.value);
@@ -116,14 +101,9 @@ define([
     };
 
     CourseList.prototype.load_list_success = function (data) {
-        console.log("CLIENT - Load list");
         this.clear_list();
-        console.log("CLIENT - Cleared List");
         $('#nbexchange-history_box_loading').attr("style", "display: none;");
-        console.log("CLIENT - Hide loading box");
         var len = data.length;
-        console.log("CLIENT - Set len: " + len);
-        console.log("CLIENT - Data: ");
         console.log(data);
 
         // make the list of course boxes
@@ -134,7 +114,6 @@ define([
                 console.log("ADDING DIV TO PAGE")
                 var element = $('<div/>');
 
-                console.log("CLIENT - Element to add:");
                 console.log(element);
                 var item = new Course(element, data[i], this.history_root_selector,
                                         $.proxy(this.handle_load_list, this),
@@ -148,7 +127,6 @@ define([
 
         // Add collapse arrows to links created in History.prototype.make_link
         $('.history-assignment-link').each(function(index, el) {
-            console.log("CLIENT - Add collapse arror");
             var $link = $(el);
             var $icon = $('<i />')
                 .addClass('fa fa-caret-down')
@@ -195,17 +173,14 @@ define([
         this.options = options;
         this.base_url = options.base_url || utils.get_body_data("baseUrl");
         this.style();
-        console.log("CLIENT - Call make box");
         this.make_box(element);
     };
 
     Course.prototype.style = function () {
-        console.log("CLIENT - Style");
         this.element.addClass('panel').addClass("panel-default");
     };
 
     Course.prototype.escape_id = function () {
-        console.log("CLIENT - Escape ID");
         // construct the id from the course id, and also prepend the id with
         // "nbexcghange" (this also ensures that the first character is always
         // a letter, as required by HTML 4)
@@ -220,7 +195,6 @@ define([
     };
 
     Course.prototype.make_box = function (element) {
-        console.log("CLIENT - prototype Make box");
         var title_text = this.data.course_title;
         if (this.data.isInstructor) {
             title_text += ' (Instructor)'
@@ -272,12 +246,10 @@ define([
     };
 
     History.prototype.style = function () {
-        console.log("CLIENT - History style");
         this.assignment_element.addClass('list_item').addClass("row");
     };
 
     History.prototype.escape_id = function () {
-        console.log("CLIENT - Escape ID");
         // construct the id from the course id and the assignment id, and also
         // prepend the id with "nbgrader" (this also ensures that the first
         // character is always a letter, as required by HTML 4)
@@ -293,13 +265,16 @@ define([
     };
 
     History.prototype.make_row = function () {
-        console.log("CLIENT - Make row");
 
         var row = $('<div/>').addClass('col-md-12');
         var link = this.make_link();
         row.append(link);
         var summary_text_list = [];
         var summary_text = '';
+        if (this.data.isInstructor) {
+            console.log("ROW DATA");
+            console.log(this.data);
+        }
         if (this.assignment_data.action_summary.fetched) {
             summary_text_list.push('Released:' + this.assignment_data.action_summary.released);
         };
@@ -335,7 +310,6 @@ define([
 
         children.append($('<div/>').addClass('list_item row'));
         for (var i=0; i<this.assignment_data.actions.length; i++) {
-            console.log("CLIENT - APPEND timestamp/action/user");
             var action_timestamp = this.assignment_data.actions[i].timestamp.replace(/\.\d+$/, '')
             var action_text = this.assignment_data.actions[i].action.replace('AssignmentActions.', '');
 
@@ -357,7 +331,6 @@ define([
     };
 
     History.prototype.make_link = function () {
-        console.log("CLIENT - Make link");
         var container = $('<span/>').addClass('item_name col-sm-6');
 
         var id = this.escape_id();

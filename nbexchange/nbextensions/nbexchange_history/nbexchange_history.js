@@ -309,7 +309,7 @@ define([
             .attr("role", "tabpanel");
 
         children.append($('<div/>').addClass('list_item row'));
-        assignment_data.actions.sort(function(a,b) {
+        this.assignment_data.actions.sort(function(a,b) {
             return a.timestamp - b.timestamp;
         });
         for (var i=0; i<this.assignment_data.actions.length; i++) {

@@ -309,6 +309,7 @@ define([
             .attr("role", "tabpanel");
 
         children.append($('<div/>').addClass('list_item row'));
+        this.assignment_data.actions.sort((a, b) => (a.timestamp > b.timestamp) ? 1 : (a.timestamp === b.timestamp) ? ((a.timestamp < b.timestamp) ? -1 : 1) : -1);
         for (var i=0; i<this.assignment_data.actions.length; i++) {
             var action_timestamp = this.assignment_data.actions[i].timestamp.replace(/\.\d+$/, '')
             var action_text = this.assignment_data.actions[i].action.replace('AssignmentActions.', '');

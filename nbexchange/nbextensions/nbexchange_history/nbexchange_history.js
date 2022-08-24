@@ -168,6 +168,8 @@ define([
     var Course = function (element, data, parent, on_refresh, options) {
         this.element = $(element);
         this.data = data;
+        console.log("COURSE DATA ===");
+        console.log(data);
         this.parent = parent;
         this.on_refresh = on_refresh;
         this.options = options;

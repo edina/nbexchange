@@ -317,6 +317,7 @@ define([
             return a.timestamp - b.timestamp;
         });
         for (var i=0; i<this.assignment_data.actions.length; i++) {
+            console.log("USER STUFF: " + this.assignment_data.actions[i].user + this.userId);
             if (this.assignment_data.actions[i].user == this.userId) {
                 var action_timestamp = this.assignment_data.actions[i].timestamp.replace(/\.\d+$/, '')
                 var action_text = this.assignment_data.actions[i].action.replace('AssignmentActions.', '');

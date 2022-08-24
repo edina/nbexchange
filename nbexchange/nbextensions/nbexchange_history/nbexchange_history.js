@@ -228,16 +228,20 @@ define([
         } else {
             for (var i=0; i<len; i++) {
                 var assignment_element = $('<div/>');
+                var userRole = this.data.role
+                var userId = this.data.user_id
                 var item = new History(assignment_element, this.data.assignments[i], id,
-                                        this.options);
+                                        this.options, userRole, userId);
                 content.append(assignment_element);
             }
         };
     };
 
-    var History = function (assignment_element, assignment_data, parent_id, options) {
+    var History = function (assignment_element, assignment_data, parent_id, options, userRole=null, userId=null) {
         this.assignment_element = $(assignment_element);
         this.assignment_data = assignment_data;
+        this.userRole = userRole;
+        this.userId = userId;
         this.parent_id = parent_id;
         this.options = options;
         this.base_url = options.base_url || utils.get_body_data("baseUrl");
@@ -313,20 +317,22 @@ define([
             return a.timestamp - b.timestamp;
         });
         for (var i=0; i<this.assignment_data.actions.length; i++) {
-            var action_timestamp = this.assignment_data.actions[i].timestamp.replace(/\.\d+$/, '')
-            var action_text = this.assignment_data.actions[i].action.replace('AssignmentActions.', '');
+            if (this.assignment_data.actions[i].user == this.userId) {
+                var action_timestamp = this.assignment_data.actions[i].timestamp.replace(/\.\d+$/, '')
+                var action_text = this.assignment_data.actions[i].action.replace('AssignmentActions.', '');
 
-            var element = $('<div/>').addClass('list_item row').append(
-                $('<div/>').addClass('col_md_12')
-                    .append(
-                        $('<span/>').addClass('item_name col-sm-4').text('Timestamp: ' + action_timestamp)
-                    ).append(
-                        $('<span/>').addClass('item_course col-sm-4').text('Action: ' + action_text)
-                    ).append(
-                        $('<span/>').addClass('item_status col-sm-4').text('Username:' + this.assignment_data.actions[i].user)
-                    )
-                );
-            children.append(element);
+                var element = $('<div/>').addClass('list_item row').append(
+                    $('<div/>').addClass('col_md_12')
+                        .append(
+                            $('<span/>').addClass('item_name col-sm-4').text('Timestamp: ' + action_timestamp)
+                        ).append(
+                            $('<span/>').addClass('item_course col-sm-4').text('Action: ' + action_text)
+                        ).append(
+                            $('<span/>').addClass('item_status col-sm-4').text('Username:' + this.assignment_data.actions[i].user)
+                        )
+                    );
+                children.append(element);
+            }
         }
 
         this.assignment_element.empty().append(row).append(children);

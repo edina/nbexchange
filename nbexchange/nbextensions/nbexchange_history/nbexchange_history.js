@@ -104,9 +104,9 @@ define([
         this.clear_list();
         $('#nbexchange-history_box_loading').attr("style", "display: none;");
         data.sort(function(a,b) {
-            if (a.course_list < b.course_list) {
+            if (a.course_code < b.course_code) {
                 return -1;
-            } else if (a.course_list > b.course_list) {
+            } else if (a.course_code > b.course_code) {
                 return 1;
             }
             return 0;

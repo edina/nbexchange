@@ -103,7 +103,7 @@ define([
     CourseList.prototype.load_list_success = function (data) {
         this.clear_list();
         $('#nbexchange-history_box_loading').attr("style", "display: none;");
-        this.data.sort(function(a,b) {
+        data.sort(function(a,b) {
             if (a.course_list < b.course_list) {
                 return -1;
             } else if (a.course_list > b.course_list) {

@@ -329,14 +329,14 @@ define([
                 var action_timestamp = this.assignment_data.actions[i].timestamp.replace(/\.\d+$/, '')
                 var action_text = this.assignment_data.actions[i].action.replace('AssignmentActions.', '');
 
-                var element = $('<div/>').addClass('list_item row').append(
-                    $('<div/>').addClass('col_md_12')
+                var element = $('<table/>').append(
+                    $('<tr/>')
                         .append(
-                            $('<span/>').addClass('item_name col-sm-4').text('Timestamp: ' + action_timestamp)
+                            $('<td/>').text('Timestamp: ' + action_timestamp)
                         ).append(
-                            $('<span/>').addClass('item_course col-sm-4').text('Action: ' + action_text)
+                            $('<td/>').text('Action: ' + action_text)
                         ).append(
-                            $('<span/>').addClass('item_status col-sm-4').text('Username:' + this.assignment_data.actions[i].user)
+                            $('<td/>').text('Username:' + this.assignment_data.actions[i].user)
                         )
                     );
                 children.append(element);

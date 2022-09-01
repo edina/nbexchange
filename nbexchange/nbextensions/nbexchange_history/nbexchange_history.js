@@ -120,7 +120,7 @@ define([
         } else {
             for (var i=0; i<len; i++) {
                 console.log("ADDING DIV TO PAGE")
-                var element = $('<div/>');
+                var element = $('<article/>');
 
                 console.log(element);
                 var item = new Course(element, data[i], this.history_root_selector,
@@ -186,10 +186,6 @@ define([
         this.make_box(element);
     };
 
-    Course.prototype.style = function () {
-        this.element.addClass('panel').addClass("panel-default");
-    };
-
     Course.prototype.escape_id = function () {
         // construct the id from the course id, and also prepend the id with
         // "nbexcghange" (this also ensures that the first character is always
@@ -212,12 +208,10 @@ define([
         var id = this.escape_id() + '_history_box';
         this.element = $(element);
 
-        var title = $('<div/>')
-            .addClass('panel-heading')
+        var title = $('<h3/>')
             .text(title_text);
 
-        var panel_body = $('<div/>')
-            .addClass('panel-body');
+        var panel_body = $('<section/>')
         
         var content = ($('<div/>')
             .attr("id", id)

@@ -182,7 +182,7 @@ define([
         this.on_refresh = on_refresh;
         this.options = options;
         this.base_url = options.base_url || utils.get_body_data("baseUrl");
-        this.style();
+        //this.style();
         this.make_box(element);
     };
 

@@ -320,8 +320,8 @@ define([
         this.assignment_data.actions.sort(function(a,b) {
             return a.timestamp - b.timestamp;
         });
-        if (this.assignment_data.actions.length) {
-            children.append($('<table>').append($('<tr/>')).append($('<td/>').text('Timestamp')).append($('<td/>').text('Action')).append($('<td/>').text('User')));
+        if (this.assignment_data.actions.length > 0) {
+            children.append($('<table style="width:100%">').append($('<thead>')).append($('<tr>')).append($('<td style="width:33%"/>').text('Timestamp')).append($('<td style="width:33%"/>').text('Action')).append($('<td style="width:33%"/>').text('User').append('</tr>').append('</thead>'));
         }
         for (var i=0; i<this.assignment_data.actions.length; i++) {
             console.log("ACTION USER: " );
@@ -342,11 +342,10 @@ define([
                 children.append(element);
             //}
         }
-        if (this.assignment_data.actions.length) {
+        this.assignment_element.empty().append(row).append(children);
+        if (this.assignment_data.actions.length > 0) {
             children.append($('</table>'));
         }
-
-        this.assignment_element.empty().append(row).append(children);
 
     };
 

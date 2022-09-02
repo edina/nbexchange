@@ -321,7 +321,7 @@ define([
             return a.timestamp - b.timestamp;
         });
         if (this.assignment_data.actions.length > 0) {
-            children.append($('<table style="width:100%">').append($('<thead>')).append($('<tr>')).append($('<td style="width:33%"/>').text('Timestamp')).append($('<td style="width:33%"/>').text('Action')).append($('<td style="width:33%"/>').text('User').append('</tr>').append('</thead>'));
+            children.append($('<table style="width:100%">').append($('<thead>')).append($('<tr>')).append($('<td style="width:33%"/>').text('Timestamp')).append($('<td style="width:33%"/>').text('Action')).append($('<td style="width:33%"/>').text('User')).append('</tr>').append('</thead>'));
         }
         for (var i=0; i<this.assignment_data.actions.length; i++) {
             console.log("ACTION USER: " );

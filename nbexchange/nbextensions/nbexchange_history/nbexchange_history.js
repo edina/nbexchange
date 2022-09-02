@@ -321,7 +321,7 @@ define([
             return a.timestamp - b.timestamp;
         });
         if (this.assignment_data.actions.length) {
-            var element = $('<table/>').append($('<tr/>')).append($('<td/>').text('Timestamp')).append($('<td/>').text('Action')).append($('<td/>').text('User'));
+            children.append($('<table>').append($('<tr/>')).append($('<td/>').text('Timestamp')).append($('<td/>').text('Action')).append($('<td/>').text('User')));
         }
         for (var i=0; i<this.assignment_data.actions.length; i++) {
             console.log("ACTION USER: " );
@@ -332,7 +332,7 @@ define([
                 var action_timestamp = this.assignment_data.actions[i].timestamp.replace(/\.\d+$/, '')
                 var action_text = this.assignment_data.actions[i].action.replace('AssignmentActions.', '');
 
-                element = $('<tr/>').append(
+                var element = $('<tr/>').append(
                     $('<td/>').text(action_timestamp)
                     ).append(
                         $('<td/>').text(action_text)
@@ -341,6 +341,9 @@ define([
                     );
                 children.append(element);
             //}
+        }
+        if (this.assignment_data.actions.length) {
+            children.append($('</table>'));
         }
 
         this.assignment_element.empty().append(row).append(children);

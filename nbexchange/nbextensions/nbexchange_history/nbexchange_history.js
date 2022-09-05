@@ -332,17 +332,13 @@ define([
                 var action_text = this.assignment_data.actions[i].action.replace('AssignmentActions.', '');
 
                 element += '<tr><td>' + action_timestamp + '</td><td>' + action_text + '</td><td>' + this.assignment_data.actions[i].user + '</td></tr>';
-                if (i == this.assignment_data.actions.length - 1) {
+                if (i == (this.assignment_data.actions.length - 1)) {
                     element += '</tbody></table>';
                 }
                 children.append(element);
             //}
         }
-        if (this.assignment_data.actions.length > 0) {
-            children.append('</table>');
-        }
         this.assignment_element.empty().append(row).append(children);
-
     };
 
     History.prototype.make_link = function () {

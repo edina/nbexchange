@@ -37,7 +37,7 @@ define([
 
     // Remove all 'div' elements under the #history_list element
     CourseList.prototype.clear_list = function (loading) {
-         $('#history_list').children('div').remove()
+         $('#history_list').children('article').remove();
          var foo = this.history_root_selector;
     };
 
@@ -321,7 +321,7 @@ define([
             return a.timestamp - b.timestamp;
         });
         if (this.assignment_data.actions.length > 0) {
-            children.append($('<table style="width:100%">').append($('<thead>')).append($('<tr>')).append($('<td style="width:33%"/>').text('Timestamp')).append($('<td style="width:33%"/>').text('Action')).append($('<td style="width:33%"/>').text('User')).append('</tr>').append('</thead>'));
+            children.append($('<tr/>')).append($('<td style="width:33%"/>').text('Timestamp')).append($('<td style="width:33%"/>').text('Action')).append($('<td style="width:33%"/>').text('User'));
         }
         for (var i=0; i<this.assignment_data.actions.length; i++) {
             console.log("ACTION USER: " );
@@ -343,9 +343,6 @@ define([
             //}
         }
         this.assignment_element.empty().append(row).append(children);
-        if (this.assignment_data.actions.length > 0) {
-            children.append($('</table>'));
-        }
 
     };
 

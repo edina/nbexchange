@@ -121,8 +121,8 @@ define([
             for (var i=0; i<len; i++) {
                 console.log("ADDING DIV TO PAGE")
                 var element = $('<article/>');
+                element.addClass('history-collapsable-link');
 
-                console.log(element);
                 var item = new Course(element, data[i], this.history_root_selector,
                                         $.proxy(this.handle_load_list, this),
                                         this.options);
@@ -134,7 +134,7 @@ define([
         };
 
         // Add collapse arrows to links created in History.prototype.make_link
-        $('.history-assignment-link').each(function(index, el) {
+        $('.history-collapsable-link').each(function(index, el) {
             var $link = $(el);
             var $icon = $('<i />')
                 .addClass('fa fa-caret-down')
@@ -351,7 +351,7 @@ define([
 
         var id = this.escape_id();
         var link = $('<a/>')
-            .addClass("collapsed history-assignment-link")
+            .addClass("collapsed history-collapsable-link")
             .attr("role", "button")
             .attr("data-toggle", "collapse")
             .attr("data-parent", '#' + this.parent_id)

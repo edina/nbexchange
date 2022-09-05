@@ -121,7 +121,6 @@ define([
             for (var i=0; i<len; i++) {
                 console.log("ADDING DIV TO PAGE")
                 var element = $('<article/>');
-                element.addClass('history-collapsable-link');
 
                 var item = new Course(element, data[i], this.history_root_selector,
                                         $.proxy(this.handle_load_list, this),
@@ -205,11 +204,15 @@ define([
         if (this.data.isInstructor) {
             title_text += ' (Instructor)'
         };
+        var len = this.data.assignments.length;
+        title_text += ' ' + len + ' assignments';
         var id = this.escape_id() + '_history_box';
         this.element = $(element);
 
         var title = $('<h3/>')
             .text(title_text);
+
+        title.addClass('history-collapsable-link');
 
         var panel_body = $('<section/>')
         
@@ -223,7 +226,6 @@ define([
         element.append(title);
         element.append(panel_body);
 
-        var len = this.data.assignments.length;
 
         // make the list of assignments
         if (len == 0) {

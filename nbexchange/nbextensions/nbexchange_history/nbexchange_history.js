@@ -318,31 +318,24 @@ define([
             .addClass("panel-collapse collapse list_container history-actions")
             .attr("role", "tabpanel");
 
-        children.append($('<div/>').addClass('list_item row'));
+        //children.append($('<div/>').addClass('list_item row'));
         this.assignment_data.actions.sort(function(a,b) {
             return a.timestamp - b.timestamp;
         });
         if (this.assignment_data.actions.length > 0) {
-            children.append($('<tr/>')).append($('<td style="width:33%"/>').text('Timestamp')).append($('<td style="width:33%"/>').text('Action')).append($('<td style="width:33%"/>').text('User'));
+            children.append('<table><tr><td style="width:33%"/>Timestamp><td style="width:33%">Action</td><td style="width:33%">User</td></tr>');
         }
         for (var i=0; i<this.assignment_data.actions.length; i++) {
-            console.log("ACTION USER: " );
-            console.log(this.assignment_data.actions[i].user);
-            console.log("THIS USER: ");
-            console.log(this.userId);
             //if (this.assignment_data.actions[i].user == this.userId) {
                 var action_timestamp = this.assignment_data.actions[i].timestamp.replace(/\.\d+$/, '')
                 var action_text = this.assignment_data.actions[i].action.replace('AssignmentActions.', '');
 
-                var element = $('<tr/>').append(
-                    $('<td/>').text(action_timestamp)
-                    ).append(
-                        $('<td/>').text(action_text)
-                    ).append(
-                        $('<td/>').text(this.assignment_data.actions[i].user)
-                    );
+                var element = ('<tr><td>' + action_timestamp + '</td><td>' + action_text + '</td><td>' + this.assignment_data.actions[i].user + '</td></tr>');
                 children.append(element);
             //}
+        }
+        if (this.assignment_data.actions.length > 0) {
+            children.append('</table>');
         }
         this.assignment_element.empty().append(row).append(children);
 

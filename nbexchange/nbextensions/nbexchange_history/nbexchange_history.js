@@ -322,15 +322,19 @@ define([
         this.assignment_data.actions.sort(function(a,b) {
             return a.timestamp - b.timestamp;
         });
-        if (this.assignment_data.actions.length > 0) {
-            children.append('<table><tr><td style="width:33%"/>Timestamp><td style="width:33%">Action</td><td style="width:33%">User</td></tr>');
-        }
         for (var i=0; i<this.assignment_data.actions.length; i++) {
             //if (this.assignment_data.actions[i].user == this.userId) {
+                var element = "";
+                if (i == 0) {
+                    element += '<table><thead><tr><td style="width:33%"/>Timestamp><td style="width:33%">Action</td><td style="width:33%">User</td></tr></thead><tbody>';
+                }
                 var action_timestamp = this.assignment_data.actions[i].timestamp.replace(/\.\d+$/, '')
                 var action_text = this.assignment_data.actions[i].action.replace('AssignmentActions.', '');
 
-                var element = ('<tr><td>' + action_timestamp + '</td><td>' + action_text + '</td><td>' + this.assignment_data.actions[i].user + '</td></tr>');
+                element += '<tr><td>' + action_timestamp + '</td><td>' + action_text + '</td><td>' + this.assignment_data.actions[i].user + '</td></tr>';
+                if (i == this.assignment_data.actions.length - 1) {
+                    element += '</tbody></table>';
+                }
                 children.append(element);
             //}
         }

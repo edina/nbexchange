@@ -345,22 +345,22 @@ define([
                 if (i === 0) {
                 element.find('thead')
                     .after($('<tbody/>'))
-                        .after($('<tr/>'))
+                        .after($('<tr/>')
                             .append($('<td/>')
                                 .text(action_timestamp))
                             .append($('<td/>')
                                 .text(action_text))
                             .append($('<td/>')
-                                .text(this.assignment_data.actions[i].user))
+                                .text(this.assignment_data.actions[i].user)));
                 } else {
                     element.find('tbody')
-                        .after($('<tr/>'))
+                        .after($('<tr/>')
                             .append($('<td/>')
                                 .text(action_timestamp))
                             .append($('<td/>')
                                 .text(action_text))
                             .append($('<td/>')
-                                .text(this.assignment_data.actions[i].user))
+                                .text(this.assignment_data.actions[i].user)));
                 }
 
             //}

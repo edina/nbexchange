@@ -322,18 +322,38 @@ define([
         this.assignment_data.actions.sort(function(a,b) {
             return a.timestamp - b.timestamp;
         });
-        if (this.assignment_data.actions.length > 0) {
-            var element = '<table><thead><tr><td style="width:33%"/>Timestamp<td style="width:33%">Action</td><td style="width:33%">User</td></tr></thead><tbody>';
-            for (var i=0; i<this.assignment_data.actions.length; i++) {
-                //if (this.assignment_data.actions[i].user == this.userId) {
-                    var action_timestamp = this.assignment_data.actions[i].timestamp.replace(/\.\d+$/, '')
-                    var action_text = this.assignment_data.actions[i].action.replace('AssignmentActions.', '');
-                    element += '<tr><td>' + action_timestamp + '</td><td>' + action_text + '</td><td>' + this.assignment_data.actions[i].user + '</td></tr>';
-                //}
-            }
-            element += '</tbody></table>';
-            children.append(element);
+        var element = $('<table>')
+            .append($('<thead>')
+                .append($('<tr>')
+                    .append($('<td>')
+                        .text('Timestamp')
+                    )
+                    .append($('<td>')
+                        .text('Action')
+                    )
+                    .append($('<td>')
+                        .text('User')
+                    )
+                )
+            );
+        
+        for (var i=0; i<this.assignment_data.actions.length; i++) {
+            //if (this.assignment_data.actions[i].user == this.userId) {
+                var action_timestamp = this.assignment_data.actions[i].timestamp.replace(/\.\d+$/, '')
+                var action_text = this.assignment_data.actions[i].action.replace('AssignmentActions.', '');
+
+                element.find('tbody')
+                    .after($('<tr/>'))
+                        .append($('<td/>'))
+                            .text(action_timestamp)
+                        .append($('<td/>'))
+                            .text(action_text)
+                        .append($('<td/>'))
+                            .text(this.assignment_data.actions[i].user)
+
+            //}
         }
+        children.append(element);
         this.assignment_element.empty().append(row).append(children);
     };
 

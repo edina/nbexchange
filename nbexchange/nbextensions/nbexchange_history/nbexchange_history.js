@@ -323,7 +323,7 @@ define([
         this.assignment_data.actions.sort(function(a,b) {
             return a.timestamp - b.timestamp;
         });
-        var element = $('<table>')
+        var element = $('<table class="sortable">')
             .append($('<thead>')
                 .append($('<tr>')
                     .append($('<td>')

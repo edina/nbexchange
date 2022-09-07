@@ -101,3 +101,10 @@
     padding-left: 7px;
     padding-right: 7px;
 }
+
+table.sortable thead {
+    background-color:#eee;
+    color:#666666;
+    font-weight: bold;
+    cursor: default;
+}

@@ -6,7 +6,7 @@ define([
     'jquery',
     'base/js/utils',
     'base/js/dialog',
-    './sorttable.js',
+    'sorttable',
 ], function(Jupyter, $, utils, dialog, sorttable) {
     "use strict";
     var ajax = utils.ajax || $.ajax;

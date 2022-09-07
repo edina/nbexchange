@@ -371,9 +371,12 @@ define([
 
             //}
         }
-        children.append(element);
         //Apply sorttable to element as it's created after page load/js load
-        sorttable.makeSortable(element);
+        //sorttable.makeSortable(element);
+        //Automatically sort the first th column of the element table
+        //var myTH = element.getElementsByTagName("th")[0];
+        //sorttable.innerSortFunction.apply(myTH, []);
+        children.append(element);
         this.assignment_element.empty().append(row).append(children);
     };
 

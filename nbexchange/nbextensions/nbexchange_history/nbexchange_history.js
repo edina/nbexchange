@@ -324,8 +324,9 @@ define([
             return a.timestamp - b.timestamp;
         });
         var element = $('<table>')
-            .addClass('sortable')
+            .attr("id", this.assignment_data.assignment_code)
             .attr("style", "width:100%")
+            .addClass('sortable')
             .append($('<thead>')
                 .append($('<tr>')
                     .append($('<th>')
@@ -371,13 +372,13 @@ define([
 
             //}
         }
-        //Apply sorttable to element as it's created after page load/js load
-        //sorttable.makeSortable(element);
-        //Automatically sort the first th column of the element table
-        //var myTH = element.getElementsByTagName("th")[0];
-        //sorttable.innerSortFunction.apply(myTH, []);
         children.append(element);
         this.assignment_element.empty().append(row).append(children);
+        //Apply sorttable to element as it's created after page load/js load
+        sorttable.makeSortable(document.getElementById(this.assignment_data.assignment_code));
+        //Automatically sort the first th column of the element table
+        var myTH = document.getElementById(this.assignment_data.assignment_code).getElementsByTagName("th")[0];
+        sorttable.innerSortFunction.apply(myTH, []);
     };
 
     History.prototype.make_link = function () {

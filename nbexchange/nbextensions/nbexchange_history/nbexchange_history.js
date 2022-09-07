@@ -372,6 +372,8 @@ define([
             //}
         }
         children.append(element);
+        //Apply sorttable to element as it's created after page load/js load
+        sorttable.makeSortable(element);
         this.assignment_element.empty().append(row).append(children);
     };
 

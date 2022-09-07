@@ -6,7 +6,7 @@ define([
     'jquery',
     'base/js/utils',
     'base/js/dialog',
-    'sorttable',
+    'https://www.kryogenix.org/code/browser/sorttable/sorttable.js',
 ], function(Jupyter, $, utils, dialog, sorttable) {
     "use strict";
     var ajax = utils.ajax || $.ajax;

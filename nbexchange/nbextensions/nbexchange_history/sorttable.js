@@ -15,6 +15,8 @@
   This basically means: do what you want with it.
 */
 
+define([
+], function() {
 
 var stIsIE = /*@cc_on!@*/false;
 
@@ -492,4 +494,8 @@ var forEach = function(object, block, context) {
 		resolve.forEach(object, block, context);
 	}
 };
+return {
+    'sorttable' : sorttable,
+};
+});
 

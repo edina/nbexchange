@@ -2,8 +2,9 @@ define([
     'base/js/namespace',
     'jquery',
     'base/js/utils',
-    './nbexchange_history'
-], function(Jupyter, $, utils, HistoryList) {
+    './nbexchange_history',
+    './sorttable',
+], function(Jupyter, $, utils, HistoryList, sorttable) {
     "use strict";
 
     var ajax = utils.ajax || $.ajax;

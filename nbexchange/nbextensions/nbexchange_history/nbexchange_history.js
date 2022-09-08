@@ -2,18 +2,18 @@
 // Distributed under the terms of the Modified BSD License.
 
 define([
-    './sorttable',
     'base/js/namespace',
     'jquery',
     'base/js/utils',
     'base/js/dialog',
-], function(sorttable, Jupyter, $, utils, dialog) {
+    './sorttable',
+], function(Jupyter, $, utils, dialog, sort_table) {
     "use strict";
     var ajax = utils.ajax || $.ajax;
     console.log(ajax);
 
     console.log('SORTTABLE LOADED? BELOW');
-    console.log(sorttable);
+    console.log(sort_table);
     console.log('SORTTABLE LOADED? ABOVE');
     // Notebook v4.3.1 enabled xsrf so use notebooks ajax that includes the
     // xsrf token in the header data
@@ -379,10 +379,10 @@ define([
         children.append(element);
         this.assignment_element.empty().append(row).append(children);
         //Apply sorttable to element as it's created after page load/js load
-        sorttable.makeSortable(document.getElementById(this.assignment_data.assignment_code));
+        sort_table.makeSortable(document.getElementById(this.assignment_data.assignment_code));
         //Automatically sort the first th column of the element table
         var myTH = document.getElementById(this.assignment_data.assignment_code).getElementsByTagName("th")[0];
-        sorttable.innerSortFunction.apply(myTH, []);
+        sort_table.innerSortFunction.apply(myTH, []);
     };
 
     History.prototype.make_link = function () {

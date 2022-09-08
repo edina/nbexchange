@@ -11,6 +11,10 @@ define([
     "use strict";
     var ajax = utils.ajax || $.ajax;
     console.log(ajax);
+
+    console.log('SORTTABLE LOADED? BELOW');
+    console.log(sorttable);
+    console.log('SORTTABLE LOADED? ABOVE');
     // Notebook v4.3.1 enabled xsrf so use notebooks ajax that includes the
     // xsrf token in the header data
 

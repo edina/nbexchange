@@ -1,12 +1,12 @@
 // Copyright (c) Jupyter Development Team.
 // Distributed under the terms of the Modified BSD License.
-import { sorttable } from "./sorttable.js";
+
 define([
     'base/js/namespace',
     'jquery',
     'base/js/utils',
     'base/js/dialog',
-    './sorttable',
+    ['./sorttable'],
 ], function(Jupyter, $, utils, dialog, sorttable) {
     "use strict";
     var ajax = utils.ajax || $.ajax;

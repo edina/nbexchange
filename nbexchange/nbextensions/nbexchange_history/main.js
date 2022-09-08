@@ -7,6 +7,13 @@ define([
 ], function(Jupyter, $, utils, HistoryList, sorttable) {
     "use strict";
 
+    
+    console.log('SORTTABLE V');
+
+    console.log(sorttable);
+
+    console.log('SORTABLE ^');
+
     var ajax = utils.ajax || $.ajax;
     // Notebook v4.3.1 enabled xsrf so use notebooks ajax that includes the
     // xsrf token in the header data
@@ -72,7 +79,7 @@ define([
                 })
             )
         );
-
+                
 
     }
     return {

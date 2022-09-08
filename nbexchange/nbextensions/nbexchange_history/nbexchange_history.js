@@ -12,6 +12,7 @@ define([
     var ajax = utils.ajax || $.ajax;
     console.log(ajax);
 
+    console.log(sorttable);
 
     // Notebook v4.3.1 enabled xsrf so use notebooks ajax that includes the
     // xsrf token in the header data
@@ -374,7 +375,7 @@ define([
 
             //}
         }
-        sorttable.makeSortable(element);
+        sorttable.sorttable.makeSortable(element);
         children.append(element);
         this.assignment_element.empty().append(row).append(children);
     };

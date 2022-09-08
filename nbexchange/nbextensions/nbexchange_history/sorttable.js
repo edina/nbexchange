@@ -493,4 +493,3 @@ var forEach = function(object, block, context) {
 	}
 };
 
-return sorttable;

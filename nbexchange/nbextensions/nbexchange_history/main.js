@@ -2,17 +2,9 @@ define([
     'base/js/namespace',
     'jquery',
     'base/js/utils',
-    './nbexchange_history',
-    './sorttable',
-], function(Jupyter, $, utils, HistoryList, sorttable) {
+    './nbexchange_history'
+], function(Jupyter, $, utils, HistoryList) {
     "use strict";
-
-    
-    console.log('SORTTABLE V');
-
-    console.log(sorttable);
-
-    console.log('SORTABLE ^');
 
     var ajax = utils.ajax || $.ajax;
     // Notebook v4.3.1 enabled xsrf so use notebooks ajax that includes the
@@ -79,7 +71,7 @@ define([
                 })
             )
         );
-                
+
 
     }
     return {

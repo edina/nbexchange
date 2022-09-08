@@ -6,10 +6,16 @@ define([
     'jquery',
     'base/js/utils',
     'base/js/dialog',
-], function(Jupyter, $, utils, dialog) {
+    './sorttable',
+], function(Jupyter, $, utils, dialog, sorttable) {
     "use strict";
     var ajax = utils.ajax || $.ajax;
     console.log(ajax);
+
+    console.log('Sortable?');
+    console.log(sorttable);
+    console.log('Sortable above?');
+
 
     // Notebook v4.3.1 enabled xsrf so use notebooks ajax that includes the
     // xsrf token in the header data

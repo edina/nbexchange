@@ -2,12 +2,12 @@
 // Distributed under the terms of the Modified BSD License.
 
 define([
+    './sorttable',
     'base/js/namespace',
     'jquery',
     'base/js/utils',
     'base/js/dialog',
-    './sorttable',
-], function(Jupyter, $, utils, dialog, sorttable) {
+], function(sorttable, Jupyter, $, utils, dialog) {
     "use strict";
     var ajax = utils.ajax || $.ajax;
     console.log(ajax);

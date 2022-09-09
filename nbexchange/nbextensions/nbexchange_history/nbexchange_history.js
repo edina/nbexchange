@@ -364,7 +364,7 @@ define([
                             .append($('<td/>')
                                 .text(this.assignment_data.actions[i].user)));
                 } else {
-                    element.find('tbody')
+                    element.find('<tbody/>')
                         .after($('<tr/>')
                             .append($('<td/>')
                                 .text(action_timestamp))
@@ -398,6 +398,12 @@ define([
         container.append(link);
         return container;
     };
+
+    //Apply sortable to all tables on page
+    var all = document.getElementsByTagName("table");
+    for (var i=0, max=all.length; i < max; i++) {
+        sorttable.sorttable.makeSortable(all[i]);
+    }
 
     return {
         'Course' : Course,

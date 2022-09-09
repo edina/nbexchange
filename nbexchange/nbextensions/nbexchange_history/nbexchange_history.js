@@ -226,6 +226,7 @@ define([
         
 
         var panel_body = $('<section/>')
+            .addClass('panel-collapse list_container history-actions collapse in')
         
         var content = ($('<div/>')
             .attr("id", id)

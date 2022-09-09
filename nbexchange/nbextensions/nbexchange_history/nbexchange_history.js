@@ -222,10 +222,7 @@ define([
             .attr("data-parent", '#' + this.parent_id)
             .attr("href", "#" + id)
             .attr("aria-expanded", "false")
-            .attr("aria-controls", id)
-            .click(function() {
-                $(this).next('.collapse').slideToggle(); // or use .toggle() for no animation
-            });
+            .attr("aria-controls", id);
         
 
         var panel_body = $('<section/>')
@@ -234,7 +231,6 @@ define([
             .attr("id", id)
             .attr("role", "tablist")
             .attr("aria-multiselectable", "true")
-            .addClass('collapse')
         );
         panel_body.append(content);
         element.append(title);
@@ -365,10 +361,13 @@ define([
                 element.find('tbody')
                     .append($('<tr/>')
                         .append($('<td/>')
+                            .attr("style", "width:33%")
                             .text(action_timestamp))
                         .append($('<td/>')
+                            .attr("style", "width:33%")
                             .text(action_text))
                         .append($('<td/>')
+                            .attr("style", "width:33%")
                             .text(this.assignment_data.actions[i].user)));
         }
         children.append(element);

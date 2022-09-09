@@ -224,7 +224,6 @@ define([
             .attr("aria-expanded", "false")
             .attr("aria-controls", id);
         
-
         var panel_body = $('<section/>')
             .addClass('panel-collapse list_container history-actions collapse in')
         
@@ -236,7 +235,6 @@ define([
         panel_body.append(content);
         element.append(title);
         element.append(panel_body);
-
 
         // make the list of assignments
         if (len == 0) {
@@ -370,6 +368,9 @@ define([
         }
         children.append(element);
         this.assignment_element.empty().append(row).append(children);
+
+        //Make the new table sortable
+        sorttable.sorttable.makeSortable(document.getElementById(this.assignment_data.assignment_code.replace(' ', '')));
     };
 
     History.prototype.make_link = function () {

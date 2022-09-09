@@ -218,7 +218,19 @@ define([
             .text(title_text);
 
         title.addClass('history-collapsable-link');
-        var link = this.make_link();
+        
+
+        var id = this.escape_id();
+        var link = $('<a/>')
+            .addClass("collapsed history-collapsable-link")
+            .attr("role", "button")
+            .attr("data-toggle", "collapse")
+            .attr("data-parent", '#' + this.parent_id)
+            .attr("href", "#" + id)
+            .attr("aria-expanded", "false")
+            .attr("aria-controls", id)
+
+        link.text(this.assignment_data.assignment_code);
         title.append(link);
 
         var panel_body = $('<section/>')

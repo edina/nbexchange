@@ -357,15 +357,26 @@ define([
             //if (this.assignment_data.actions[i].user == this.userId) {
                 var action_timestamp = this.assignment_data.actions[i].timestamp.replace(/\.\d+$/, '')
                 var action_text = this.assignment_data.actions[i].action.replace('AssignmentActions.', '');
-                element.find('tbody')
-                    .append($('<tr/>')
-                        .append($('<td/>')
-                            .text(action_timestamp))
-                        .append($('<td/>')
-                            .text(action_text))
-                        .append($('<td/>')
-                            .text(this.assignment_data.actions[i].user)));
-            //}
+                if (i === 0) {
+                    element.find('thead')
+                        .after($('<tbody/>'))
+                            .append($('<tr/>')
+                                .append($('<td/>')
+                                    .text(action_timestamp))
+                                .append($('<td/>')
+                                    .text(action_text))
+                                .append($('<td/>')
+                                    .text(this.assignment_data.actions[i].user)));
+                    } else {
+                        element.find('tbody')
+                            .append($('<tr/>')
+                                .append($('<td/>')
+                                    .text(action_timestamp))
+                                .append($('<td/>')
+                                    .text(action_text))
+                                .append($('<td/>')
+                                    .text(this.assignment_data.actions[i].user)));
+                    }            //}
         }
         children.append(element);
         this.assignment_element.empty().append(row).append(children);

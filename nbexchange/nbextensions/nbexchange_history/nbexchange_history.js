@@ -223,9 +223,11 @@ define([
             .attr("href", "#" + id)
             .attr("aria-expanded", "false")
             .attr("aria-controls", id);
-        
+
+        title.addClass('history-collapsable-link');
+
         var panel_body = $('<section/>')
-            .addClass('panel-collapse list_container history-actions collapse in')
+            .addClass('collapse in');
         
         var content = ($('<div/>')
             .attr("id", id)
@@ -235,6 +237,7 @@ define([
         panel_body.append(content);
         element.append(title);
         element.append(panel_body);
+
 
         // make the list of assignments
         if (len == 0) {
@@ -368,9 +371,6 @@ define([
         }
         children.append(element);
         this.assignment_element.empty().append(row).append(children);
-
-        //Make the new table sortable
-        sorttable.sorttable.makeSortable(document.getElementById(this.assignment_data.assignment_code.replace(' ', '')));
     };
 
     History.prototype.make_link = function () {

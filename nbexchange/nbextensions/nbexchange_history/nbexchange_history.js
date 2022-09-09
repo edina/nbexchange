@@ -351,8 +351,8 @@ define([
                         .text('User')
                     )
                 )
-                .after($('<tbody>'))
-            );
+            )
+            .append($('<tbody>'));
         
         for (var i=0; i<this.assignment_data.actions.length; i++) {
             //if (this.assignment_data.actions[i].user == this.userId) {

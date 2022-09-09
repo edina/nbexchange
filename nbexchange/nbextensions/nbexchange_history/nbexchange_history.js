@@ -376,7 +376,6 @@ define([
 
             //}
         }
-        sorttable.sorttable.makeSortable(element);
         children.append(element);
         this.assignment_element.empty().append(row).append(children);
     };

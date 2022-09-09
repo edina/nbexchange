@@ -328,7 +328,7 @@ define([
             return a.timestamp - b.timestamp;
         });
         var element = $('<table>')
-            .attr("id", this.assignment_data.assignment_code)
+            .attr("id", this.assignment_data.assignment_code.replace(' ', ''))
             .attr("style", "width:100%")
             .addClass('sortable')
             .append($('<thead>')
@@ -352,28 +352,14 @@ define([
             //if (this.assignment_data.actions[i].user == this.userId) {
                 var action_timestamp = this.assignment_data.actions[i].timestamp.replace(/\.\d+$/, '')
                 var action_text = this.assignment_data.actions[i].action.replace('AssignmentActions.', '');
-
-                if (i === 0) {
-                element.find('thead')
-                    .after($('<tbody/>'))
-                        .append($('<tr/>')
-                            .append($('<td/>')
-                                .text(action_timestamp))
-                            .append($('<td/>')
-                                .text(action_text))
-                            .append($('<td/>')
-                                .text(this.assignment_data.actions[i].user)));
-                } else {
-                    element.find('tbody')
-                        .append($('<tr/>')
-                            .append($('<td/>')
-                                .text(action_timestamp))
-                            .append($('<td/>')
-                                .text(action_text))
-                            .append($('<td/>')
-                                .text(this.assignment_data.actions[i].user)));
-                }
-
+                element.find('tbody')
+                    .append($('<tr/>')
+                        .append($('<td/>')
+                            .text(action_timestamp))
+                        .append($('<td/>')
+                            .text(action_text))
+                        .append($('<td/>')
+                            .text(this.assignment_data.actions[i].user)));
             //}
         }
         children.append(element);
@@ -399,11 +385,8 @@ define([
         return container;
     };
 
-    //Apply sortable to all tables on page
-    var all = document.getElementsByTagName("table");
-    for (var i=0, max=all.length; i < max; i++) {
-        sorttable.sorttable.makeSortable(all[i]);
-    }
+    //TEST Adding sorttable
+    sorttable.sorttable.makeSortable(document.getElementById('20220726stata'));
 
     return {
         'Course' : Course,

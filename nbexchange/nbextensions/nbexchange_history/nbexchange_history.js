@@ -6,10 +6,14 @@ define([
     'jquery',
     'base/js/utils',
     'base/js/dialog',
-], function(Jupyter, $, utils, dialog) {
+    './sorttable',
+], function(Jupyter, $, utils, dialog, sorttable) {
     "use strict";
     var ajax = utils.ajax || $.ajax;
     console.log(ajax);
+
+    console.log(sorttable);
+    console.log(sorttable.sorttable);
 
     // Notebook v4.3.1 enabled xsrf so use notebooks ajax that includes the
     // xsrf token in the header data
@@ -214,12 +218,13 @@ define([
             .text(title_text);
 
         title.addClass('history-collapsable-link');
+        var link = this.make_link();
+        title.append(link);
 
         var panel_body = $('<section/>')
         
         var content = ($('<div/>')
             .attr("id", id)
-            .addClass("list_container")
             .attr("role", "tablist")
             .attr("aria-multiselectable", "true")
         );
@@ -342,8 +347,7 @@ define([
                         .text('User')
                     )
                 )
-            )
-            .append($('<tbody>'));
+            );
         
         for (var i=0; i<this.assignment_data.actions.length; i++) {
             //if (this.assignment_data.actions[i].user == this.userId) {
@@ -381,6 +385,9 @@ define([
         container.append(link);
         return container;
     };
+
+    //TEST Adding sorttable
+    sorttable.sorttable.makeSortable(document.getElementById('20220726stata'));
 
     return {
         'Course' : Course,

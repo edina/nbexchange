@@ -14,7 +14,7 @@ define([
         '<div id="history" class="tab-pane">',
         '  <div id="history_toolbar" class="row list_toolbar">',
         '    <div class="col-sm-8 no-padding">',
-        '      <span id="history_list_info" class="toolbar_info">History of Exchange interactions</span>',
+        '      <h2 id="history_list_info" class="toolbar_info">History of Exchange interactions</h2>',
         '    </div>',
         '    <div class="col-sm-4 no-padding tree-buttons">',
         '      <span id="history_buttons" class="pull-right toolbar_buttons">',

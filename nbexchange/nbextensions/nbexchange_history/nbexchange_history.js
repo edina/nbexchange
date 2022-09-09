@@ -351,7 +351,7 @@ define([
                         .text('User')
                     )
                 )
-                .append($('<tbody>')
+                .append($('<tbody>'))
             );
         
         for (var i=0; i<this.assignment_data.actions.length; i++) {

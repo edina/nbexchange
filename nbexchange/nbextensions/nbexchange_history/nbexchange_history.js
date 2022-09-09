@@ -230,6 +230,7 @@ define([
         var content = ($('<div/>')
             .attr("id", id)
             .attr("role", "tablist")
+            .addClass('collapse')
             .attr("aria-multiselectable", "true")
         );
         panel_body.append(content);
@@ -351,7 +352,7 @@ define([
                         .text('User')
                     )
                 )
-                .append($('<tbody>'))
+                .after($('<tbody>'))
             );
         
         for (var i=0; i<this.assignment_data.actions.length; i++) {

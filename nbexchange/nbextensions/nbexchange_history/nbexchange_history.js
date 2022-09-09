@@ -385,9 +385,6 @@ define([
         return container;
     };
 
-    //TEST Adding sorttable
-    sorttable.sorttable.makeSortable(document.getElementById('20220726stata'));
-
     return {
         'Course' : Course,
         'CourseList': CourseList,

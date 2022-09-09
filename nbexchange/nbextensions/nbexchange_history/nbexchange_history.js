@@ -356,7 +356,7 @@ define([
                 if (i === 0) {
                 element.find('thead')
                     .after($('<tbody/>'))
-                        .after($('<tr/>')
+                        .append($('<tr/>')
                             .append($('<td/>')
                                 .text(action_timestamp))
                             .append($('<td/>')
@@ -364,8 +364,8 @@ define([
                             .append($('<td/>')
                                 .text(this.assignment_data.actions[i].user)));
                 } else {
-                    element.find('<tbody/>')
-                        .after($('<tr/>')
+                    element.find('tbody')
+                        .append($('<tr/>')
                             .append($('<td/>')
                                 .text(action_timestamp))
                             .append($('<td/>')

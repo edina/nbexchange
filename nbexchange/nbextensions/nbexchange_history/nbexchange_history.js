@@ -215,23 +215,15 @@ define([
         this.element = $(element);
 
         var title = $('<h3/>')
-            .text(title_text);
-
-        title.addClass('history-collapsable-link');
-        
-
-        var id = this.escape_id();
-        var link = $('<a/>')
+            .text(title_text)
             .addClass("collapsed history-collapsable-link")
             .attr("role", "button")
             .attr("data-toggle", "collapse")
             .attr("data-parent", '#' + this.parent_id)
             .attr("href", "#" + id)
             .attr("aria-expanded", "false")
-            .attr("aria-controls", id)
-
-        link.text(this.assignment_data.assignment_code);
-        title.append(link);
+            .attr("aria-controls", id);
+        
 
         var panel_body = $('<section/>')
         

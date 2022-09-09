@@ -16,7 +16,11 @@
 */
 
 define([
-], function() {
+  'base/js/namespace',
+  'jquery',
+  'base/js/utils',
+  'base/js/dialog',
+], function(Jupyter, $, utils, dialog) {
 
 var stIsIE = /*@cc_on!@*/false;
 

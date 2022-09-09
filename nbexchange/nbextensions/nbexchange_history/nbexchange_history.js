@@ -216,10 +216,16 @@ define([
 
         var title = $('<h3/>')
             .text(title_text)
+            .addClass("collapsed history-collapsable-link")
+            .attr("role", "button")
+            .attr("data-toggle", "collapse")
+            .attr("data-parent", '#' + this.parent_id)
+            .attr("href", "#" + id)
+            .attr("aria-expanded", "false")
+            .attr("aria-controls", id);
+        
 
-        title.addClass('history-collapsable-link');
-
-        var panel_body = $('<section/>');
+        var panel_body = $('<section/>')
         
         var content = ($('<div/>')
             .attr("id", id)

@@ -222,7 +222,10 @@ define([
             .attr("data-parent", '#' + this.parent_id)
             .attr("href", "#" + id)
             .attr("aria-expanded", "false")
-            .attr("aria-controls", id);
+            .attr("aria-controls", id)
+            .click(function() {
+                $(this).next('.collapse').slideToggle(); // or use .toggle() for no animation
+            });
         
 
         var panel_body = $('<section/>')
@@ -231,6 +234,7 @@ define([
             .attr("id", id)
             .attr("role", "tablist")
             .attr("aria-multiselectable", "true")
+            .addClass('collapse')
         );
         panel_body.append(content);
         element.append(title);

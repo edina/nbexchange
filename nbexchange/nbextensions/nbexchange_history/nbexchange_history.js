@@ -135,6 +135,11 @@ define([
             }
             console.log("TOTAL history_root_selector thingies:")
             console.log(this.history_root_selector)
+            var all = document.getElementsByTagName("table");
+
+            for (var i=0, max=all.length; i < max; i++) {
+                sorttable.sorttable.makeSortable(all[i]);
+            }
         };
 
         // Add collapse arrows to links created in History.prototype.make_link
@@ -231,6 +236,7 @@ define([
             .attr("id", id)
             .attr("role", "tablist")
             .attr("aria-multiselectable", "true")
+            .addClass('collapse')
         );
         panel_body.append(content);
         element.append(title);

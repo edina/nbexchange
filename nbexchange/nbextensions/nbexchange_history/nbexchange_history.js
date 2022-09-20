@@ -272,7 +272,8 @@ define([
     };
 
     History.prototype.style = function () {
-        this.assignment_element.addClass('list_item').addClass("row");
+        this.assignment_element.addClass("row");
+        this.assignment_element.attr("margin-bottm", "5px");
     };
 
     History.prototype.escape_id = function () {
@@ -346,15 +347,21 @@ define([
                 .append($('<tr>')
                     .append($('<th>')
                         .attr("style", "width:33%")
+                        .attr("font-size", "large")
                         .text('Timestamp')
+                        .addClass('sorttable_alpha')
                     )
                     .append($('<th>')
                         .attr("style", "width:33%")
+                        .attr("font-size", "large")
                         .text('Action')
+                        .addClass('sorttable_alpha')
                     )
                     .append($('<th>')
                         .attr("style", "width:33%")
+                        .attr("font-size", "large")
                         .text('User')
+                        .addClass('sorttable_alpha')
                     )
                 )
             )
@@ -384,7 +391,7 @@ define([
         var container = $('<span/>').addClass('item_name col-sm-6');
 
         var id = this.escape_id();
-        var link = $('<a/>')
+        var link = $('<h4/>')
             .addClass("collapsed history-collapsable-link")
             .attr("role", "button")
             .attr("data-toggle", "collapse")

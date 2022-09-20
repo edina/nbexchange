@@ -293,7 +293,9 @@ define([
 
     History.prototype.make_row = function () {
 
-        var row = $('<div/>').addClass('col-md-12');
+        var row = $('<div/>')
+        .addClass('col-md-12')
+        .attr("margin-bottom", "10px");
         var link = this.make_link();
         row.append(link);
         var summary_text_list = [];
@@ -324,7 +326,10 @@ define([
             summary_text = summary_text_list.join(', ');
         }
         row.append(
-            $('<span/>').addClass('item_course col-sm-6').text(summary_text)
+            $('<span/>')
+            .addClass('item_course col-sm-6')
+            .attr("margin-top", "10px")
+            .text(summary_text)
         );
 
         var id, children;

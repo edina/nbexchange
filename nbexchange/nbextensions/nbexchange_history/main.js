@@ -27,6 +27,7 @@ define([
         '  </div>',
         '  <div id="nbexchange-history_box_loading" class="row list_loading" >',
         '    <div> Querying the assignment exchange service. Please wait, this may take several minutes... </div>',
+        '    <div class="lds-dual-ring"></div>',
         '  </div>',
         '  <div id="nbexchange-history_box_error" class="row list_error" style="display: none;">',
         '    <div></div>',

@@ -103,7 +103,7 @@
 }
 
 table.sortable thead {
-    background-color:#eee;
+    background-color:#aaa;
     color:#666666;
     font-weight: bold;
     cursor: default;
@@ -162,8 +162,3 @@ table.sortable tbody tr:nth-child(2n) td {
     cursor: pointer;
     transition: 0.3s;
   }
-  
-  /* When moving the mouse over the close button */
-  .closebtn:hover {
-    color: black;
-  } 

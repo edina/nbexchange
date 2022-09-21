@@ -139,6 +139,7 @@ define([
 
             for (var i=0, max=all.length; i < max; i++) {
                 sorttable.sorttable.makeSortable(all[i]);
+                sorttable.innerSortFunction.apply(all[i].getElementsByTagName("th")[0], []);
             }
         };
 

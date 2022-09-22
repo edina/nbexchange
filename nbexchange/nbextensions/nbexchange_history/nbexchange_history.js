@@ -212,9 +212,9 @@ define([
 
     Course.prototype.make_box = function (element) {
         var title_text = this.data.course_title;
-        if (this.data.isInstructor) {
+        /*if (this.data.isInstructor) {
             title_text += ' (Instructor)'
-        };
+        };*/
         var len = this.data.assignments.length;
         title_text += ' ' + len + ' assignments';
         var id = this.escape_id() + '_history_box';

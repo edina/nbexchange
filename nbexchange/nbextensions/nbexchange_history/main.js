@@ -36,11 +36,6 @@ define([
         '  </div>',
         '  <div id="history_list" class="panel-group">',
         '  </div>',
-        '  <div class="alert info">',
-        '       As a <strong>student</strong>, you will only see your current course.',
-        '       <br/>As an <strong?instructor</strong>, you will see all the courses you are an instructor on',
-        '       <br/>As an <strong>admin</strong>, you will see all courses.',
-        '  </div>',
         '</div>'
     ].join('\n'));
 

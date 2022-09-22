@@ -251,6 +251,8 @@ define([
         } else {
             for (var i=0; i<len; i++) {
                 var assignment_element = $('<div/>');
+                console.log("USER DATA????");
+                console.log(this.data);
                 var userRole = this.data.role
                 var userId = this.data.user_id
                 var item = new History(assignment_element, this.data.assignments[i], id,

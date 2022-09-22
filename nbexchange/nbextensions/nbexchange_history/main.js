@@ -34,6 +34,11 @@ define([
         '  </div>',
         '  <div class="alert alert-danger version_error">',
         '  </div>',
+        '  <div class="alert info">',
+        '       As a <strong>Student</strong> you will only see your current course.<br/>',
+        '       As an <strong>Instructor</strong> you will only see courses you are an instructor on.<br/>',
+        '       As an <strong>Admin</strong> you will see all courses.',
+        '  </div>',
         '  <div id="history_list" class="panel-group">',
         '  </div>',
         '</div>'

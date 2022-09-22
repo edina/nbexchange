@@ -212,6 +212,7 @@ define([
 
     Course.prototype.make_box = function (element) {
         var title_text = this.data.course_title;
+        var course_code = this.data.course_code;
         /*if (this.data.isInstructor) {
             title_text += ' (Instructor)'
         };*/
@@ -221,7 +222,7 @@ define([
         this.element = $(element);
 
         var title = $('<h3/>')
-            .text(title_text)
+            .text(title_text + ' (' + course_code + ')')
             .addClass("collapsed history-collapsable-link")
             .attr("role", "button")
             .attr("data-toggle", "collapse")
@@ -251,8 +252,6 @@ define([
         } else {
             for (var i=0; i<len; i++) {
                 var assignment_element = $('<div/>');
-                console.log("USER DATA????");
-                console.log(this.data);
                 var userRole = this.data.role
                 var userId = this.data.user_id
                 var item = new History(assignment_element, this.data.assignments[i], id,

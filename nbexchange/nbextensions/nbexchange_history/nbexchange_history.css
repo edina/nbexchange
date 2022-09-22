@@ -104,12 +104,15 @@
 
 table.sortable thead {
     background-color:#aaa;
-    color:#666666;
+    color:#333333;
     font-weight: bold;
     cursor: default;
 }
 table.sortable th:not(.sorttable_sorted):not(.sorttable_sorted_reverse):not(.sorttable_nosort):after { 
     content: " \25B4\25BE" 
+}
+table.sortable th.sorttable_sorted:after { 
+    content: " \25BE" 
 }
 table.sortable tbody tr:nth-child(2n) td {
     background: #cccccc;

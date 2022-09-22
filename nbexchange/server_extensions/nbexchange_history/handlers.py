@@ -12,6 +12,7 @@ from notebook.base.handlers import IPythonHandler
 from notebook.utils import url_path_join as ujoin
 from tornado import web
 from traitlets.config import LoggingConfigurable
+from nbexchange.models.users import User
 
 from ...plugin import ExchangeHistory
 
@@ -30,6 +31,8 @@ class BaseHistorytHandler(IPythonHandler):
     @property
     def manager(self):
         self.log.info("SERVER - manager(self)")
+
+        self.log.info(User)
         return self.settings["history_list_manager"]
 
 

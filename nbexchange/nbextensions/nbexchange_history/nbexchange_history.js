@@ -395,7 +395,7 @@ define([
         var id = this.escape_id();
         var link = $('<h4/>')
             .addClass("collapsed history-collapsable-link")
-            .attr("margin-top", "-2px");
+            .attr("margin-top", "-2px")
             .attr("role", "button")
             .attr("data-toggle", "collapse")
             .attr("data-parent", '#' + this.parent_id)

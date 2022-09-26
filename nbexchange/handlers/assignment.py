@@ -83,10 +83,7 @@ class Assignments(BaseHandler):
                         feedback_timestamp = None
                         if action.action == AssignmentActions.submitted:
                             feedback = Feedback.find_notebook_for_student(
-                                db=session,
-                                notebook_id=notebook.id,
-                                student_id=this_user.get("id"),
-                                log=self.log,
+                                db=session, notebook_id=notebook.id, student_id=this_user.get("id"), log=self.log
                             )
                             if feedback:
                                 feedback_available = bool(feedback)
@@ -167,10 +164,7 @@ class Assignment(BaseHandler):
             # The location for the data-object is actually held in the 'released' action for the given assignment
             # We want the last one...
             assignment = AssignmentModel.find_by_code(
-                db=session,
-                code=assignment_code,
-                course_id=course.id,
-                action=AssignmentActions.released.value,
+                db=session, code=assignment_code, course_id=course.id, action=AssignmentActions.released.value
             )
 
             if assignment is None:
@@ -180,10 +174,7 @@ class Assignment(BaseHandler):
                 return  # needs a proper 'fail' here
 
             self._headers = httputil.HTTPHeaders(
-                {
-                    "Content-Type": "application/gzip",
-                    "Date": httputil.format_timestamp(time.time()),
-                }
+                {"Content-Type": "application/gzip", "Date": httputil.format_timestamp(time.time())}
             )
 
             data = b""
@@ -191,10 +182,7 @@ class Assignment(BaseHandler):
             release_file = None
 
             action = Action.find_most_recent_action(
-                db=session,
-                assignment_id=assignment.id,
-                action=AssignmentActions.released,
-                log=self.log,
+                db=session, assignment_id=assignment.id, action=AssignmentActions.released, log=self.log
             )
             release_file = action.location
 
@@ -307,10 +295,7 @@ class Assignment(BaseHandler):
                 # Write the uploaded file to the desired location
                 file_info = self.request.files["assignment"][0]
 
-                filename, content_type = (
-                    file_info["filename"],
-                    file_info["content_type"],
-                )
+                filename, content_type = (file_info["filename"], file_info["content_type"])
                 note = f"Received file {filename}, of type {content_type}"
                 self.log.info(note)
                 extn = os.path.splitext(filename)[1]

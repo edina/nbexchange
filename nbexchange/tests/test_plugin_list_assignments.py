@@ -541,7 +541,7 @@ def test_list_fetched(plugin_config, tmpdir):
                     ],
                     "path": "",
                     "timestamp": "2020-01-01 00:00:00.0 00:00",
-                },
+                }
             ]
     finally:
         shutil.rmtree("assign_1_3")
@@ -556,10 +556,7 @@ def test_list_fetched_with_path_includes_course(plugin_config, tmpdir):
         plugin_config.Exchange.path_includes_course = True
 
         os.makedirs(os.path.join("no_course", "assign_1_3"), exist_ok=True)
-        copyfile(
-            notebook1_filename,
-            os.path.join("no_course", "assign_1_3", basename(notebook1_filename)),
-        )
+        copyfile(notebook1_filename, os.path.join("no_course", "assign_1_3", basename(notebook1_filename)))
 
         plugin = ExchangeList(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
 
@@ -633,7 +630,7 @@ def test_list_fetched_with_path_includes_course(plugin_config, tmpdir):
                     ],
                     "path": "",
                     "timestamp": "2020-01-01 00:00:00.0 00:00",
-                },
+                }
             ]
     finally:
         shutil.rmtree("no_course")
@@ -738,7 +735,7 @@ def test_list_fetched_rerelease_ignored(plugin_config, tmpdir):
                     ],
                     "path": "",
                     "timestamp": "2020-01-01 00:00:00.0 00:00",
-                },
+                }
             ]
     finally:
         shutil.rmtree("assign_1_3")
@@ -842,7 +839,7 @@ def test_list_multiple_fetch(plugin_config, tmpdir):
                     ],
                     "path": "",
                     "timestamp": "2020-01-01 00:00:00.0 00:00",
-                },
+                }
             ]
     finally:
         shutil.rmtree("assign_1_3")
@@ -927,7 +924,7 @@ def test_list_fetch_without_release_ignored(plugin_config, tmpdir):
                     ],
                     "path": "",
                     "timestamp": "2020-01-01 00:00:00.0 00:00",
-                },
+                }
             ]
     finally:
         shutil.rmtree("assign_1_3")

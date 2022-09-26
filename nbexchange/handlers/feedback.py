@@ -73,10 +73,7 @@ class FeedbackHandler(BaseHandler):
             student = User.find_by_name(db=session, name=this_user["name"], log=self.log)
 
             res = Feedback.find_all_for_student(
-                db=session,
-                student_id=student.id,
-                assignment_id=assignment.id,
-                log=self.log,
+                db=session, student_id=student.id, assignment_id=assignment.id, log=self.log
             )
             feedbacks = []
             for r in res:
@@ -115,14 +112,7 @@ class FeedbackHandler(BaseHandler):
         """
 
         [course_id, assignment_id, notebook_id, student_id, timestamp, checksum] = self.get_params(
-            [
-                "course_id",
-                "assignment_id",
-                "notebook",
-                "student",
-                "timestamp",
-                "checksum",
-            ]
+            ["course_id", "assignment_id", "notebook", "student", "timestamp", "checksum"]
         )
 
         if not (course_id and assignment_id and notebook_id and student_id and timestamp and checksum):
@@ -158,10 +148,7 @@ class FeedbackHandler(BaseHandler):
                 raise web.HTTPError(404, f"Could not find requested resource course {course_id}")
 
             assignment = AssignmentModel.find_by_code(
-                db=session,
-                code=assignment_id,
-                course_id=course.id,
-                action=AssignmentActions.released.value,
+                db=session, code=assignment_id, course_id=course.id, action=AssignmentActions.released.value
             )
 
             if not assignment:
@@ -192,10 +179,7 @@ class FeedbackHandler(BaseHandler):
             try:
                 # Grab the file
                 file_info = self.request.files["feedback"][0]
-                filename, content_type = (
-                    file_info["filename"],
-                    file_info["content_type"],
-                )
+                filename, content_type = (file_info["filename"], file_info["content_type"])
                 note = f"Received file {filename}, of type {content_type}"
                 self.log.info(note)
                 fbfile = tempfile.NamedTemporaryFile()

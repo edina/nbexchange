@@ -20,19 +20,9 @@ from nbexchange.models.users import User
 user_kiz = {"name": "1-kiz"}
 user_bert = {"name": "1-bert"}
 
-user_kiz_instructor = {
-    "name": "1-kiz",
-    "course_id": "course_2",
-    "course_role": "Instructor",
-    "course_title": "A title",
-}
+user_kiz_instructor = {"name": "1-kiz", "course_id": "course_2", "course_role": "Instructor", "course_title": "A title"}
 
-user_kiz_student = {
-    "name": "1-kiz",
-    "course_id": "course_2",
-    "course_role": "Student",
-    "course_title": "A title",
-}
+user_kiz_student = {"name": "1-kiz", "course_id": "course_2", "course_role": "Student", "course_title": "A title"}
 
 user_zik_student = {
     "name": "1-zik",
@@ -49,11 +39,7 @@ user_brobbere_instructor = {
     "course_title": "A title",
 }
 
-user_brobbere_student = {
-    "name": "1-brobbere",
-    "course_id": "course_2",
-    "course_role": "Student",
-}
+user_brobbere_student = {"name": "1-brobbere", "course_id": "course_2", "course_role": "Student"}
 
 user_lkihlman_instructor = {
     "name": "1-lkihlman",
@@ -62,11 +48,7 @@ user_lkihlman_instructor = {
     "course_title": "A title",
 }
 
-user_lkihlman_student = {
-    "name": "1-lkihlman",
-    "course_id": "course_1",
-    "course_role": "Student",
-}
+user_lkihlman_student = {"name": "1-lkihlman", "course_id": "course_1", "course_role": "Student"}
 
 
 def tar_source(filename):

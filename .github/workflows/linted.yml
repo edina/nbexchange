@@ -11,6 +11,7 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    # 3.10 seems broken
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python 3.10

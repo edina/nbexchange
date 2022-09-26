@@ -39,10 +39,7 @@ def test_fetch_feedback_methods(plugin_config, tmpdir):
     assert str(e_info.value) == "'ExchangeFetchFeedback' object has no attribute 'src_path'"
 
     plugin.init_dest()
-    assert re.search(
-        r"test_fetch_feedback_methods0/feedback_test/assign_1/feedback$",
-        plugin.dest_path,
-    )
+    assert re.search(r"test_fetch_feedback_methods0/feedback_test/assign_1/feedback$", plugin.dest_path)
     assert os.path.isdir(plugin.dest_path)
 
 
@@ -99,12 +96,7 @@ def test_fetch_feedback_dir_created_with_course_id(plugin_config, tmpdir):
     with patch.object(Exchange, "api_request", side_effect=api_request):
         plugin.start()
         assert os.path.isdir(
-            os.path.join(
-                plugin_config.Exchange.assignment_dir,
-                "no_course",
-                assignment_id,
-                "feedback",
-            )
+            os.path.join(plugin_config.Exchange.assignment_dir, "no_course", assignment_id, "feedback")
         )
 
 

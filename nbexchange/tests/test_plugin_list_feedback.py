@@ -432,7 +432,7 @@ def test_list_submit_multipule_students(plugin_config, tmpdir):
                             }
                         ],
                         "timestamp": "2020-01-01 00:00:00.0 00:00",
-                    },
+                    }
                 ],
             },
             {
@@ -462,7 +462,7 @@ def test_list_submit_multipule_students(plugin_config, tmpdir):
                             }
                         ],
                         "timestamp": "2020-01-01 00:01:00.0 00:00",
-                    },
+                    }
                 ],
             },
             {
@@ -492,7 +492,7 @@ def test_list_submit_multipule_students(plugin_config, tmpdir):
                             }
                         ],
                         "timestamp": "2020-01-01 00:02:00.0 00:00",
-                    },
+                    }
                 ],
             },
         ]
@@ -602,7 +602,7 @@ def test_list_submit_multiple_assignments(plugin_config, tmpdir):
                             }
                         ],
                         "timestamp": "2020-01-01 00:00:00.0 00:00",
-                    },
+                    }
                 ],
             },
             {
@@ -632,7 +632,7 @@ def test_list_submit_multiple_assignments(plugin_config, tmpdir):
                             }
                         ],
                         "timestamp": "2020-01-01 00:01:00.0 00:00",
-                    },
+                    }
                 ],
             },
             {
@@ -662,7 +662,7 @@ def test_list_submit_multiple_assignments(plugin_config, tmpdir):
                             }
                         ],
                         "timestamp": "2020-01-01 00:02:00.0 00:00",
-                    },
+                    }
                 ],
             },
         ]
@@ -680,13 +680,7 @@ def test_list_feedback_available(plugin_config, tmpdir):
 
         my_feedback_dir = f"{assignment_id}/feedback/2020-01-01 00:02:00.2 00:00"
         os.makedirs(my_feedback_dir, exist_ok=True)
-        copyfile(
-            feedback1_filename,
-            os.path.join(
-                my_feedback_dir,
-                basename(feedback1_filename),
-            ),
-        )
+        copyfile(feedback1_filename, os.path.join(my_feedback_dir, basename(feedback1_filename)))
 
         plugin = ExchangeList(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
 
@@ -717,7 +711,7 @@ def test_list_feedback_available(plugin_config, tmpdir):
                                         }
                                     ],
                                     "timestamp": "2020-01-01 00:00:00.2 00:00",
-                                },
+                                }
                             ],
                         }
                     ),
@@ -775,13 +769,7 @@ def test_list_feedback_available_with_path_includes_course(plugin_config, tmpdir
 
         my_feedback_dir = f"{course_code}/{assignment_id}/feedback/2020-01-01 00:02:00.2 00:00"
         os.makedirs(my_feedback_dir, exist_ok=True)
-        copyfile(
-            feedback1_filename,
-            os.path.join(
-                my_feedback_dir,
-                basename(feedback1_filename),
-            ),
-        )
+        copyfile(feedback1_filename, os.path.join(my_feedback_dir, basename(feedback1_filename)))
 
         plugin = ExchangeList(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
 
@@ -812,7 +800,7 @@ def test_list_feedback_available_with_path_includes_course(plugin_config, tmpdir
                                         }
                                     ],
                                     "timestamp": "2020-01-01 00:00:00.2 00:00",
-                                },
+                                }
                             ],
                         }
                     ),

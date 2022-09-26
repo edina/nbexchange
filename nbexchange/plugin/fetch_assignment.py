@@ -31,11 +31,7 @@ class ExchangeFetchAssignment(abc.ExchangeFetchAssignment, Exchange):
         self.log.debug(f"ExchangeFetch.init_src using {self.coursedir.course_id} {self.coursedir.assignment_id}")
 
         location = os.path.join(
-            "/tmp/",
-            new_uuid(),
-            self.coursedir.course_id,
-            self.coursedir.assignment_id,
-            "assignment.tar.gz",
+            "/tmp/", new_uuid(), self.coursedir.course_id, self.coursedir.assignment_id, "assignment.tar.gz"
         )
         os.makedirs(os.path.dirname(location), exist_ok=True)
         self.src_path = location

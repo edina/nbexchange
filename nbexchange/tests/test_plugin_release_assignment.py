@@ -37,34 +37,20 @@ def test_release_assignment_methods_init_src(plugin_config, tmpdir, caplog):
     assert "Assignment not found at:" in str(e_info.value)
 
     # No release, source file exists
-    os.makedirs(
-        os.path.join(plugin_config.CourseDirectory.source_directory, "assign_1"),
-        exist_ok=True,
-    )
+    os.makedirs(os.path.join(plugin_config.CourseDirectory.source_directory, "assign_1"), exist_ok=True)
     copyfile(
-        notebook1_filename,
-        os.path.join(plugin_config.CourseDirectory.source_directory, "assign_1", "release.ipynb"),
+        notebook1_filename, os.path.join(plugin_config.CourseDirectory.source_directory, "assign_1", "release.ipynb")
     )
     with pytest.raises(ExchangeError) as e_info:
         plugin.init_src()
-    assert re.match(
-        r"Assignment found in '.+' but not '.+', run `nbgrader assign` first.",
-        str(e_info.value),
-    )
+    assert re.match(r"Assignment found in '.+' but not '.+', run `nbgrader assign` first.", str(e_info.value))
 
     # release file exists
-    os.makedirs(
-        os.path.join(plugin_config.CourseDirectory.release_directory, "assign_1"),
-        exist_ok=True,
-    )
+    os.makedirs(os.path.join(plugin_config.CourseDirectory.release_directory, "assign_1"), exist_ok=True)
     copyfile(
-        notebook1_filename,
-        os.path.join(plugin_config.CourseDirectory.release_directory, "assign_1", "release.ipynb"),
+        notebook1_filename, os.path.join(plugin_config.CourseDirectory.release_directory, "assign_1", "release.ipynb")
     )
-    with open(
-        os.path.join(plugin_config.CourseDirectory.release_directory, "assign_1", "timestamp.txt"),
-        "w",
-    ) as fp:
+    with open(os.path.join(plugin_config.CourseDirectory.release_directory, "assign_1", "timestamp.txt"), "w") as fp:
         fp.write("2020-01-01 00:00:00.0 UTC")
     plugin.init_src()
     assert re.search(r"test_release_assignment_method0/release_test/./assign_1$", plugin.src_path)
@@ -92,18 +78,11 @@ def test_release_assignment_methods_the_rest(plugin_config, tmpdir, caplog):
     plugin_config.CourseDirectory.assignment_id = "assign_1"
 
     plugin = ExchangeReleaseAssignment(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
-    os.makedirs(
-        os.path.join(plugin_config.CourseDirectory.release_directory, "assign_1"),
-        exist_ok=True,
-    )
+    os.makedirs(os.path.join(plugin_config.CourseDirectory.release_directory, "assign_1"), exist_ok=True)
     copyfile(
-        notebook1_filename,
-        os.path.join(plugin_config.CourseDirectory.release_directory, "assign_1", "release.ipynb"),
+        notebook1_filename, os.path.join(plugin_config.CourseDirectory.release_directory, "assign_1", "release.ipynb")
     )
-    with open(
-        os.path.join(plugin_config.CourseDirectory.release_directory, "assign_1", "timestamp.txt"),
-        "w",
-    ) as fp:
+    with open(os.path.join(plugin_config.CourseDirectory.release_directory, "assign_1", "timestamp.txt"), "w") as fp:
         fp.write("2020-01-01 00:00:00.0 UTC")
 
     plugin.init_src()
@@ -123,18 +102,11 @@ def test_release_assignment_normal(plugin_config, tmpdir):
 
     plugin_config.CourseDirectory.release_directory = str(tmpdir.mkdir(release_dir).realpath())
     plugin_config.CourseDirectory.assignment_id = "assign_1"
-    os.makedirs(
-        os.path.join(plugin_config.CourseDirectory.release_directory, "assign_1"),
-        exist_ok=True,
-    )
+    os.makedirs(os.path.join(plugin_config.CourseDirectory.release_directory, "assign_1"), exist_ok=True)
     copyfile(
-        notebook1_filename,
-        os.path.join(plugin_config.CourseDirectory.release_directory, "assign_1", "release.ipynb"),
+        notebook1_filename, os.path.join(plugin_config.CourseDirectory.release_directory, "assign_1", "release.ipynb")
     )
-    with open(
-        os.path.join(plugin_config.CourseDirectory.release_directory, "assign_1", "timestamp.txt"),
-        "w",
-    ) as fp:
+    with open(os.path.join(plugin_config.CourseDirectory.release_directory, "assign_1", "timestamp.txt"), "w") as fp:
         fp.write("2020-01-01 00:00:00.0 UTC")
 
     plugin = ExchangeReleaseAssignment(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
@@ -147,11 +119,7 @@ def test_release_assignment_normal(plugin_config, tmpdir):
         assert "assignment.tar.gz" == kwargs.get("files").get("assignment")[0]
         assert len(kwargs.get("files").get("assignment")[1]) > 0
 
-        return type(
-            "Request",
-            (object,),
-            {"status_code": 200, "json": (lambda: {"success": True})},
-        )
+        return type("Request", (object,), {"status_code": 200, "json": (lambda: {"success": True})})
 
     with patch.object(Exchange, "api_request", side_effect=api_request):
         plugin.start()
@@ -164,40 +132,19 @@ def test_release_assignment_several_normal(plugin_config, tmpdir):
 
     plugin_config.CourseDirectory.release_directory = str(tmpdir.mkdir(release_dir).realpath())
     plugin_config.CourseDirectory.assignment_id = "assign_1"
-    os.makedirs(
-        os.path.join(plugin_config.CourseDirectory.release_directory, "assign_1"),
-        exist_ok=True,
-    )
+    os.makedirs(os.path.join(plugin_config.CourseDirectory.release_directory, "assign_1"), exist_ok=True)
     copyfile(
-        notebook1_filename,
-        os.path.join(
-            plugin_config.CourseDirectory.release_directory,
-            "assign_1",
-            "release1.ipynb",
-        ),
+        notebook1_filename, os.path.join(plugin_config.CourseDirectory.release_directory, "assign_1", "release1.ipynb")
     )
-    with open(
-        os.path.join(plugin_config.CourseDirectory.release_directory, "assign_1", "timestamp.txt"),
-        "w",
-    ) as fp:
+    with open(os.path.join(plugin_config.CourseDirectory.release_directory, "assign_1", "timestamp.txt"), "w") as fp:
         fp.write("2020-01-01 00:00:00.0 UTC")
 
     copyfile(
-        notebook1_filename,
-        os.path.join(
-            plugin_config.CourseDirectory.release_directory,
-            "assign_1",
-            "release1.ipynb",
-        ),
+        notebook1_filename, os.path.join(plugin_config.CourseDirectory.release_directory, "assign_1", "release1.ipynb")
     )
 
     copyfile(
-        notebook2_filename,
-        os.path.join(
-            plugin_config.CourseDirectory.release_directory,
-            "assign_1",
-            "release2.ipynb",
-        ),
+        notebook2_filename, os.path.join(plugin_config.CourseDirectory.release_directory, "assign_1", "release2.ipynb")
     )
 
     plugin = ExchangeReleaseAssignment(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
@@ -210,11 +157,7 @@ def test_release_assignment_several_normal(plugin_config, tmpdir):
         assert "assignment.tar.gz" == kwargs.get("files").get("assignment")[0]
         assert len(kwargs.get("files").get("assignment")[1]) > 0
 
-        return type(
-            "Request",
-            (object,),
-            {"status_code": 200, "json": (lambda: {"success": True})},
-        )
+        return type("Request", (object,), {"status_code": 200, "json": (lambda: {"success": True})})
 
     with patch.object(Exchange, "api_request", side_effect=api_request):
         plugin.start()
@@ -226,34 +169,18 @@ def test_release_assignment_fail(plugin_config, tmpdir):
 
     plugin_config.CourseDirectory.release_directory = str(tmpdir.mkdir(release_dir).realpath())
     plugin_config.CourseDirectory.assignment_id = "assign_1"
-    os.makedirs(
-        os.path.join(plugin_config.CourseDirectory.release_directory, "assign_1"),
-        exist_ok=True,
-    )
+    os.makedirs(os.path.join(plugin_config.CourseDirectory.release_directory, "assign_1"), exist_ok=True)
     copyfile(
-        notebook1_filename,
-        os.path.join(
-            plugin_config.CourseDirectory.release_directory,
-            "assign_1",
-            "feedback.ipynb",
-        ),
+        notebook1_filename, os.path.join(plugin_config.CourseDirectory.release_directory, "assign_1", "feedback.ipynb")
     )
-    with open(
-        os.path.join(plugin_config.CourseDirectory.release_directory, "assign_1", "timestamp.txt"),
-        "w",
-    ) as fp:
+    with open(os.path.join(plugin_config.CourseDirectory.release_directory, "assign_1", "timestamp.txt"), "w") as fp:
         fp.write("2020-01-01 00:00:00.0 UTC")
 
     plugin = ExchangeReleaseAssignment(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
 
     def api_request(*args, **kwargs):
         return type(
-            "Request",
-            (object,),
-            {
-                "status_code": 200,
-                "json": (lambda: {"success": False, "note": "failure note"}),
-            },
+            "Request", (object,), {"status_code": 200, "json": (lambda: {"success": False, "note": "failure note"})}
         )
 
     with patch.object(Exchange, "api_request", side_effect=api_request):
@@ -268,18 +195,11 @@ def test_release_oversize_blocked(plugin_config, tmpdir):
 
     plugin_config.CourseDirectory.release_directory = str(tmpdir.mkdir(release_dir).realpath())
     plugin_config.CourseDirectory.assignment_id = "assign_1"
-    os.makedirs(
-        os.path.join(plugin_config.CourseDirectory.release_directory, "assign_1"),
-        exist_ok=True,
-    )
+    os.makedirs(os.path.join(plugin_config.CourseDirectory.release_directory, "assign_1"), exist_ok=True)
     copyfile(
-        notebook1_filename,
-        os.path.join(plugin_config.CourseDirectory.release_directory, "assign_1", "release.ipynb"),
+        notebook1_filename, os.path.join(plugin_config.CourseDirectory.release_directory, "assign_1", "release.ipynb")
     )
-    with open(
-        os.path.join(plugin_config.CourseDirectory.release_directory, "assign_1", "timestamp.txt"),
-        "w",
-    ) as fp:
+    with open(os.path.join(plugin_config.CourseDirectory.release_directory, "assign_1", "timestamp.txt"), "w") as fp:
         fp.write("2020-01-01 00:00:00.0 UTC")
 
     plugin = ExchangeReleaseAssignment(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
@@ -295,11 +215,7 @@ def test_release_oversize_blocked(plugin_config, tmpdir):
         assert "assignment.tar.gz" == kwargs.get("files").get("assignment")[0]
         assert len(kwargs.get("files").get("assignment")[1]) > 0
 
-        return type(
-            "Request",
-            (object,),
-            {"status_code": 200, "json": (lambda: {"success": True})},
-        )
+        return type("Request", (object,), {"status_code": 200, "json": (lambda: {"success": True})})
 
     with patch.object(Exchange, "api_request", side_effect=api_request):
         with pytest.raises(ExchangeError) as e_info:

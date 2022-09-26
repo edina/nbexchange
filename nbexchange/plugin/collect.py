@@ -107,18 +107,13 @@ class ExchangeCollect(abc.ExchangeCollect, Exchange):
             if " " in full_name:
                 first_name, last_name = full_name.rsplit(" ", 1)
             else:
-                first_name, last_name = (
-                    full_name,
-                    "",
-                )  # TODO: should we prefer first or last name here?
+                first_name, last_name = (full_name, "")  # TODO: should we prefer first or last name here?
 
             # self.coursedir.submitted_directory gets defined in `list.py`
             #   otherwise this is consistent with the upstream code
             if student_id:
                 local_dest_path = self.coursedir.format_path(
-                    self.coursedir.submitted_directory,
-                    student_id,
-                    self.coursedir.assignment_id,
+                    self.coursedir.submitted_directory, student_id, self.coursedir.assignment_id
                 )
                 if not os.path.exists(os.path.dirname(local_dest_path)):
                     os.makedirs(os.path.dirname(local_dest_path))

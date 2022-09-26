@@ -127,10 +127,7 @@ def test_fetch_duplicate_param_first_is_right(app, clear_database):  # noqa: F81
 @pytest.mark.gen_test
 def test_instructor_can_fetch(app, clear_database):  # noqa: F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
-        r = yield async_requests.post(
-            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
-        )
+        r = yield async_requests.post(app.url + "/assignment?course_id=course_2&assignment_id=assign_a", files=files)
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.get(app.url + "/assignment?course_id=course_2&assignment_id=assign_a")
     assert r.status_code == 200
@@ -143,10 +140,7 @@ def test_instructor_can_fetch(app, clear_database):  # noqa: F811
 @pytest.mark.gen_test
 def test_fetch_broken_nbex_user(app, clear_database, caplog):  # noqa: F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
-        r = yield async_requests.post(
-            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
-        )
+        r = yield async_requests.post(app.url + "/assignment?course_id=course_2&assignment_id=assign_a", files=files)
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz):
         r = yield async_requests.get(app.url + "/assignment?course_id=course_2&assignment_id=assign_a")
         assert r.status_code == 500
@@ -160,10 +154,7 @@ def test_fetch_broken_nbex_user(app, clear_database, caplog):  # noqa: F811
 @pytest.mark.gen_test
 def test_student_can_fetch(app, clear_database):  # noqa: F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
-        r = yield async_requests.post(
-            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
-        )
+        r = yield async_requests.post(app.url + "/assignment?course_id=course_2&assignment_id=assign_a", files=files)
     with patch.object(BaseHandler, "get_current_user", return_value=user_brobbere_student):
         r = yield async_requests.get(app.url + "/assignment?course_id=course_2&assignment_id=assign_a")
     assert r.status_code == 200
@@ -175,26 +166,14 @@ def test_student_can_fetch(app, clear_database):  # noqa: F811
 @pytest.mark.gen_test
 def test_fetch_after_rerelease_gets_different_file(app, clear_database):  # noqa: F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
-        r = yield async_requests.post(
-            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
-        )
-        r = yield async_requests.post(
-            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
-        )
-        r = yield async_requests.post(
-            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
-        )
+        r = yield async_requests.post(app.url + "/assignment?course_id=course_2&assignment_id=assign_a", files=files)
+        r = yield async_requests.post(app.url + "/assignment?course_id=course_2&assignment_id=assign_a", files=files)
+        r = yield async_requests.post(app.url + "/assignment?course_id=course_2&assignment_id=assign_a", files=files)
     with patch.object(BaseHandler, "get_current_user", return_value=user_brobbere_student):
         r = yield async_requests.get(app.url + "/assignment?&course_id=course_2&assignment_id=assign_a")
         r = yield async_requests.get(app.url + "/assignments?course_id=course_2")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
-        r = yield async_requests.post(
-            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
-        )
+        r = yield async_requests.post(app.url + "/assignment?course_id=course_2&assignment_id=assign_a", files=files)
     with patch.object(BaseHandler, "get_current_user", return_value=user_brobbere_student):
         r = yield async_requests.get(app.url + "/assignment?&course_id=course_2&assignment_id=assign_a")
         r = yield async_requests.get(app.url + "/assignments?course_id=course_2")
@@ -205,14 +184,7 @@ def test_fetch_after_rerelease_gets_different_file(app, clear_database):  # noqa
     paths = list(map(lambda assignment: assignment["path"], response_data["value"]))
     actions = list(map(lambda assignment: assignment["status"], response_data["value"]))
     assert len(paths) == 6
-    assert actions == [
-        "released",
-        "released",
-        "released",
-        "fetched",
-        "released",
-        "fetched",
-    ]
+    assert actions == ["released", "released", "released", "fetched", "released", "fetched"]
     assert paths[2] == paths[3]  # First fetch = third release
     assert paths[4] == paths[5]  # Second fetch = fourth release
     assert paths[3] != paths[5]  # First fetch is not the same as the second fetch

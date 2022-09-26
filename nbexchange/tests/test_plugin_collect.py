@@ -61,22 +61,12 @@ def test_collect_methods(plugin_config, tmpdir):
         return type(
             "Response",
             (object,),
-            {
-                "status_code": 200,
-                "headers": {"content-type": "application/gzip"},
-                "content": tar_file.read(),
-            },
+            {"status_code": 200, "headers": {"content-type": "application/gzip"}, "content": tar_file.read()},
         )
 
     def api_request_bad(*args, **kwargs):
         return type(
-            "Response",
-            (object,),
-            {
-                "status_code": 200,
-                "headers": {"content-type": "application/gzip"},
-                "content": b"",
-            },
+            "Response", (object,), {"status_code": 200, "headers": {"content-type": "application/gzip"}, "content": b""}
         )
 
     with patch.object(Exchange, "api_request", side_effect=api_request_bad):
@@ -143,11 +133,7 @@ def test_collect_normal(plugin_config, tmpdir):
             return type(
                 "Response",
                 (object,),
-                {
-                    "status_code": 200,
-                    "headers": {"content-type": "application/gzip"},
-                    "content": tar_file.read(),
-                },
+                {"status_code": 200, "headers": {"content-type": "application/gzip"}, "content": tar_file.read()},
             )
 
     with patch.object(Exchange, "api_request", side_effect=api_request):
@@ -155,11 +141,7 @@ def test_collect_normal(plugin_config, tmpdir):
         assert collections and collection
         assert os.path.exists(
             os.path.join(
-                plugin.coursedir.format_path(
-                    plugin_config.CourseDirectory.submitted_directory,
-                    student_id,
-                    ass_1_3,
-                ),
+                plugin.coursedir.format_path(plugin_config.CourseDirectory.submitted_directory, student_id, ass_1_3),
                 os.path.basename(notebook1_filename),
             )
         )
@@ -172,27 +154,15 @@ def test_collect_normal_update(plugin_config, tmpdir):
     plugin_config.ExchangeCollect.update = True
     plugin_config.CourseDirectory.submitted_directory = str(tmpdir.mkdir("submitted").realpath())
     plugin = ExchangeCollect(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
-    os.makedirs(
-        os.path.join(plugin_config.CourseDirectory.submitted_directory, student_id, ass_1_2),
-        exist_ok=True,
-    )
+    os.makedirs(os.path.join(plugin_config.CourseDirectory.submitted_directory, student_id, ass_1_2), exist_ok=True)
     copyfile(
         notebook1_filename,
         os.path.join(
-            plugin_config.CourseDirectory.submitted_directory,
-            student_id,
-            ass_1_2,
-            os.path.basename(notebook1_filename),
+            plugin_config.CourseDirectory.submitted_directory, student_id, ass_1_2, os.path.basename(notebook1_filename)
         ),
     )
     with open(
-        os.path.join(
-            plugin_config.CourseDirectory.submitted_directory,
-            student_id,
-            ass_1_2,
-            "timestamp.txt",
-        ),
-        "w",
+        os.path.join(plugin_config.CourseDirectory.submitted_directory, student_id, ass_1_2, "timestamp.txt"), "w"
     ) as fp:
         fp.write("2020-01-01 00:00:00.000")
 
@@ -240,11 +210,7 @@ def test_collect_normal_update(plugin_config, tmpdir):
             return type(
                 "Response",
                 (object,),
-                {
-                    "status_code": 200,
-                    "headers": {"content-type": "application/gzip"},
-                    "content": tar_file.read(),
-                },
+                {"status_code": 200, "headers": {"content-type": "application/gzip"}, "content": tar_file.read()},
             )
 
     with patch.object(Exchange, "api_request", side_effect=api_request):
@@ -252,21 +218,13 @@ def test_collect_normal_update(plugin_config, tmpdir):
         assert collections and collection
         assert not os.path.exists(
             os.path.join(
-                plugin.coursedir.format_path(
-                    plugin_config.CourseDirectory.submitted_directory,
-                    student_id,
-                    ass_1_2,
-                ),
+                plugin.coursedir.format_path(plugin_config.CourseDirectory.submitted_directory, student_id, ass_1_2),
                 os.path.basename(notebook1_filename),
             )
         )
         assert os.path.exists(
             os.path.join(
-                plugin.coursedir.format_path(
-                    plugin_config.CourseDirectory.submitted_directory,
-                    student_id,
-                    ass_1_2,
-                ),
+                plugin.coursedir.format_path(plugin_config.CourseDirectory.submitted_directory, student_id, ass_1_2),
                 os.path.basename(notebook2_filename),
             )
         )
@@ -279,27 +237,15 @@ def test_collect_normal_dont_update(plugin_config, tmpdir):
     plugin_config.ExchangeCollect.update = False
     plugin_config.CourseDirectory.submitted_directory = str(tmpdir.mkdir("submitted").realpath())
     plugin = ExchangeCollect(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
-    os.makedirs(
-        os.path.join(plugin_config.CourseDirectory.submitted_directory, student_id, ass_1_4),
-        exist_ok=True,
-    )
+    os.makedirs(os.path.join(plugin_config.CourseDirectory.submitted_directory, student_id, ass_1_4), exist_ok=True)
     copyfile(
         notebook1_filename,
         os.path.join(
-            plugin_config.CourseDirectory.submitted_directory,
-            student_id,
-            ass_1_4,
-            os.path.basename(notebook1_filename),
+            plugin_config.CourseDirectory.submitted_directory, student_id, ass_1_4, os.path.basename(notebook1_filename)
         ),
     )
     with open(
-        os.path.join(
-            plugin_config.CourseDirectory.submitted_directory,
-            student_id,
-            ass_1_4,
-            "timestamp.txt",
-        ),
-        "w",
+        os.path.join(plugin_config.CourseDirectory.submitted_directory, student_id, ass_1_4, "timestamp.txt"), "w"
     ) as fp:
         fp.write("2020-01-01 00:00:00.000")
 
@@ -347,11 +293,7 @@ def test_collect_normal_dont_update(plugin_config, tmpdir):
             return type(
                 "Response",
                 (object,),
-                {
-                    "status_code": 200,
-                    "headers": {"content-type": "application/gzip"},
-                    "content": tar_file.read(),
-                },
+                {"status_code": 200, "headers": {"content-type": "application/gzip"}, "content": tar_file.read()},
             )
 
     with patch.object(Exchange, "api_request", side_effect=api_request):
@@ -359,21 +301,13 @@ def test_collect_normal_dont_update(plugin_config, tmpdir):
         assert collections and not collection
         assert os.path.exists(
             os.path.join(
-                plugin.coursedir.format_path(
-                    plugin_config.CourseDirectory.submitted_directory,
-                    student_id,
-                    ass_1_4,
-                ),
+                plugin.coursedir.format_path(plugin_config.CourseDirectory.submitted_directory, student_id, ass_1_4),
                 os.path.basename(notebook1_filename),
             )
         )
         assert not os.path.exists(
             os.path.join(
-                plugin.coursedir.format_path(
-                    plugin_config.CourseDirectory.submitted_directory,
-                    student_id,
-                    ass_1_4,
-                ),
+                plugin.coursedir.format_path(plugin_config.CourseDirectory.submitted_directory, student_id, ass_1_4),
                 os.path.basename(notebook2_filename),
             )
         )
@@ -386,27 +320,15 @@ def test_collect_normal_dont_update_old(plugin_config, tmpdir):
     plugin_config.ExchangeCollect.update = True
     plugin_config.CourseDirectory.submitted_directory = str(tmpdir.mkdir("submitted").realpath())
     plugin = ExchangeCollect(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
-    os.makedirs(
-        os.path.join(plugin_config.CourseDirectory.submitted_directory, student_id, ass_1_5),
-        exist_ok=True,
-    )
+    os.makedirs(os.path.join(plugin_config.CourseDirectory.submitted_directory, student_id, ass_1_5), exist_ok=True)
     copyfile(
         notebook1_filename,
         os.path.join(
-            plugin_config.CourseDirectory.submitted_directory,
-            student_id,
-            ass_1_5,
-            os.path.basename(notebook1_filename),
+            plugin_config.CourseDirectory.submitted_directory, student_id, ass_1_5, os.path.basename(notebook1_filename)
         ),
     )
     with open(
-        os.path.join(
-            plugin_config.CourseDirectory.submitted_directory,
-            student_id,
-            ass_1_5,
-            "timestamp.txt",
-        ),
-        "w",
+        os.path.join(plugin_config.CourseDirectory.submitted_directory, student_id, ass_1_5, "timestamp.txt"), "w"
     ) as fp:
         fp.write("2020-01-01 00:00:01.000")
 
@@ -454,11 +376,7 @@ def test_collect_normal_dont_update_old(plugin_config, tmpdir):
             return type(
                 "Response",
                 (object,),
-                {
-                    "status_code": 200,
-                    "headers": {"content-type": "application/gzip"},
-                    "content": tar_file.read(),
-                },
+                {"status_code": 200, "headers": {"content-type": "application/gzip"}, "content": tar_file.read()},
             )
 
     with patch.object(Exchange, "api_request", side_effect=api_request):
@@ -466,21 +384,13 @@ def test_collect_normal_dont_update_old(plugin_config, tmpdir):
         assert collections and not collection
         assert os.path.exists(
             os.path.join(
-                plugin.coursedir.format_path(
-                    plugin_config.CourseDirectory.submitted_directory,
-                    student_id,
-                    ass_1_5,
-                ),
+                plugin.coursedir.format_path(plugin_config.CourseDirectory.submitted_directory, student_id, ass_1_5),
                 os.path.basename(notebook1_filename),
             )
         )
         assert not os.path.exists(
             os.path.join(
-                plugin.coursedir.format_path(
-                    plugin_config.CourseDirectory.submitted_directory,
-                    student_id,
-                    ass_1_5,
-                ),
+                plugin.coursedir.format_path(plugin_config.CourseDirectory.submitted_directory, student_id, ass_1_5),
                 os.path.basename(notebook2_filename),
             )
         )
@@ -536,11 +446,7 @@ def test_collect_normal_several(plugin_config, tmpdir):
             return type(
                 "Response",
                 (object,),
-                {
-                    "status_code": 200,
-                    "headers": {"content-type": "application/gzip"},
-                    "content": tar_file.read(),
-                },
+                {"status_code": 200, "headers": {"content-type": "application/gzip"}, "content": tar_file.read()},
             )
 
     with patch.object(Exchange, "api_request", side_effect=api_request):
@@ -548,21 +454,13 @@ def test_collect_normal_several(plugin_config, tmpdir):
         assert collections and collection
         assert os.path.exists(
             os.path.join(
-                plugin.coursedir.format_path(
-                    plugin_config.CourseDirectory.submitted_directory,
-                    student_id,
-                    ass_1_1,
-                ),
+                plugin.coursedir.format_path(plugin_config.CourseDirectory.submitted_directory, student_id, ass_1_1),
                 os.path.basename(notebook1_filename),
             )
         )
         assert os.path.exists(
             os.path.join(
-                plugin.coursedir.format_path(
-                    plugin_config.CourseDirectory.submitted_directory,
-                    student_id,
-                    ass_1_1,
-                ),
+                plugin.coursedir.format_path(plugin_config.CourseDirectory.submitted_directory, student_id, ass_1_1),
                 os.path.basename(notebook2_filename),
             )
         )
@@ -627,11 +525,7 @@ def test_collect_normal_gradebook_called(plugin_config, tmpdir):
             return type(
                 "Response",
                 (object,),
-                {
-                    "status_code": 200,
-                    "headers": {"content-type": "application/gzip"},
-                    "content": tar_file.read(),
-                },
+                {"status_code": 200, "headers": {"content-type": "application/gzip"}, "content": tar_file.read()},
             )
 
     with patch.object(Exchange, "api_request", side_effect=api_request), patch.object(
@@ -642,11 +536,7 @@ def test_collect_normal_gradebook_called(plugin_config, tmpdir):
         assert collections and collection
         assert os.path.exists(
             os.path.join(
-                plugin.coursedir.format_path(
-                    plugin_config.CourseDirectory.submitted_directory,
-                    student_id,
-                    ass_1_3,
-                ),
+                plugin.coursedir.format_path(plugin_config.CourseDirectory.submitted_directory, student_id, ass_1_3),
                 os.path.basename(notebook1_filename),
             )
         )
@@ -711,11 +601,7 @@ def test_collect_normal_gradebook_called_no_space(plugin_config, tmpdir):
             return type(
                 "Response",
                 (object,),
-                {
-                    "status_code": 200,
-                    "headers": {"content-type": "application/gzip"},
-                    "content": tar_file.read(),
-                },
+                {"status_code": 200, "headers": {"content-type": "application/gzip"}, "content": tar_file.read()},
             )
 
     with patch.object(Exchange, "api_request", side_effect=api_request), patch.object(
@@ -726,11 +612,7 @@ def test_collect_normal_gradebook_called_no_space(plugin_config, tmpdir):
         assert collections and collection
         assert os.path.exists(
             os.path.join(
-                plugin.coursedir.format_path(
-                    plugin_config.CourseDirectory.submitted_directory,
-                    student_id,
-                    ass_1_3,
-                ),
+                plugin.coursedir.format_path(plugin_config.CourseDirectory.submitted_directory, student_id, ass_1_3),
                 os.path.basename(notebook1_filename),
             )
         )
@@ -794,11 +676,7 @@ def test_collect_normal_gradebook_called_no_full_name(plugin_config, tmpdir):
             return type(
                 "Response",
                 (object,),
-                {
-                    "status_code": 200,
-                    "headers": {"content-type": "application/gzip"},
-                    "content": tar_file.read(),
-                },
+                {"status_code": 200, "headers": {"content-type": "application/gzip"}, "content": tar_file.read()},
             )
 
     with patch.object(Exchange, "api_request", side_effect=api_request), patch.object(
@@ -809,11 +687,7 @@ def test_collect_normal_gradebook_called_no_full_name(plugin_config, tmpdir):
         assert collections and collection
         assert os.path.exists(
             os.path.join(
-                plugin.coursedir.format_path(
-                    plugin_config.CourseDirectory.submitted_directory,
-                    student_id,
-                    ass_1_3,
-                ),
+                plugin.coursedir.format_path(plugin_config.CourseDirectory.submitted_directory, student_id, ass_1_3),
                 os.path.basename(notebook1_filename),
             )
         )
@@ -887,11 +761,7 @@ def test_collect_normal_several_gradebook_called(plugin_config, tmpdir):
             return type(
                 "Response",
                 (object,),
-                {
-                    "status_code": 200,
-                    "headers": {"content-type": "application/gzip"},
-                    "content": tar_file.read(),
-                },
+                {"status_code": 200, "headers": {"content-type": "application/gzip"}, "content": tar_file.read()},
             )
 
     with patch.object(Exchange, "api_request", side_effect=api_request), patch.object(
@@ -969,11 +839,7 @@ def test_collect_normal_several_full_name_none(plugin_config, tmpdir):
             return type(
                 "Response",
                 (object,),
-                {
-                    "status_code": 200,
-                    "headers": {"content-type": "application/gzip"},
-                    "content": tar_file.read(),
-                },
+                {"status_code": 200, "headers": {"content-type": "application/gzip"}, "content": tar_file.read()},
             )
 
     with patch.object(Exchange, "api_request", side_effect=api_request), patch.object(
@@ -1068,11 +934,7 @@ def test_collect_handles_500_failure(plugin_config, tmpdir):
             return type(
                 "Response",
                 (object,),
-                {
-                    "status_code": 500,
-                    "headers": {"content-type": "application/gzip"},
-                    "content": http_error,
-                },
+                {"status_code": 500, "headers": {"content-type": "application/gzip"}, "content": http_error},
             )
 
     with patch.object(Exchange, "api_request", side_effect=api_request):
@@ -1187,11 +1049,7 @@ def test_collect_with_unicode(plugin_config, tmpdir):
             return type(
                 "Response",
                 (object,),
-                {
-                    "status_code": 200,
-                    "headers": {"content-type": "application/gzip"},
-                    "content": tar_file.read(),
-                },
+                {"status_code": 200, "headers": {"content-type": "application/gzip"}, "content": tar_file.read()},
             )
 
     with patch.object(Exchange, "api_request", side_effect=api_request):
@@ -1200,9 +1058,7 @@ def test_collect_with_unicode(plugin_config, tmpdir):
         assert os.path.exists(
             os.path.join(
                 plugin.coursedir.format_path(
-                    plugin_config.CourseDirectory.submitted_directory,
-                    student_id,
-                    assignment_id,
+                    plugin_config.CourseDirectory.submitted_directory, student_id, assignment_id
                 ),
                 os.path.basename(notebook1_filename),
             )
@@ -1266,11 +1122,7 @@ def test_collect_with_unicode_R2L_language(plugin_config, tmpdir):
             return type(
                 "Response",
                 (object,),
-                {
-                    "status_code": 200,
-                    "headers": {"content-type": "application/gzip"},
-                    "content": tar_file.read(),
-                },
+                {"status_code": 200, "headers": {"content-type": "application/gzip"}, "content": tar_file.read()},
             )
 
     with patch.object(Exchange, "api_request", side_effect=api_request):
@@ -1279,9 +1131,7 @@ def test_collect_with_unicode_R2L_language(plugin_config, tmpdir):
         assert os.path.exists(
             os.path.join(
                 plugin.coursedir.format_path(
-                    plugin_config.CourseDirectory.submitted_directory,
-                    student_id,
-                    assignment_id,
+                    plugin_config.CourseDirectory.submitted_directory, student_id, assignment_id
                 ),
                 os.path.basename(notebook1_filename),
             )

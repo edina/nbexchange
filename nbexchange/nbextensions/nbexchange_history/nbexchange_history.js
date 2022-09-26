@@ -271,7 +271,6 @@ define([
 
     History.prototype.style = function () {
         this.assignment_element.addClass("row");
-        this.assignment_element.attr("margin-bottm", "5px");
     };
 
     History.prototype.escape_id = function () {
@@ -396,6 +395,7 @@ define([
         var id = this.escape_id();
         var link = $('<h4/>')
             .addClass("collapsed history-collapsable-link")
+            .attr("margin-top", "-2px");
             .attr("role", "button")
             .attr("data-toggle", "collapse")
             .attr("data-parent", '#' + this.parent_id)

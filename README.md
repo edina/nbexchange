@@ -243,7 +243,9 @@ The figure is bytes
 
 # Contributing
 
-See [Contributing.md](CONTRIBUTING.md)
+See [how_it_works.md](how_it_works.md) for an extended explanation as to how the exchange works, internally
+
+See [Contributing.md](CONTRIBUTING.md) for details on how to extend/contribute to the code.
 
 ## Releasing new versions
 

@@ -2,26 +2,42 @@
 [![codecov](https://codecov.io/gh/edina/nbexchange/branch/prepare_for_public_release/graph/badge.svg)](https://codecov.io/gh/edina/nbexchange)
 [![Docker Repository](https://quay.io/repository/noteable/nbexchange/status "Docker Repository on Quay")](https://quay.io/repository/noteable/nbexchange)
 
-A Jupyterhub service that replaces the nbgrader Exchange.
+A dockerised service that replaces the defaukt nbgrader Exchange.
 
 <!-- TOC -->
 
-- [Highlights of nbexchange](#highlights-of-nbexchange)
-    - [Compatibility](#compatibility)
+- [What is nbexchange](#what-is-nbexchange)
+- [Why nbexchange](#why-nbexchange)
+  - [Compatibility](#compatibility)
 - [Documentation](#documentation)
-    - [Database relationships](#database-relationships)
+  - [Database relationships](#database-relationships)
 - [Installing](#installing)
-    - [Configuration](#configuration)
-    - [How to](#how-to)
+  - [nbexchange service](#nbexchange-service)
+    - [Helm](#helm)
+  - [nbgrader plugin](#nbgrader-plugin)
+- [Configuration](#configuration)
+  - [Configuring `nbexchange`](#configuring-nbexchange)
+    - [**`user_plugin_class`** revisited](#user_plugin_class-revisited)
+  - [Configuring `nbgrader`](#configuring-nbgrader)
 - [Contributing](#contributing)
-- [Configuration](#configuration-1)
-    - [Configuring `nbexchange`](#configuring-nbexchange)
-    - [Configuring `nbgrader`](#configuring-nbgrader)
-    - [Releasing new versions](#releasing-new-versions)
+  - [Releasing new versions](#releasing-new-versions)
 
 <!-- /TOC -->
 
-# Highlights of nbexchange
+# What is nbexchange
+
+nbexchange is an extension to [nbgrader](https://github.com/jupyter/nbgrader) which provides a mechanism for assignments to transferred in a _distributed_ Jupyter Notebooks environment.
+
+The default for nbgrader is to assume all users are on the same computer, and files are copied from one directory to another - thus:
+![exchange mechanism on a single filesystem](file_exchange.png)
+
+When using jupyter notebooks in a distributed [dockerised] system, there is no common filesystem - so an alternative mechanism is
+needed - something that allows files to be transfered via some independant service - eg: 
+![exchange mechanism in a dockerised environment](dockerised_exchange.png) 
+
+nbexchange provides both that intermediate filestore, and the plugins for nbgrader to use it.
+
+# Why nbexchange
 
 From [nbgrader](https://github.com/jupyter/nbgrader): _Assignments_ are `created`, `generated`, `released`, `fetched`, `submitted`, `collected`, `graded`. Then `feedback` can be `generated`, `released`, and `fetched`.
 
@@ -31,7 +47,7 @@ In doing this, the exchange is the authoritative place to get a list of what's w
 
 `nbexchange` is an external exchange plugin, designed to be run as a docker instance (probably inside a K8 cluster)
 
-It's provides an external store for released & submitted assignments, and [soon] the feeback cycle.
+It's provides an external store for released & submitted assignments, and the feeback cycle.
 
 Following the lead of other Jupyter services, it is a `tornado` application.
 
@@ -41,26 +57,23 @@ This version is compatible with `nbgrader` >= 0.6.2
 
 # Documentation
 
-This exchange has some fundamental design decisions driven by the environment which drove its creation.
+This exchange has some assumptions because of the environment required it.
 
 There are the following assumptions:
 
-- You have an API for authenticating users who connect to the exchange (probably Jupyterhub, but not always)
-- Usernames will be unique across the whole system
+- You have an API for authenticating users who connect to the exchange (possibly Jupyterhub, but not always)
+- Usernames will be unique across the whole system 
 - Internal storage is in two parts:
   - An sql database for metadata, and
   - A filesystem for, well, files.
-- There will always be a course_code
+- There will always be a `course_code`
   - There may be multiple assignments under one course,
   - `assignment_code`s will be unique to a course
-  - `assignment_code`s may be repeated in different `organisation_id`
+  - `assignment_code`s may be repeated in different  `organisation_id`
+  - Note that default nbgrader does not distinguish `assignment_code`s across different `course_codes`, within the same `gradebook` database.
 - There will always be an `organisation_id`
   - `course_code`s must be uniqie within an `organisation_id`,
   - `course_code`s may be repeated in different `organisation_id`
-
-All code should have `docstrings`.
-
-Documentation currently in [docs/](docs/) - should be in readthedocs
 
 ## Database relationships
 
@@ -68,39 +81,41 @@ Documentation currently in [docs/](docs/) - should be in readthedocs
 
 # Installing
 
-Nbexchange can be installed as a Helm chart or as a pip dependency:
+nbexchange is a two-part system: it requires
+1. the `nbexchange` service to be running (in a docker container)
+2. the plugins to be installed in the jupyter notebook (which will also install `nbgrader`)
 
+## nbexchange service
+
+The nbexchange is designed to be run as a docker instance, possibly in a kubernetes cluster
+
+See the `Dockerfile` / `docker-compose.yml` files for creating the service.
+
+### Helm
+
+The service can be deployed via `helm`, ie
 
 ```
 helm install --name nbexchange --namespace default ./chart -f myconfiguration.yaml
 ```
 
-or
+## nbgrader plugin
+
+Installing nbexchange will also install nbgrader.
+
+nbexchange is not released to Pypy or anaconda, however you can install direct from GitHub - eg:
 
 ```
-pip install .
+pip install https://github.com/edina/nbexchange/archive/v1.2.9.tar.gz
+
+jupyter nbextension install --sys-prefix --py nbgrader
+jupyter nbextension enable --sys-prefix validate_assignment/main --section=tree
+jupyter serverextension enable --sys-prefix nbgrader.server_extensions.validate_assignment
+jupyter nbextension enable --sys-prefix assignment_list/main --section=tree
+jupyter serverextension enable --sys-prefix nbgrader.server_extensions.assignment_list
+....
 ```
 
-## Helm Configuration
-
-| Parameter  | Description    | Default |
-| ---------- | -------------- | ------- |
-| `replicaCount` | Replica count | 1  |
-| `image.repository` | Image repository | `quay.io/noteable/nbexchange` |
-| `image.tag` | Image tag | `latest` |
-| `image.pullPolicy` | Image pull policy | `IfNotPresent` |
-| `environment` | Environment variables for the application | `{}` |
-| `service.type` | Type of Service | `ClusterIP` |
-| `service.port` | Port to expose service under | `9000` |
-| `resources.requests.cpu` | CPU resource requests | `200m` |
-| `resources.requests.memory` | Memory resource requests | `256Mi` |
-| `tolerations` | Pod taint tolerations for deployment| `[]` |
-| `nodeSelector` | Pod node selector for deployment | `{}` |
-
-
-# Contributing
-
-See [Contributing.md](CONTRIBUTING.md)
 
 # Configuration
 
@@ -113,6 +128,8 @@ There are two parts to configuring `nbexchange`:
 
 The exchange uses `nbexchange_config.py` for configuration.
 
+This is an example config file:
+
 ```python
 from nbexchange.handlers.auth.user_handler import BaseUserHandler
 
@@ -121,10 +138,12 @@ class MyUserHandler(BaseUserHandler):
     def get_current_user(self, request):
         return {
           "name": "myname",
+          "full_name": "Joe Bloggs",
           "course_id": "cool_course_id",
           "course_title": "cool course",
           "course_role": "Student",
           "org_id": 1,
+          "cust_id": 2,
     }
 
 
@@ -134,6 +153,12 @@ c.NbExchange.base_url = /services/exchange
 c.NbExchange.base_storage_location = /var/data/exchange/storage
 c.NbExchange.db_url = mysql://username:password@my.msql.server.host:3306/db_name
 ```
+
+- **`user_plugin_class`**
+
+For the exchange to work it needs some details about the user connecting to it. This parameter defines the class that provides the `get_current_user` method.
+
+See below for more details on that.
 
 - **`base_url`**
 
@@ -167,17 +192,18 @@ By default, upload sizes are limited to 5GB (5253530000)
 
 Do stuff to the db... see the code for what these do
 
-- **`user_plugin_class`**
-
-This is a class that defines how `get_current_user` works.
+### **`user_plugin_class`** revisited
 
 For the exchange to work, it needs some details about the user connecting to it - specifically, it needs 7 pieces of information:
 
-- `name`: The username of the person (eg `perllaghu`),
-- `full_name`: The optional full name, if supplied by the remote authenticator
-- `course_id`: The course code as used in nbgrader (eg `cool_course`),
-- `course_title`: A long name for the course (eg `A course of understanding thermondynamics in bulk refrigerant transport"),
-- `course_role`: The role of the user, normally `Student` or `Instructor`. (currently only `Instructor` get privilaged actions),
+- `name`: The username of the person (eg `perllaghu`).
+  - In our system, we prefix the persons login username with the org_id for where their from (eg `1_perllaghu`.)
+- `full_name`: The optional full name, if supplied by the remote authenticator.
+  - The full name appears in the `formgrader` UI.
+- `course_id`: The course code as used in nbgrader (eg `cool_course`).
+  - This is `course_id` not `course_code`, as nbgrader uses `course_id` for this piece of data.
+- `course_title`: A long name for the course (eg `A course of understanding thermondynamics in bulk refrigerant transport").
+- `course_role`: The role of the user, normally `Student` or `Instructor`. (currently only `Instructor` get privilaged actions).
 - `org_id`: As mentioned above, nbexchange divides courses and users across organisations. This is an id (numeric) for the org_id for the user.
 - `cust_id`: Whilst most of the exchange is keyed on the `org_id`, knowing _customer_ can be useful. This is an id (numeric) for the org_id for the user.
 
@@ -214,6 +240,12 @@ These plugins will also check the size of _releases_ & _submissions_
 
 By default, upload sizes are limited to 5GB (5253530000)
 The figure is bytes
+
+# Contributing
+
+See [how_it_works.md](how_it_works.md) for an extended explanation as to how the exchange works, internally
+
+See [Contributing.md](CONTRIBUTING.md) for details on how to extend/contribute to the code.
 
 ## Releasing new versions
 

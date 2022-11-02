@@ -22,10 +22,9 @@ Some guidelines on contributing to nbexchange:
 * Pull Requests should be tested, if feasible:
     * bugfixes should include regression tests.
     * new behavior should at least get minimal exercise.
-* New features and backwards-incompatible changes should be documented by adding a new file to the pr directory, see the README.md there for details.
-* Code 
+* New features and backwards-incompatible changes should be very clearly documented.
 
-Travis does a pretty good job testing nbexchange and Pull Requests, but it may make sense to manually perform tests.
+Github does a pretty good job testing nbexchange and Pull Requests, but it may make sense to manually perform tests.
 
 ## Developing nbexchange
 
@@ -37,6 +36,13 @@ pip install .[test]
 
 When writing code, please don't rely on _code is its own documentation_ - particularly if you're doing anything remotely complicated.
 A simple comment at the top is useful for future developers to know _why_ the code is doing something.
+
+### Formatting code.
+
+We use [`pre-commit`](https://pre-commit.com/) to ensure consistency.
+
+All (appropriate) files are checked with `isort`, `black`, and `flake8`.
+
 ## Running Tests
 
 Tests should be run locally before final commit & Pull Request is made.

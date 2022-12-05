@@ -28,11 +28,21 @@ Github does a pretty good job testing nbexchange and Pull Requests, but it may m
 
 ## Developing nbexchange
 
+Whilst nbexchange can run under python>3.7, the developers of the system currently run under 3.11.
+
+We suggest you set up an appropriate virtual environment.
+
 To setup nbexchange for development, run:
 
 ```bash
 pip install .[test]
 ```
+
+or
+```bash
+pip install .[test]
+```
+if zsh or similar
 
 When writing code, please don't rely on _code is its own documentation_ - particularly if you're doing anything remotely complicated.
 A simple comment at the top is useful for future developers to know _why_ the code is doing something.

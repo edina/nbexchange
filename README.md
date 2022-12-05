@@ -53,7 +53,7 @@ Following the lead of other Jupyter services, it is a `tornado` application.
 
 ## Compatibility
 
-This version is compatible with `nbgrader` >= 0.6.2
+This version is compatible with `nbgrader` >= 0.7.0
 
 # Documentation
 

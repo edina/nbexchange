@@ -95,6 +95,9 @@ class FeedbackHandler(BaseHandler):
                 feedbacks.append(f)
 
                 # Add action
+                self.log.info(
+                    f"Adding action {AssignmentActions.feedback_fetched.value} by user {this_user['id']} against assignment {assignment.id}"  # noqa: E501
+                )
                 action = Action(
                     user_id=this_user["id"],
                     assignment_id=assignment.id,
@@ -263,6 +266,9 @@ class FeedbackHandler(BaseHandler):
             session.add(feedback)
 
             # Add action
+            self.log.info(
+                f"Adding action {AssignmentActions.feedback_released.value} by user {this_user['id']}, for student {student.id}, against assignment {assignment.id}"  # noqa: E501
+            )
             action = Action(
                 user_id=this_user["id"],
                 assignment_id=notebook.assignment.id,

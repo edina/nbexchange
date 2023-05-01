@@ -53,7 +53,7 @@ Following the lead of other Jupyter services, it is a `tornado` application.
 
 ## Compatibility
 
-This version is compatible with `nbgrader` >= 0.7.0
+This version installs `nbgrader`  0.8.2 (which makes it compatible with JupyterLab too)
 
 # Documentation
 
@@ -106,7 +106,7 @@ Installing nbexchange will also install nbgrader.
 nbexchange is not released to Pypy or anaconda, however you can install direct from GitHub - eg:
 
 ```
-pip install https://github.com/edina/nbexchange/archive/v1.2.9.tar.gz
+pip install https://github.com/edina/nbexchange/archive/v1.3.0.tar.gz
 
 jupyter nbextension install --sys-prefix --py nbgrader
 jupyter nbextension enable --sys-prefix validate_assignment/main --section=tree
@@ -116,6 +116,7 @@ jupyter serverextension enable --sys-prefix nbgrader.server_extensions.assignmen
 ....
 ```
 
+Note that the jupyter *lab* extensions are installed and enabled automatically - you may wish to switch *off* `formgrader` and `create_assignment` for non-teachers: YMMV
 
 # Configuration
 
@@ -137,7 +138,7 @@ class MyUserHandler(BaseUserHandler):
 
     def get_current_user(self, request):
         return {
-          "name": "myname",
+          "name": "username",
           "full_name": "Joe Bloggs",
           "course_id": "cool_course_id",
           "course_title": "cool course",

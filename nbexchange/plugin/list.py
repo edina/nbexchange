@@ -1,7 +1,7 @@
 import glob
 import json
 import os
-from urllib.parse import quote, quote_plus
+from urllib.parse import quote_plus
 
 import nbgrader.exchange.abc as abc
 from traitlets import Unicode
@@ -213,7 +213,7 @@ class ExchangeList(abc.ExchangeList, Exchange):
                         ):
                             local_feedback_path = os.path.join(
                                 assignment_dir,
-                                quote(nb_timestamp),
+                                nb_timestamp,
                                 f"{notebook['notebook_id']}.html",
                             )
                             has_local_feedback = os.path.isfile(
@@ -244,7 +244,7 @@ class ExchangeList(abc.ExchangeList, Exchange):
                 if has_local_feedback:
                     assignment["local_feedback_path"] = os.path.join(
                         assignment_dir,
-                        quote(nb_timestamp),
+                        nb_timestamp,
                     )
                 else:
                     assignment["local_feedback_path"] = None

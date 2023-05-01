@@ -493,7 +493,6 @@ def test_submit_fail_no_folder(plugin_config, tmpdir):
 @pytest.mark.gen_test
 def test_submit_warning_no_notebook(plugin_config, tmpdir):
     try:
-
         plugin_config.CourseDirectory.course_id = course_id
         plugin_config.CourseDirectory.assignment_id = assignment_id1
 
@@ -567,7 +566,6 @@ def test_submit_warning_no_notebook(plugin_config, tmpdir):
 @pytest.mark.gen_test
 def test_submit_warning_wrong_notebook(plugin_config, tmpdir):
     try:
-
         plugin_config.CourseDirectory.course_id = course_id
         plugin_config.CourseDirectory.assignment_id = assignment_id1
 
@@ -794,7 +792,6 @@ def test_submit_wrong_notebook_strict_means_faile(plugin_config, tmpdir):
 @pytest.mark.gen_test
 def test_submit_warning_wrong_notebook_two(plugin_config, tmpdir):
     try:
-
         plugin_config.CourseDirectory.course_id = course_id
         plugin_config.CourseDirectory.assignment_id = assignment_id1
 
@@ -1127,7 +1124,6 @@ def test_submit_two_releases_newest_last(plugin_config, tmpdir):
 @pytest.mark.gen_test
 def test_submit_warning_wrong_notebook_three(plugin_config, tmpdir):
     try:
-
         plugin_config.CourseDirectory.course_id = course_id
         plugin_config.CourseDirectory.assignment_id = assignment_id1
 
@@ -1703,7 +1699,7 @@ def test_submit_fails_oversize(plugin_config, tmpdir):
                 plugin.start()
             assert (
                 str(e_info.value)
-                == "Assignment assign_1_1 not submitted. The contents of your submission are too large:\nYou may have data files, temporary files, and/or working files that are not needed - try deleting them."  # noqa: E501
+                == "Assignment assign_1_1 not submitted. The contents of your submission are too large:\nYou may have data files, temporary files, and/or working files that are not needed - try deleting them."  # noqa: E501 W503
             )
 
     finally:

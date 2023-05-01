@@ -1080,7 +1080,7 @@ def test_collect_handles_500_failure(plugin_config, tmpdir):
             plugin.start()
         assert (
             str(e_info.value)
-            == f"Error failing to collect for assignment {ass_1_3} on course {course_id}: status code 500: error {http_error}"  # noqa: E501
+            == f"Error failing to collect for assignment {ass_1_3} on course {course_id}: status code 500: error {http_error}"  # noqa: E501 W503
         )
 
 
@@ -1130,10 +1130,10 @@ def test_docollect_handles_failure_json(plugin_config, tmpdir):
         assert str(e_info.value) == "Error looking for assignments to collect"
 
 
-# Check that a unicode path is made using both assignment_id and student_id
+# Check that a unicode path is made using course_id, assignment_id, and student_id
 @pytest.mark.gen_test
 def test_collect_with_unicode(plugin_config, tmpdir):
-    course_id = "made up"
+    course_id = "abc （12∕34） ｛not❘really❔｝［＾e＄］"
     assignment_id = "⍺ to ⍵ via ∞"
     student_id = "🌈 🦄 🌹"
 
@@ -1209,7 +1209,7 @@ def test_collect_with_unicode(plugin_config, tmpdir):
         )
 
 
-# Check that a unicode path is made using both persian (RTL) assignment_id and student_id
+# Check that a unicode path is made using persian (RTL) course_is, assignment_id, and student_id
 @pytest.mark.gen_test
 def test_collect_with_unicode_R2L_language(plugin_config, tmpdir):
     course_id = "بیس خراشیده"  # scratch baa"

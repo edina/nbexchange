@@ -55,7 +55,6 @@ class BaseHandler(web.RequestHandler):
 
     @property
     def nbex_user(self):
-
         hub_user = self.get_current_user()
         hub_username = hub_user.get("name")
 
@@ -128,7 +127,6 @@ class BaseHandler(web.RequestHandler):
         return value
 
     def get_params(self, param_list):
-
         return_params = []
 
         for param in param_list:

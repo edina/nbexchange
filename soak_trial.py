@@ -259,7 +259,6 @@ class nbexchangeSoakTest:
     def instructor_release(self, username=None):
         self.log.info(f"instructor_release called - username: {username}")
         if username:
-
             user_jwt_token = self.make_jwt_token(username, "Instructor")
             self.log.debug(f"user_token: {user_jwt_token}")
 
@@ -333,7 +332,6 @@ class nbexchangeSoakTest:
     def student_submit(self, username=None):
         self.log.info(f"student_submit called - username: {username}")
         if username:
-
             unpack_dir = os.path.join(
                 "/tmp/load_test/students",
                 self.assignment_code,
@@ -420,7 +418,6 @@ class nbexchangeSoakTest:
                 self.log.debug(f"Processing {len(submissions)} submissions of '{self.assignment_code}'")
 
             for submission in submissions:
-
                 # Work out the user-name from the path:
                 # '/some/path/submitted/course_2/tree 1/1_kiz/1544109991/fdc8c4ae-b3e0-4db6-859d-17852d65ec08.gz'
                 regex = (
@@ -510,7 +507,6 @@ class nbexchangeSoakTest:
     def instructor_release_feedback(self, username=None):
         self.log.info(f"instructor_release_feedback called - username: {username}")
         if username:
-
             local_feedback_path = os.path.join(
                 "/tmp/load_test/feedback",
                 self.assignment_code,
@@ -625,7 +621,6 @@ class nbexchangeSoakTest:
         self.log.info(f"student_fetch_feedback called - username: {username}")
 
         if username:
-
             user_jwt_token = self.make_jwt_token(username, "Student")
             self.log.debug(f"user_token: {user_jwt_token}")
 
@@ -671,7 +666,6 @@ class nbexchangeSoakTest:
     def tidy_up(self, username=None):
         self.log.info(f"Tidy_up called: assignment_id={self.assignment_code} (keep_data?: {self.args.keep_data})")
         if username:
-
             user_jwt_token = self.make_jwt_token(username, "Instructor")
 
             url = (

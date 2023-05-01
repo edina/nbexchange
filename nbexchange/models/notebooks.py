@@ -4,7 +4,6 @@ from nbexchange.models import Base
 
 
 class Notebook(Base):
-
     __tablename__ = "notebook"
     __table_args__ = (UniqueConstraint("name", "assignment_id"),)
 

@@ -70,7 +70,6 @@ user_lkihlman_student = {
 
 
 def tar_source(filename):
-
     import tarfile
 
     tar_file = io.BytesIO()
@@ -82,7 +81,6 @@ def tar_source(filename):
 
 
 def api_request(self, url, method="GET", *args, **kwargs):
-
     headers = {}
 
     if method == "GET":

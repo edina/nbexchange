@@ -8,7 +8,6 @@ from .exchange import Exchange
 
 
 class ExchangeFetchFeedback(abc.ExchangeFetchFeedback, Exchange):
-
     # where the downloaded files are placed
     def init_src(self):
         if self.coursedir.course_id == "":
@@ -57,7 +56,6 @@ class ExchangeFetchFeedback(abc.ExchangeFetchFeedback, Exchange):
             self.fail(content.get("note", "could not get feedback"))
 
     def copy_files(self):
-
         self.log.debug(f"Destination: {self.dest_path}")
         self.download()
         self.log.debug(f"Fetched as: {self.coursedir.notebook_id}")

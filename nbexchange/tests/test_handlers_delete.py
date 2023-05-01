@@ -32,6 +32,7 @@ logger.setLevel(logging.ERROR)
 
 # #### DELETE /assignment (delete or purge assignment) ##### #
 
+
 # require authenticated user (404 because the bounce to login fails)
 @pytest.mark.gen_test
 def test_delete_needs_user(app):

@@ -54,6 +54,7 @@ def test_collections_no_post_action_even_authenticated(app, clear_database):  # 
 #
 #################################
 
+
 # require authenticated user
 @pytest.mark.gen_test
 def test_collections_unauthenticated_user_blocked(app, clear_database):  # noqa: F811
@@ -108,7 +109,6 @@ def test_collections_fails_with_wrong_course_code(app, clear_database):  # noqa:
 # returns true, but empty
 @pytest.mark.gen_test
 def test_collections_zero_results_with_wrong_course(app, clear_database):  # noqa: F811
-
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.get(app.url + "/collections?course_id=course_2&assignment_id=assign_b2")
     assert r.status_code == 200
@@ -410,7 +410,6 @@ def test_collections_with_a_blank_feedback_path_injected(app, clear_database):  
     from nbexchange.database import scoped_session
 
     with scoped_session() as session:
-
         action = nbexchange.models.actions.Action(
             user_id=3,
             assignment_id=1,

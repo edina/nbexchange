@@ -10,7 +10,6 @@ from traitlets import Bool, Integer, Unicode
 
 
 class Exchange(abc.Exchange):
-
     path_includes_course = Bool(
         False,
         help="""
@@ -47,7 +46,6 @@ which is normally Jupyter's notebook_dir.
         raise ExchangeError(msg)
 
     def api_request(self, path, method="GET", *args, **kwargs):
-
         jwt_token = os.environ.get("NAAS_JWT")
 
         cookies = dict()

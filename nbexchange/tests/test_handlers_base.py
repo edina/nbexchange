@@ -14,7 +14,6 @@ class BaseTestHandlers(object):
 
 
 class TestHandlersBasic(BaseTestHandlers):
-
     # #### basic "does service exist" tests #### #
     # Test that the base endpoint returns a text string (ie the end-point is alive)
     @pytest.mark.gen_test

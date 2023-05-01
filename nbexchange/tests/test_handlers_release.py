@@ -35,6 +35,7 @@ files = get_files_dict(sys.argv[0])  # ourself :)
 #
 #################################
 
+
 # require authenticated user (404 because the bounce to login fails)
 @pytest.mark.gen_test
 def test_post_requires_authenticated_user(app, clear_database):  # noqa: F811
@@ -203,5 +204,5 @@ def test_blocks_filesize(app, clear_database):  # noqa: F811
     assert response_data["success"] is False
     assert (
         response_data["note"]
-        == "File upload oversize, and rejected. Please reduce the contents of the assignment, re-generate, and re-release"  # noqa: E501
+        == "File upload oversize, and rejected. Please reduce the contents of the assignment, re-generate, and re-release"  # noqa: E501 W503
     )

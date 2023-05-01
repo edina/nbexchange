@@ -39,7 +39,6 @@ class FeedbackHandler(BaseHandler):
     # Fetch feedback
     @authenticated
     def get(self):
-
         [course_id, assignment_id] = self.get_params(["course_id", "assignment_id"])
 
         if not assignment_id or not course_id:
@@ -53,7 +52,6 @@ class FeedbackHandler(BaseHandler):
         this_user = self.nbex_user
 
         with scoped_session() as session:
-
             course = Course.find_by_code(db=session, code=course_id, org_id=this_user["org_id"], log=self.log)
             if not course:
                 note = f"Course {course_id} not found"
@@ -148,7 +146,6 @@ class FeedbackHandler(BaseHandler):
             return
 
         with scoped_session() as session:
-
             # Start building feedback object
 
             course = Course.find_by_code(db=session, code=course_id, org_id=this_user["org_id"], log=self.log)

@@ -33,9 +33,7 @@ class OldAssignmentActions(Enum):
 
 
 def upgrade():
-
     with op.batch_alter_table("action") as batch_op:
-
         batch_op.alter_column(
             "action",
             "action",
@@ -45,7 +43,6 @@ def upgrade():
 
 
 def downgrade():
-
     with op.batch_alter_table("action") as batch_op:
         batch_op.alter_column(
             "action",

@@ -306,5 +306,5 @@ def test_release_oversize_blocked(plugin_config, tmpdir):
             plugin.start()
         assert (
             str(e_info.value)
-            == "Assignment assign_1 not released. The contents of your assignment are too large:\nYou may have data files, temporary files, and/or working files that should not be included - try deleting them."  # noqa: E501
+            == "Assignment assign_1 not released. The contents of your assignment are too large:\nYou may have data files, temporary files, and/or working files that should not be included - try deleting them."  # noqa: E501 W503
         )

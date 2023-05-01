@@ -34,7 +34,6 @@ class NoteableAuthPlugin(BaseAuthPlugin):
 
     @gen.coroutine
     def get_student_courses(self):
-
         courses = []
         courses = self.query_exchange()
         return courses

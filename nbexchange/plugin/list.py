@@ -78,10 +78,8 @@ class ExchangeList(abc.ExchangeList, Exchange):
     # Add the path for notebooks on disk, and add the blank parameters
     # Feedback details is listed in "submitted" records
     def parse_assignment(self, assignment):  # , on_disk_assignments=None):
-
         # If the assignment was found on disk, we need to expand the metadata
         if assignment.get("status") == "fetched":
-
             # get the individual notebook details
             assignment_dir = os.path.join(self.assignment_dir, assignment.get("assignment_id"))
 
@@ -110,7 +108,6 @@ class ExchangeList(abc.ExchangeList, Exchange):
         return assignment
 
     def parse_assignments(self):
-
         # Set up some general variables
         self.assignments = []
         held_assignments = {"fetched": {}, "released": {}}
@@ -191,7 +188,6 @@ class ExchangeList(abc.ExchangeList, Exchange):
             # will provide a link to a folder that is the "feedback" time
             # ("feedback-time" for all notebooks in one 'release' is the same)
             if assignment.get("status") == "submitted":
-
                 assignment_dir = os.path.join(assignment.get("assignment_id"), "feedback")
                 if self.path_includes_course:
                     assignment_dir = os.path.join(
@@ -204,12 +200,10 @@ class ExchangeList(abc.ExchangeList, Exchange):
                 has_local_feedback = False
 
                 for notebook in assignment["notebooks"]:
-
                     nb_timestamp = notebook["feedback_timestamp"]
 
                     # This has to match timestamp in fetch_feedback.download
                     if nb_timestamp:
-
                         # get the individual notebook details
                         if os.path.isdir(
                             os.path.join(
@@ -310,7 +304,6 @@ class ExchangeList(abc.ExchangeList, Exchange):
             self.log.debug(f"Got back {r.status_code} after assignment unrelease")
 
     def start(self):
-
         #####
         #
         # This is the code that changes the submitted directory

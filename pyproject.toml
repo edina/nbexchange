@@ -41,7 +41,7 @@ dependencies = [
   "sentry-sdk==1.14.0",
   "sqlalchemy>=1.4.3",
   "tornado==6.1",
-  "tornado-prometheus==0.1.1",
+  "tornado-prometheus==0.1.2",
 ]
 
 [project.optional-dependencies]

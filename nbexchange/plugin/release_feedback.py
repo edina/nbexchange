@@ -12,7 +12,6 @@ from .exchange import Exchange
 
 
 class ExchangeReleaseFeedback(abc.ExchangeReleaseFeedback, Exchange):
-
     src_path = None
 
     # where the downloaded files are placed
@@ -110,7 +109,6 @@ class ExchangeReleaseFeedback(abc.ExchangeReleaseFeedback, Exchange):
             )
 
     def upload(self, html_file, assignment_id, student, notebook, timestamp, checksum):
-
         with open(html_file) as feedback_file:
             files = {"feedback": ("feedback.html", feedback_file.read())}
 

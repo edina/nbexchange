@@ -127,6 +127,7 @@ def assignment_a2ovi(db):
 
 # ## User tests
 
+
 # Need to put this in to clear the database from the handler tests
 def test_empty_db(db):
     db.query(Action).delete()
@@ -359,7 +360,6 @@ def test_subscription_find_by_set(db, course_strange, user_johaannes):
 
 
 def test_assignment_actions_enum(db):
-
     assert len(AssignmentActions.__members__) == 7
     assert "released" in AssignmentActions.__members__
     assert "fetched" in AssignmentActions.__members__
@@ -371,7 +371,6 @@ def test_assignment_actions_enum(db):
 
 
 def test_assignment(db, course_strange):
-
     orm_assignment = AssignmentModel(
         # assignment_code="tree 1",
         course_id=course_strange.id,
@@ -440,6 +439,7 @@ def test_assignment_find_for_course(db, course_strange, assignment_false, assign
 # ## Action tests
 # Remember Users, Courses, Subscriptions, and Assignments are already in the DB
 
+
 # a couple of "will not make" tests
 def test_action_object_creation_errors(db, course_strange, assignment_tree, user_johaannes):
     role = "instructor"
@@ -485,7 +485,6 @@ def test_action_object_creation_errors(db, course_strange, assignment_tree, user
 
 
 def test_action_base_mathods_and_find_by_pk(db, assignment_tree, user_johaannes):
-
     # subscription set up earlier
     release_file = "/some/random/path/to/a/file.tzg"
 
@@ -512,7 +511,6 @@ def test_action_base_mathods_and_find_by_pk(db, assignment_tree, user_johaannes)
 
 
 def test_action_find_by_action(db):
-
     # subscription & action set up earlier
     with pytest.raises(TypeError):
         found_by_pk = Action.find_most_recent_action(db, None)
@@ -533,7 +531,6 @@ def test_action_find_by_action(db):
 
 
 def test_action_find_by_action_distinguish_actions(db, assignment_tree, user_johaannes):
-
     # Add a fetched action
     orm_action = Action(
         user_id=user_johaannes.id,
@@ -591,7 +588,6 @@ def test_action_can_restrict_assignment_searches(db, assignment_tree):
 
 
 def test_notebook_base_mathods_and_find_by_pk(db, assignment_tree):
-
     # name is required
     orm_notebook = Notebook(
         # name="Test 1",
@@ -632,7 +628,6 @@ def test_notebook_base_mathods_and_find_by_pk(db, assignment_tree):
 
 
 def test_notebook_find_by_name(db, assignment_tree):
-
     orm_notebook = Notebook(
         name="Exam 2",
         assignment_id=assignment_tree.id,
@@ -660,7 +655,6 @@ def test_notebook_find_by_name(db, assignment_tree):
 
 
 def test_notebook_find_all(db, assignment_tree):
-
     # previous notebooks still in the db
     with pytest.raises(TypeError):
         found_all_for_assignment = Notebook.find_all_for_assignment()
@@ -678,7 +672,6 @@ def test_notebook_find_all(db, assignment_tree):
 
 # kylee = instructor, johaanes = student
 def test_feedback_base_mathods_and_find_by_pk(db, assignment_tree, user_kaylee, user_johaannes):
-
     # previous subscriptions & notebooks still in the db
     notebook = Notebook.find_by_name(db, "Exam 2", assignment_tree.id)
     released = Action.find_most_recent_action(db, assignment_tree.id, AssignmentActions.released)
@@ -706,7 +699,7 @@ def test_feedback_base_mathods_and_find_by_pk(db, assignment_tree, user_kaylee, 
     assert found_by_pk.id == orm_feedback.id
     assert (
         str(found_by_pk)
-        == f"Feedback<Notebook-{found_by_pk.notebook_id}/Student-{found_by_pk.student_id}/{found_by_pk.checksum}>"
+        == f"Feedback<Notebook-{found_by_pk.notebook_id}/Student-{found_by_pk.student_id}/{found_by_pk.checksum}>"  # noqa: E501 W503
     )
 
     assert found_by_pk.notebook_id == notebook.id

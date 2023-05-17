@@ -39,6 +39,7 @@ def test_get_submission_501_even_authenticated(app):
 
 # #### POST /submission (submit assignment) ##### #
 
+
 # require authenticated user
 @pytest.mark.gen_test
 def test_post_403_if_not_authenticated(app):
@@ -241,5 +242,5 @@ def test_post_submision_oversize_blocked(app, clear_database):  # noqa: F811
     assert response_data["success"] is False
     assert (
         response_data["note"]
-        == "File upload oversize, and rejected. Please reduce the files in your submission and try again."
+        == "File upload oversize, and rejected. Please reduce the files in your submission and try again."  # noqa: E501 W503
     )

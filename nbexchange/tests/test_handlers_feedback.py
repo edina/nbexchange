@@ -93,7 +93,7 @@ def test_feedback_post_authenticated_no_params(app, clear_database):  # noqa: F8
     assert response_data["success"] is False
     assert (
         response_data["note"]
-        == "Feedback call requires a course id, assignment id, notebook name, student id, checksum and timestamp."
+        == "Feedback call requires a course id, assignment id, notebook name, student id, checksum and timestamp."  # noqa: E501 W503
     )
 
 
@@ -107,7 +107,7 @@ def test_feedback_post_authenticated_no_assignment_id(app, clear_database):  # n
     assert response_data["success"] is False
     assert (
         response_data["note"]
-        == "Feedback call requires a course id, assignment id, notebook name, student id, checksum and timestamp."
+        == "Feedback call requires a course id, assignment id, notebook name, student id, checksum and timestamp."  # noqa: E501 W503
     )
 
 
@@ -122,7 +122,7 @@ def test_feedback_post_authenticated_no_course_id(app, clear_database):  # noqa:
     assert response_data["success"] is False
     assert (
         response_data["note"]
-        == "Feedback call requires a course id, assignment id, notebook name, student id, checksum and timestamp."
+        == "Feedback call requires a course id, assignment id, notebook name, student id, checksum and timestamp."  # noqa: E501 W503
     )
 
 
@@ -137,7 +137,7 @@ def test_feedback_post_authenticated_no_notebook(app, clear_database):  # noqa: 
     assert response_data["success"] is False
     assert (
         response_data["note"]
-        == "Feedback call requires a course id, assignment id, notebook name, student id, checksum and timestamp."
+        == "Feedback call requires a course id, assignment id, notebook name, student id, checksum and timestamp."  # noqa: E501 W503
     )
 
 
@@ -152,7 +152,7 @@ def test_feedback_post_authenticated_no_student(app, clear_database):  # noqa: F
     assert response_data["success"] is False
     assert (
         response_data["note"]
-        == "Feedback call requires a course id, assignment id, notebook name, student id, checksum and timestamp."
+        == "Feedback call requires a course id, assignment id, notebook name, student id, checksum and timestamp."  # noqa: E501 W503
     )
 
 
@@ -167,7 +167,7 @@ def test_feedback_post_authenticated_no_timestamp(app, clear_database):  # noqa:
     assert response_data["success"] is False
     assert (
         response_data["note"]
-        == "Feedback call requires a course id, assignment id, notebook name, student id, checksum and timestamp."
+        == "Feedback call requires a course id, assignment id, notebook name, student id, checksum and timestamp."  # noqa: E501 W503
     )
 
 
@@ -182,7 +182,7 @@ def test_feedback_post_authenticated_no_checksum(app, clear_database):  # noqa: 
     assert response_data["success"] is False
     assert (
         response_data["note"]
-        == "Feedback call requires a course id, assignment id, notebook name, student id, checksum and timestamp."
+        == "Feedback call requires a course id, assignment id, notebook name, student id, checksum and timestamp."  # noqa: E501 W503
     )
 
 

@@ -35,7 +35,6 @@ class Submission(BaseHandler):
     # This is a student submitting an assignment, not an instructor "release"
     @authenticated
     def post(self):
-
         if "Content-Length" in self.request.headers and int(self.request.headers["Content-Length"]) > int(
             self.max_buffer_size
         ):

@@ -29,7 +29,6 @@ class Collections(BaseHandler):
 
     @authenticated
     def get(self):
-
         models = []
 
         [course_code, assignment_code, user_id] = self.get_params(["course_id", "assignment_id", "user_id"])
@@ -132,7 +131,6 @@ class Collection(BaseHandler):
 
     @authenticated
     def get(self):
-
         [course_code, assignment_code, path] = self.get_params(["course_id", "assignment_id", "path"])
 
         if not (course_code and assignment_code and path):

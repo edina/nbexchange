@@ -25,7 +25,6 @@ class AssignmentActions(Enum):
 
 
 def upgrade():
-
     # Users.
     # Need to be separated by some kind of organisational ID
     op.create_table(

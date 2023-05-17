@@ -52,7 +52,6 @@ class ExchangeReleaseAssignment(abc.ExchangeReleaseAssignment, Exchange):
             self.fail("No course id specified. Re-run with --course flag.")
 
     def tar_source(self):
-
         import tarfile
 
         tar_file = io.BytesIO()

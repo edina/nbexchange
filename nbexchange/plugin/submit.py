@@ -31,7 +31,6 @@ class ExchangeSubmit(abc.ExchangeSubmit, Exchange):
 
     # The submitted files have a timestamp.txt file with them.
     def tar_source(self):
-
         import tarfile
         import time
         from contextlib import closing

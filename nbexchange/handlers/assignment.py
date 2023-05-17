@@ -32,7 +32,6 @@ class Assignments(BaseHandler):
 
     @authenticated
     def get(self):
-
         models = []
 
         [course_code] = self.get_params(["course_id"])
@@ -135,7 +134,6 @@ class Assignment(BaseHandler):
 
     @authenticated
     def get(self):  # def get(self, course_code, assignment_code=None):
-
         [course_code, assignment_code] = self.get_params(["course_id", "assignment_id"])
 
         if not (course_code and assignment_code):
@@ -228,7 +226,6 @@ class Assignment(BaseHandler):
     # This is releasing an **assignment**, not a student submission
     @authenticated
     def post(self):
-
         # Do a content-length check, before we go any further
         if "Content-Length" in self.request.headers and int(self.request.headers["Content-Length"]) > int(
             self.max_buffer_size
@@ -376,7 +373,6 @@ class Assignment(BaseHandler):
     # This is unreleasing an assignment
     @authenticated
     def delete(self):
-
         [course_code, assignment_code, purge] = self.get_params(["course_id", "assignment_id", "purge"])
 
         self.log.debug(

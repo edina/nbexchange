@@ -194,7 +194,10 @@ def test_release_feedback_fetch_several_normal(plugin_config, tmpdir):
             )
             assert kwargs.get("method").lower() == "post"
             assert "feedback" in kwargs.get("files")
-            assert ("feedback.html", open(feedback1_filename_uploaded).read(),) == kwargs.get(
+            assert (
+                "feedback.html",
+                open(feedback1_filename_uploaded).read(),
+            ) == kwargs.get(
                 "files"
             ).get("feedback")
 
@@ -211,7 +214,10 @@ def test_release_feedback_fetch_several_normal(plugin_config, tmpdir):
             )
             assert kwargs.get("method").lower() == "post"
             assert "feedback" in kwargs.get("files")
-            assert ("feedback.html", open(feedback2_filename_uploaded).read(),) == kwargs.get(
+            assert (
+                "feedback.html",
+                open(feedback2_filename_uploaded).read(),
+            ) == kwargs.get(
                 "files"
             ).get("feedback")
         else:

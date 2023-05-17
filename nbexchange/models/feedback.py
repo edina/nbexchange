@@ -8,7 +8,6 @@ from nbexchange.models.notebooks import Notebook
 
 
 class Feedback(Base):
-
     __tablename__ = "feedback_2"
 
     #: Unique id of the feedback (automatically incremented)

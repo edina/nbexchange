@@ -35,6 +35,7 @@ files = get_files_dict(sys.argv[0])  # ourself :)
 
 # #### GET /assignment (download/fetch assignment)  ##### #
 
+
 # require authenticated user (404 because the bounce to login fails)
 @pytest.mark.gen_test
 def test_fetch_requires_auth_user(app):

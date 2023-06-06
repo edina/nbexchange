@@ -1,7 +1,7 @@
 variables:
   VERSION: $CI_PIPELINE_ID-$CI_COMMIT_REF_SLUG
 
-image: registry.gitlab.edina.ac.uk:1875/shared/gitlab-ci-tools
+image: registry.gitlab.edina.ac.uk/shared/gitlab-ci-tools
 
 stages:
   - build

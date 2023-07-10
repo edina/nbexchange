@@ -141,6 +141,7 @@ class NbExchange(PrometheusMixIn, Application):
         See sqlalchemy.create_engine for details.
         """
     ).tag(config=True)
+
     upgrade_db = Bool(
         False,
         help="""Upgrade the database automatically on start.

@@ -217,7 +217,7 @@ def register_ping_connection(engine):
 
     From SQLAlchemy docs on pessimistic disconnect handling:
 
-    https://docs.sqlalchemy.org/en/rel_1_1/core/pooling.html#disconnect-handling-pessimistic
+    https://docs.sqlalchemy.org/en/20/core/pooling.html#custom-legacy-pessimistic-ping
     """
 
     @event.listens_for(engine, "engine_connect")
@@ -236,7 +236,7 @@ def register_ping_connection(engine):
             # run a SELECT 1.   use a core select() so that
             # the SELECT of a scalar value without a table is
             # appropriately formatted for the backend
-            connection.scalar(select([1]))
+            connection.scalar(select(1))
         except exc.DBAPIError as err:
             # catch SQLAlchemy's DBAPIError, which is a wrapper
             # for the DBAPI's exception.  It includes a .connection_invalidated
@@ -249,7 +249,7 @@ def register_ping_connection(engine):
                 # itself and establish a new connection.  The disconnect detection
                 # here also causes the whole connection pool to be invalidated
                 # so that all stale connections are discarded.
-                connection.scalar(select([1]))
+                connection.scalar(select(1))
             else:
                 raise
         finally:
@@ -349,13 +349,15 @@ def setup_db(url="sqlite:///:memory:", reset=False, log=None, **kwargs):
         # is ever created.
         kwargs.setdefault("poolclass", StaticPool)
 
-    engine = create_engine(url, **kwargs)
+    # From sqlalchemy 2.0, testing pools is now built in
+    engine = create_engine(url, pool_pre_ping=True, **kwargs)
 
     if url.startswith("sqlite"):
         register_foreign_keys(engine)
 
-    # enable pessimistic disconnect handling
-    register_ping_connection(engine)
+    # not needed: https://docs.sqlalchemy.org/en/20/core/pooling.html#disconnect-handling-pessimistic
+    # # enable pessimistic disconnect handling
+    # register_ping_connection(engine)
 
     if reset:
         Base.metadata.drop_all(engine)

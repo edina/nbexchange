@@ -5,9 +5,9 @@ Notes:
     must be imported below the declaration for `Alembic`
     autogenerate to work.
 """
-from sqlalchemy.ext.declarative import declarative_base
+import sqlalchemy.orm as orm
 
-Base = declarative_base()
+Base = orm.declarative_base()
 
 # E402 : module level import not at top of file
 # F401 : module imported but unused

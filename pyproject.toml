@@ -37,7 +37,7 @@ dependencies = [
   "jupyterhub>=1.4.1",
   "nbgrader==0.8.2", # From pypi dated March 28th 2023
   "psycopg2-binary>=2.8.6",
-  "pyjwt<2",
+  "pyjwt<3",
   "sentry-sdk==1.14.0",
   "sqlalchemy>=1.4.3",
   "tornado==6.1",

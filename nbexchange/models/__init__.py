@@ -5,7 +5,8 @@ Notes:
     must be imported below the declaration for `Alembic`
     autogenerate to work.
 """
-from sqlalchemy.ext.declarative import declarative_base
+# import sqlalchemy.orm as orm
+from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
 

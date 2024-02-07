@@ -53,7 +53,7 @@ Following the lead of other Jupyter services, it is a `tornado` application.
 
 ## Compatibility
 
-This version installs `nbgrader`  0.8.2 (which makes it compatible with JupyterLab too)
+This version installs `nbgrader`  0.9.1 (which makes it compatible with JupyterLab & Notebook 7)
 
 # Documentation
 
@@ -163,7 +163,7 @@ See below for more details on that.
 
 - **`base_url`**
 
-This is the _service_ url for jupyterhub, and defaults to `/services/nbexchange/`
+This is the _service_ url used by jupyterhub, and defaults to `/services/nbexchange/`
 
 Can also be defined in the environment variable `JUPYTERHUB_SERVICE_PREFIX`
 

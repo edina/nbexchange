@@ -6,6 +6,7 @@ Notes:
      and reduces noise in code by not having to manually
      commit or rollback the db if a exception occurs.
 """
+
 import os
 from contextlib import contextmanager
 

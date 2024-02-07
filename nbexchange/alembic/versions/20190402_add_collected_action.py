@@ -5,6 +5,7 @@ Revises: d500457efb3b
 Create Date: 2019-04-02 15:40
 
 """
+
 from enum import Enum
 
 import sqlalchemy as sa

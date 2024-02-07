@@ -40,7 +40,7 @@ pip install .[test]
 
 or
 ```bash
-pip install .[test]
+pip install -e '.[test]'
 ```
 if zsh or similar
 
@@ -70,7 +70,7 @@ There is no such thing as _too many tests_
 This is how I test, using a virtual environment
 
 ```sh
-pip install .[test]
+pip install -r '.[test]'
 pytest nbexchange
 ```
 

@@ -1,5 +1,3 @@
-# async-request utility from jupyterhub.tests.utils v0.8.1
-# used under BSD license
 import asyncio
 import base64
 import io

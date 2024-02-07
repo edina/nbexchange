@@ -1,4 +1,4 @@
-FROM python:3.11.0
+FROM python:3.12.2
 
 ARG COMMIT=""
 LABEL commit=${COMMIT}

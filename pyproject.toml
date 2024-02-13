@@ -40,7 +40,7 @@ dependencies = [
   "nbgrader==0.8.3",
   "psycopg2-binary>=2.8.6",
   "pyjwt<2",
-  "sentry-sdk==1.14.0",
+  "sentry-sdk==1.40.4",
   "sqlalchemy>=1.4,<3",
   "tornado==6.1",
   "tornado-prometheus==0.1.1",

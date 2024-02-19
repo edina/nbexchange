@@ -634,8 +634,9 @@ def test_collect_normal_gradebook_called(plugin_config, tmpdir):
                 },
             )
 
-    with patch.object(Exchange, "api_request", side_effect=api_request), patch.object(
-        Gradebook, "update_or_create_student", side_effect=gradebook_update
+    with (
+        patch.object(Exchange, "api_request", side_effect=api_request),
+        patch.object(Gradebook, "update_or_create_student", side_effect=gradebook_update),
     ):
         plugin.start()
         assert gradebook_called
@@ -718,8 +719,9 @@ def test_collect_normal_gradebook_called_no_space(plugin_config, tmpdir):
                 },
             )
 
-    with patch.object(Exchange, "api_request", side_effect=api_request), patch.object(
-        Gradebook, "update_or_create_student", side_effect=gradebook_update
+    with (
+        patch.object(Exchange, "api_request", side_effect=api_request),
+        patch.object(Gradebook, "update_or_create_student", side_effect=gradebook_update),
     ):
         plugin.start()
         assert gradebook_called
@@ -801,8 +803,9 @@ def test_collect_normal_gradebook_called_no_full_name(plugin_config, tmpdir):
                 },
             )
 
-    with patch.object(Exchange, "api_request", side_effect=api_request), patch.object(
-        Gradebook, "update_or_create_student", side_effect=gradebook_update
+    with (
+        patch.object(Exchange, "api_request", side_effect=api_request),
+        patch.object(Gradebook, "update_or_create_student", side_effect=gradebook_update),
     ):
         plugin.start()
         assert gradebook_called
@@ -894,8 +897,9 @@ def test_collect_normal_several_gradebook_called(plugin_config, tmpdir):
                 },
             )
 
-    with patch.object(Exchange, "api_request", side_effect=api_request), patch.object(
-        Gradebook, "update_or_create_student", side_effect=gradebook_update
+    with (
+        patch.object(Exchange, "api_request", side_effect=api_request),
+        patch.object(Gradebook, "update_or_create_student", side_effect=gradebook_update),
     ):
         plugin.start()
         assert gradebook_called
@@ -976,8 +980,9 @@ def test_collect_normal_several_full_name_none(plugin_config, tmpdir):
                 },
             )
 
-    with patch.object(Exchange, "api_request", side_effect=api_request), patch.object(
-        Gradebook, "update_or_create_student", side_effect=gradebook_update
+    with (
+        patch.object(Exchange, "api_request", side_effect=api_request),
+        patch.object(Gradebook, "update_or_create_student", side_effect=gradebook_update),
     ):
         plugin.start()
         assert gradebook_called

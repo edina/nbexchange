@@ -7,6 +7,7 @@ After installation, you can enable it by adding:
 
 in your root `nbgrader_config.py` file.
 """
+
 from .collect import ExchangeCollect
 from .exchange import Exchange, ExchangeError
 from .fetch import ExchangeFetch

@@ -12,9 +12,9 @@ A dockerised service that replaces the defaukt nbgrader Exchange.
     - [Helm](#helm)
   - [nbgrader plugin](#nbgrader-plugin)
 - [Configuration](#configuration)
-  - [Configuring `nbexchange`](#configuring-nbexchange)
+  - [Configuring the `nbexchange` service](#configuring-the-nbexchange-service)
     - [**`user_plugin_class`** revisited](#user_plugin_class-revisited)
-  - [Configuring `nbgrader`](#configuring-nbgrader)
+  - [Configuring `nbgrader` to use the alternative exchange](#configuring-nbgrader-to-use-the-alternative-exchange)
 - [Contributing](#contributing)
   - [Releasing new versions](#releasing-new-versions)
 
@@ -97,31 +97,20 @@ helm install --name nbexchange --namespace default ./chart -f myconfiguration.ya
 
 ## nbgrader plugin
 
-Installing nbexchange will also install nbgrader.
+Installing nbexchange in a jupyter notebook will automatically install nbgrader.
 
 nbexchange is not released to Pypy or anaconda, however you can install direct from GitHub - eg:
 
 ```
-pip install https://github.com/edina/nbexchange/archive/v1.3.0.tar.gz
-
-jupyter nbextension install --sys-prefix --py nbgrader
-jupyter nbextension enable --sys-prefix validate_assignment/main --section=tree
-jupyter serverextension enable --sys-prefix nbgrader.server_extensions.validate_assignment
-jupyter nbextension enable --sys-prefix assignment_list/main --section=tree
-jupyter serverextension enable --sys-prefix nbgrader.server_extensions.assignment_list
+pip install https://github.com/edina/nbexchange/archive/v1.4.0.tar.gz
 ....
 ```
 
-Note that the jupyter *lab* extensions are installed and enabled automatically - you may wish to switch *off* `formgrader` and `create_assignment` for non-teachers: YMMV
+Note that nbgrader installs and enables the jupyter extensions automatically - you may wish to switch *off* `formgrader` and `create_assignment` for non-teachers: YMMV
 
 # Configuration
 
-There are two parts to configuring `nbexchange`:
-
-- Configure `nbexchange` itself
-- Configure `nbgrader` to use `nbexchange`
-
-## Configuring `nbexchange`
+## Configuring the `nbexchange` service
 
 The exchange uses `nbexchange_config.py` for configuration.
 
@@ -204,7 +193,7 @@ For the exchange to work, it needs some details about the user connecting to it 
 - `org_id`: As mentioned above, nbexchange divides courses and users across organisations. This is an id (numeric) for the org_id for the user.
 - `cust_id`: Whilst most of the exchange is keyed on the `org_id`, knowing _customer_ can be useful. This is an id (numeric) for the org_id for the user.
 
-## Configuring `nbgrader`
+## Configuring `nbgrader` to use the alternative exchange
 
 The primary reference for this should be the `nbgrader` documentation - but in short:
 

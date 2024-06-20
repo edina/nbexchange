@@ -30,7 +30,7 @@ classifiers = [
 ]
 
 dependencies = [
-  "nbgrader==0.9.1",
+  "nbgrader==0.9.3",
   "alembic>=1.7",
   "jupyter_server>=2",
   "sqlalchemy>=1.4,<2",

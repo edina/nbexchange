@@ -9,6 +9,7 @@ get used by the handlers:
 User -> Course -> Subscription -> Assignment -> Action -> Notebook -> Feedback
 
 """
+
 import pytest
 from sqlalchemy.exc import IntegrityError
 

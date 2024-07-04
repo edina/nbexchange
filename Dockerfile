@@ -1,4 +1,4 @@
-FROM python:3.11.0
+FROM python:3.11.7-slim-bullseye
 
 ARG COMMIT=""
 LABEL commit=${COMMIT}
@@ -7,7 +7,7 @@ RUN pip install --upgrade pip
 WORKDIR /usr/src/app
 
 # Sqlite for testing
-RUN apt update && apt install sqlite3 -y && rm -rf /var/lib/apt/lists/*
+RUN apt update && apt install sqlite3 && rm -rf /var/lib/apt/lists/*
 
 # Supervisord
 RUN pip install supervisor

@@ -5,14 +5,14 @@ from datetime import datetime
 from getpass import getuser
 
 import sentry_sdk
-from jupyterhub.log import CoroutineLogFormatter, log_request
-from jupyterhub.utils import url_path_join
+from jupyter_server.log import log_request
+from jupyter_server.utils import url_path_join as ujoin
 from sentry_sdk.integrations.tornado import TornadoIntegration
 from sqlalchemy.exc import OperationalError
 from tornado import web
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
-from tornado.log import access_log, app_log, gen_log
+from tornado.log import LogFormatter, access_log, app_log, gen_log
 from tornado_prometheus import MetricsHandler, PrometheusMixIn
 from traitlets import Bool, Dict, Integer, Type, Unicode, default
 from traitlets.config import Application, catch_config_error
@@ -81,7 +81,7 @@ class NbExchange(PrometheusMixIn, Application):
 
     tornado_settings = Dict()
 
-    _log_formatter_cls = CoroutineLogFormatter
+    _log_formatter_cls = LogFormatter
 
     @default("log_level")
     def _log_level_default(self):
@@ -104,7 +104,7 @@ class NbExchange(PrometheusMixIn, Application):
         """add a url prefix to handlers"""
         for i, tup in enumerate(handlers):
             lis = list(tup)
-            lis[0] = url_path_join(prefix, tup[0])
+            lis[0] = ujoin(prefix, tup[0])
             handlers[i] = tuple(lis)
 
         return handlers
@@ -236,7 +236,7 @@ class NbExchange(PrometheusMixIn, Application):
 
         for handler in handlers.default_handlers:
             for url in handler.urls:
-                self.handlers.append((url_path_join(self.base_url, url), handler))
+                self.handlers.append((ujoin(self.base_url, url), handler))
 
         self.handlers.append((r"/metrics", MetricsHandler))
 
@@ -260,7 +260,6 @@ class NbExchange(PrometheusMixIn, Application):
         if self.subapp:
             return
         self.init_db()
-        # self.init_hub_auth()
         self.init_tornado_settings()
         self.init_handlers()
         self.init_tornado_application()

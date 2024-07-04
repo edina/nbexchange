@@ -1,4 +1,5 @@
 """pytest fixtures for nbexchange"""
+
 import logging
 import os
 from getpass import getuser

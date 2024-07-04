@@ -3,6 +3,7 @@ Revision ID: 2805bf7747e5
 Revises: f26d6a79159d
 Create Date: 2020-06-23 13:58:38.781382
 """
+
 from datetime import datetime
 
 from alembic import op

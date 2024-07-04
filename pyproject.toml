@@ -5,10 +5,10 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "nbexchange"
-version = "1.3.0"
-description = "Jupyterhub extension that provides an exchange service for nbgrader."
+version = "1.4.0"
+description = "Jupyter extension that provides an external exchange service for nbgrader."
 readme = "README.md"
-requires-python = ">=3.7"
+requires-python = ">=3.9,<3.12"
 license = {file = "LICENSE"}
 keywords = ["nbgrader", "jupyter", "notebook"]
 authors = [
@@ -17,45 +17,42 @@ authors = [
 ]
 maintainers = [
   {name = "Ian Stuart", email = "Ian.Stuart@ed.ac.uk"},
-  {name = "Ludvig Kihlman"},
-  {name = "Bert Robberechts"},
+  {name = "Harry Newton"},
+  {name = "Alasdair Macleod"},
   {name = "Andrew Seales"},
 ]
 classifiers = [
   "License :: OSI Approved :: BSD License",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.8",
-  "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Intended Audience :: Education",
 ]
 
-# nbgrader 0.8.4 requires sqlalchemy 2, which breaks Jupyterhub
-# pyjwt limited due to djangorestframework-jwt dependencies
-# sqlalchemy spec is whatever nbgrader uses
 dependencies = [
-  "alembic>=1.6.5",
-  "jupyterhub>=1.4.1",
-  "nbgrader==0.8.3",
-  "psycopg2-binary>=2.8.6",
+  "nbgrader==0.9.1",
+  "alembic>=1.7",
+  "jupyter_server>=2",
+  "sqlalchemy>=1.4,<2",
+  "psycopg2-binary>=2.9.9",
   "pyjwt<2",
-  "sentry-sdk==1.14.0",
-  "sqlalchemy>=1.4,<3",
-  "tornado==6.1",
-  "tornado-prometheus==0.1.1",
+  "sentry-sdk==1.40.1",
+  "tornado==6.4",
+  "tornado-prometheus==0.1.2",
 ]
 
 [project.optional-dependencies]
 test = [
-  "beautifulsoup4>=2.9.3",
+  "beautifulsoup4>=4.12.3",
   "html5lib>=1.1",
-  "mock>=4.0.2",
-  "psycopg2-binary>=2.8.6",
-  "pytest>=6.1.2",
-  "pytest-cov[all]>=2.10.1",
-  "pytest-docker-tools>=1.0",
+  "mock>=5.1.0",
+  "pytest>=8.0.0",
+  "pytest-cov[all]>=4.1.0",
+  "pytest-docker-tools>=3.1.3",
   "pytest-tornado>=0.8.1",
+  "isort>=5.13.2",
+  "black>=24.1.1",
+  "flake8>=7.0.0",
 ]
 
 [project.urls]

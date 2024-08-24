@@ -26,6 +26,7 @@ class Subscription(Base):
     user_id = Column(Integer, ForeignKey("user.id", ondelete="CASCADE"), index=True)
     course_id = Column(Integer, ForeignKey("course.id", ondelete="CASCADE"), index=True)
     role = Column(UnicodeText, nullable=False)
+    lms_user_id = Column(Integer, nullable=True)
 
     # These are the relationship handles: a specific subscription has a single user to a single course
     user = relationship("User", back_populates="courses")

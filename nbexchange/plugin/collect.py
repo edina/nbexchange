@@ -114,6 +114,8 @@ class ExchangeCollect(abc.ExchangeCollect, Exchange):
             # self.coursedir.submitted_directory gets defined in `list.py`
             #   otherwise this is consistent with the upstream code
             if student_id:
+                lms_user_id = submission.get("lms_user_id", None)
+
                 local_dest_path = self.coursedir.format_path(
                     self.coursedir.submitted_directory,
                     student_id,
@@ -148,7 +150,7 @@ class ExchangeCollect(abc.ExchangeCollect, Exchange):
 
                     with Gradebook(self.coursedir.db_url, self.coursedir.course_id) as gb:
                         try:
-                            gb.update_or_create_student(student_id, first_name=first_name, last_name=last_name)
+                            gb.update_or_create_student(student_id, first_name=first_name, last_name=last_name, lms_user_id=lms_user_id)
                         except MissingEntry:
                             self.log.info(
                                 f"Unable to update: {student_id} with first_name={first_name}, last_name={last_name}"

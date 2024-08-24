@@ -97,8 +97,8 @@ class BaseHandler(web.RequestHandler):
 
             subscription = Subscription.find_by_set(db=session, user_id=user.id, course_id=course.id, role=current_role)
             if subscription is None:
-                self.log.debug(f"New subscription details: user:{user.id}, course:{course.id}, role:{current_role}")
-                subscription = Subscription(user_id=user.id, course_id=course.id, role=current_role)
+                self.log.debug(f"New subscription details: user:{user.id}, course:{course.id}, role:{current_role}, lms_user_id:{lms_user_id}")
+                subscription = Subscription(user_id=user.id, course_id=course.id, role=current_role, lms_user_id=lms_user_id)
                 session.add(subscription)
 
             courses = {}
@@ -111,6 +111,7 @@ class BaseHandler(web.RequestHandler):
             model = {
                 "kind": "user",
                 "id": user.id,
+                "lms_user_id": lms_user_id,
                 "name": user.name,
                 "email": email,
                 "lms_user_id": lms_user_id,

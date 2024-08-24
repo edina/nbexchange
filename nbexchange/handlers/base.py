@@ -63,6 +63,7 @@ class BaseHandler(web.RequestHandler):
         current_role = hub_user.get("course_role")
         course_title = hub_user.get("course_title", "no_title")
         org_id = hub_user.get("org_id", 1)
+        lms_user_id = hub_user.get("lms_user_id", None)
 
         # Raising an error appears to have no detrimental affect when running.
         if not (current_course and current_role):
@@ -95,8 +96,8 @@ class BaseHandler(web.RequestHandler):
 
             subscription = Subscription.find_by_set(db=session, user_id=user.id, course_id=course.id, role=current_role)
             if subscription is None:
-                self.log.debug(f"New subscription details: user:{user.id}, course:{course.id}, role:{current_role}")
-                subscription = Subscription(user_id=user.id, course_id=course.id, role=current_role)
+                self.log.debug(f"New subscription details: user:{user.id}, course:{course.id}, role:{current_role}, lms_user_id:{lms_user_id}")
+                subscription = Subscription(user_id=user.id, course_id=course.id, role=current_role, lms_user_id=lms_user_id)
                 session.add(subscription)
 
             courses = {}
@@ -109,6 +110,7 @@ class BaseHandler(web.RequestHandler):
             model = {
                 "kind": "user",
                 "id": user.id,
+                "lms_user_id": lms_user_id,
                 "name": user.name,
                 "org_id": user.org_id,
                 "current_course": current_course,

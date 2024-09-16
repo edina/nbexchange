@@ -150,7 +150,9 @@ class ExchangeCollect(abc.ExchangeCollect, Exchange):
 
                     with Gradebook(self.coursedir.db_url, self.coursedir.course_id) as gb:
                         try:
-                            gb.update_or_create_student(student_id, first_name=first_name, last_name=last_name, lms_user_id=lms_user_id)
+                            gb.update_or_create_student(
+                                student_id, first_name=first_name, last_name=last_name, lms_user_id=lms_user_id
+                            )
                         except MissingEntry:
                             self.log.info(
                                 f"Unable to update: {student_id} with first_name={first_name}, last_name={last_name}"

@@ -3,13 +3,14 @@
 # import uuid
 
 from tornado import web
+
 import nbexchange.models.assignments
 import nbexchange.models.courses
 import nbexchange.models.notebooks
 import nbexchange.models.subscriptions
-from nbexchange.models.actions import AssignmentActions
 from nbexchange.database import scoped_session
 from nbexchange.handlers.base import BaseHandler, authenticated
+from nbexchange.models.actions import AssignmentActions
 
 """
 All URLs relative to /services/nbexchange
@@ -115,13 +116,19 @@ class History(BaseHandler):
                 if subscription.role == "Instructor":
                     models[subscription.course.id]["isInstructor"] = True
                 self.log.debug(
-                    f"       ... course: {models[subscription.course.id]['course_id']} | {models[subscription.course.id]['course_code']}"
+                    (
+                        f"       ... course: {models[subscription.course.id]['course_id']} | ",
+                        f"{models[subscription.course.id]['course_code']}",
+                    )
                 )
                 for assignment in subscription.course.assignments:
                     self.log.debug(f"           ... assignment: {assignment}")
                     if assignment_id_param and assignment_id_param != assignment.id:
                         self.log.debug(
-                            f"History: ignoring assignment {assignment.id} because request specified assignment ID {assignment_id_param}"
+                            (
+                                f"History: ignoring assignment {assignment.id} because request specified ",
+                                f"assignment ID {assignment_id_param}",
+                            )
                         )
                         continue
 
@@ -134,14 +141,17 @@ class History(BaseHandler):
                         for action in assignment.actions:
                             if (
                                 action.action == "released"
-                                or action.user_id == this_user["id"]
-                                or subscription.role == "Instructor"
+                                or action.user_id == this_user["id"]  # noqa: W503
+                                or subscription.role == "Instructor"  # noqa: W503
                             ):
                                 b = dict()
                                 action_string = str(action.action).replace("AssignmentActions.", "")
                                 if action_param and action_string != action_param:
                                     self.log.debug(
-                                        f"History: ignoring action {action_string} because it isn't of type {action_param}"
+                                        (
+                                            f"History: ignoring action {action_string} because it ",
+                                            f"isn't of type {action_param}",
+                                        )
                                     )
                                     continue
                                 if action_string not in a["action_summary"]:

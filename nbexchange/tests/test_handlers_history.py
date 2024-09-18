@@ -1,15 +1,19 @@
-import datetime
 import logging
 
 import pytest
 from mock import patch
 
 from nbexchange.handlers.base import BaseHandler
-from nbexchange.models.actions import Action, AssignmentActions
 from nbexchange.tests.test_handlers_base import BaseTestHandlers
-
-# from nbexchange.tests.test_orm import assignment_tree, user_johaannes, user_kaylee
-from nbexchange.tests.utils import async_requests, user_kiz_instructor
+from nbexchange.tests.utils import (  # noqa: F401 "action_*" & "clear_database"
+    action_collected,
+    action_feedback_released,
+    action_fetched,
+    action_submitted,
+    async_requests,
+    clear_database,
+    user_kiz_instructor,
+)
 
 logger = logging.getLogger(__file__)
 logger.setLevel(logging.ERROR)
@@ -19,12 +23,12 @@ class TestHandlersHistory(BaseTestHandlers):
 
     # require authenticated user (404 because the bounce to login fails)
     @pytest.mark.gen_test
-    def test_history_must_be_authenticated(self, app):
+    def test_history_must_be_authenticated(self, app, clear_database):  # noqa: F811
         r = yield async_requests.get(app.url + "/history")
         assert r.status_code == 403
 
     @pytest.mark.gen_test
-    def test_history_invalid_action_param(self, app):
+    def test_history_invalid_action_param(self, app, clear_database):  # noqa: F811
         with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
             r = yield async_requests.get(app.url + "/history?action=foo")
         assert r.status_code == 200
@@ -33,7 +37,7 @@ class TestHandlersHistory(BaseTestHandlers):
         assert response_data["note"] == "foo is not a valid assignment action."
 
     @pytest.mark.gen_test
-    def test_history_no_action_param(self, app, action_submitted):
+    def test_history_no_action_param(self, app, clear_database, action_submitted):  # noqa: F811
         with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
             r = yield async_requests.get(app.url + "/history")
         assert r.status_code == 200
@@ -43,7 +47,7 @@ class TestHandlersHistory(BaseTestHandlers):
         assert response_data["value"] == [
             {
                 "role": {"Instructor": 1},
-                "user_id": {"3": 1},
+                "user_id": {"2": 1},
                 "assignments": [
                     {
                         "assignment_id": 1,
@@ -67,7 +71,9 @@ class TestHandlersHistory(BaseTestHandlers):
 
     # Instructor should be able to see feedback_released action by another instructor
     @pytest.mark.gen_test
-    def test_history_feedback_released(self, app, action_feedback_released):
+    def test_history_feedback_released(
+        self, app, clear_database, action_submitted, action_feedback_released  # noqa: F811
+    ):
         with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
             r = yield async_requests.get(app.url + "/history")
         assert r.status_code == 200
@@ -105,8 +111,11 @@ class TestHandlersHistory(BaseTestHandlers):
             }
         ]
 
+    # Filters the response to just actions of feedback_released (so 1 item less that above)
     @pytest.mark.gen_test
-    def test_history_action_feedback_released(self, app):
+    def test_history_action_feedback_released(
+        self, app, clear_database, action_submitted, action_feedback_released  # noqa: F811
+    ):
         with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
             r = yield async_requests.get(app.url + "/history?action=feedback_released")
         assert r.status_code == 200
@@ -139,8 +148,11 @@ class TestHandlersHistory(BaseTestHandlers):
             }
         ]
 
+    # returns empty when existing records do not match requested assignment
     @pytest.mark.gen_test
-    def test_history_filter_by_assignment_id(self, app):
+    def test_history_filter_by_assignment_id(
+        self, app, clear_database, action_submitted, action_feedback_released  # noqa: F811
+    ):
         with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
             r = yield async_requests.get(app.url + "/history?assignment_id=987654321")
         assert r.status_code == 200
@@ -159,8 +171,11 @@ class TestHandlersHistory(BaseTestHandlers):
             }
         ]
 
+    # returns empty when existing records do not match requested assignment
     @pytest.mark.gen_test
-    def test_history_filter_by_course_code_not_exist(self, app):
+    def test_history_filter_by_course_code_not_exist(
+        self, app, clear_database, action_submitted, action_feedback_released  # noqa: F811
+    ):
         with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
             r = yield async_requests.get(app.url + "/history?course_code=abcdefghij123456")
         assert r.status_code == 200
@@ -170,7 +185,9 @@ class TestHandlersHistory(BaseTestHandlers):
         assert response_data["value"] == []
 
     @pytest.mark.gen_test
-    def test_history_filter_by_course_code_exists(self, app):
+    def test_history_filter_by_course_code_exists(
+        self, app, clear_database, action_submitted, action_feedback_released  # noqa: F811
+    ):
         with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
             r = yield async_requests.get(app.url + "/history?course_code=course_2")
         assert r.status_code == 200
@@ -207,55 +224,3 @@ class TestHandlersHistory(BaseTestHandlers):
                 "course_title": "A title",
             }
         ]
-
-
-@pytest.fixture
-def action_submitted(db, user_johaannes, assignment_tree):
-    orm_action = Action(
-        user_id=user_johaannes.id,
-        assignment_id=assignment_tree.id,
-        action=AssignmentActions.submitted,
-        location="/some/random/path/to/a/file.tzg",
-        timestamp=datetime.datetime(1970, 1, 2, 10, 10),
-    )
-    db.add(orm_action)
-    db.commit()
-
-
-@pytest.fixture
-def action_fetched(db, user_johaannes, assignment_tree):
-    orm_action = Action(
-        user_id=user_johaannes.id,
-        assignment_id=assignment_tree.id,
-        action=AssignmentActions.fetched,
-        location="/some/random/path/to/a/file.tzg",
-        timestamp=datetime.datetime(1970, 1, 1, 10, 10),
-    )
-    db.add(orm_action)
-    db.commit()
-
-
-@pytest.fixture
-def action_collected(db, assignment_tree, user_kaylee):
-    orm_action = Action(
-        user_id=user_kaylee.id,
-        assignment_id=assignment_tree.id,
-        action=AssignmentActions.collected,
-        location="/some/random/path/to/a/file.tzg",
-        timestamp=datetime.datetime(1970, 1, 30, 10, 10),
-    )
-    db.add(orm_action)
-    db.commit()
-
-
-@pytest.fixture
-def action_feedback_released(db, assignment_tree, user_kaylee):
-    orm_action = Action(
-        user_id=user_kaylee.id,
-        assignment_id=assignment_tree.id,
-        action=AssignmentActions.feedback_released,
-        location="/some/random/path/to/a/file.tzg",
-        timestamp=datetime.datetime(1970, 1, 31, 10, 10),
-    )
-    db.add(orm_action)
-    db.commit()

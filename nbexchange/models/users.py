@@ -69,7 +69,7 @@ class User(Base):
     def find_by_org(cls, db, org_id, log=None):
         """Find all users for an organisation.
 
-        user = User.find_by_name(db, customer.org.id)
+        user = User.find_by_name(db, org_id)
 
         Returns None if not found.
         """

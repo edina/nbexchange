@@ -22,6 +22,9 @@ This relys on users being logged in, and the user-object having additional data:
 
 class History(BaseHandler):
     """.../actions/
+    parmas:
+        course_id: course_code - optional
+
 
     GET: gets list of actions relevent to the user.
 
@@ -56,13 +59,21 @@ class History(BaseHandler):
                             user: Str
                         },
                         {...},
-                    ]
+                    ],
+                    "action_summary": {
+                        "released": Int
+                        "submitted": Int
+                        ...
+                    },
+
                 },
             ],
        },
        {...},
     ]
 
+    ..... for the list of possible "action_summary" entries, see values listed in
+    nbexchange.models.actions.AssignmentActions
 
     """
 
@@ -74,9 +85,7 @@ class History(BaseHandler):
 
         models = {}
 
-        [action_param, assignment_id_param, course_code_param] = self.get_params(
-            ["action", "assignment_id", "course_code"]
-        )
+        [action_param, course_code_param] = self.get_params(["action", "course_code"])
 
         # Python 3.12 required to do "str" in Enum so use __members__ instead
         if action_param and action_param not in AssignmentActions.__members__:
@@ -89,7 +98,7 @@ class History(BaseHandler):
         this_user = self.nbex_user
         self.log.debug(f"History authenticated User: {this_user.get('name')}")
 
-        # Find all the assignments this user should be able to see
+        # Find all the course_codes this user should be able to see
         with scoped_session() as session:
             subscriptions_query = session.query(nbexchange.models.Subscription).filter_by(user_id=this_user["id"])
             if course_code_param:
@@ -102,15 +111,17 @@ class History(BaseHandler):
 
             for subscription in subscriptions:
                 if subscription.course.id not in models:
-                    models[subscription.course.id] = {}
-                models[subscription.course.id]["role"] = dict()
-                models[subscription.course.id]["user_id"] = dict()
-                models[subscription.course.id]["assignments"] = list()
-                models[subscription.course.id]["isInstructor"] = False
+                    models[subscription.course.id] = {
+                        "role": dict(),
+                        "user_id": dict(),
+                        "assignments": list(),
+                        "isInstructor": False,
+                        "course_id": subscription.course.id,
+                        "course_code": subscription.course.course_code,
+                        "course_title": subscription.course.course_title,
+                    }
 
-                models[subscription.course.id]["course_id"] = subscription.course.id
-                models[subscription.course.id]["course_code"] = subscription.course.course_code
-                models[subscription.course.id]["course_title"] = subscription.course.course_title
+                # add to data-structures
                 models[subscription.course.id]["role"][subscription.role] = 1
                 models[subscription.course.id]["user_id"][subscription.user_id] = 1
                 if subscription.role == "Instructor":
@@ -123,48 +134,46 @@ class History(BaseHandler):
                 )
                 for assignment in subscription.course.assignments:
                     self.log.debug(f"           ... assignment: {assignment}")
-                    if assignment_id_param and assignment_id_param != assignment.id:
-                        self.log.debug(
-                            (
-                                f"History: ignoring assignment {assignment.id} because request specified ",
-                                f"assignment ID {assignment_id_param}",
-                            )
-                        )
-                        continue
 
+                    temp_dict = dict()
                     if assignment.active:
-                        a = dict()
-                        a["assignment_id"] = assignment.id
-                        a["assignment_code"] = assignment.assignment_code
-                        a["actions"] = list()
-                        a["action_summary"] = dict()
-                        for action in assignment.actions:
-                            if (
-                                action.action == "released"
-                                or action.user_id == this_user["id"]  # noqa: W503
-                                or subscription.role == "Instructor"  # noqa: W503
-                            ):
-                                b = dict()
-                                action_string = str(action.action).replace("AssignmentActions.", "")
-                                if action_param and action_string != action_param:
-                                    self.log.debug(
-                                        (
-                                            f"History: ignoring action {action_string} because it ",
-                                            f"isn't of type {action_param}",
-                                        )
-                                    )
-                                    continue
-                                if action_string not in a["action_summary"]:
-                                    a["action_summary"][action_string] = 0
-                                a["action_summary"][action_string] += 1
-                                b["action"] = str(action.action)
-                                self.log.debug(f"action: {action}")
-                                b["timestamp"] = action.timestamp.strftime("%Y-%m-%d %H:%M:%S.%f %Z")
-                                user = nbexchange.models.users.User.find_by_pk(db=session, pk=action.user_id)
-                                b["user"] = user.name
-                                a["actions"].append(b)
-                        models[subscription.course.id]["assignments"].append(a)
+                        if assignment.id not in temp_dict:
+                            temp_dict[assignment.id] = {
+                                "assignment_id": assignment.id,
+                                "assignment_code": assignment.assignment_code,
+                                "actions": list(),
+                                "action_summary": dict(),
+                            }
 
+                            for action in assignment.actions:
+                                # You see releases, your own actions, or anything if you're an isntructor
+                                if (
+                                    action.action == AssignmentActions.released
+                                    or action.user_id == this_user["id"]  # noqa: W503
+                                    or models[subscription.course.id]["isInstructor"] is True  # noqa: W503
+                                ):
+                                    this_action = dict()
+                                    action_string = str(action.action).replace("AssignmentActions.", "")
+                                    if action_param and action_string != action_param:
+                                        self.log.debug(
+                                            (
+                                                f"History: ignoring action {action_string} because it ",
+                                                f"isn't of type {action_param}",
+                                            )
+                                        )
+                                        continue
+                                    if action_string not in temp_dict[assignment.id]["action_summary"]:
+                                        temp_dict[assignment.id]["action_summary"][action_string] = 0
+                                    temp_dict[assignment.id]["action_summary"][action_string] += 1
+                                    this_action["action"] = str(action.action)
+                                    self.log.debug(f"action: {action}")
+                                    this_action["timestamp"] = action.timestamp.strftime("%Y-%m-%d %H:%M:%S.%f %Z")
+                                    # I thought about this - and actually, there is merit in students knowing
+                                    # _which_ instructor released an assignment when
+                                    user = nbexchange.models.users.User.find_by_pk(db=session, pk=action.user_id)
+                                    this_action["user"] = user.name
+                                    temp_dict[assignment.id]["actions"].append(this_action)
+                    models[subscription.course.id]["assignments"] = list(temp_dict.values())
         self.finish({"success": True, "value": sorted(models.values(), key=lambda x: (x["course_id"]))})
 
     # This has no authentiction wrapper, so false implication os service

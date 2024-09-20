@@ -1,6 +1,5 @@
 import asyncio
 import base64
-import datetime
 import io
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
@@ -8,7 +7,7 @@ from functools import partial
 import pytest
 import requests
 
-from nbexchange.models.actions import Action, AssignmentActions
+from nbexchange.models.actions import Action
 from nbexchange.models.assignments import Assignment as AssignmentModel
 from nbexchange.models.courses import Course
 from nbexchange.models.feedback import Feedback
@@ -16,6 +15,10 @@ from nbexchange.models.notebooks import Notebook
 from nbexchange.models.subscriptions import Subscription
 from nbexchange.models.users import User
 
+#####
+#
+# Check in handlers.auth.naas_user_handlers.NaasUserHandler - username.replace("_", "-", 1)
+#
 user_kiz = {"name": "1-kiz"}
 user_bert = {"name": "1-bert"}
 
@@ -58,7 +61,7 @@ user_lkihlman_instructor = {
     "name": "1-lkihlman",
     "course_id": "course_1",
     "course_role": "Instructor",
-    "course_title": "A title",
+    "course_title": "Another title",
 }
 
 user_lkihlman_student = {
@@ -160,55 +163,3 @@ def clear_database(db):
     db.query(Notebook).delete()
     db.query(Subscription).delete()
     db.query(User).delete()
-
-
-@pytest.fixture
-def action_submitted(db, user_johaannes, assignment_tree):
-    orm_action = Action(
-        user_id=user_johaannes.id,
-        assignment_id=assignment_tree.id,
-        action=AssignmentActions.submitted,
-        location="/some/random/path/to/a/file.tzg",
-        timestamp=datetime.datetime(1970, 1, 2, 10, 10),
-    )
-    db.add(orm_action)
-    db.commit()
-
-
-@pytest.fixture
-def action_fetched(db, user_johaannes, assignment_tree):
-    orm_action = Action(
-        user_id=user_johaannes.id,
-        assignment_id=assignment_tree.id,
-        action=AssignmentActions.fetched,
-        location="/some/random/path/to/a/file.tzg",
-        timestamp=datetime.datetime(1970, 1, 1, 10, 10),
-    )
-    db.add(orm_action)
-    db.commit()
-
-
-@pytest.fixture
-def action_collected(db, assignment_tree, user_kaylee):
-    orm_action = Action(
-        user_id=user_kaylee.id,
-        assignment_id=assignment_tree.id,
-        action=AssignmentActions.collected,
-        location="/some/random/path/to/a/file.tzg",
-        timestamp=datetime.datetime(1970, 1, 30, 10, 10),
-    )
-    db.add(orm_action)
-    db.commit()
-
-
-@pytest.fixture
-def action_feedback_released(db, assignment_tree, user_kaylee):
-    orm_action = Action(
-        user_id=user_kaylee.id,
-        assignment_id=assignment_tree.id,
-        action=AssignmentActions.feedback_released,
-        location="/some/random/path/to/a/file.tzg",
-        timestamp=datetime.datetime(1970, 1, 31, 10, 10),
-    )
-    db.add(orm_action)
-    db.commit()

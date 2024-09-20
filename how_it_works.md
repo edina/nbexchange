@@ -15,6 +15,7 @@ Configuration documentation is in the [README.md](README.md)
       - [collect](#collect)
       - [release-feedback](#release-feedback)
       - [fetch-feedback](#fetch-feedback)
+      - [history](#history)
 - [API Specification for the NBExchange service](#api-specification-for-the-nbexchange-service)
   - [Assignments](#assignments)
   - [Assignment](#assignment)
@@ -22,6 +23,7 @@ Configuration documentation is in the [README.md](README.md)
   - [Collections](#collections)
   - [Collection](#collection)
   - [Feedback](#feedback)
+  - [History](#history-1)
 
 <!-- /TOC -->
 
@@ -62,23 +64,23 @@ Get list of all _assignments_ associated with that course. We return a list of a
 
 We verify the user is an `instructor`, and subscribed to the course.
 
-1. Create the assignment and link it to the course,
-2. Grab the first uploaded file (we use `.zip` files for assignments) and store it in a _location_,
-3. Create an `action` record, noting `action=released`, the assignment, file location, who did the action, and add a timestamp
+1. Creates the assignment and link it to the course,
+2. Grabs the first uploaded file (we use `.zip` files for assignments) and store it in a _location_,
+3. Creates an `action` record, noting `action=released`, the assignment, file location, who did the action, and add a timestamp
 
 #### fetch-assignment
 
     GET /assignment?course_id=$cid&assignment_id=$aid
 
-1. Find the `released` _action_ for that assignment, and download the file from the given `location`
-2. Create an `action` record, noting `action=fetched`, the assignment, file location, who did the action, and add a timestamp
+1. Finds the `released` _action_ for that assignment, and download the file from the given `location`
+2. Creates an `action` record, noting `action=fetched`, the assignment, file location, who did the action, and add a timestamp
 
 #### submit
 
     POST /submission?course_id=$cid&assignment_id=$aid, files = _zip-file_
 
-1. Grab the first uploaded file (we use `.zip` files for assignments) and store it in a _location_,
-2. Create an `action` record, noting `action=submitted`, the assignment, file location, who did the action, and add a timestamp
+1. Grabs the first uploaded file (we use `.zip` files for assignments) and store it in a _location_,
+2. Creates an `action` record, noting `action=submitted`, the assignment, file location, who did the action, and add a timestamp
 
 #### collect
 
@@ -97,20 +99,28 @@ We verify the user is an `instructor`, and subscribed to the course.
 
 Each autograded `.ipynb` file has a matching `.html` file - For each `.html` file:
 
-1. Grab the first uploaded file (POST `/feedback?course_id=$cid&assignment_id=$aid&notebook=$nb&student=$sid&timestamp=$ts&checksum=$cs`, files = _text-file_), and store it in a _location_,
+1. Grabs the first uploaded file (POST `/feedback?course_id=$cid&assignment_id=$aid&notebook=$nb&student=$sid&timestamp=$ts&checksum=$cs`, files = _text-file_), and store it in a _location_,
     - `timestamp ($ts)`, in this instance, it the timestamp recorded from the student _submission_. 
-2. Record the details, noting the notebook, the instructor (this.user), the student ($sid), and the given timestamp ($ts)
-3. Create an `action` record, noting `action=feedback_released`, the assignment, file location, who did the action, and add a timestamp
+2. Records the details, noting the notebook, the instructor (this.user), the student ($sid), and the given timestamp ($ts)
+3. Creates an `action` record, noting `action=feedback_released`, the assignment, file location, who did the action, and add a timestamp
 
 #### fetch-feedback
 
     GET /feedback?course_id=$cid&assignment_id=$aid
 
-Download all the feedback for the current user, for the given course & assignment.
+1. Downloads all the feedback for the current user, for the given course & assignment.
+2. Note that the (`.html`) feedback files are held as `base64-encoded` content in the returned data-object.
+3. Creates an `action` record, noting `action=feedback_fetched`, the assignment, file location, who did the action, and add a timestamp
 
-Note that the (`.html`) feedback files are held as `base64-encoded` content in the returned data-object.
+#### history
 
-Create an `action` record, noting `action=feedback_fetched`, the assignment, file location, who did the action, and add a timestamp
+    GET /history?course_id=$cid&action=$acc
+
+Gets a list of courses, assignments, and actions - optionally filtered by `course_id` and/or `action`
+
+Users will see all the `released` action for the courses they're subscribed to, plus any actions they themselved perfomed.
+
+If a user has been an `Instructor` on a course, they can see _all_ the actions for that course.
 
 # API Specification for the NBExchange service
 
@@ -243,3 +253,46 @@ else
     {"success": True, "note": "Feedback released"}
 
 or raises an error - should be a 404 or 412.
+
+## History
+
+    .../history?course_id=$course_code&action=$action
+
+**GET**: returns list of actions, grouped by course, and then assignment
+
+Returns 
+
+    {"success": True,
+        "value": [{
+            course_id: Int,
+            course_code: Str,
+            course_title: Str,
+            role: [Str, Str, ..],
+            user_id: [Str, Str, ..],
+            isInstructor: Bool,
+            assignments: [
+                {
+                    assignment_code: Str,
+                    assignment_id: Int
+                    actions: [
+                        {
+                            action: Str,
+                            timestamp: timestamp.strftime("%Y-%m-%d %H:%M:%S.%f %Z"),
+                            user: Str
+                        },
+                        {...},
+                    ],
+                    "action_summary": {
+                        "released": Int
+                        "submitted": Int
+                        ...
+                    },
+
+                },
+            ],
+       },
+       {...},
+    ]}
+or
+
+    {"success": False, "note": $note}

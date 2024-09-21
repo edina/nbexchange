@@ -116,8 +116,6 @@ class ExchangeCollect(abc.ExchangeCollect, Exchange):
             # self.coursedir.submitted_directory gets defined in `list.py`
             #   otherwise this is consistent with the upstream code
             if student_id:
-                lms_user_id = submission.get("lms_user_id", None)
-
                 local_dest_path = self.coursedir.format_path(
                     self.coursedir.submitted_directory,
                     student_id,

@@ -5,7 +5,6 @@ from nbexchange.handlers.base import BaseHandler, authenticated
 from nbexchange.models.actions import Action, AssignmentActions
 from nbexchange.models.assignments import Assignment as AssignmentModel
 from nbexchange.models.courses import Course
-from nbexchange.models.subscriptions import Subscription
 from nbexchange.models.users import User
 
 """
@@ -114,10 +113,6 @@ class Collections(BaseHandler):
             actions = session.query(Action).filter(*filters)
 
             for action in actions:
-                subscription = Subscription.find_by_set(
-                    db=session, user_id=action.user_id, course_id=course.id, role="Student"
-                )
-                lms_user_id = subscription.lms_user_id if subscription else None
                 models.append(
                     {
                         "student_id": action.user.name,
@@ -126,7 +121,6 @@ class Collections(BaseHandler):
                         "lms_user_id": action.user.lms_user_id,
                         "assignment_id": assignment.assignment_code,
                         "course_id": assignment.course.course_code,
-                        "lms_user_id": lms_user_id,
                         "status": action.action.value,  # currently called 'action' in our db
                         "path": action.location,
                         # 'name' in db, 'notebook_id' id nbgrader

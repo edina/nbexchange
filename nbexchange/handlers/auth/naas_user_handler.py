@@ -7,6 +7,24 @@ from tornado import web
 from nbexchange.handlers.auth.user_handler import BaseUserHandler
 
 
+def transform_username(jwt_usernname) -> str:
+
+    # TODO this _ to - transformation is unfortunate but the alternatives are also bad
+    # Due to changes in the API in aug/sept 2020 the username was transformed for the UI to appear
+    # as 1-xyz instead of 1_xyz. This was due to K8S only supporting DNS compatible characters for some reasources
+    # which _ isn't. The other nice benefit was to get rid of %2F in places. Unfortunately nbexchange used this
+    # same API and its username format was changed at the same time.
+    # The username is used in the path to user assignment submissions and is recorded in the nbexchange database
+    # and on the NFS filesystem. Changing this back would require these usernames are reformatted from their
+    # 1-xyz format back to 1_xyz
+    modified_username = jwt_usernname.replace("_", "-", 1)
+
+    # We need to strip out forward slashes from the username. If not, the created paths will be invalid
+    modified_username = modified_username.replace("/", "-")
+
+    return modified_username
+
+
 class NaasUserHandler(BaseUserHandler):
     jwt_key = os.environ.get("SECRET_KEY")
 
@@ -23,18 +41,7 @@ class NaasUserHandler(BaseUserHandler):
         encoded = cookies["noteable_auth"]
         result = jwt.decode(encoded, self.jwt_key, algorithms=["HS256"])
 
-        # TODO this _ to - transformation is unfortunate but the alternatives are also bad
-        # Due to changes in the API in aug/sept 2020 the username was transformed for the UI to appear
-        # as 1-xyz instead of 1_xyz. This was due to K8S only supporting DNS compatible characters for some reasources
-        # which _ isn't. The other nice benefit was to get rid of %2F in places. Unfortunately nbexchange used this
-        # same API and its username format was changed at the same time.
-        # The username is used in the path to user assignment submissions and is recorded in the nbexchange database
-        # and on the NFS filesystem. Changing this back would require these usernames are reformatted from their
-        # 1-xyz format back to 1_xyz
-        transformed_username = result["username"].replace("_", "-", 1)
-
-        # We need to strip out forward slashes from the username. If not, the created paths will be invalid
-        transformed_username = transformed_username.replace("/", "-")
+        transformed_username = transform_username(result["username"])
 
         return {
             "name": transformed_username,

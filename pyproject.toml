@@ -29,11 +29,12 @@ classifiers = [
   "Intended Audience :: Education",
 ]
 
+# These values need to match nbgrader, jupyterlab, and/or the api
 dependencies = [
   "nbgrader==0.9.1",
   "alembic>=1.7",
   "jupyter_server>=2",
-  "sqlalchemy>=1.4,<2",
+  "sqlalchemy>=1.4,<3",
   "psycopg2-binary>=2.9.9",
   "pyjwt<2",
   "sentry-sdk==2.2.0",

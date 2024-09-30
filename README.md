@@ -47,6 +47,8 @@ It's provides an external store for released & submitted assignments, and the fe
 
 Following the lead of other Jupyter services, it is a `tornado` application.
 
+The team that created the inital code use nbexchange in a cloud environment, with multiple organisations using a central exchange service. Courses [and this assignments] are differentiated using an `org_id` - if you do not need this feature, just set it to `1` for everthing.
+
 ## Compatibility
 
 This version installs `nbgrader`  0.9.1 (which makes it compatible with JupyterLab & Notebook 7)
@@ -129,7 +131,6 @@ class MyUserHandler(BaseUserHandler):
           "course_title": "cool course",
           "course_role": "Student",
           "org_id": 1,
-          "cust_id": 2,
     }
 
 
@@ -191,7 +192,6 @@ For the exchange to work, it needs some details about the user connecting to it 
 - `course_title`: A long name for the course (eg `A course of understanding thermondynamics in bulk refrigerant transport").
 - `course_role`: The role of the user, normally `Student` or `Instructor`. (currently only `Instructor` get privilaged actions).
 - `org_id`: As mentioned above, nbexchange divides courses and users across organisations. This is an id (numeric) for the org_id for the user.
-- `cust_id`: Whilst most of the exchange is keyed on the `org_id`, knowing _customer_ can be useful. This is an id (numeric) for the org_id for the user.
 
 ## Configuring `nbgrader` to use the alternative exchange
 

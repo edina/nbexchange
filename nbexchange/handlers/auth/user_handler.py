@@ -18,7 +18,6 @@ class BaseUserHandler(ABC):
             "course_id": the course the user is on,
             "course_title": the title of the course,
             "course_role": the role the user has on the course,
-            "cust_id": an id for the customer the user belongs to,
             "org_id": an id for the organisation the user belongs to,
         }
 

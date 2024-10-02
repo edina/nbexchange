@@ -47,6 +47,7 @@ def test_submit_methods(plugin_config, tmpdir, caplog):
     )
 
     plugin = ExchangeSubmit(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
+    plugin.set_timestamp()
     plugin.init_src()
     assert re.search(r"nbexchange/assign_1_1$", plugin.src_path)
     plugin.init_dest()

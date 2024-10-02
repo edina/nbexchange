@@ -1,4 +1,4 @@
-FROM python:3.11.7-slim-bullseye
+FROM python:3.12.7-slim-bullseye
 
 ARG COMMIT=""
 LABEL commit=${COMMIT}

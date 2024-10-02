@@ -31,6 +31,8 @@ class Collections(BaseHandler):
            {'assignment_id': <assignment_code>,
             'course_id': <course_code?,
             'full_name': user_id.full_name,
+            'email': user_id.email,
+            'lms_user_id': user_id.lms_user_id,
             'notebooks': [{'notebook_id': 'test'}],
             'path': </full/path/to/gzip/file/on/exchange/server.gz>,
             'status': <status.code>,

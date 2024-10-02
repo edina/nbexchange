@@ -15,8 +15,8 @@ class BaseUserHandler(ABC):
         {
             "name": username for user,
             "full_name": Actual name for the user (can be blank),
-            "email": Optional email address (can be blank) to feed into gradebook.db,
-            "lms_user_id": Optional email address (can be blank) to feed into gradebook.db,
+            "email": Optional email address (can be blank) - to feed into gradebook.db,
+            "lms_user_id": Optional user_id for the LMS/VLE (can be blank) - to feed into gradebook.db,
             "course_id": the course the user is on,
             "course_title": the title of the course,
             "course_role": the role the user has on the course,

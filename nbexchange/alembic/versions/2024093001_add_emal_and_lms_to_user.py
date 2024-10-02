@@ -24,5 +24,5 @@ def upgrade():
 
 def downgrade():
     with op.batch_alter_table("user") as batch_op:
-        batch_op.add_column(sa.Column("email", sa.Text, nullable=True))
-        batch_op.add_column(sa.Column("lms_user_id", sa.Text, nullable=True))
+        batch_op.drop_column("email")
+        batch_op.drop_column("lms_user_id")

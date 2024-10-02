@@ -302,7 +302,7 @@ def test_collections_with_named_user(app, clear_database):  # noqa: F811
 
 
 @pytest.mark.gen_test
-def test_collections_with_named_user_check_full_name(app, clear_database):  # noqa: F811
+def test_collections_with_named_user_check_full_definition(app, clear_database):  # noqa: F811
     assignment_id_1 = "assign_a"
     course_id = "course_2"
     notebook = "notebook"
@@ -333,11 +333,13 @@ def test_collections_with_named_user_check_full_name(app, clear_database):  # no
     assert response_data["success"] is True
     assert len(response_data["value"]) == 1
     for value in response_data["value"]:
-        assert value["full_name"] == "One Zik"
+        assert value["full_name"] == user_zik_student["full_name"]
+        assert value["email"] == user_zik_student["email"]
+        assert value["lms_user_id"] == user_zik_student["lms_user_id"]
 
 
 @pytest.mark.gen_test
-def test_collections_with_named_user_check_full_name_missing(app, clear_database):  # noqa: F811
+def test_collections_with_named_user_check_minimal_definition(app, clear_database):  # noqa: F811
     assignment_id_1 = "assign_a"
     course_id = "course_2"
     notebook = "notebook"
@@ -366,13 +368,13 @@ def test_collections_with_named_user_check_full_name_missing(app, clear_database
 
     response_data = r.json()
     assert response_data["success"] is True
-    # 2 if run solo, 8 is run in the complete suite
     assert len(response_data["value"]) == 1
     for value in response_data["value"]:
         assert value["full_name"] is None
+        assert value["email"] is None
+        assert value["lms_user_id"] is None
 
 
-# Reminder: actions are persistent, so the previous test set up most of the actions
 @pytest.mark.gen_test
 def test_collections_with_a_blank_feedback_path_injected(app, clear_database):  # noqa: F811
     assignment_id_1 = "assign_a"

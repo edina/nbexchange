@@ -125,8 +125,10 @@ class MyUserHandler(BaseUserHandler):
 
     def get_current_user(self, request):
         return {
-          "name": "username",
+          "name": "s21100286",
           "full_name": "Joe Bloggs",
+          "email": "jb@example.com"
+          "lms_user_id" = "5",
           "course_id": "cool_course_id",
           "course_title": "cool course",
           "course_role": "Student",
@@ -184,14 +186,21 @@ Do stuff to the db... see the code for what these do
 For the exchange to work, it needs some details about the user connecting to it - specifically, it needs 7 pieces of information:
 
 - `name`: The username of the person (eg `perllaghu`).
-  - In our system, we prefix the persons login username with the org_id for where their from (eg `1_perllaghu`.)
+  - Names are indexed, and assumed to be unique.
+  - In our system, we prefix the persons login username with the org_id for where their from (eg `1-perllaghu`.)
 - `full_name`: The optional full name, if supplied by the remote authenticator.
   - The full name appears in the `formgrader` UI.
+  - nbgrader stores `first_name` and `last_name`
+- `email`: An email address for the user, if supplied by the remote authenticator.
+  - This is an nbgrader field
+- `lms_user_id`: This is the identifier for the user in the LMS/VLE, if supplied by the remote authenticator.
+  - This is an nbgrader field
+  - username to access the system running notebooks is probably not the same as the ID the LMS uses to idnetify the user.
 - `course_id`: The course code as used in nbgrader (eg `cool_course`).
   - This is `course_id` not `course_code`, as nbgrader uses `course_id` for this piece of data.
 - `course_title`: A long name for the course (eg `A course of understanding thermondynamics in bulk refrigerant transport").
 - `course_role`: The role of the user, normally `Student` or `Instructor`. (currently only `Instructor` get privilaged actions).
-- `org_id`: As mentioned above, nbexchange divides courses and users across organisations. This is an id (numeric) for the org_id for the user.
+- `org_id`: As mentioned above, nbexchange divides courses and users across organisations. This is an id (numeric) for the org_id for the user. It defaults to `1` if not given.
 
 ## Configuring `nbgrader` to use the alternative exchange
 

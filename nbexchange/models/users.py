@@ -7,7 +7,7 @@ from nbexchange.models import Base
 class User(Base):
     """The user.
 
-    Note - we don't use the Jupyterhub user, as trying to integratte with the central DB is a pain
+    Note - we don't use the Jupyterhub user, as trying to integrate with the central DB is a pain
 
     crs = Course(org_id=1, course_code=$couurse_code)
     ass = Assignment(assignment_code='test%201')
@@ -24,6 +24,8 @@ class User(Base):
     name = Column(Unicode(200), nullable=False, index=True)
     full_name = Column(Text, nullable=True)
     org_id = Column(Integer, nullable=False, index=True)
+    email = Column(Text, nullable=True)
+    lms_user_id = Column(Text, nullable=True)
 
     # User <-> Course Relationship
     # One to Many. One user has multiple courses

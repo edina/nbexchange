@@ -49,9 +49,10 @@ Lets follow an assignment cycle, and see how the exchange records everything
 In all cases, the user is _authenticated_ using the `get_current_user` method, and _subscribed_ to the `course` with the `role` defined in that call.
 
 All calls check that the user is subscribed to the course given in the parameter
+
 #### list
 
-    GET /assignments?course_id=$cid)
+    GET /assignments?course_id=$cid
 
 Get list of all _assignments_ associated with that course. We return a list of all `released` assignments.
 
@@ -87,7 +88,8 @@ Get a list of _all_ available submissions (GET `/collections?course_id=$cid&assi
 
 For each submission listed:
 1. Download the file from the given `location`
-2. Create an `action` record, noting `action=collected`, the assignment, file location, who did the action, and add a timestamp
+2. Add the student details to the `gradebook` database
+3. Create an `action` record, noting `action=collected`, the assignment, file location, who did the action, and add a timestamp
 
 #### release-feedback
 
@@ -164,12 +166,16 @@ or raises Exception (which is returned as a `503` error)
 
 Marks an asiignment as ``active: False``, and forgets any associated notebooks. Returns
 
-    {"success": True, "note": "Assignment '$assignment_code' on course '$course_code' marked as unreleased by user $user" 
+    {"success": True,
+     "note": "Assignment '$assignment_code' on course '$course_code' marked as unreleased by user $user"
+    }
 
 Takes as *optional* parameter ``purge``. This will delete the notebooks, the assignment,
 and any associated data (``actions``, ``feedback``, etc). Returns
 
-    {"success": True, "note": "Assignment '$assignment_code' on course '$course_code' deleted and purged from the database by user $user"}
+    {"success": True,
+     "note": "Assignment '$assignment_code' on course '$course_code' deleted and purged from the database by user $user"
+    }
 
 If there are permission issues, returns
 
@@ -199,7 +205,8 @@ Return: same as `Assignments <#assignments>`
     .../collections?course_id=$course_code&assignment_id=$assignment_code&path=$url_encoded_path
 
 **GET**: downloads submitted assignment
-Return: same as `Assignment <#assignment>`
+Return: similar to `Assignment <#assignment>`, but adds the `full_name`, `email`, and `lms_user_id` fields
+along-side `student_id` et al.
 
 ## Feedback
 

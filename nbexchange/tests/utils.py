@@ -38,6 +38,8 @@ user_zik_student = {
     "course_role": "Student",
     "course_title": "A title",
     "full_name": "One Zik",
+    "email": "zik@example.com",
+    "lms_user_id": "zik",
 }
 
 user_brobbere_instructor = {

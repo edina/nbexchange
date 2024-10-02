@@ -161,7 +161,7 @@ class NbExchange(PrometheusMixIn, Application):
         """More informative log messages for failed filesystem access"""
         path = os.path.abspath(path)
         parent, fname = os.path.split(path)
-        user = getuser()
+        user = getuser()  # this is the user running the notebook-server
         if not os.path.isdir(parent):
             self.log.error(f"Directory {parent} does not exist")
         if os.path.exists(parent) and not os.access(parent, os.W_OK):

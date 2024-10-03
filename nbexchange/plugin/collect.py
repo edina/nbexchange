@@ -96,7 +96,7 @@ class ExchangeCollect(abc.ExchangeCollect, Exchange):
                 f"No submissions of '{self.coursedir.assignment_id}' for course '{self.coursedir.course_id}' to collect"
             )
         else:
-            self.log.debug(
+            self.log.info(
                 f"Processing {len(submissions)} submissions of '{self.coursedir.assignment_id}' for course '{self.coursedir.course_id}'"  # noqa: E501
             )
 

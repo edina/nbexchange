@@ -3,14 +3,14 @@ import os
 import sys
 from urllib.parse import quote_plus
 
-import nbgrader.exchange.abc as abc
+from nbgrader.exchange.abc import ExchangeSubmit as ABCExchangeSubmit
 from nbgrader.utils import find_all_notebooks
 
 from .exchange import Exchange
 from .list import ExchangeList
 
 
-class ExchangeSubmit(abc.ExchangeSubmit, Exchange):
+class ExchangeSubmit(Exchange, ABCExchangeSubmit):
     def do_copy(self, src, dest):
         pass
 
@@ -34,9 +34,8 @@ class ExchangeSubmit(abc.ExchangeSubmit, Exchange):
         import tarfile
         import time
         from contextlib import closing
-        from datetime import datetime
 
-        timestamp = datetime.now().strftime(self.timestamp_format).strip()
+        timestamp = self.timestamp
         tar_file = io.BytesIO()
         with tarfile.open(fileobj=tar_file, mode="w:gz") as tar_handle:
             tar_handle.add(self.src_path, arcname=".")
@@ -50,6 +49,9 @@ class ExchangeSubmit(abc.ExchangeSubmit, Exchange):
 
     def upload(self, file):
         self.log.debug(f"ExchangeSubmit uploading to: {self.service_url()}")
+        self.log.info(f"Source: {self.src_path}")
+        self.log.info("Destination: The exhange service")
+
         files = {"assignment": ("assignment.tar.gz", file)}
         r = self.api_request(
             f"submission?course_id={quote_plus(self.coursedir.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}",  # noqa: E501
@@ -60,6 +62,8 @@ class ExchangeSubmit(abc.ExchangeSubmit, Exchange):
         data = r.json()
         if not data["success"]:
             self.fail(data["note"])
+
+        self.log.info(f"Submitted as: {self.coursedir.course_id} {self.coursedir.assignment_id} {self.timestamp}")
 
     # Like the default Submit, we log differences, and do not rener then in the display
     # (not sure that's any ues to anyone - but that's what the original does)

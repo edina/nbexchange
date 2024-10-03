@@ -88,7 +88,8 @@ which is normally Jupyter's notebook_dir.
 
     def start(self):
         self.log.debug(f"Called start on {self.__class__.__name__}")
-
+        self.set_timestamp()
+        self.log.info(f"timetamp: {self.timestamp}")
         if self.coursedir and not self.coursedir.course_id:
             self.coursedir.course_id = self.course_id
 

@@ -4,6 +4,7 @@ import os
 from urllib.parse import quote_plus
 
 import nbgrader.exchange.abc as abc
+from nbgrader.exchange.default.list import ExchangeList as DefaultExchangeList
 from traitlets import Unicode
 
 from .exchange import Exchange
@@ -13,6 +14,7 @@ from .exchange import Exchange
 # "inbound" is files submitted by students (on external service)
 # "cached" is files submitted by students & collected by instructors (so on local disk)
 class ExchangeList(abc.ExchangeList, Exchange):
+
     def do_copy(self, src, dest):
         pass
 
@@ -291,17 +293,29 @@ class ExchangeList(abc.ExchangeList, Exchange):
         self.log.debug("ExchaneList.list_file starting")
 
         assignments = self.parse_assignments()
+        if self.inbound or self.cached:
+            self.log.info("Submitted assignments:")
+            for assignment in assignments:
+                for info in assignment["submissions"]:
+                    self.log.info(DefaultExchangeList.format_inbound_assignment(self, info))
+        else:
+            self.log.info("Released assignments:")
+            for info in assignments:
+                self.log.info(DefaultExchangeList.format_outbound_assignment(self, info))
         return assignments
 
     def remove_files(self):
         if self.coursedir.course_id:
             """Delete assignment"""
+            self.log.info(
+                f"Unreleasing assignment_id {self.coursedir.assignment_id} on course code {self.coursedir.course_id}"
+            )
 
             url = f"assignment?course_id={quote_plus(self.coursedir.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}"  # noqa: E501
 
             r = self.api_request(url, method="DELETE")
 
-            self.log.debug(f"Got back {r.status_code} after assignment unrelease")
+            self.log.info(f"Got back {r.status_code} after assignment unrelease")
 
     def start(self):
         #####

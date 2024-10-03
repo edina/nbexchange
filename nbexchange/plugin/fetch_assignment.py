@@ -131,6 +131,7 @@ class ExchangeFetchAssignment(abc.ExchangeFetchAssignment, Exchange):
 
     def copy_files(self):
         self.log.debug(f"Source: {self.src_path}")
-        self.log.debug(f"Destination: {self.dest_path}")
+        self.log.info("Source: The exhange service")
+        self.log.info(f"Destination: {self.dest_path}")
         self.do_copy(self.src_path, self.dest_path)
-        self.log.debug(f"Fetched as: {self.coursedir.course_id} {self.coursedir.assignment_id}")
+        self.log.info(f"Fetched as: {self.coursedir.course_id} {self.coursedir.assignment_id}")

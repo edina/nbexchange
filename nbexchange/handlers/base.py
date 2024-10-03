@@ -63,6 +63,8 @@ class BaseHandler(web.RequestHandler):
         current_role = hub_user.get("course_role")
         course_title = hub_user.get("course_title", "no_title")
         org_id = hub_user.get("org_id", 1)
+        email = hub_user.get("email")
+        lms_user_id = hub_user.get("lms_user_id")
 
         # Raising an error appears to have no detrimental affect when running.
         if not (current_course and current_role):
@@ -76,7 +78,7 @@ class BaseHandler(web.RequestHandler):
             user = User.find_by_name(db=session, name=hub_username, log=self.log)
             if user is None:
                 self.log.debug(f"New user details: name:{hub_username}, org_id:{org_id}")
-                user = User(name=hub_username, org_id=org_id)
+                user = User(name=hub_username, org_id=org_id, email=email, lms_user_id=lms_user_id)
                 session.add(user)
             if user.full_name != full_name:
                 user.full_name = full_name
@@ -110,6 +112,8 @@ class BaseHandler(web.RequestHandler):
                 "kind": "user",
                 "id": user.id,
                 "name": user.name,
+                "email": email,
+                "lms_user_id": lms_user_id,
                 "org_id": user.org_id,
                 "current_course": current_course,
                 "current_role": current_role,

@@ -43,5 +43,6 @@ class NaasUserHandler(BaseUserHandler):
             "course_title": result["n_cnm"],
             "course_role": result["n_rl"],
             "org_id": result["n_oid"],
-            "cust_id": result["n_cust_id"],
+            "email": "",
+            "lms_user_id": "",
         }

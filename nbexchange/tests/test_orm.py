@@ -58,7 +58,12 @@ def course_charm(db):
 def user_kaylee(db):
     orm_thing = User.find_by_name(db, "kaylee")
     if not orm_thing:
-        orm_thing = User(name="kaylee", org_id=1)
+        orm_thing = User(
+            name="kaylee",
+            org_id=1,
+            email="kaylee@example.com",
+            lms_user_id="https://vle.example.com/lti/services.php/3/lineitems/5/lineitems",
+        )
         db.add(orm_thing)
         db.commit()
     return orm_thing
@@ -68,7 +73,12 @@ def user_kaylee(db):
 def user_johaannes(db):
     orm_thing = User.find_by_name(db, "Johaannes")
     if not orm_thing:
-        orm_thing = User(name="Johaannes", org_id=1)
+        orm_thing = User(
+            name="Johaannes",
+            org_id=1,
+            email="johaannes@example.com",
+            lms_user_id="https://vle.example.com/lti/services.php/3/lineitems/3/lineitems",
+        )
         db.add(orm_thing)
         db.commit()
     return orm_thing
@@ -78,7 +88,12 @@ def user_johaannes(db):
 def user_fidel(db):
     orm_thing = User.find_by_name(db, "fidel")
     if not orm_thing:
-        orm_thing = User(name="fidel", org_id=2)
+        orm_thing = User(
+            name="fidel",
+            org_id=2,
+            email="fidel@uu.edu",
+            lms_user_id="https://uu.edu/lti/services.pl/-1/lineitems/1/lineitems",
+        )
         db.add(orm_thing)
         db.commit()
     return orm_thing
@@ -89,7 +104,12 @@ def user_fidel(db):
 def user_rur(db):
     orm_thing = User.find_by_name(db, "🌈 🦄 🌹")
     if not orm_thing:
-        orm_thing = User(name="🌈 🦄 🌹", org_id=2)
+        orm_thing = User(
+            name="🌈 🦄 🌹",
+            org_id=2,
+            email="🌈 🦄 🌹@uu.edu",
+            lms_user_id="https://uu.edu/lti/services.pl/-1/lineitems/2/lineitems",
+        )
         db.add(orm_thing)
         db.commit()
     return orm_thing

@@ -1,12 +1,16 @@
 # Changelog
 
-## v1 4.0
+## V1.4.1
+
+* add a history api [but no UI]
+
+## v1.4.0
 
 * Update to nbgrader 9
 * Deliberately *not* update to python 3.12 [there are jupyter issues with 3.12]
 * Remove the CodeCoverage actions
 
-## v1 3.1
+## v1.3.1
 
 * Minor updates to github actions
 

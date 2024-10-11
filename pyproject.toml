@@ -37,7 +37,7 @@ dependencies = [
   "sqlalchemy>=1.4,<3",
   "psycopg2-binary>=2.9.9",
   "pyjwt<2",
-  "sentry-sdk==2.2.0",
+  "sentry-sdk==2.8.0",
   "tornado==6.4",
   "tornado-prometheus==0.1.2",
 ]

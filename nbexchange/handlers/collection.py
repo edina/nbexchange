@@ -23,6 +23,25 @@ class Collections(BaseHandler):
         user_id: user_id - optional
 
     GET: gets list of actions for the assignment
+
+    returns: list of notebooks available for collection
+
+    {'success': True,
+     'value': [
+           {'assignment_id': <assignment_code>,
+            'course_id': <course_code?,
+            'full_name': user_id.full_name,
+            'email': user_id.email,
+            'lms_user_id': user_id.lms_user_id,
+            'notebooks': [{'notebook_id': 'test'}],
+            'path': </full/path/to/gzip/file/on/exchange/server.gz>,
+            'status': <status.code>,
+            'student_id': <user_id.name>,
+            'timestamp': <timestamp of action>.strftime("%Y-%m-%d %H:%M:%S.%f %Z")
+           },
+           {....}, ....
+        ]
+    }
     """
 
     urls = ["collections"]
@@ -98,6 +117,8 @@ class Collections(BaseHandler):
                     {
                         "student_id": action.user.name,
                         "full_name": action.user.full_name,
+                        "email": action.user.email,
+                        "lms_user_id": action.user.lms_user_id,
                         "assignment_id": assignment.assignment_code,
                         "course_id": assignment.course.course_code,
                         "status": action.action.value,  # currently called 'action' in our db

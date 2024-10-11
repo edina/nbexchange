@@ -27,8 +27,7 @@ nbexchange is an extension to [nbgrader](https://github.com/jupyter/nbgrader) wh
 The default for nbgrader is to assume all users are on the same computer, and files are copied from one directory to another - thus:
 ![exchange mechanism on a single filesystem](file_exchange.png)
 
-When using jupyter notebooks in a distributed [dockerised] system, there is no common filesystem - so an alternative mechanism is
-needed - something that allows files to be transfered via some independant service - eg: 
+When using jupyter notebooks in a distributed [dockerised] system, there is no common filesystem - so an alternative mechanism is needed - something that allows files to be transfered via some independant service - eg: 
 ![exchange mechanism in a dockerised environment](dockerised_exchange.png) 
 
 nbexchange provides both that intermediate filestore, and the plugins for nbgrader to use it.
@@ -46,6 +45,8 @@ In doing this, the exchange is the authoritative place to get a list of what's w
 It's provides an external store for released & submitted assignments, and the feeback cycle.
 
 Following the lead of other Jupyter services, it is a `tornado` application.
+
+The team that created the inital code use nbexchange in a cloud environment, with multiple organisations using a central exchange service. Courses [and this assignments] are differentiated using an `org_id` - if you do not need this feature, just set it to `1` for everthing.
 
 ## Compatibility
 
@@ -123,13 +124,14 @@ class MyUserHandler(BaseUserHandler):
 
     def get_current_user(self, request):
         return {
-          "name": "username",
+          "name": "s21100286",
           "full_name": "Joe Bloggs",
+          "email": "jb@example.com"
+          "lms_user_id" = "5",
           "course_id": "cool_course_id",
           "course_title": "cool course",
           "course_role": "Student",
           "org_id": 1,
-          "cust_id": 2,
     }
 
 
@@ -180,18 +182,24 @@ Do stuff to the db... see the code for what these do
 
 ### **`user_plugin_class`** revisited
 
-For the exchange to work, it needs some details about the user connecting to it - specifically, it needs 7 pieces of information:
+For the exchange to work, it needs some details about the user connecting to it - specifically, it looks for 6 pieces of information:
 
 - `name`: The username of the person (eg `perllaghu`).
-  - In our system, we prefix the persons login username with the org_id for where their from (eg `1_perllaghu`.)
+  - Names are indexed, and assumed to be unique.
+  - In our system, we prefix the persons login username with the org_id for where their from (eg `1-perllaghu`.)
 - `full_name`: The optional full name, if supplied by the remote authenticator.
   - The full name appears in the `formgrader` UI.
+  - nbgrader stores `first_name` and `last_name`
+- `email`: An email address for the user, if supplied by the remote authenticator.
+  - This is an nbgrader field
+- `lms_user_id`: This is the identifier for the user in the LMS/VLE, if supplied by the remote authenticator.
+  - This is an nbgrader field
+  - username to access the system running notebooks is probably not the same as the ID the LMS uses to idnetify the user.
 - `course_id`: The course code as used in nbgrader (eg `cool_course`).
   - This is `course_id` not `course_code`, as nbgrader uses `course_id` for this piece of data.
-- `course_title`: A long name for the course (eg `A course of understanding thermondynamics in bulk refrigerant transport").
+- `course_title`: A long name for the course (eg `A course of understanding thermondynamics in bulk refrigerant transport`).
 - `course_role`: The role of the user, normally `Student` or `Instructor`. (currently only `Instructor` get privilaged actions).
-- `org_id`: As mentioned above, nbexchange divides courses and users across organisations. This is an id (numeric) for the org_id for the user.
-- `cust_id`: Whilst most of the exchange is keyed on the `org_id`, knowing _customer_ can be useful. This is an id (numeric) for the org_id for the user.
+- `org_id`: As mentioned above, nbexchange divides courses and users across organisations. This is an id (numeric) for the org_id for the user. It defaults to `1` if not given.
 
 ## Configuring `nbgrader` to use the alternative exchange
 

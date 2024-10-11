@@ -15,6 +15,10 @@ from nbexchange.models.notebooks import Notebook
 from nbexchange.models.subscriptions import Subscription
 from nbexchange.models.users import User
 
+#####
+#
+# Check in handlers.auth.naas_user_handlers.NaasUserHandler - username.replace("_", "-", 1)
+#
 user_kiz = {"name": "1-kiz"}
 user_bert = {"name": "1-bert"}
 
@@ -38,6 +42,8 @@ user_zik_student = {
     "course_role": "Student",
     "course_title": "A title",
     "full_name": "One Zik",
+    "email": "zik@example.com",
+    "lms_user_id": "zik",
 }
 
 user_brobbere_instructor = {
@@ -57,7 +63,7 @@ user_lkihlman_instructor = {
     "name": "1-lkihlman",
     "course_id": "course_1",
     "course_role": "Instructor",
-    "course_title": "A title",
+    "course_title": "Another title",
 }
 
 user_lkihlman_student = {

@@ -70,6 +70,8 @@ class ExchangeReleaseAssignment(abc.ExchangeReleaseAssignment, Exchange):
 
     def upload(self, file):
         files = {"assignment": ("assignment.tar.gz", file)}
+        self.log.info(f"Source: {self.src_path}")
+        self.log.info("Destination: The exhange service")
 
         url = f"assignment?course_id={quote_plus(self.coursedir.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}"  # noqa: E501
 
@@ -84,7 +86,7 @@ class ExchangeReleaseAssignment(abc.ExchangeReleaseAssignment, Exchange):
         if not data["success"]:
             self.fail(data["note"])
 
-        self.log.info("Successfully uploaded released assignment.")
+        self.log.info(f"Released as: {self.coursedir.course_id} {self.coursedir.assignment_id}")
 
     def copy_files(self):
         # Grab files from hard drive

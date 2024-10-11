@@ -34,7 +34,7 @@ class ExchangeFetchFeedback(abc.ExchangeFetchFeedback, Exchange):
         # Feedback, here, is the time the feedback was generated, not the time of the submission
         if "feedback" in content:
             for f in content["feedback"]:
-                self.log.debug(f"##### fetch-feedback.download has {f['filename']}, {f['timestamp']}")
+                self.log.debug(f"fetch-feedback.download has {f['filename']}, {f['timestamp']}")
                 try:
                     # This matches nb_timestamp in list.parse_assignments, "status" == "submitted"
                     # The format should match the nbgrader default "%Y-%m-%d %H:%M:%S.%f %Z"
@@ -45,9 +45,7 @@ class ExchangeFetchFeedback(abc.ExchangeFetchFeedback, Exchange):
                     # )
                     timestamp = f["timestamp"]
                     os.makedirs(os.path.join(self.dest_path, timestamp), exist_ok=True)
-                    self.log.debug(
-                        f"##### fetch-feedback.download writing to {os.path.join(self.dest_path, timestamp)}"
-                    )
+                    self.log.info(f"Downloading feedback to {os.path.join(self.dest_path, timestamp)}")
                     with open(os.path.join(self.dest_path, timestamp, f["filename"]), "wb") as handle:
                         handle.write(base64.b64decode(f["content"]))
                 except Exception as e:  # TODO: exception handling
@@ -56,6 +54,6 @@ class ExchangeFetchFeedback(abc.ExchangeFetchFeedback, Exchange):
             self.fail(content.get("note", "could not get feedback"))
 
     def copy_files(self):
-        self.log.debug(f"Destination: {self.dest_path}")
+        self.log.info(f"Destination: {self.dest_path}")
         self.download()
         self.log.debug(f"Fetched as: {self.coursedir.notebook_id}")

@@ -7,7 +7,7 @@ RUN pip install --upgrade pip
 WORKDIR /usr/src/app
 
 # Sqlite for testing
-RUN apt update && apt install sqlite3 && rm -rf /var/lib/apt/lists/*
+RUN apt update && apt install  --yes --quiet --no-install-recommends sqlite3 && rm -rf /var/lib/apt/lists/*
 
 # Supervisord
 RUN pip install supervisor

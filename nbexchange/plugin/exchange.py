@@ -5,8 +5,16 @@ from urllib.parse import urljoin
 
 import nbgrader.exchange.abc as abc
 import requests
+from nbgrader.auth import Authenticator
 from nbgrader.exchange import ExchangeError
-from traitlets import Bool, Integer, Unicode
+from traitlets import Bool, Instance, Integer, Type, Unicode
+
+
+class MockAuthenticator(Authenticator):
+    super(Authenticator)
+
+    def api_request(self, path, method="GET", *args, **kwargs):
+        pass
 
 
 class Exchange(abc.Exchange):
@@ -27,6 +35,15 @@ Local path for storing student assignments.  Defaults to '.'
 which is normally Jupyter's notebook_dir.
 """,
     ).tag(config=True)
+
+    authenticator = Instance(Authenticator, allow_none=True)
+
+    connection_authenticator_class = Type(
+        MockAuthenticator,
+        klass=Authenticator,
+        config=True,
+        help="The class to use for authenticating users",
+    )
 
     base_service_url = Unicode(os.environ.get("NAAS_BASE_URL", "https://noteable.edina.ac.uk")).tag(config=True)
 

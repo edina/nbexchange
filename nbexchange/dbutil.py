@@ -86,8 +86,12 @@ def upgrade(db_url, revision="head"):
     revision: str [default: head]
         The alembic revision to upgrade to.
     """
+    # print(f"dbutil.upgrade: called {db_url}")
+
     with _temp_alembic_ini(db_url) as alembic_ini:
+        # print(f"dbutil.upgrade: run check_call")
         check_call(["alembic", "-c", alembic_ini, "upgrade", revision])
+    # print(f"dbutil.upgrade: done")
 
 
 def backup_db_file(db_file, log=None):
@@ -113,9 +117,12 @@ def upgrade_if_needed(db_url, backup=True, log=None):
     Other database systems should perform their own backups prior to calling this.
     """
     # run check-db-revision first
+    # print(f"dbutil.upgrade_if_needed: db_url = {db_url}")
     engine = create_engine(db_url)
+    # print(f"dbutil.upgrade_if_needed: created engine {engine}")
 
     try:
+        # print(f"dbutil.upgrade_if_needed: call check_db_revision")
         check_db_revision(engine, log)
     except DatabaseSchemaMismatch:
         # ignore mismatch error because that's what we are here for!
@@ -123,6 +130,7 @@ def upgrade_if_needed(db_url, backup=True, log=None):
     else:
         # nothing to do
         return
+    # print(f"dbutil.upgrade_if_needed: need to upgrade {db_url}")
     log.info(f"Upgrading {db_url}")
     # we need to upgrade, backup the database
     if backup and db_url.startswith("sqlite:///"):
@@ -149,7 +157,7 @@ def main(args=None):
     # to subcommands
     choices = ["alembic"]
     if not args or args[0] not in choices:
-        print("Select a command from: %s" % ", ".join(choices))
+        # print("Select a command from: %s" % ", ".join(choices))
         return 1
     cmd, args = args[0], args[1:]
 
@@ -268,26 +276,37 @@ def check_db_revision(engine, log=None):
       guess revision based on db contents and tag the revision.
     - Empty databases are tagged with the current revision
     """
+    # print(f"dbutil.check_db_revision: called with engine {engine}")
 
     # Check database schema version
     # "The Engine.table_names() method is deprecated and will be removed in a future release."
     # (deprecated since: 1.4)
     # current_table_names = set(engine.table_names())
     insp = inspect(engine)
+    # print(f"dbutil.check_db_revision: inspect - {insp}")
     current_table_names = set(insp.get_table_names())
     my_table_names = set(Base.metadata.tables.keys())
+    # print(f"dbutil.check_db_revision: current_table_names {current_table_names}")
+    # print(f"dbutil.check_db_revision: my_table_names {my_table_names}")
 
     from nbexchange.dbutil import _temp_alembic_ini
 
+    # print("dbutil.check_db_revision: check intersections")
+
     with _temp_alembic_ini(engine.url) as ini:
+        # print(f"dbutil.check_db_revision: with _alembic_ini {engine.url}")
         cfg = alembic.config.Config(ini)
+        # print(f"dbutil.check_db_revision: cfg {cfg}")
         scripts = ScriptDirectory.from_config(cfg)
+        # print(f"dbutil.check_db_revision: scripts {scripts}")
         head = scripts.get_heads()[0]
         base = scripts.get_base()
+        # print(f"dbutil.check_db_revision: head {head}, base {base}")
 
         if not my_table_names.intersection(current_table_names):
             # no tables have been created, stamp with current revision
             log.info(f"Stamping empty database with alembic revision {head}")
+            # print(f"Stamping empty database with alembic revision {head}")
             alembic.command.stamp(cfg, head)
             return
 
@@ -297,7 +316,11 @@ def check_db_revision(engine, log=None):
             else:
                 rev = base
             log.debug("Stamping database schema version %s", rev)
+            # print("Stamping database schema version %s", rev)
             alembic.command.stamp(cfg, rev)
+            # print("Stamped")
+
+    # print("dbutil.check_db_revision: connect to engine")
 
     # check database schema version
     # it should always be defined at this point

@@ -24,6 +24,7 @@ Configuration documentation is in the [README.md](README.md)
   - [Collection](#collection)
   - [Feedback](#feedback)
   - [History](#history-1)
+- [On disk storage](#on-disk-storage)
 
 <!-- /TOC -->
 
@@ -296,3 +297,14 @@ Returns
 or
 
     {"success": False, "note": $note}
+
+# On disk storage
+
+An exchange needs to store uploaded files somewhere, and nbexchange stores them wherever `base_storage_location` defines.
+
+Nbexchange follows the idea from nbgrader, and has a structure for saving files:
+
+    <base_storage_location>/<org_id>/<nbgrader_step>/<course_code>/<assignment_code>/<username>/<timestamp>
+
+The `nbgrader_step` is only every going to be `released`, `submitted`, or `feedback` - noting that `released` does not use the username level (consider `username` to be `''`)
+

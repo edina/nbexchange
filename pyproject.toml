@@ -31,7 +31,7 @@ classifiers = [
 
 # These values need to match nbgrader, jupyterlab, and/or the api
 dependencies = [
-  "nbgrader==0.9.1",
+  "nbgrader==0.9.5",
   "alembic>=1.7",
   "jupyter_server>=2",
   "sqlalchemy>=1.4,<3",

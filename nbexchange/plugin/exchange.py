@@ -1,13 +1,15 @@
+import fnmatch
 import glob
 import os
 from functools import partial
+from textwrap import dedent
 from urllib.parse import urljoin
 
 import nbgrader.exchange.abc as abc
 import requests
 from nbgrader.auth import Authenticator
 from nbgrader.exchange import ExchangeError
-from traitlets import Bool, Instance, Integer, Type, Unicode
+from traitlets import Bool, Instance, Integer, List, Type, Unicode
 
 
 class MockAuthenticator(Authenticator):
@@ -20,20 +22,24 @@ class MockAuthenticator(Authenticator):
 class Exchange(abc.Exchange):
     path_includes_course = Bool(
         False,
-        help="""
-Whether the path for fetching/submitting  assignments should be
-prefixed with the course name. If this is `False`, then the path
-will be something like `./ps1`. If this is `True`, then the path
-will be something like `./course123/ps1`.
-""",
+        help=dedent(
+            """
+            Whether the path for fetching/submitting  assignments should be
+            prefixed with the course name. If this is `False`, then the path
+            will be something like `./ps1`. If this is `True`, then the path
+            will be something like `./course123/ps1`.
+            """
+        ),
     ).tag(config=True)
 
     assignment_dir = Unicode(
         ".",
-        help="""
-Local path for storing student assignments.  Defaults to '.'
-which is normally Jupyter's notebook_dir.
-""",
+        help=dedent(
+            """
+            Local path for storing student assignments.  Defaults to '.'
+            which is normally Jupyter's notebook_dir.
+            """
+        ),
     ).tag(config=True)
 
     authenticator = Instance(Authenticator, allow_none=True)
@@ -57,6 +63,21 @@ which is normally Jupyter's notebook_dir.
     max_buffer_size = Integer(5253530000, help="The maximum size, in bytes, of an upload (defaults to 5GB)").tag(
         config=True
     )
+
+    ignore = List(
+        [
+            ".ipynb_checkpoints",
+            "*.pyc",
+            "__pycache__",
+            "feedback",
+        ],
+        help=dedent(
+            """
+            List of file names or file globs.
+            Upon submit, matching files and directories will be ignored.
+            """
+        ),
+    ).tag(config=True)
 
     def fail(self, msg):
         self.log.fatal(msg)
@@ -86,6 +107,33 @@ which is normally Jupyter's notebook_dir.
             return delete_req(*args, **kwargs)
         else:
             raise NotImplementedError(f"HTTP Method {method} is not implemented")
+
+    # Function fro ELM
+    def add_to_tar(self, tar_file, dir_path, exclude_patterns):
+        """
+        Adds files to the tar file recursively from the directory path while excluding
+        certain patterns.
+
+        :param tar_file: TarFile object to add files to.
+        :param dir_path: The directory path to start recursive addition.
+        :param exclude_patterns: List of patterns to exclude.
+        """
+        for root, dirs, files in os.walk(dir_path):
+
+            # skip any directories listed in exclude_patterns
+            dirs[:] = [item for item in dirs if item not in exclude_patterns]
+
+            for file in files:
+                file_path = os.path.join(root, file)
+
+                # Check if the file matches any of the exclude patterns
+                if any(fnmatch.fnmatch(file, pattern) for pattern in exclude_patterns):
+                    continue  # Skip this file if it matches a pattern
+
+                # Calculate the arcname manually to preserve desired directory structure
+                file_path = os.path.join(root, file)
+                arcname = os.path.relpath(file_path, start=dir_path)
+                tar_file.add(file_path, arcname=arcname)
 
     def init_src(self):
         """Compute and check the source paths for the transfer."""

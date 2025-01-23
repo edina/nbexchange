@@ -27,17 +27,9 @@ STATIC_FILES_DIR = os.path.join(ROOT, "static")
 
 
 class MockUserHandler(BaseUserHandler):
+
     def get_current_user(self, request):
-        return {
-            "name": "s21100286",
-            "full_name": "Joe Bloggs",
-            "email": "jb@example.com",
-            "lms_user_id": "5",
-            "course_id": "cool_course_id",
-            "course_title": "cool course",
-            "course_role": "Student",
-            "org_id": 1,
-        }
+        return
 
 
 flags = {
@@ -128,6 +120,7 @@ Defaults to 'sqlite:///:memory:' (an in-memory SQLite database)
 
     user_plugin_class = Type(
         MockUserHandler,
+        # NaasUserHandler,
         klass=BaseUserHandler,
         config=True,
         help="The class to use for handling users",

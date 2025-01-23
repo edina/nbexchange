@@ -50,7 +50,7 @@ The team that created the inital code use nbexchange in a cloud environment, wit
 
 ## Compatibility
 
-This version installs `nbgrader`  0.9.1 (which makes it compatible with JupyterLab & Notebook 7)
+This version installs `nbgrader`  0.9.5 (which makes it compatible with JupyterLab & Notebook 7)
 
 # Documentation
 
@@ -144,9 +144,13 @@ c.NbExchange.db_url = mysql://username:password@my.msql.server.host:3306/db_name
 
 - **`user_plugin_class`**
 
-For the exchange to work it needs some details about the user connecting to it. This parameter defines the class that provides the `get_current_user` method.
+This class performs two roles: Is the user authorised to use the service, and provide some details about the user. Being able to provide user details is taken as an implication of authorisation.  
+
+For the exchange to determine how to handle a connection, it needs some details about the user connecting to it. This parameter defines the class that provides the `get_current_user` method.
 
 You need to write this method for your own application.
+
+Notice that the example above creates the class that provides the method in the config file.
 
 See below for more details on that.
 
@@ -154,19 +158,13 @@ See below for more details on that.
 
 This is the _service_ url used by jupyterhub, and defaults to `/services/nbexchange/`
 
-Can also be defined in the environment variable `JUPYTERHUB_SERVICE_PREFIX`
-
 - **`base_storage_location`**
 
 This is where the exchange will store the files uploaded, and defaults to `/tmp/courses`
 
-Can also be defined in the environment variable `NBEX_BASE_STORE`
-
 - **`db_url`**
 
 This is the database connector, and defaults to an in-memory SQLite (`sqlite:///:memory:`)
-
-Can also be defined in the environment variable `NBEX_DB_URL`
 
 - **`db_kwargs`** 
 
@@ -197,8 +195,9 @@ For the exchange to work, it needs some details about the user connecting to it 
 - `lms_user_id`: This is the identifier for the user in the LMS/VLE, if supplied by the remote authenticator.
   - This is an nbgrader field, nbexchange doesn't use it itself
   - _username_ to access the system running notebooks is probably not the same as the ID the LMS uses to idnetify the user.
-- `course_id`: The course code as used in nbgrader (eg `cool_course`).
+- `course_id`: The course code as used in nbgrader (eg `cool course`). 
   - This is `course_id` not `course_code`, as nbgrader uses `course_id` for this piece of data.
+  - Note that any of the characters `{}(){}/\` will give nbgrader a problem [beyond nbexchange]
 - `course_title`: A long name for the course (eg `A course of understanding thermondynamics in bulk refrigerant transport`).
 - `course_role`: The role of the user, normally `Student` or `Instructor`. (currently only `Instructor` get privilaged actions).
 - `org_id`: As mentioned above, nbexchange divides courses and users across organisations. This is an id (numeric) for the org_id for the user. It defaults to `1` if not given.

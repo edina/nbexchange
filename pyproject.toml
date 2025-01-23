@@ -31,14 +31,15 @@ classifiers = [
 
 # These values need to match nbgrader, jupyterlab, and/or the api
 dependencies = [
-  "nbgrader==0.9.4",
+  "nbgrader==0.9.5",
   "alembic>=1.7",
   "jupyter_server>=2",
   "sqlalchemy>=1.4,<3",
   "psycopg2-binary>=2.9.9",
   "pyjwt<2",
   "sentry-sdk==2.20",
-  "tornado==6.4",
+  # matches jupyterlab
+  "tornado>=6.2",
   "tornado-prometheus==0.1.2",
 ]
 

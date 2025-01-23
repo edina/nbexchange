@@ -65,7 +65,8 @@ def test_list_no_submitted_records(plugin_config, tmpdir):
                                         "notebook_id": "assignment-0.6",
                                         "has_exchange_feedback": False,
                                         "feedback_updated": False,
-                                        "feedback_timestamp": False,
+                                        "feedback_timestamp": None,
+                                        "exchange_path": None,
                                     }
                                 ],
                                 "timestamp": "2020-01-01 00:00:00.44 00:00",
@@ -81,7 +82,8 @@ def test_list_no_submitted_records(plugin_config, tmpdir):
                                         "notebook_id": "assignment-0.6-wrong",
                                         "has_exchange_feedback": False,
                                         "feedback_updated": False,
-                                        "feedback_timestamp": False,
+                                        "feedback_timestamp": None,
+                                        "exchange_path": None,
                                     }
                                 ],
                                 "timestamp": "2020-01-01 00:00:00.23 00:00",
@@ -128,6 +130,7 @@ def test_list_submit_one(plugin_config, tmpdir):
                                         "has_exchange_feedback": False,
                                         "feedback_updated": False,
                                         "feedback_timestamp": None,
+                                        "exchange_path": None,
                                     }
                                 ],
                                 "timestamp": "2020-01-01 00:00:00.0 00:00",
@@ -165,6 +168,7 @@ def test_list_submit_one(plugin_config, tmpdir):
                                 "has_local_feedback": False,
                                 "local_feedback_path": None,
                                 "notebook_id": f"{root_notebook_name}",
+                                "exchange_path": None,
                             }
                         ],
                         "timestamp": "2020-01-01 00:00:00.0 00:00",
@@ -206,6 +210,7 @@ def test_list_submit_several_submissions(plugin_config, tmpdir):
                                         "has_exchange_feedback": False,
                                         "feedback_updated": False,
                                         "feedback_timestamp": None,
+                                        "exchange_path": None,
                                     }
                                 ],
                                 "timestamp": "2020-01-01 00:00:00.0 00:00",
@@ -222,6 +227,7 @@ def test_list_submit_several_submissions(plugin_config, tmpdir):
                                         "has_exchange_feedback": False,
                                         "feedback_updated": False,
                                         "feedback_timestamp": None,
+                                        "exchange_path": None,
                                     }
                                 ],
                                 "timestamp": "2020-01-01 00:01:00.1 00:00",
@@ -238,6 +244,7 @@ def test_list_submit_several_submissions(plugin_config, tmpdir):
                                         "has_exchange_feedback": False,
                                         "feedback_updated": False,
                                         "feedback_timestamp": None,
+                                        "exchange_path": None,
                                     }
                                 ],
                                 "timestamp": "2020-01-01 00:02:00.1 00:00",
@@ -275,6 +282,7 @@ def test_list_submit_several_submissions(plugin_config, tmpdir):
                                 "has_local_feedback": False,
                                 "local_feedback_path": None,
                                 "notebook_id": f"{root_notebook_name}",
+                                "exchange_path": None,
                             }
                         ],
                         "timestamp": "2020-01-01 00:00:00.0 00:00",
@@ -297,6 +305,7 @@ def test_list_submit_several_submissions(plugin_config, tmpdir):
                                 "has_local_feedback": False,
                                 "local_feedback_path": None,
                                 "notebook_id": f"{root_notebook_name}",
+                                "exchange_path": None,
                             }
                         ],
                         "timestamp": "2020-01-01 00:01:00.1 00:00",
@@ -319,6 +328,7 @@ def test_list_submit_several_submissions(plugin_config, tmpdir):
                                 "has_local_feedback": False,
                                 "local_feedback_path": None,
                                 "notebook_id": f"{root_notebook_name}",
+                                "exchange_path": None,
                             }
                         ],
                         "timestamp": "2020-01-01 00:02:00.1 00:00",
@@ -360,6 +370,7 @@ def test_list_submit_multipule_students(plugin_config, tmpdir):
                                         "has_exchange_feedback": False,
                                         "feedback_updated": False,
                                         "feedback_timestamp": None,
+                                        "exchange_path": None,
                                     }
                                 ],
                                 "timestamp": "2020-01-01 00:00:00.0 00:00",
@@ -376,6 +387,7 @@ def test_list_submit_multipule_students(plugin_config, tmpdir):
                                         "has_exchange_feedback": False,
                                         "feedback_updated": False,
                                         "feedback_timestamp": None,
+                                        "exchange_path": None,
                                     }
                                 ],
                                 "timestamp": "2020-01-01 00:01:00.0 00:00",
@@ -392,6 +404,7 @@ def test_list_submit_multipule_students(plugin_config, tmpdir):
                                         "has_exchange_feedback": False,
                                         "feedback_updated": False,
                                         "feedback_timestamp": None,
+                                        "exchange_path": None,
                                     }
                                 ],
                                 "timestamp": "2020-01-01 00:02:00.0 00:00",
@@ -429,6 +442,7 @@ def test_list_submit_multipule_students(plugin_config, tmpdir):
                                 "has_local_feedback": False,
                                 "local_feedback_path": None,
                                 "notebook_id": f"{root_notebook_name}",
+                                "exchange_path": None,
                             }
                         ],
                         "timestamp": "2020-01-01 00:00:00.0 00:00",
@@ -459,6 +473,7 @@ def test_list_submit_multipule_students(plugin_config, tmpdir):
                                 "has_local_feedback": False,
                                 "local_feedback_path": None,
                                 "notebook_id": f"{root_notebook_name}",
+                                "exchange_path": None,
                             }
                         ],
                         "timestamp": "2020-01-01 00:01:00.0 00:00",
@@ -489,6 +504,7 @@ def test_list_submit_multipule_students(plugin_config, tmpdir):
                                 "has_local_feedback": False,
                                 "local_feedback_path": None,
                                 "notebook_id": f"{root_notebook_name}",
+                                "exchange_path": None,
                             }
                         ],
                         "timestamp": "2020-01-01 00:02:00.0 00:00",
@@ -530,6 +546,7 @@ def test_list_submit_multiple_assignments(plugin_config, tmpdir):
                                         "has_exchange_feedback": False,
                                         "feedback_updated": False,
                                         "feedback_timestamp": None,
+                                        "exchange_path": None,
                                     }
                                 ],
                                 "timestamp": "2020-01-01 00:00:00.0 00:00",
@@ -546,6 +563,7 @@ def test_list_submit_multiple_assignments(plugin_config, tmpdir):
                                         "has_exchange_feedback": False,
                                         "feedback_updated": False,
                                         "feedback_timestamp": None,
+                                        "exchange_path": None,
                                     }
                                 ],
                                 "timestamp": "2020-01-01 00:01:00.0 00:00",
@@ -562,6 +580,7 @@ def test_list_submit_multiple_assignments(plugin_config, tmpdir):
                                         "has_exchange_feedback": False,
                                         "feedback_updated": False,
                                         "feedback_timestamp": None,
+                                        "exchange_path": None,
                                     }
                                 ],
                                 "timestamp": "2020-01-01 00:02:00.0 00:00",
@@ -599,6 +618,7 @@ def test_list_submit_multiple_assignments(plugin_config, tmpdir):
                                 "has_local_feedback": False,
                                 "local_feedback_path": None,
                                 "notebook_id": f"{root_notebook_name}",
+                                "exchange_path": None,
                             }
                         ],
                         "timestamp": "2020-01-01 00:00:00.0 00:00",
@@ -629,6 +649,7 @@ def test_list_submit_multiple_assignments(plugin_config, tmpdir):
                                 "has_local_feedback": False,
                                 "local_feedback_path": None,
                                 "notebook_id": f"{root_notebook_name}",
+                                "exchange_path": None,
                             }
                         ],
                         "timestamp": "2020-01-01 00:01:00.0 00:00",
@@ -659,6 +680,7 @@ def test_list_submit_multiple_assignments(plugin_config, tmpdir):
                                 "has_local_feedback": False,
                                 "local_feedback_path": None,
                                 "notebook_id": f"{root_notebook_name}",
+                                "exchange_path": None,
                             }
                         ],
                         "timestamp": "2020-01-01 00:02:00.0 00:00",
@@ -673,12 +695,13 @@ def test_list_feedback_available(plugin_config, tmpdir):
     try:
         course_code = "no_course"
         assignment_id = "assign_1_1"
+        timestamp = "2020-01-01 00:02:00.2 00:00"
         plugin_config.CourseDirectory.course_id = course_code
         plugin_config.CourseDirectory.assignment_id = assignment_id
 
         plugin_config.ExchangeList.inbound = True
 
-        my_feedback_dir = f"{assignment_id}/feedback/2020-01-01 00:02:00.2 00:00"
+        my_feedback_dir = f"{assignment_id}/feedback/{timestamp}"
         os.makedirs(my_feedback_dir, exist_ok=True)
         copyfile(
             feedback1_filename,
@@ -713,10 +736,11 @@ def test_list_feedback_available(plugin_config, tmpdir):
                                             "notebook_id": root_notebook_name,
                                             "has_exchange_feedback": True,
                                             "feedback_updated": False,
-                                            "feedback_timestamp": "2020-01-01 00:02:00.2 00:00",
+                                            "feedback_timestamp": timestamp,
+                                            "exchange_path": None,
                                         }
                                     ],
-                                    "timestamp": "2020-01-01 00:00:00.2 00:00",
+                                    "timestamp": timestamp,
                                 },
                             ],
                         }
@@ -741,23 +765,25 @@ def test_list_feedback_available(plugin_config, tmpdir):
                             "student_id": 1,
                             "notebooks": [
                                 {
-                                    "feedback_timestamp": "2020-01-01 00:02:00.2 00:00",
+                                    "feedback_timestamp": timestamp,
                                     "has_exchange_feedback": True,
                                     "has_local_feedback": True,
-                                    "local_feedback_path": f"{assignment_id}/feedback/2020-01-01 00:02:00.2 00:00/{root_notebook_name}.html",  # noqa: E501
+                                    "local_feedback_path": f"{assignment_id}/feedback/{timestamp}/{root_notebook_name}.html",  # noqa: E501
                                     "feedback_updated": False,
                                     "notebook_id": root_notebook_name,
+                                    "exchange_path": None,
                                 }
                             ],
-                            "timestamp": "2020-01-01 00:00:00.2 00:00",
+                            "timestamp": timestamp,
                             "feedback_updated": False,
                             "has_exchange_feedback": True,
                             "has_local_feedback": True,
-                            "local_feedback_path": f"{assignment_id}/feedback/2020-01-01 00:02:00.2 00:00",
+                            "local_feedback_path": f"{assignment_id}/feedback/{timestamp}",
                         }
                     ],
                 }
             ]
+
     finally:
         shutil.rmtree(assignment_id)
 
@@ -775,13 +801,8 @@ def test_list_feedback_available_with_path_includes_course(plugin_config, tmpdir
 
         my_feedback_dir = f"{course_code}/{assignment_id}/feedback/2020-01-01 00:02:00.2 00:00"
         os.makedirs(my_feedback_dir, exist_ok=True)
-        copyfile(
-            feedback1_filename,
-            os.path.join(
-                my_feedback_dir,
-                basename(feedback1_filename),
-            ),
-        )
+        my_feedback_file = os.path.join(my_feedback_dir, basename(feedback1_filename))
+        copyfile(feedback1_filename, my_feedback_file)
 
         plugin = ExchangeList(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
 
@@ -809,6 +830,7 @@ def test_list_feedback_available_with_path_includes_course(plugin_config, tmpdir
                                             "has_exchange_feedback": True,
                                             "feedback_updated": False,
                                             "feedback_timestamp": "2020-01-01 00:02:00.2 00:00",
+                                            "exchange_path": my_feedback_file,
                                         }
                                     ],
                                     "timestamp": "2020-01-01 00:00:00.2 00:00",
@@ -842,6 +864,7 @@ def test_list_feedback_available_with_path_includes_course(plugin_config, tmpdir
                                     "local_feedback_path": f"{course_code}/{assignment_id}/feedback/2020-01-01 00:02:00.2 00:00/{root_notebook_name}.html",  # noqa: E501
                                     "feedback_updated": False,
                                     "notebook_id": root_notebook_name,
+                                    "exchange_path": my_feedback_file,
                                 }
                             ],
                             "timestamp": "2020-01-01 00:00:00.2 00:00",

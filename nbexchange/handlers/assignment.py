@@ -80,6 +80,7 @@ class Assignments(BaseHandler):
                     for notebook in assignment.notebooks:
                         feedback_available = False
                         feedback_timestamp = None
+                        feedback_path = None
                         if action.action == AssignmentActions.submitted:
                             feedback = Feedback.find_notebook_for_student(
                                 db=session,
@@ -97,6 +98,7 @@ class Assignments(BaseHandler):
                                 "has_exchange_feedback": feedback_available,
                                 "feedback_updated": False,  # TODO: needs a real value
                                 "feedback_timestamp": feedback_timestamp,
+                                "exchange_path": feedback_path,
                             }
                         )
                     models.append(

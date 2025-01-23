@@ -21,58 +21,6 @@ notebook2_filename = os.path.join(os.path.dirname(__file__), "data", "assignment
 notebook2_file = get_feedback_file(notebook2_filename)
 
 
-@pytest.mark.gen_test
-def test_list_acknowledges_multi_marker_feature_flag(plugin_config, tmpdir, monkeypatch):
-    plugin_config.CourseDirectory.course_id = "no_course"
-    plugin_config.ExchangeList.inbound = True
-
-    plugin = ExchangeList(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
-
-    def api_request(*args, **kwargs):
-        assert args[0] == ("assignments?course_id=no_course")
-        assert "method" not in kwargs or kwargs.get("method").lower() == "get"
-        return type(
-            "Request",
-            (object,),
-            {
-                "status_code": 200,
-                "json": (
-                    lambda: {
-                        "success": True,
-                        "value": [
-                            {
-                                "assignment_id": "assign_1_1",
-                                "student_id": 1,
-                                "course_id": "no_course",
-                                "status": "released",
-                                "path": "",
-                                "notebooks": [
-                                    {
-                                        "notebook_id": "assignment-0.6",
-                                        "has_exchange_feedback": False,
-                                        "feedback_updated": False,
-                                        "feedback_timestamp": None,
-                                    }
-                                ],
-                                "timestamp": "2020-01-01 00:00:00.0 00:00",
-                            }
-                        ],
-                    }
-                ),
-            },
-        )
-
-    with patch.object(Exchange, "api_request", side_effect=api_request):
-        plugin.start()
-    assert plugin.coursedir.submitted_directory == "collected"
-
-    monkeypatch.setenv("NAAS_FEATURE_MULTI_MARKERS", "True")
-    plugin = ExchangeList(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
-    with patch.object(Exchange, "api_request", side_effect=api_request):
-        plugin.start()
-    assert plugin.coursedir.submitted_directory == "submitted"
-
-
 # Released items come with feedback items.
 @pytest.mark.gen_test
 def test_list_normal(plugin_config, tmpdir):
@@ -104,6 +52,7 @@ def test_list_normal(plugin_config, tmpdir):
                                         "has_exchange_feedback": False,
                                         "feedback_updated": False,
                                         "feedback_timestamp": None,
+                                        "exchange_path": None,
                                     }
                                 ],
                                 "timestamp": "2020-01-01 00:00:00.0 00:00",
@@ -128,6 +77,7 @@ def test_list_normal(plugin_config, tmpdir):
                         "has_exchange_feedback": False,
                         "feedback_updated": False,
                         "feedback_timestamp": None,
+                        "exchange_path": None,
                     }
                 ],
                 "path": "",
@@ -167,6 +117,7 @@ def test_list_normal_multiple(plugin_config, tmpdir):
                                         "has_exchange_feedback": False,
                                         "feedback_updated": False,
                                         "feedback_timestamp": None,
+                                        "exchange_path": None,
                                     }
                                 ],
                                 "timestamp": "2020-01-01 00:00:00.0 00:00",
@@ -183,6 +134,7 @@ def test_list_normal_multiple(plugin_config, tmpdir):
                                         "has_exchange_feedback": False,
                                         "feedback_updated": False,
                                         "feedback_timestamp": None,
+                                        "exchange_path": None,
                                     }
                                 ],
                                 "timestamp": "2020-01-01 00:00:00.1 00:00",
@@ -207,6 +159,7 @@ def test_list_normal_multiple(plugin_config, tmpdir):
                         "has_exchange_feedback": False,
                         "feedback_updated": False,
                         "feedback_timestamp": None,
+                        "exchange_path": None,
                     }
                 ],
                 "path": "",
@@ -223,6 +176,7 @@ def test_list_normal_multiple(plugin_config, tmpdir):
                         "has_exchange_feedback": False,
                         "feedback_updated": False,
                         "feedback_timestamp": None,
+                        "exchange_path": None,
                     }
                 ],
                 "path": "",
@@ -264,6 +218,7 @@ def test_list_normal_multiple_released(plugin_config, tmpdir):
                                             "has_exchange_feedback": False,
                                             "feedback_updated": False,
                                             "feedback_timestamp": None,
+                                            "exchange_path": None,
                                         }
                                     ],
                                     "timestamp": "2020-01-01 00:00:00.0 00:00",
@@ -280,6 +235,7 @@ def test_list_normal_multiple_released(plugin_config, tmpdir):
                                             "has_exchange_feedback": False,
                                             "feedback_updated": False,
                                             "feedback_timestamp": None,
+                                            "exchange_path": None,
                                         }
                                     ],
                                     "timestamp": "2020-01-01 00:00:00.0 00:00",
@@ -296,6 +252,7 @@ def test_list_normal_multiple_released(plugin_config, tmpdir):
                                             "has_exchange_feedback": False,
                                             "feedback_updated": False,
                                             "feedback_timestamp": None,
+                                            "exchange_path": None,
                                         }
                                     ],
                                     "timestamp": "2020-01-01 00:00:00.2 00:00",
@@ -320,6 +277,7 @@ def test_list_normal_multiple_released(plugin_config, tmpdir):
                             "has_exchange_feedback": False,
                             "feedback_updated": False,
                             "feedback_timestamp": None,
+                            "exchange_path": None,
                         }
                     ],
                     "path": "",
@@ -336,6 +294,7 @@ def test_list_normal_multiple_released(plugin_config, tmpdir):
                             "has_exchange_feedback": False,
                             "feedback_updated": False,
                             "feedback_timestamp": None,
+                            "exchange_path": None,
                         }
                     ],
                     "path": "",
@@ -378,6 +337,7 @@ def test_list_normal_multiple_released_duplicates(plugin_config, tmpdir):
                                             "has_exchange_feedback": False,
                                             "feedback_updated": False,
                                             "feedback_timestamp": None,
+                                            "exchange_path": None,
                                         }
                                     ],
                                     "timestamp": "2020-01-01 00:00:00.0 00:00",
@@ -394,6 +354,7 @@ def test_list_normal_multiple_released_duplicates(plugin_config, tmpdir):
                                             "has_exchange_feedback": False,
                                             "feedback_updated": False,
                                             "feedback_timestamp": None,
+                                            "exchange_path": None,
                                         }
                                     ],
                                     "timestamp": "2020-01-01 00:00:00.2 00:00",
@@ -410,6 +371,7 @@ def test_list_normal_multiple_released_duplicates(plugin_config, tmpdir):
                                             "has_exchange_feedback": False,
                                             "feedback_updated": False,
                                             "feedback_timestamp": None,
+                                            "exchange_path": None,
                                         }
                                     ],
                                     "timestamp": "2020-01-01 00:00:00.0 00:00",
@@ -434,6 +396,7 @@ def test_list_normal_multiple_released_duplicates(plugin_config, tmpdir):
                             "has_exchange_feedback": False,
                             "feedback_updated": False,
                             "feedback_timestamp": None,
+                            "exchange_path": None,
                         }
                     ],
                     "path": "",
@@ -450,6 +413,7 @@ def test_list_normal_multiple_released_duplicates(plugin_config, tmpdir):
                             "has_exchange_feedback": False,
                             "feedback_updated": False,
                             "feedback_timestamp": None,
+                            "exchange_path": None,
                         }
                     ],
                     "path": "",
@@ -495,6 +459,7 @@ def test_list_fetched(plugin_config, tmpdir):
                                             "has_exchange_feedback": False,
                                             "feedback_updated": False,
                                             "feedback_timestamp": None,
+                                            "exchange_path": None,
                                         }
                                     ],
                                     "timestamp": "2020-01-01 00:00:00.0 00:00",
@@ -511,6 +476,7 @@ def test_list_fetched(plugin_config, tmpdir):
                                             "has_exchange_feedback": False,
                                             "feedback_updated": False,
                                             "feedback_timestamp": None,
+                                            "exchange_path": None,
                                         }
                                     ],
                                     "timestamp": "2020-01-01 00:00:00.0 00:00",
@@ -523,6 +489,7 @@ def test_list_fetched(plugin_config, tmpdir):
 
         with patch.object(Exchange, "api_request", side_effect=api_request):
             called = plugin.start()
+
             assert called == [
                 {
                     "assignment_id": "assign_1_3",
@@ -587,6 +554,7 @@ def test_list_fetched_with_path_includes_course(plugin_config, tmpdir):
                                             "has_exchange_feedback": False,
                                             "feedback_updated": False,
                                             "feedback_timestamp": None,
+                                            "exchange_path": None,
                                         }
                                     ],
                                     "timestamp": "2020-01-01 00:00:00.0 00:00",
@@ -603,6 +571,7 @@ def test_list_fetched_with_path_includes_course(plugin_config, tmpdir):
                                             "has_exchange_feedback": False,
                                             "feedback_updated": False,
                                             "feedback_timestamp": None,
+                                            "exchange_path": None,
                                         }
                                     ],
                                     "timestamp": "2020-01-01 00:00:00.0 00:00",
@@ -675,6 +644,7 @@ def test_list_fetched_rerelease_ignored(plugin_config, tmpdir):
                                             "has_exchange_feedback": False,
                                             "feedback_updated": False,
                                             "feedback_timestamp": None,
+                                            "exchange_path": None,
                                         }
                                     ],
                                     "timestamp": "2020-01-01 00:00:00.0 00:00",
@@ -691,6 +661,7 @@ def test_list_fetched_rerelease_ignored(plugin_config, tmpdir):
                                             "has_exchange_feedback": False,
                                             "feedback_updated": False,
                                             "feedback_timestamp": None,
+                                            "exchange_path": None,
                                         }
                                     ],
                                     "timestamp": "2020-01-01 00:00:00.0 00:00",
@@ -707,6 +678,7 @@ def test_list_fetched_rerelease_ignored(plugin_config, tmpdir):
                                             "has_exchange_feedback": False,
                                             "feedback_updated": False,
                                             "feedback_timestamp": None,
+                                            "exchange_path": None,
                                         }
                                     ],
                                     "timestamp": "2020-01-01 00:00:02.0 00:00",
@@ -779,6 +751,7 @@ def test_list_multiple_fetch(plugin_config, tmpdir):
                                             "has_exchange_feedback": False,
                                             "feedback_updated": False,
                                             "feedback_timestamp": None,
+                                            "exchange_path": None,
                                         }
                                     ],
                                     "timestamp": "2020-01-01 00:00:00.0 00:00",
@@ -795,6 +768,7 @@ def test_list_multiple_fetch(plugin_config, tmpdir):
                                             "has_exchange_feedback": False,
                                             "feedback_updated": False,
                                             "feedback_timestamp": None,
+                                            "exchange_path": None,
                                         }
                                     ],
                                     "timestamp": "2020-01-01 00:00:02.0 00:00",
@@ -811,6 +785,7 @@ def test_list_multiple_fetch(plugin_config, tmpdir):
                                             "has_exchange_feedback": False,
                                             "feedback_updated": False,
                                             "feedback_timestamp": None,
+                                            "exchange_path": None,
                                         }
                                     ],
                                     "timestamp": "2020-01-01 00:00:04.0 00:00",
@@ -883,6 +858,7 @@ def test_list_fetch_without_release_ignored(plugin_config, tmpdir):
                                             "has_exchange_feedback": False,
                                             "feedback_updated": False,
                                             "feedback_timestamp": None,
+                                            "exchange_path": None,
                                         }
                                     ],
                                     "timestamp": "2020-01-01 00:00:00.0 00:00",
@@ -899,6 +875,7 @@ def test_list_fetch_without_release_ignored(plugin_config, tmpdir):
                                             "has_exchange_feedback": False,
                                             "feedback_updated": False,
                                             "feedback_timestamp": None,
+                                            "exchange_path": None,
                                         }
                                     ],
                                     "timestamp": "2020-01-01 00:00:00.0 00:00",
@@ -923,6 +900,7 @@ def test_list_fetch_without_release_ignored(plugin_config, tmpdir):
                             "has_exchange_feedback": False,
                             "feedback_updated": False,
                             "feedback_timestamp": None,
+                            "exchange_path": None,
                         }
                     ],
                     "path": "",

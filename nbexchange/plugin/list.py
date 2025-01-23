@@ -1,4 +1,5 @@
 import glob
+import hashlib
 import json
 import os
 from urllib.parse import quote_plus
@@ -8,6 +9,12 @@ from nbgrader.exchange.default.list import ExchangeList as DefaultExchangeList
 from traitlets import Unicode
 
 from .exchange import Exchange
+
+
+def _checksum(path):
+    m = hashlib.md5()
+    m.update(open(path, "rb").read())
+    return m.hexdigest()
 
 
 # "outbound" is files released by instructors (.... but there may be local copies!)
@@ -135,7 +142,14 @@ class ExchangeList(abc.ExchangeList, Exchange):
         interim_assignments = []
         found_fetched = set([])
         for assignment in self.assignments:
-            assignment_directory = self.fetched_root + "/" + assignment.get("assignment_id")
+            # assignment_directory = self.fetched_root + "/" + assignment.get("assignment_id")
+            if self.path_includes_course:
+                assignment_directory = os.path.join(
+                    self.assignment_dir, assignment["course_id"], assignment["assignment_id"]
+                )
+            else:
+                assignment_directory = os.path.join(self.assignment_dir, assignment["assignment_id"])
+
             if assignment["status"] == "released":
                 # Has this release already been found on disk?
                 if assignment["assignment_id"] in found_fetched:
@@ -290,7 +304,7 @@ class ExchangeList(abc.ExchangeList, Exchange):
 
     def list_files(self):
         """List files"""
-        self.log.debug("ExchaneList.list_file starting")
+        self.log.debug("ExchangeList.list_file starting")
 
         assignments = self.parse_assignments()
         if self.inbound or self.cached:
@@ -318,26 +332,17 @@ class ExchangeList(abc.ExchangeList, Exchange):
             self.log.info(f"Got back {r.status_code} after assignment unrelease")
 
     def start(self):
-        #####
-        #
-        # This is the code that changes the submitted directory
-        #   away from default.
-        # The feature flag NAAS_FEATURE_MULTI_MARKERS is also used
-        #   to revert to default nbgrader behaviour
-        # Once the feature flag becomes the default, `self.fetched_root`
-        #   can be ditched
-        #####
-        if not os.environ.get("NAAS_FEATURE_MULTI_MARKERS"):
-            if self.path_includes_course:
-                self.coursedir.submitted_directory = os.path.join(self.coursedir.course_id, "collected")
-            else:
-                self.coursedir.submitted_directory = "collected"
+        # if not os.environ.get("NAAS_FEATURE_MULTI_MARKERS"):
+        #     if self.path_includes_course:
+        #         self.coursedir.submitted_directory = os.path.join(self.coursedir.course_id, "collected")
+        #     else:
+        #         self.coursedir.submitted_directory = "collected"
 
-        if self.path_includes_course:
-            r = self.coursedir.course_id
-        else:
-            r = "."
-        self.fetched_root = os.path.abspath(os.path.join("", r))
+        # if self.path_includes_course:
+        #     r = self.coursedir.course_id
+        # else:
+        #     r = "."
+        # self.fetched_root = os.path.abspath(os.path.join("", r))
 
         if self.remove:
             return self.remove_files()

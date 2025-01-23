@@ -38,7 +38,7 @@ class ExchangeSubmit(Exchange, ABCExchangeSubmit):
         timestamp = self.timestamp
         tar_file = io.BytesIO()
         with tarfile.open(fileobj=tar_file, mode="w:gz") as tar_handle:
-            tar_handle.add(self.src_path, arcname=".")
+            self.add_to_tar(tar_handle, self.src_path, self.ignore)
             with closing(io.BytesIO(timestamp.encode())) as fobj:
                 tarinfo = tarfile.TarInfo("timestamp.txt")
                 tarinfo.size = len(fobj.getvalue())
@@ -65,7 +65,7 @@ class ExchangeSubmit(Exchange, ABCExchangeSubmit):
 
         self.log.info(f"Submitted as: {self.coursedir.course_id} {self.coursedir.assignment_id} {self.timestamp}")
 
-    # Like the default Submit, we log differences, and do not rener then in the display
+    # Like the default Submit, we log differences, and do not render then in the display
     # (not sure that's any ues to anyone - but that's what the original does)
     def check_filename_diff(self):
         # List of filenames, no paths

@@ -1,6 +1,5 @@
 import logging
 import re
-import sys
 
 import pytest
 from mock import patch
@@ -20,7 +19,7 @@ logger = logging.getLogger(__file__)
 logger.setLevel(logging.ERROR)
 
 # set up the file to be uploaded as part of the testing later
-files = get_files_dict(sys.argv[0])  # ourself :)
+release_files, notebooks, timestamp = get_files_dict()
 
 
 # #### POST /collection #### #
@@ -71,14 +70,14 @@ def test_get_collection_catches_missing_path(app, clear_database):  # noqa: F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.get(app.url + "/assignment?course_id=course_2&assignment_id=assign_a")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.post(
             app.url + "/submission?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         collected_data = None
@@ -106,14 +105,14 @@ def test_get_collection_catches_missing_assignment(app, clear_database):  # noqa
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.get(app.url + "/assignment?course_id=course_2&assignment_id=assign_a")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.post(
             app.url + "/submission?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         collected_data = None
@@ -140,14 +139,14 @@ def test_get_collection_catches_missing_course(app, clear_database):  # noqa: F8
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.get(app.url + "/assignment?course_id=course_2&assignment_id=assign_a")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.post(
             app.url + "/submission?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         collected_data = None
@@ -174,14 +173,14 @@ def test_get_collection_checks_for_user_subscription(app, clear_database):  # no
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.get(app.url + "/assignment?course_id=course_2&assignment_id=assign_a")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.post(
             app.url + "/submission?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         collected_data = None
@@ -208,7 +207,7 @@ def test_get_collection_check_catches_student_role(app, clear_database):  # noqa
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_brobbere_student):
         r = yield async_requests.get(
@@ -229,14 +228,14 @@ def test_get_collection_confirm_instructor_does_download(app, clear_database):  
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.get(app.url + "/assignment?course_id=course_2&assignment_id=assign_a")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.post(
             app.url + "/submission?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         collected_data = None
@@ -263,14 +262,14 @@ def test_get_collection_broken_nbex_user(app, clear_database, caplog):  # noqa: 
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.get(app.url + "/assignment?course_id=course_2&assignment_id=assign_a")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.post(
             app.url + "/submission?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         collected_data = None
@@ -294,16 +293,16 @@ async def test_collection_actions_show_correctly(app, clear_database):  # noqa: 
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = await async_requests.post(  # release
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )
         r = await async_requests.get(app.url + "/assignment?&course_id=course_2&assignment_id=assign_a")  # fetch
         r = await async_requests.post(  # submit
             app.url + "/submission?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )
         r = await async_requests.post(  # submit
             app.url + "/submission?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_brobbere_student):
         r = yield async_requests.get(
@@ -311,11 +310,11 @@ async def test_collection_actions_show_correctly(app, clear_database):  # noqa: 
         )  # fetch as another user
         r = yield async_requests.post(
             app.url + "/submission?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )  # submit as that user
         r = yield async_requests.post(
             app.url + "/submission?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )  # submit as that user again
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.get(app.url + "/collections?course_id=course_2&assignment_id=assign_a")
@@ -384,14 +383,14 @@ def test_get_collection_path_is_incorrect(app, clear_database):  # noqa: F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.get(app.url + "/assignment?course_id=course_2&assignment_id=assign_a")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.post(
             app.url + "/submission?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         collected_data = None
@@ -418,14 +417,14 @@ def test_get_collection_with_a_blank_feedback_path_injected(app, clear_database)
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.get(app.url + "/assignment?course_id=course_2&assignment_id=assign_a")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.post(
             app.url + "/submission?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )
 
     # Now manually inject a `feedback_fetched` action

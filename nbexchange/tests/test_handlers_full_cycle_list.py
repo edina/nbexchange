@@ -1,0 +1,488 @@
+import logging
+import os
+from pathlib import Path
+from unittest.mock import ANY
+from urllib.parse import quote_plus
+
+import pytest
+from mock import patch
+from nbgrader.utils import make_unique_key, notebook_hash
+
+from nbexchange.handlers.base import BaseHandler
+from nbexchange.tests.test_handlers_base import BaseTestHandlers
+from nbexchange.tests.utils import (  # noqa: F401 "clear_database"
+    async_requests,
+    clear_database,
+    get_files_dict,
+    user_kiz_instructor,
+    user_kiz_student,
+)
+
+logger = logging.getLogger(__file__)
+logger.setLevel(logging.ERROR)
+
+
+class TestHandlersFetchFullCycle(BaseTestHandlers):
+
+    # test actual rerurn data-structure for the "list" call after every action
+    @pytest.mark.gen_test
+    def test_list_datastructure(self, app, clear_database):  # noqa: F811
+        # set up the file to be uploaded
+        release_files, notebooks, timestamp = get_files_dict()
+
+        # release & list
+        with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
+            r = yield async_requests.post(
+                app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
+                data={"notebooks": notebooks},
+                files=release_files,
+            )
+            r = yield async_requests.get(app.url + "/assignments?course_id=course_2")
+
+        assert r.status_code == 200
+        response_data = r.json()
+        assert response_data["value"] == [
+            {
+                "assignment_id": "assign_a",
+                "course_id": "course_2",
+                "notebooks": [
+                    {
+                        "feedback_timestamp": None,
+                        "feedback_updated": False,
+                        "has_exchange_feedback": False,
+                        "notebook_id": "assignment-0.6",
+                    },
+                    {
+                        "feedback_timestamp": None,
+                        "feedback_updated": False,
+                        "has_exchange_feedback": False,
+                        "notebook_id": "assignment-0.6-2",
+                    },
+                ],
+                "path": ANY,
+                "status": "released",
+                "student_id": 1,
+                "timestamp": ANY,
+            },
+        ]
+
+        # a student fetch & list
+        with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+            r = yield async_requests.get(app.url + "/assignment?course_id=course_2&assignment_id=assign_a")
+            r = yield async_requests.get(app.url + "/assignments?course_id=course_2")
+        response_data = r.json()
+
+        assert response_data["value"] == [
+            {
+                "assignment_id": "assign_a",
+                "course_id": "course_2",
+                "notebooks": [
+                    {
+                        "feedback_timestamp": None,
+                        "feedback_updated": False,
+                        "has_exchange_feedback": False,
+                        "notebook_id": "assignment-0.6",
+                    },
+                    {
+                        "feedback_timestamp": None,
+                        "feedback_updated": False,
+                        "has_exchange_feedback": False,
+                        "notebook_id": "assignment-0.6-2",
+                    },
+                ],
+                "path": ANY,
+                "status": "released",
+                "student_id": 1,
+                "timestamp": ANY,
+            },
+            {
+                "assignment_id": "assign_a",
+                "course_id": "course_2",
+                "notebooks": [
+                    {
+                        "feedback_timestamp": None,
+                        "feedback_updated": False,
+                        "has_exchange_feedback": False,
+                        "notebook_id": "assignment-0.6",
+                    },
+                    {
+                        "feedback_timestamp": None,
+                        "feedback_updated": False,
+                        "has_exchange_feedback": False,
+                        "notebook_id": "assignment-0.6-2",
+                    },
+                ],
+                "path": ANY,
+                "status": "fetched",
+                "student_id": 1,
+                "timestamp": ANY,
+            },
+        ]
+
+        # student submits & list
+        # Note - we need to note _this_ timestamp to check it's being kept in the datastructure
+        submit_timestamp = timestamp
+        with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+            r = yield async_requests.post(
+                app.url + "/submission?course_id=course_2&assignment_id=assign_a",
+                files=release_files,
+            )
+            r = yield async_requests.get(app.url + "/assignments?course_id=course_2")
+        response_data = r.json()
+
+        assert response_data["value"] == [
+            {
+                "assignment_id": "assign_a",
+                "course_id": "course_2",
+                "notebooks": [
+                    {
+                        "feedback_timestamp": None,
+                        "feedback_updated": False,
+                        "has_exchange_feedback": False,
+                        "notebook_id": "assignment-0.6",
+                    },
+                    {
+                        "feedback_timestamp": None,
+                        "feedback_updated": False,
+                        "has_exchange_feedback": False,
+                        "notebook_id": "assignment-0.6-2",
+                    },
+                ],
+                "path": ANY,
+                "status": "released",
+                "student_id": 1,
+                "timestamp": ANY,
+            },
+            {
+                "assignment_id": "assign_a",
+                "course_id": "course_2",
+                "notebooks": [
+                    {
+                        "feedback_timestamp": None,
+                        "feedback_updated": False,
+                        "has_exchange_feedback": False,
+                        "notebook_id": "assignment-0.6",
+                    },
+                    {
+                        "feedback_timestamp": None,
+                        "feedback_updated": False,
+                        "has_exchange_feedback": False,
+                        "notebook_id": "assignment-0.6-2",
+                    },
+                ],
+                "path": ANY,
+                "status": "fetched",
+                "student_id": 1,
+                "timestamp": ANY,
+            },
+            {
+                "assignment_id": "assign_a",
+                "course_id": "course_2",
+                "notebooks": [
+                    {
+                        "feedback_timestamp": None,
+                        "feedback_updated": False,
+                        "has_exchange_feedback": False,
+                        "notebook_id": "assignment-0.6",
+                    },
+                    {
+                        "feedback_timestamp": None,
+                        "feedback_updated": False,
+                        "has_exchange_feedback": False,
+                        "notebook_id": "assignment-0.6-2",
+                    },
+                ],
+                "path": ANY,
+                "status": "submitted",
+                "student_id": 1,
+                "timestamp": ANY,
+            },
+        ]
+
+        # instructor collects & student list - should be no different to above
+        submitted_response_data = response_data
+        with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
+            collected_data = None
+            r = yield async_requests.get(
+                app.url + "/collections?course_id=course_2&assignment_id=assign_a"
+            )  # Get the data we need to make test the call we want to make
+            response_data = r.json()
+            collected_data = response_data["value"][0]
+            r = yield async_requests.get(
+                app.url
+                + f"/collection?course_id={collected_data['course_id']}&assignment_id={collected_data['assignment_id']}"  # noqa: E501 W503
+            )
+        with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+            r = yield async_requests.get(app.url + "/assignments?course_id=course_2")
+
+        assert r.status_code == 200
+        response_data = r.json()
+        assert response_data == submitted_response_data
+
+        # instructor releases feedback & student list - should be listed available
+        notebooks = ["assignment-0.6", "assignment-0.6-2"]
+        html_files = [
+            os.path.join(os.path.dirname(__file__), "data", f"{notebooks[0]}.html"),
+            os.path.join(os.path.dirname(__file__), "data", f"{notebooks[1]}.html"),
+        ]
+        student_id = user_kiz_student["name"]
+        for html_file in html_files:
+            notebook_id = Path(html_file).stem
+            unique_key = make_unique_key(
+                "course_2",
+                "assign_a",
+                notebook_id,
+                student_id,
+                submit_timestamp,
+            )
+            checksum = notebook_hash(html_file, unique_key)
+            with open(html_file) as feedback_file:
+                feedback_data = {"feedback": ("feedback.html", feedback_file.read())}
+
+            url = (
+                f"/feedback?course_id={quote_plus('course_2')}"
+                f"&assignment_id={quote_plus('assign_a')}"
+                f"&notebook={quote_plus(notebook_id)}"
+                f"&student={quote_plus(student_id)}"
+                f"&timestamp={quote_plus(submit_timestamp)}"
+                f"&checksum={quote_plus(checksum)}"
+            )
+            with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
+                r = yield async_requests.post(app.url + url, files=feedback_data)
+        with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+            r = yield async_requests.get(app.url + "/assignments?course_id=course_2")
+
+        assert r.status_code == 200
+        response_data = r.json()
+
+        # Adds *two* actions - feedback releases html files individually, and there are two assignments
+        assert response_data["value"] == [
+            {
+                "assignment_id": "assign_a",
+                "course_id": "course_2",
+                "notebooks": [
+                    {
+                        "feedback_timestamp": None,
+                        "feedback_updated": False,
+                        "has_exchange_feedback": False,
+                        "notebook_id": "assignment-0.6",
+                    },
+                    {
+                        "feedback_timestamp": None,
+                        "feedback_updated": False,
+                        "has_exchange_feedback": False,
+                        "notebook_id": "assignment-0.6-2",
+                    },
+                ],
+                "path": ANY,
+                "status": "released",
+                "student_id": 1,
+                "timestamp": ANY,
+            },
+            {
+                "assignment_id": "assign_a",
+                "course_id": "course_2",
+                "notebooks": [
+                    {
+                        "feedback_timestamp": None,
+                        "feedback_updated": False,
+                        "has_exchange_feedback": False,
+                        "notebook_id": "assignment-0.6",
+                    },
+                    {
+                        "feedback_timestamp": None,
+                        "feedback_updated": False,
+                        "has_exchange_feedback": False,
+                        "notebook_id": "assignment-0.6-2",
+                    },
+                ],
+                "path": ANY,
+                "status": "fetched",
+                "student_id": 1,
+                "timestamp": ANY,
+            },
+            {
+                "assignment_id": "assign_a",
+                "course_id": "course_2",
+                "notebooks": [
+                    {
+                        "feedback_timestamp": submit_timestamp,
+                        "feedback_updated": False,
+                        "has_exchange_feedback": True,
+                        "notebook_id": "assignment-0.6",
+                    },
+                    {
+                        "feedback_timestamp": submit_timestamp,
+                        "feedback_updated": False,
+                        "has_exchange_feedback": True,
+                        "notebook_id": "assignment-0.6-2",
+                    },
+                ],
+                "path": ANY,
+                "status": "submitted",
+                "student_id": 1,
+                "timestamp": ANY,
+            },
+            {
+                "assignment_id": "assign_a",
+                "course_id": "course_2",
+                "notebooks": [
+                    {
+                        "feedback_timestamp": None,
+                        "feedback_updated": False,
+                        "has_exchange_feedback": False,
+                        "notebook_id": "assignment-0.6",
+                    },
+                    {
+                        "feedback_timestamp": None,
+                        "feedback_updated": False,
+                        "has_exchange_feedback": False,
+                        "notebook_id": "assignment-0.6-2",
+                    },
+                ],
+                "path": ANY,
+                "status": "feedback_released",
+                "student_id": 1,
+                "timestamp": ANY,
+            },
+            {
+                "assignment_id": "assign_a",
+                "course_id": "course_2",
+                "notebooks": [
+                    {
+                        "feedback_timestamp": None,
+                        "feedback_updated": False,
+                        "has_exchange_feedback": False,
+                        "notebook_id": "assignment-0.6",
+                    },
+                    {
+                        "feedback_timestamp": None,
+                        "feedback_updated": False,
+                        "has_exchange_feedback": False,
+                        "notebook_id": "assignment-0.6-2",
+                    },
+                ],
+                "path": ANY,
+                "status": "feedback_released",
+                "student_id": 1,
+                "timestamp": ANY,
+            },
+        ]
+
+        # student fetches feedback - assert timestamps match original submitted timestamp,
+        # and compare those to those in list.submitted
+        with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+            r = yield async_requests.get(app.url + "/feedback?course_id=course_2&assignment_id=assign_a")
+        assert r.status_code == 200
+        response_data = r.json()
+        fetched_feedback = {}
+        for f in response_data["feedback"]:
+            fetched_feedback[f["filename"]] = f["timestamp"]
+            assert f["timestamp"] == submit_timestamp
+        with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+            r = yield async_requests.get(app.url + "/assignments?course_id=course_2")
+
+        assert r.status_code == 200
+        response_data = r.json()
+
+        for action in response_data["value"]:
+            if action["status"] != "submitted":
+                continue
+            for notebook in action["notebooks"]:
+                assert notebook["feedback_timestamp"] == submit_timestamp
+
+        # Filter response as plugin would - "inbound" [aka submitted], and mapping to fetched feedback
+        # [which we have done, that was the last action - so we'll fake it]
+        assignment_list = []
+        my_assignments = []
+        for assignment in response_data["value"]:
+            if assignment["status"] in ["released", "submitted"]:
+                assignment_list.append(assignment)
+        for assignment in assignment_list:
+            if assignment["status"] == "submitted":
+                local_feedback_path = None
+                has_local_feedback = False
+                for notebook in assignment["notebooks"]:
+                    print(notebook["notebook_id"])
+                    nb_timestamp = notebook["feedback_timestamp"]
+                    local_feedback_path = f"feedback/{nb_timestamp}"
+                    has_local_feedback = True
+                    notebook["has_local_feedback"] = has_local_feedback
+                    notebook["local_feedback_path"] = local_feedback_path
+                # Set assignment-level variables is any not the individual notebooks
+                # have them
+                if assignment["notebooks"]:
+                    has_local_feedback = any([nb.get("has_local_feedback") for nb in assignment["notebooks"]])
+                    has_exchange_feedback = any([nb["has_exchange_feedback"] for nb in assignment["notebooks"]])
+                    feedback_updated = any([nb.get("feedback_updated") for nb in assignment["notebooks"]])
+                else:
+                    has_local_feedback = False
+                    has_exchange_feedback = False
+                    feedback_updated = False
+
+                assignment["has_local_feedback"] = has_local_feedback
+                assignment["has_exchange_feedback"] = has_exchange_feedback
+                assignment["feedback_updated"] = feedback_updated
+                if has_local_feedback:
+                    assignment["local_feedback_path"] = os.path.join(
+                        "assign_a",
+                        nb_timestamp,
+                    )
+                else:
+                    assignment["local_feedback_path"] = None
+            my_assignments.append(assignment)
+
+        assert my_assignments == [
+            {
+                "assignment_id": "assign_a",
+                "course_id": "course_2",
+                "notebooks": [
+                    {
+                        "feedback_timestamp": None,
+                        "feedback_updated": False,
+                        "has_exchange_feedback": False,
+                        "notebook_id": "assignment-0.6",
+                    },
+                    {
+                        "feedback_timestamp": None,
+                        "feedback_updated": False,
+                        "has_exchange_feedback": False,
+                        "notebook_id": "assignment-0.6-2",
+                    },
+                ],
+                "path": ANY,
+                "status": "released",
+                "student_id": 1,
+                "timestamp": ANY,
+            },
+            {
+                "assignment_id": "assign_a",
+                "course_id": "course_2",
+                "feedback_updated": False,
+                "has_exchange_feedback": True,
+                "has_local_feedback": True,
+                "local_feedback_path": f"assign_a/{submit_timestamp}",
+                "notebooks": [
+                    {
+                        "feedback_timestamp": submit_timestamp,
+                        "feedback_updated": False,
+                        "has_exchange_feedback": True,
+                        "has_local_feedback": True,
+                        "local_feedback_path": f"feedback/{submit_timestamp}",
+                        "notebook_id": "assignment-0.6",
+                    },
+                    {
+                        "feedback_timestamp": submit_timestamp,
+                        "feedback_updated": False,
+                        "has_exchange_feedback": True,
+                        "has_local_feedback": True,
+                        "local_feedback_path": f"feedback/{submit_timestamp}",
+                        "notebook_id": "assignment-0.6-2",
+                    },
+                ],
+                "path": ANY,
+                "status": "submitted",
+                "student_id": 1,
+                "timestamp": ANY,
+            },
+        ]

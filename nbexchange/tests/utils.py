@@ -1,7 +1,12 @@
 import asyncio
 import base64
+import datetime
 import io
+import os
+import tarfile
+import time
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import closing
 from functools import partial
 
 import pytest
@@ -23,6 +28,7 @@ user_kiz = {"name": "1-kiz"}
 user_bert = {"name": "1-bert"}
 
 user_kiz_instructor = {
+    "id": 1,
     "name": "1-kiz",
     "course_id": "course_2",
     "course_role": "Instructor",
@@ -30,6 +36,7 @@ user_kiz_instructor = {
 }
 
 user_kiz_student = {
+    "id": 1,
     "name": "1-kiz",
     "course_id": "course_2",
     "course_role": "Student",
@@ -37,6 +44,7 @@ user_kiz_student = {
 }
 
 user_zik_student = {
+    "id": 2,
     "name": "1-zik",
     "course_id": "course_2",
     "course_role": "Student",
@@ -47,6 +55,7 @@ user_zik_student = {
 }
 
 user_brobbere_instructor = {
+    "id": 3,
     "name": "1-brobbere",
     "course_id": "course_2",
     "course_role": "Instructor",
@@ -54,12 +63,14 @@ user_brobbere_instructor = {
 }
 
 user_brobbere_student = {
+    "id": 3,
     "name": "1-brobbere",
     "course_id": "course_2",
     "course_role": "Student",
 }
 
 user_lkihlman_instructor = {
+    "id": 4,
     "name": "1-lkihlman",
     "course_id": "course_1",
     "course_role": "Instructor",
@@ -67,6 +78,7 @@ user_lkihlman_instructor = {
 }
 
 user_lkihlman_student = {
+    "id": 4,
     "name": "1-lkihlman",
     "course_id": "course_1",
     "course_role": "Student",
@@ -100,17 +112,36 @@ def api_request(self, url, method="GET", *args, **kwargs):
         raise NotImplementedError(f"HTTP Method {method} is not implemented")
 
 
-def get_files_dict(filename):
-    import tarfile
+def get_files_dict():
+
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f %Z").strip()
+
+    notebooks = ["assignment-0.6", "assignment-0.6-2"]
+
+    # notebook 1
+    notebook1_filename = os.path.join(os.path.dirname(__file__), "data", f"{notebooks[0]}.ipynb")
+
+    # notebook 2
+    notebook2_filename = os.path.join(os.path.dirname(__file__), "data", f"{notebooks[1]}.ipynb")
 
     tar_file = io.BytesIO()
-
     with tarfile.open(fileobj=tar_file, mode="w:gz") as tar_handle:
-        tar_handle.add(filename, arcname=".")
+
+        arcname = os.path.relpath(notebook1_filename, start=os.path.dirname(__file__))
+        tar_handle.add(notebook1_filename, arcname=arcname)
+        arcname = os.path.relpath(notebook2_filename, start=os.path.dirname(__file__))
+        tar_handle.add(notebook2_filename, arcname=arcname)
+
+        with closing(io.BytesIO(timestamp.encode())) as fobj:
+            tarinfo = tarfile.TarInfo("timestamp.txt")
+            tarinfo.size = len(fobj.getvalue())
+            tarinfo.mtime = time.time()
+            tar_handle.addfile(tarinfo, fileobj=fobj)
+
     tar_file.seek(0)
     tar_file = tar_file.read()
     files = {"assignment": ("assignment.tar.gz", tar_file)}
-    return files
+    return files, notebooks, timestamp
 
 
 def get_feedback_dict(filename):

@@ -96,7 +96,7 @@ def upgrade(db_url, revision="head"):
 
 def backup_db_file(db_file, log=None):
     """Backup a database file if it exists"""
-    timestamp = datetime.now().strftime(".%Y-%m-%d-%H%M%S")
+    timestamp = datetime.now().strftime(".%Y-%m-%d-%H%M%S").strip()
     backup_db_file = db_file + timestamp
     for i in range(1, 10):
         if not os.path.exists(backup_db_file):

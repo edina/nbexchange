@@ -80,7 +80,6 @@ class Assignments(BaseHandler):
                     for notebook in assignment.notebooks:
                         feedback_available = False
                         feedback_timestamp = None
-                        feedback_path = None
                         if action.action == AssignmentActions.submitted:
                             feedback = Feedback.find_notebook_for_student(
                                 db=session,
@@ -90,15 +89,13 @@ class Assignments(BaseHandler):
                             )
                             if feedback:
                                 feedback_available = bool(feedback)
-                                feedback_timestamp = feedback.timestamp.strftime("%Y-%m-%d %H:%M:%S.%f %Z")
-
+                                feedback_timestamp = feedback.timestamp.strftime("%Y-%m-%d %H:%M:%S.%f %Z").strip()
                         notebooks.append(
                             {
                                 "notebook_id": notebook.name,
                                 "has_exchange_feedback": feedback_available,
                                 "feedback_updated": False,  # TODO: needs a real value
                                 "feedback_timestamp": feedback_timestamp,
-                                "exchange_path": feedback_path,
                             }
                         )
                     models.append(
@@ -109,7 +106,7 @@ class Assignments(BaseHandler):
                             "status": action.action.value,  # currently called 'action' in our db
                             "path": action.location,
                             "notebooks": notebooks,
-                            "timestamp": action.timestamp.strftime("%Y-%m-%d %H:%M:%S.%f %Z"),
+                            "timestamp": action.timestamp.strftime("%Y-%m-%d %H:%M:%S.%f %Z").strip(),
                         }
                     )
 

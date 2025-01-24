@@ -88,7 +88,7 @@ class FeedbackHandler(BaseHandler):
                     f["content"] = base64.b64encode(fp.read()).decode("utf-8")
                 f["filename"] = feedback_name
                 # This matches self.timestamp_format
-                f["timestamp"] = r.timestamp.strftime("%Y-%m-%d %H:%M:%S.%f %Z")
+                f["timestamp"] = r.timestamp.strftime("%Y-%m-%d %H:%M:%S.%f %Z").strip()
                 f["checksum"] = r.checksum
                 feedbacks.append(f)
 

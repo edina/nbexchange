@@ -131,7 +131,7 @@ class ExchangeCollect(abc.ExchangeCollect, Exchange):
                 if os.path.isdir(local_dest_path):
                     existing_timestamp = self.coursedir.get_existing_timestamp(local_dest_path)
                     existing_timestamp = (
-                        existing_timestamp.strftime(self.timestamp_format) if existing_timestamp else None
+                        existing_timestamp.strftime(self.timestamp_format).strip() if existing_timestamp else None
                     )
                     new_timestamp = submission["timestamp"]
                     if self.update and (existing_timestamp is None or new_timestamp > existing_timestamp):

@@ -30,7 +30,7 @@ logger.setLevel(logging.ERROR)
 feedback_filename = sys.argv[0]  # ourself :)
 feedbacks = get_feedback_dict(feedback_filename)
 feedback_base64 = base64.b64encode(open(sys.argv[0]).read().encode("utf-8"))
-files = get_files_dict(sys.argv[0])  # ourself :)
+release_files, notebooks, timestamp = get_files_dict()
 
 
 # #### POST /history #### #
@@ -90,7 +90,7 @@ def test_collections_broken_nbex_user(app, clear_database, caplog):  # noqa: F81
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz):
         r = yield async_requests.get(app.url + "/history")
@@ -105,7 +105,7 @@ def test_history_no_action_param(app, clear_database):  # noqa: F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.get(app.url + "/history")
@@ -146,7 +146,7 @@ def test_history_no_courses_not_suscribed_to(app, clear_database):  # noqa: F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_lkihlman_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_1&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.get(app.url + "/history")
@@ -173,14 +173,14 @@ def test_history_multiple_courses_if_subscribed(app, clear_database):  # noqa: F
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )
     user_kiz2_instructor = dict(user_kiz_instructor)  # duplicate, not reference
     user_kiz2_instructor["course_id"] = "course_2b"
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz2_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2b&assignment_id=assign_a2",
-            files=files,
+            files=release_files,
         )
 
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
@@ -244,14 +244,14 @@ def test_history_actions_filtered_by_course(app, clear_database):  # noqa: F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )
     user_kiz2_instructor = dict(user_kiz_instructor)  # duplicate, not reference
     user_kiz2_instructor["course_id"] = "course_2b"
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz2_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2b&assignment_id=assign_a2",
-            files=files,
+            files=release_files,
         )
 
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
@@ -299,24 +299,24 @@ def test_history_full_set_of_actions_with_duplicates(app, clear_database):  # no
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
             **kwargs,
         )  # release
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )  # re-release
     # Submissions check for a released action, not a fetched one
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.post(
             app.url + "/submission?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )  # Submitted
     with patch.object(BaseHandler, "get_current_user", return_value=user_brobbere_student):
         r = yield async_requests.post(
             app.url + "/submission?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )  # Submitted 2nd user
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.get(app.url + "/collections?course_id=course_2&assignment_id=assign_a")  # collected
@@ -395,24 +395,24 @@ def test_history_action_feedback_released(app, clear_database):  # noqa: F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
             **kwargs,
         )  # release
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )  # re-release
     # Submissions check for a released action, not a fetched one
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.post(
             app.url + "/submission?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )  # Submitted
     with patch.object(BaseHandler, "get_current_user", return_value=user_brobbere_student):
         r = yield async_requests.post(
             app.url + "/submission?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )  # Submitted 2nd user
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.get(app.url + "/collections?course_id=course_2&assignment_id=assign_a")  # collected
@@ -501,24 +501,24 @@ def test_history_action_students_much_limited(app, clear_database):  # noqa: F81
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
             **kwargs,
         )  # release
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )  # re-release
     # Submissions check for a released action, not a fetched one
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.post(
             app.url + "/submission?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )  # Submitted
     with patch.object(BaseHandler, "get_current_user", return_value=user_brobbere_student):
         r = yield async_requests.post(
             app.url + "/submission?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )  # Submitted 2nd user
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.get(app.url + "/collections?course_id=course_2&assignment_id=assign_a")  # collected

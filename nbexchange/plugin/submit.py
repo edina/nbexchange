@@ -36,6 +36,7 @@ class ExchangeSubmit(Exchange, ABCExchangeSubmit):
         from contextlib import closing
 
         timestamp = self.timestamp
+        print(f"submit plugin - timestamp is {type(timestamp)}, {timestamp}")
         tar_file = io.BytesIO()
         with tarfile.open(fileobj=tar_file, mode="w:gz") as tar_handle:
             self.add_to_tar(tar_handle, self.src_path, self.ignore)
@@ -54,7 +55,7 @@ class ExchangeSubmit(Exchange, ABCExchangeSubmit):
 
         files = {"assignment": ("assignment.tar.gz", file)}
         r = self.api_request(
-            f"submission?course_id={quote_plus(self.coursedir.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}",  # noqa: E501
+            f"submission?course_id={quote_plus(self.coursedir.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}&timestamp={quote_plus(self.timestamp)}",  # noqa: E501
             method="POST",
             files=files,
         )

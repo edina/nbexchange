@@ -123,7 +123,10 @@ class ExchangeList(abc.ExchangeList, Exchange):
 
         # Get a list of everything from the exchange
         exchange_listed_assignments = self.query_exchange()
+        import pprint
 
+        print("plugin_list queries exchange...")
+        pprint.pprint(exchange_listed_assignments)
         # if "inbound" or "cached" are true, we're looking for inbound
         #  (submitted) records else we're looking for outbound (released)
         #  records
@@ -190,7 +193,7 @@ class ExchangeList(abc.ExchangeList, Exchange):
                 else:
                     latest = held_assignments["released"].get(
                         assignment.get("assignment_id"),
-                        {"timestamp": "1990-01-01 00:00:00"},
+                        {"timestamp": "1990-01-01 00:00:00 UTC"},
                     )
                     if assignment.get("timestamp") > latest.get("timestamp"):
                         held_assignments["released"][assignment.get("assignment_id")] = assignment

@@ -53,7 +53,7 @@ class Feedback(Base):
             raise TypeError("Primary Keys are required to be Ints")
 
     @classmethod
-    def find_notebook_for_student(cls, db, notebook_id, student_id, log=None, action=None):
+    def find_notebook_for_student(cls, db, notebook_id, student_id, timestamp=None, log=None, action=None):
         """Find the most recent piece of feedback for a given student/notebook combo
 
         feedback = orm.Feedback.find_notebook_for_student(
@@ -67,8 +67,11 @@ class Feedback(Base):
         if notebook_id is None or not isinstance(notebook_id, int):
             raise TypeError("notebook_id must be defined, and an Int")
         if student_id is None or not isinstance(student_id, int):
-            raise TypeError("notebook_id must be defined, and an Int")
+            raise TypeError("student_id must be defined, and an Int")
+
         filters = [cls.notebook_id == notebook_id, cls.student_id == student_id]
+        if timestamp:
+            filters.append(cls.timestamp == timestamp)
         return db.query(cls).filter(*filters).order_by(cls.id.desc()).first()
 
     @classmethod

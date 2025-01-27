@@ -55,7 +55,7 @@ def test_post_submision_requires_two_params(app, clear_database):  # noqa: F811
     assert r.status_code == 200
     response_data = r.json()
     assert response_data["success"] is False
-    assert response_data["note"] == "Submission call requires both a course code and an assignment code"
+    assert response_data["note"] == "Submission call requires a course code, an assignment code, and a given timestamp"
 
 
 # Requires both params (just course)
@@ -66,7 +66,7 @@ def test_post_submision_needs_assignment(app, clear_database):  # noqa: F811
     assert r.status_code == 200
     response_data = r.json()
     assert response_data["success"] is False
-    assert response_data["note"] == "Submission call requires both a course code and an assignment code"
+    assert response_data["note"] == "Submission call requires a course code, an assignment code, and a given timestamp"
 
 
 # Requires both params (just assignment)
@@ -77,14 +77,15 @@ def test_post_submision_needs_course(app, clear_database):  # noqa: F811
     assert r.status_code == 200
     response_data = r.json()
     assert response_data["success"] is False
-    assert response_data["note"] == "Submission call requires both a course code and an assignment code"
+    assert response_data["note"] == "Submission call requires a course code, an assignment code, and a given timestamp"
 
 
 # User not fetched assignment
 @pytest.mark.gen_test
 def test_post_submision_checks_subscription(app, clear_database):  # noqa: F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
-        r = yield async_requests.post(app.url + "/submission?course_id=course_2&assignment_id=assign_c")
+        params = "/submission?course_id=course_2&assignment_id=assign_c&timestamp=2020-01-01%2000%3A00%3A00.0%20UTC"
+        r = yield async_requests.post(app.url + params)
     assert r.status_code == 200
     response_data = r.json()
     assert response_data["success"] is False
@@ -104,8 +105,9 @@ def test_post_submision_student_can_submit(app, clear_database):  # noqa: F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.get(app.url + "/assignment?course_id=course_2&assignment_id=assign_a")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+        params = "/submission?course_id=course_2&assignment_id=assign_a&timestamp=2020-01-01%2000%3A00%3A00.0%20UTC"
         r = yield async_requests.post(
-            app.url + "/submission?course_id=course_2&assignment_id=assign_a",
+            app.url + params,
             files=release_files,
         )
     assert r.status_code == 200
@@ -127,8 +129,9 @@ def test_post_submision_broken_nbex_user(app, clear_database, caplog):  # noqa: 
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.get(app.url + "/assignment?course_id=course_2&assignment_id=assign_a")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz):
+        params = "/submission?course_id=course_2&assignment_id=assign_a&timestamp=2020-01-01%2000%3A00%3A00.0%20UTC"
         r = yield async_requests.post(
-            app.url + "/submission?course_id=course_2&assignment_id=assign_a",
+            app.url + params,
             files=release_files,
         )
     assert r.status_code == 500
@@ -148,8 +151,9 @@ def test_post_submision_instructor_can_submit(app, clear_database):  # noqa: F81
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.get(app.url + "/assignment?course_id=course_2&assignment_id=assign_a")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
+        params = "/submission?course_id=course_2&assignment_id=assign_a&timestamp=2020-01-01%2000%3A00%3A00.0%20UTC"
         r = yield async_requests.post(
-            app.url + "/submission?course_id=course_2&assignment_id=assign_a",
+            app.url + params,
             files=release_files,
         )
     assert r.status_code == 200
@@ -171,7 +175,8 @@ def test_post_submision_requires_files(app, clear_database):  # noqa: F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.get(app.url + "/assignment?course_id=course_2&assignment_id=assign_a")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
-        r = yield async_requests.post(app.url + "/submission?course_id=course_2&assignment_id=assign_a")
+        params = "/submission?course_id=course_2&assignment_id=assign_a&timestamp=2020-01-01%2000%3A00%3A00.0%20UTC"
+        r = yield async_requests.post(app.url + params)
     assert r.status_code == 412
 
 
@@ -188,8 +193,11 @@ def test_post_submision_picks_first_instance_of_param_a(app, clear_database):  #
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.get(app.url + "/assignment?course_id=course_2&assignment_id=assign_a")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+        params = (
+            "/submission?course_id=course_1&course_2&assignment_id=assign_a&timestamp=2020-01-01%2000%3A00%3A00.0%20UTC"
+        )
         r = yield async_requests.post(
-            app.url + "/submission?course_id=course_1&course_2&assignment_id=assign_a",
+            app.url + params,
             files=release_files,
         )
     assert r.status_code == 200
@@ -211,8 +219,9 @@ def test_post_submision_piks_first_instance_of_param_b(app, clear_database):  # 
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.get(app.url + "/assignment?course_id=course_2&assignment_id=assign_a")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+        params = "/submission?course_id=course_2&assignment_id=assign_a&timestamp=2020-01-01%2000%3A00%3A00.0%20UTC"
         r = yield async_requests.post(
-            app.url + "/submission?course_id=course_2&assignment_id=assign_a",
+            app.url + params,
             files=release_files,
         )
     assert r.status_code == 200
@@ -232,8 +241,9 @@ def test_post_submision_oversize_blocked(app, clear_database):  # noqa: F811
         with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
             r = yield async_requests.get(app.url + "/assignment?course_id=course_2&assignment_id=assign_a")
         with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+            params = "/submission?course_id=course_2&assignment_id=assign_a&timestamp=2020-01-01%2000%3A00%3A00.0%20UTC"
             r = yield async_requests.post(
-                app.url + "/submission?course_id=course_2&assignment_id=assign_a",
+                app.url + params,
                 files=release_files,
             )
     assert r.status_code == 200

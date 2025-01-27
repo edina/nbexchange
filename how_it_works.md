@@ -78,10 +78,11 @@ We verify the user is an `instructor`, and subscribed to the course.
 
 #### submit
 
-    POST /submission?course_id=$cid&assignment_id=$aid, files = _zip-file_
+    POST /submission?course_id=$cid&assignment_id=$aid&timestamp=$timesstamp, files = _zip-file_
 
 1. Grabs the first uploaded file (we use `.zip` files for assignments) and store it in a _location_,
-2. Creates an `action` record, noting `action=submitted`, the assignment, file location, who did the action, and add a timestamp
+2. Note that we specifically define the timestamp - this should be the same string as stored in `timestamp.txt`
+3. Creates an `action` record, noting `action=submitted`, the assignment, file location, who did the action, and add the timestamp
 
 #### collect
 
@@ -194,7 +195,7 @@ If there are permission issues, returns
 
 ## Submission
 
-    .../submission?course_id=$course_code&assignment_id=$assignment_code
+    .../submission?course_id=$course_code&assignment_id=$assignment_code&timestamp=$time_string
 
 **POST**: stores the submission for that user
 returns

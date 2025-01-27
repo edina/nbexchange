@@ -67,6 +67,10 @@ class NbExchange(PrometheusMixIn, Application):
 
     config_file = Unicode("/etc/config/nbexchange_config.py", help="The config file to load", config=True)
 
+    timezone = Unicode("UTC", help="Timezone for recording timestamps").tag(config=True)
+
+    timestamp_format = Unicode("%Y-%m-%d %H:%M:%S.%f %Z", help="Format string for timestamps").tag(config=True)
+
     base_url = Unicode(
         "/services/nbexchange/",
         config=True,
@@ -133,6 +137,8 @@ Defaults to 'sqlite:///:memory:' (an in-memory SQLite database)
     port = Integer(9000, config=True)
 
     sentry_dsn = os.environ.get("SENTRY_DSN", "")
+
+    timestamp_format = Unicode("%Y-%m-%d %H:%M:%S.%f %Z", help="Format string for timestamps").tag(config=True)
 
     tornado_settings = Dict()
 
@@ -204,7 +210,6 @@ Defaults to 'sqlite:///:memory:' (an in-memory SQLite database)
     def init_db(self):
         """Initialize the nbexchange database"""
         self.log.debug(f"app.py.init_db: db_url = {self.db_url}")
-        # print(f"app.py.init_db: db_url = {self.db_url}")
         if self.upgrade_db:
             dbutil.upgrade_if_needed(self.db_url, log=self.log)
 

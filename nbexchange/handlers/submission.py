@@ -1,5 +1,5 @@
+import datetime
 import os
-import time
 import uuid
 
 from tornado import web
@@ -21,8 +21,9 @@ This relys on users being logged in, and the user-object having additional data:
 class Submission(BaseHandler):
     """.../submisssion/
     parmas:
-        course_id: course_code
-        assignment_id: assignment_code
+        course_id: course_code [eg 'cool course']
+        assignment_id: assignment_code [eg 'Indivisual Assessment 1']
+        timestamp: The timestamp in timestamp.txt [eg '2020-01-01 00:00:00.0 UTC']
 
     POST: (with file) submits an assignment"""
 
@@ -43,12 +44,13 @@ class Submission(BaseHandler):
             self.finish({"success": False, "note": note})
             return
 
-        [course_code, assignment_code] = self.get_params(["course_id", "assignment_id"])
+        [course_code, assignment_code, timestamp] = self.get_params(["course_id", "assignment_id", "timestamp"])
         self.log.debug(
-            f"Called POST /submission with arguments: course {course_code} and  assignment {assignment_code}"
+            f"Called POST /submission with arguments: course {course_code} and ",
+            f"assignment {assignment_code}, giving a timestamp of {timestamp}",
         )
-        if not (course_code and assignment_code):
-            note = "Submission call requires both a course code and an assignment code"
+        if not (course_code and assignment_code and timestamp):
+            note = "Submission call requires a course code, an assignment code, and a given timestamp"
             self.log.info(note)
             self.finish({"success": False, "note": note})
             return
@@ -76,16 +78,14 @@ class Submission(BaseHandler):
 
             # storage is dynamically in $path/submitted/$course_code/$assignment_code/$username/<timestamp>/
             # Note - this means that a user can submit multiple times, and we have all copies
-            release_file = "/".join(
-                [
-                    self.base_storage_location,
-                    str(this_user["org_id"]),
-                    AssignmentActions.submitted.value,
-                    course_code,
-                    assignment_code,
-                    this_user["name"],
-                    str(int(time.time())),
-                ]
+            release_file = os.path.join(
+                self.base_storage_location,
+                str(this_user["org_id"]),
+                AssignmentActions.submitted.value,
+                course_code,
+                assignment_code,
+                this_user["name"],
+                timestamp,
             )
 
             if not self.request.files:
@@ -145,13 +145,17 @@ class Submission(BaseHandler):
             self.log.info(
                 f"Adding action {AssignmentActions.submitted.value} for user {this_user['id']} against assignment {assignment.id}"  # noqa: E501
             )
+
+            # The action timestamp _must_ be the same value as in the timestamp.txt file in the submission
             action = Action(
                 user_id=this_user["id"],
                 assignment_id=assignment.id,
                 action=AssignmentActions.submitted,
                 location=release_file,
+                timestamp=datetime.datetime.strptime(timestamp, self.timestamp_format),
             )
             session.add(action)
+
         self.finish({"success": True, "note": "Submitted"})
 
 

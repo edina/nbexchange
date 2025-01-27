@@ -11,7 +11,9 @@ from functools import partial
 
 import pytest
 import requests
+from dateutil.tz import gettz
 
+from nbexchange.app import NbExchange
 from nbexchange.models.actions import Action
 from nbexchange.models.assignments import Assignment as AssignmentModel
 from nbexchange.models.courses import Course
@@ -19,6 +21,12 @@ from nbexchange.models.feedback import Feedback
 from nbexchange.models.notebooks import Notebook
 from nbexchange.models.subscriptions import Subscription
 from nbexchange.models.users import User
+
+# These replicate what's defined in nbexchange/app.py, nbexchange/handlers/base.py.... and nbgrader/exchange/exchange.py
+n = NbExchange()
+time_zone = n.timezone
+timestamp_format = n.timestamp_format
+tz = gettz(time_zone)
 
 #####
 #
@@ -114,7 +122,7 @@ def api_request(self, url, method="GET", *args, **kwargs):
 
 def get_files_dict():
 
-    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f %Z").strip()
+    timestamp = datetime.datetime.now(tz).strftime(timestamp_format).strip()
 
     notebooks = ["assignment-0.6", "assignment-0.6-2"]
 

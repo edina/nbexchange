@@ -125,7 +125,7 @@ class Collections(BaseHandler):
                         "path": action.location,
                         # 'name' in db, 'notebook_id' id nbgrader
                         "notebooks": [{"notebook_id": x.name} for x in assignment.notebooks],
-                        "timestamp": action.timestamp.strftime("%Y-%m-%d %H:%M:%S.%f %Z").strip(),
+                        "timestamp": self.check_timezone(action.timestamp).strftime("%Y-%m-%d %H:%M:%S.%f %Z").strip(),
                     }
                 )
 

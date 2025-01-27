@@ -209,13 +209,15 @@ def test_collections_with_two_users_submitting(app, clear_database):  # noqa: F8
         )  # Release 2nd assignment
     # Submissions check for a released action, not a fetched one
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+        params = f"/submission?course_id={course_id}&assignment_id={assignment_id_1}&timestamp=2020-01-01%2000%3A00%3A00.0%20UTC"  # noqa: E501
         r = yield async_requests.post(
-            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id_1}",
+            app.url + params,
             files=release_files,
         )  # submit
     with patch.object(BaseHandler, "get_current_user", return_value=user_brobbere_student):
+        params = f"/submission?course_id={course_id}&assignment_id={assignment_id_1}&timestamp=2020-01-01%2000%3A00%3A00.0%20UTC"  # noqa: E501
         r = yield async_requests.post(
-            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id_1}",
+            app.url + params,
             files=release_files,
         )  # submit 2nd user
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
@@ -245,13 +247,15 @@ def test_collections_with_one_user_submits_2nd_time(app, clear_database):  # noq
         )  # Released
     # Submissions check for a released action, not a fetched one
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+        params = f"/submission?course_id={course_id}&assignment_id={assignment_id_1}&timestamp=2020-01-01%2000%3A00%3A00.0%20UTC"  # noqa: E501
         r = yield async_requests.post(
-            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id_1}",
+            app.url + params,
             files=release_files,
         )  # Submitted
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+        params = f"/submission?course_id={course_id}&assignment_id={assignment_id_1}&timestamp=2020-01-01%2000%3A01%3A00.0%20UTC"  # noqa: E501
         r = yield async_requests.post(
-            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id_1}",
+            app.url + params,
             files=release_files,
         )  # Submitted 2nd time
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
@@ -281,13 +285,15 @@ def test_collections_with_named_user(app, clear_database):  # noqa: F811
         )  # Released
     # Submissions check for a released action, not a fetched one
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+        params = f"/submission?course_id={course_id}&assignment_id={assignment_id_1}&timestamp=2020-01-01%2000%3A00%3A00.0%20UTC"  # noqa: E501
         r = yield async_requests.post(
-            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id_1}",
+            app.url + params,
             files=release_files,
         )  # Submitted
     with patch.object(BaseHandler, "get_current_user", return_value=user_brobbere_student):
+        params = f"/submission?course_id={course_id}&assignment_id={assignment_id_1}&timestamp=2020-01-01%2000%3A00%3A00.0%20UTC"  # noqa: E501
         r = yield async_requests.post(
-            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id_1}",
+            app.url + params,
             files=release_files,
         )  # Submitted 2nd user
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
@@ -318,8 +324,9 @@ def test_collections_with_named_user_check_full_definition(app, clear_database):
         )  # Released
     # Submissions check for a released action, not a fetched one
     with patch.object(BaseHandler, "get_current_user", return_value=user_zik_student):
+        params = f"/submission?course_id={course_id}&assignment_id={assignment_id_1}&timestamp=2020-01-01%2000%3A00%3A00.0%20UTC"  # noqa: E501
         r = yield async_requests.post(
-            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id_1}",
+            app.url + params,
             files=release_files,
         )
 
@@ -355,8 +362,9 @@ def test_collections_with_named_user_check_minimal_definition(app, clear_databas
         )  # Released
     # Submissions check for a released action, not a fetched one
     with patch.object(BaseHandler, "get_current_user", return_value=user_brobbere_student):
+        params = f"/submission?course_id={course_id}&assignment_id={assignment_id_1}&timestamp=2020-01-01%2000%3A00%3A00.0%20UTC"  # noqa: E501
         r = yield async_requests.post(
-            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id_1}",
+            app.url + params,
             files=release_files,
         )
 
@@ -391,18 +399,21 @@ def test_collections_with_a_blank_feedback_path_injected(app, clear_database):  
         )  # Released
     # Submissions check for a released action, not a fetched one
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+        params = f"/submission?course_id={course_id}&assignment_id={assignment_id_1}&timestamp=2020-01-01%2000%3A00%3A00.0%20UTC"  # noqa: E501
         r = yield async_requests.post(
-            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id_1}",
+            app.url + params,
             files=release_files,
         )  # Submitted
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+        params = f"/submission?course_id={course_id}&assignment_id={assignment_id_1}&timestamp=2020-01-01%2000%3A01%3A00.0%20UTC"  # noqa: E501
         r = yield async_requests.post(
-            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id_1}",
+            app.url + params,
             files=release_files,
         )  # Submitted 2nd time
     with patch.object(BaseHandler, "get_current_user", return_value=user_brobbere_student):
+        params = f"/submission?course_id={course_id}&assignment_id={assignment_id_1}&timestamp=2020-01-01%2000%3A00%3A00.0%20UTC"  # noqa: E501
         r = yield async_requests.post(
-            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id_1}",
+            app.url + params,
             files=release_files,
         )  # Submitted 2nd user
 

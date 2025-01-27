@@ -16,30 +16,20 @@ from sqlalchemy.orm import sessionmaker
 from nbexchange.models import Base
 
 engine = create_engine(os.environ.get("NBEX_DB_URL", "sqlite:///:memory:"))
-# print(f"database.py Engine created! NBEX_DB_URL: {os.environ.get('NBEX_DB_URL')}")
 Base.metadata.create_all(engine)
-# print("database.py create_all(engine) ran")
 
 # Session to be used throughout app.
 Session = sessionmaker(bind=engine)
-# print("database.py Session object created")
 
 
 @contextmanager
 def scoped_session():
-    # print("database.scoped_session called")
     session = Session()
-    # print(f"database.scoped_session have session {session}")
     try:
-        # print("database.scoped_session ready to yield session")
         yield session
-        # print("database.scoped_session about to commit session")
         session.commit()
-        # print("database.scoped_session session commited")
     except Exception:
-        # print("database.scoped_session about to rollback session")
         session.rollback()
         raise
     finally:
-        # print("database.scoped_session about to close session")
         session.close()

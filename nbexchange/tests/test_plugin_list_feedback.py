@@ -673,7 +673,7 @@ def test_list_feedback_available(plugin_config, tmpdir):
     try:
         course_code = "no_course"
         assignment_id = "assign_1_1"
-        timestamp = "2020-01-01 00:02:00.2 00:00"
+        timestamp = "2020-01-01 00:02:00.2 00:00 UTC"
         plugin_config.CourseDirectory.course_id = course_code
         plugin_config.CourseDirectory.assignment_id = assignment_id
 

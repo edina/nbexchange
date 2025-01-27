@@ -165,7 +165,6 @@ def test_post_picks_first_instance_of_param_gets_it_right(app, clear_database): 
 @pytest.mark.gen_test
 def test_post_location_different_each_time(app, clear_database):  # noqa: F811
     data = {"notebooks": notebooks}
-    print(f"data: {data}")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",

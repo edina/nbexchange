@@ -1,8 +1,11 @@
 import functools
 import re
+from datetime import datetime
 from typing import Awaitable, Callable, Optional
 from urllib.parse import unquote, unquote_plus
+from zoneinfo import ZoneInfo
 
+from dateutil.tz import gettz
 from tornado import web
 from tornado.log import app_log
 
@@ -10,6 +13,8 @@ from nbexchange.database import scoped_session
 from nbexchange.models.courses import Course
 from nbexchange.models.subscriptions import Subscription
 from nbexchange.models.users import User
+
+# from nbexchange.app import NbExchange
 
 
 def authenticated(method: Callable[..., Optional[Awaitable[None]]]) -> Callable[..., Optional[Awaitable[None]]]:
@@ -36,6 +41,26 @@ class BaseHandler(web.RequestHandler):
     def __init__(self, application, request, **kwargs):
         super(BaseHandler, self).__init__(application, request, **kwargs)
         self.set_header("Content-type", "application/json")
+
+    timezone = "UTC"
+    # @property
+    # def timezone(self):
+    #     return self.settings["timezone"]
+
+    timestamp_format = "%Y-%m-%d %H:%M:%S.%f %Z"
+    # @property
+    # def timestamp_format(self):
+    #     return self.settings['timestamp_format']
+
+    def get_timestamp(self):
+        tz = gettz(self.timezone)
+        timestamp = datetime.now(tz).strftime(self.timestamp_format)
+        return timestamp
+
+    def check_timezone(self, value):
+        if value.tzinfo is None or value.tzinfo.utcoffset(value) is None:
+            value = value.replace(tzinfo=ZoneInfo(self.timezone))
+        return value
 
     # Root location for data to be written to
     @property

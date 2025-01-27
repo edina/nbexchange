@@ -1,3 +1,4 @@
+import datetime
 import os
 import time
 import uuid
@@ -76,7 +77,8 @@ class Assignments(BaseHandler):
                         self.log.debug("Action does not belong to user, skip action")
                         continue
                     notebooks = []
-
+                    action_timestamp = self.check_timezone(action.timestamp)
+                    print(f"Assignment.get {action.action} has timestamp {action_timestamp}")
                     for notebook in assignment.notebooks:
                         feedback_available = False
                         feedback_timestamp = None
@@ -85,11 +87,18 @@ class Assignments(BaseHandler):
                                 db=session,
                                 notebook_id=notebook.id,
                                 student_id=this_user.get("id"),
+                                timestamp=action_timestamp,
                                 log=self.log,
                             )
                             if feedback:
+                                print(
+                                    f"Assignment.get feedback found for {notebook.id} with timestamp {action_timestamp}"
+                                )
+
                                 feedback_available = bool(feedback)
-                                feedback_timestamp = feedback.timestamp.strftime("%Y-%m-%d %H:%M:%S.%f %Z").strip()
+                                feedback_timestamp = self.check_timezone(feedback.timestamp).strftime(
+                                    self.timestamp_format
+                                )
                         notebooks.append(
                             {
                                 "notebook_id": notebook.name,
@@ -106,7 +115,7 @@ class Assignments(BaseHandler):
                             "status": action.action.value,  # currently called 'action' in our db
                             "path": action.location,
                             "notebooks": notebooks,
-                            "timestamp": action.timestamp.strftime("%Y-%m-%d %H:%M:%S.%f %Z").strip(),
+                            "timestamp": action_timestamp.strftime(self.timestamp_format),
                         }
                     )
 
@@ -284,15 +293,13 @@ class Assignment(BaseHandler):
 
             # storage is dynamically in $path/release/$course_code/$assignment_code/<timestamp>/
             # Note - this means we can have multiple versions of the same release on the system
-            release_file = "/".join(
-                [
-                    self.base_storage_location,
-                    str(this_user["org_id"]),
-                    AssignmentActions.released.value,
-                    course_code,
-                    assignment_code,
-                    str(int(time.time())),
-                ]
+            release_file = os.path.join(
+                self.base_storage_location,
+                str(this_user["org_id"]),
+                AssignmentActions.released.value,
+                course_code,
+                assignment_code,
+                str(int(time.time())),
             )
 
             if not self.request.files:
@@ -360,13 +367,16 @@ class Assignment(BaseHandler):
             self.log.info(
                 f"Adding action {AssignmentActions.released.value} for user {this_user['id']} against assignment {assignment.id}"  # noqa: E501
             )
+            timestamp = self.get_timestamp()
             action = Action(
                 user_id=this_user["id"],
                 assignment_id=assignment.id,
                 action=AssignmentActions.released,
                 location=release_file,
+                timestamp=datetime.datetime.strptime(timestamp, self.timestamp_format),
             )
             session.add(action)
+
             self.finish({"success": True, "note": "Released"})
 
     # This is unreleasing an assignment

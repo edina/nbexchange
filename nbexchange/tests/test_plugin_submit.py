@@ -180,7 +180,8 @@ def test_submit_single_item(plugin_config, tmpdir):
                 )
             else:
                 pth = str(tmpdir.mkdir("submit_several").realpath())
-                assert args[0] == (f"submission?course_id={course_id}&assignment_id={assignment_id1}")
+
+                assert args[0].startswith(f"submission?course_id={course_id}&assignment_id={assignment_id1}&timestamp=")
                 assert "method" not in kwargs or kwargs.get("method").lower() == "post"
                 files = kwargs.get("files")
                 assert "assignment" in files
@@ -253,7 +254,7 @@ def test_submit_single_item_with_path_includes_course(plugin_config, tmpdir):
                 )
             else:
                 pth = str(tmpdir.mkdir("submit_several").realpath())
-                assert args[0] == (f"submission?course_id={course_id}&assignment_id={assignment_id1}")
+                assert args[0].startswith(f"submission?course_id={course_id}&assignment_id={assignment_id1}&timestamp=")
                 assert "method" not in kwargs or kwargs.get("method").lower() == "post"
                 files = kwargs.get("files")
                 assert "assignment" in files
@@ -324,7 +325,7 @@ def test_submit_fail(plugin_config, tmpdir):
                     },
                 )
             else:
-                assert args[0] == (f"submission?course_id={course_id}&assignment_id={assignment_id1}")
+                assert args[0].startswith(f"submission?course_id={course_id}&assignment_id={assignment_id1}&timestamp=")
                 assert "method" not in kwargs or kwargs.get("method").lower() == "post"
 
                 return type(
@@ -396,7 +397,7 @@ def test_submit_multiple_notebooks_in_assignment(plugin_config, tmpdir):
                 )
             else:
                 pth = str(tmpdir.mkdir("submit_several").realpath())
-                assert args[0] == (f"submission?course_id={course_id}&assignment_id={assignment_id3}")
+                assert args[0].startswith(f"submission?course_id={course_id}&assignment_id={assignment_id3}&timestamp=")
                 assert "method" not in kwargs or kwargs.get("method").lower() == "post"
                 files = kwargs.get("files")
                 assert "assignment" in files
@@ -466,7 +467,7 @@ def test_submit_fail_no_folder(plugin_config, tmpdir):
                 )
             else:
                 pth = str(tmpdir.mkdir("submit_several").realpath())
-                assert args[0] == (f"submission?course_id={course_id}&assignment_id={assignment_id1}")
+                assert args[0].startswith(f"submission?course_id={course_id}&assignment_id={assignment_id1}&timestamp=")
                 assert "method" not in kwargs or kwargs.get("method").lower() == "post"
                 files = kwargs.get("files")
                 assert "assignment" in files
@@ -539,7 +540,9 @@ def test_submit_warning_no_notebook(plugin_config, tmpdir):
                     match=r"Possible missing notebooks and/or extra notebooks",
                 ):
                     pth = str(tmpdir.mkdir("submit_several").realpath())
-                    assert args[0] == (f"submission?course_id={course_id}&assignment_id={assignment_id1}")
+                    assert args[0].startswith(
+                        f"submission?course_id={course_id}&assignment_id={assignment_id1}&timestamp="
+                    )
                     assert "method" not in kwargs or kwargs.get("method").lower() == "post"
                     files = kwargs.get("files")
                     assert "assignment" in files
@@ -616,7 +619,9 @@ def test_submit_warning_wrong_notebook(plugin_config, tmpdir):
                     match=r"Possible missing notebooks and/or extra notebooks",
                 ):
                     pth = str(tmpdir.mkdir("submit_several").realpath())
-                    assert args[0] == (f"submission?course_id={course_id}&assignment_id={assignment_id1}")
+                    assert args[0].startswith(
+                        f"submission?course_id={course_id}&assignment_id={assignment_id1}&timestamp="
+                    )
                     assert "method" not in kwargs or kwargs.get("method").lower() == "post"
                     files = kwargs.get("files")
                     assert "assignment" in files
@@ -689,7 +694,9 @@ def test_submit_no_notebook_strict_means_fail(plugin_config, tmpdir):
             else:
                 with pytest.raises(ExchangeError, match=r"Assignment \w+ not submitted"):
                     pth = str(tmpdir.mkdir("submit_several").realpath())
-                    assert args[0] == (f"submission?course_id={course_id}&assignment_id={assignment_id1}")
+                    assert args[0].startswith(
+                        f"submission?course_id={course_id}&assignment_id={assignment_id1}&timestamp="
+                    )
                     assert "method" not in kwargs or kwargs.get("method").lower() == "post"
                     files = kwargs.get("files")
                     assert "assignment" in files
@@ -765,7 +772,9 @@ def test_submit_wrong_notebook_strict_means_faile(plugin_config, tmpdir):
             else:
                 with pytest.raises(ExchangeError, match=r"Assignment \w+ not submitted"):
                     pth = str(tmpdir.mkdir("submit_several").realpath())
-                    assert args[0] == (f"submission?course_id={course_id}&assignment_id={assignment_id1}")
+                    assert args[0].startswith(
+                        f"submission?course_id={course_id}&assignment_id={assignment_id1}&timestamp="
+                    )
                     assert "method" not in kwargs or kwargs.get("method").lower() == "post"
                     files = kwargs.get("files")
                     assert "assignment" in files
@@ -845,7 +854,9 @@ def test_submit_warning_wrong_notebook_two(plugin_config, tmpdir):
                     match=r"Possible missing notebooks and/or extra notebooks",
                 ):
                     pth = str(tmpdir.mkdir("submit_several").realpath())
-                    assert args[0] == (f"submission?course_id={course_id}&assignment_id={assignment_id1}")
+                    assert args[0].startswith(
+                        f"submission?course_id={course_id}&assignment_id={assignment_id1}&timestamp="
+                    )
                     assert "method" not in kwargs or kwargs.get("method").lower() == "post"
                     files = kwargs.get("files")
                     assert "assignment" in files
@@ -921,7 +932,9 @@ def test_submit_extra_notebook_strict_means_fail(plugin_config, tmpdir):
             else:
                 with pytest.raises(ExchangeError, match=r"Assignment \w+ not submitted"):
                     pth = str(tmpdir.mkdir("submit_several").realpath())
-                    assert args[0] == (f"submission?course_id={course_id}&assignment_id={assignment_id1}")
+                    assert args[0].startswith(
+                        f"submission?course_id={course_id}&assignment_id={assignment_id1}&timestamp="
+                    )
                     assert "method" not in kwargs or kwargs.get("method").lower() == "post"
                     files = kwargs.get("files")
                     assert "assignment" in files
@@ -1010,7 +1023,7 @@ def test_submit_two_releases_newest_first(plugin_config, tmpdir):
                 )
             else:
                 pth = str(tmpdir.mkdir("submit_several").realpath())
-                assert args[0] == (f"submission?course_id={course_id}&assignment_id={assignment_id1}")
+                assert args[0].startswith(f"submission?course_id={course_id}&assignment_id={assignment_id1}&timestamp=")
                 assert "method" not in kwargs or kwargs.get("method").lower() == "post"
                 files = kwargs.get("files")
                 assert "assignment" in files
@@ -1098,7 +1111,7 @@ def test_submit_two_releases_newest_last(plugin_config, tmpdir):
                 )
             else:
                 pth = str(tmpdir.mkdir("submit_several").realpath())
-                assert args[0] == (f"submission?course_id={course_id}&assignment_id={assignment_id1}")
+                assert args[0].startswith(f"submission?course_id={course_id}&assignment_id={assignment_id1}&timestamp=")
                 assert "method" not in kwargs or kwargs.get("method").lower() == "post"
                 files = kwargs.get("files")
                 assert "assignment" in files
@@ -1190,7 +1203,9 @@ def test_submit_warning_wrong_notebook_three(plugin_config, tmpdir):
                     match=r"Possible missing notebooks and/or extra notebooks",
                 ):
                     pth = str(tmpdir.mkdir("submit_several").realpath())
-                    assert args[0] == (f"submission?course_id={course_id}&assignment_id={assignment_id1}")
+                    assert args[0].startswith(
+                        f"submission?course_id={course_id}&assignment_id={assignment_id1}&timestamp="
+                    )
                     assert "method" not in kwargs or kwargs.get("method").lower() == "post"
                     files = kwargs.get("files")
                     assert "assignment" in files
@@ -1397,7 +1412,7 @@ def test_submit_with_multiple_assignments_newest_first(plugin_config, tmpdir):
                 )
             else:
                 pth = str(tmpdir.mkdir("submit_several").realpath())
-                assert args[0] == (f"submission?course_id={course_id}&assignment_id=assign_1_3")
+                assert args[0].startswith(f"submission?course_id={course_id}&assignment_id={assignment_id3}&timestamp=")
                 assert "method" not in kwargs or kwargs.get("method").lower() == "post"
                 files = kwargs.get("files")
                 assert "assignment" in files
@@ -1603,7 +1618,7 @@ def test_submit_with_multiple_assignments_oldest_first(plugin_config, tmpdir):
                 )
             else:
                 pth = str(tmpdir.mkdir("submit_several").realpath())
-                assert args[0] == (f"submission?course_id={course_id}&assignment_id=assign_1_3")
+                assert args[0].startswith(f"submission?course_id={course_id}&assignment_id={assignment_id3}&timestamp=")
                 assert "method" not in kwargs or kwargs.get("method").lower() == "post"
                 files = kwargs.get("files")
                 assert "assignment" in files
@@ -1678,7 +1693,7 @@ def test_submit_fails_oversize(plugin_config, tmpdir):
                 )
             else:
                 pth = str(tmpdir.mkdir("submit_several").realpath())
-                assert args[0] == (f"submission?course_id={course_id}&assignment_id={assignment_id1}")
+                assert args[0].startswith(f"submission?course_id={course_id}&assignment_id={assignment_id1}&timestamp=")
                 assert "method" not in kwargs or kwargs.get("method").lower() == "post"
                 files = kwargs.get("files")
                 assert "assignment" in files

@@ -120,9 +120,10 @@ def api_request(self, url, method="GET", *args, **kwargs):
         raise NotImplementedError(f"HTTP Method {method} is not implemented")
 
 
-def get_files_dict():
+def get_files_dict(timestamp: str = None) -> list:
 
-    timestamp = datetime.datetime.now(tz).strftime(timestamp_format).strip()
+    if timestamp is None:
+        timestamp = datetime.datetime.now(tz).strftime(timestamp_format).strip()
 
     notebooks = ["assignment-0.6", "assignment-0.6-2"]
 

@@ -640,23 +640,19 @@ class TestHandlersFetchFullCycle(BaseTestHandlers):
         with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
             r = yield async_requests.get(app.url + "/assignments?course_id=course_2")
         response_data = r.json()
-
+        data = response_data["value"]
         # Check submissions & feedback_timestamps line up
-        assert response_data["value"][2]["status"] == "submitted"
-        assert response_data["value"][2]["notebooks"][0]["feedback_timestamp"] is None
-        assert response_data["value"][3]["status"] == "submitted"
-        assert response_data["value"][3]["notebooks"][0]["feedback_timestamp"] == response_data["value"][3]["timestamp"]
-        assert response_data["value"][6]["status"] == "submitted"
-        assert response_data["value"][6]["notebooks"][0]["feedback_timestamp"] is None
-        assert response_data["value"][7]["status"] == "submitted"
-        assert response_data["value"][7]["notebooks"][0]["feedback_timestamp"] == response_data["value"][7]["timestamp"]
-        assert response_data["value"][10]["status"] == "submitted"
-        assert response_data["value"][10]["notebooks"][0]["feedback_timestamp"] is None
-        assert response_data["value"][3]["timestamp"] != response_data["value"][7]["timestamp"]
-
-        # Filter response as plugin would - "inbound" [aka submitted], and mapping to fetched feedback
-        # [which we have done, that was the last action - so we'll fake it]
-        my_assignments = self._filter_like_plugin(response_data["value"])
+        assert data[2]["status"] == "submitted"
+        assert data[2]["notebooks"][0]["feedback_timestamp"] is None
+        assert data[3]["status"] == "submitted"
+        assert data[3]["notebooks"][0]["feedback_timestamp"] == data[3]["timestamp"]
+        assert data[6]["status"] == "submitted"
+        assert data[6]["notebooks"][0]["feedback_timestamp"] is None
+        assert data[7]["status"] == "submitted"
+        assert data[7]["notebooks"][0]["feedback_timestamp"] == data[7]["timestamp"]
+        assert data[10]["status"] == "submitted"
+        assert data[10]["notebooks"][0]["feedback_timestamp"] is None
+        assert data[3]["timestamp"] != data[7]["timestamp"]
 
         def _test_assignment_feedback(assignment):
             if assignment["has_exchange_feedback"]:
@@ -668,9 +664,13 @@ class TestHandlersFetchFullCycle(BaseTestHandlers):
                 assert assignment["local_feedback_path"] == assignment["notebooks"][0]["local_feedback_path"]
 
             else:
-                assert my_assignments[1]["local_feedback_path"] is None
-                assert my_assignments[1]["notebooks"][0]["feedback_timestamp"] is None
-                assert my_assignments[1]["notebooks"][0]["has_exchange_feedback"] is False
+                assert assignment["local_feedback_path"] is None
+                assert assignment["notebooks"][0]["feedback_timestamp"] is None
+                assert assignment["notebooks"][0]["has_exchange_feedback"] is False
+
+        # Filter response as plugin would - "inbound" [aka submitted], and mapping to fetched feedback
+        # [which we have done, that was the last action - so we'll fake it]
+        my_assignments = self._filter_like_plugin(data)
 
         # Check submissions & feedback_timestamps line up
         # Note we've cheated, and set it so local feeback always exists if released

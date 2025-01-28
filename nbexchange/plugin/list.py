@@ -123,10 +123,7 @@ class ExchangeList(abc.ExchangeList, Exchange):
 
         # Get a list of everything from the exchange
         exchange_listed_assignments = self.query_exchange()
-        import pprint
 
-        print("plugin_list queries exchange...")
-        pprint.pprint(exchange_listed_assignments)
         # if "inbound" or "cached" are true, we're looking for inbound
         #  (submitted) records else we're looking for outbound (released)
         #  records
@@ -170,6 +167,7 @@ class ExchangeList(abc.ExchangeList, Exchange):
         # - the last "released" per assignment_id - but only if they've not been "fetched"
         #
         my_assignments = []
+
         for assignment in interim_assignments:
             # Skip those not being seen
             if assignment is None:
@@ -207,9 +205,9 @@ class ExchangeList(abc.ExchangeList, Exchange):
             # will provide a link to a folder that is the "feedback" time
             # ("feedback-time" for all notebooks in one 'release' is the same)
             if assignment.get("status") == "submitted":
-                assignment_dir = os.path.join(assignment.get("assignment_id"), "feedback")
+                feedback_dir = os.path.join(assignment.get("assignment_id"), "feedback")
                 if self.path_includes_course:
-                    assignment_dir = os.path.join(
+                    feedback_dir = os.path.join(
                         self.coursedir.course_id,
                         assignment.get("assignment_id"),
                         "feedback",
@@ -224,21 +222,18 @@ class ExchangeList(abc.ExchangeList, Exchange):
                     # This has to match timestamp in fetch_feedback.download
                     if nb_timestamp:
                         # get the individual notebook details
-                        if os.path.isdir(
-                            os.path.join(
-                                assignment_dir,
-                                nb_timestamp,
-                            )
-                        ):
+                        timestamped_feedback_dir = os.path.join(
+                            feedback_dir,
+                            nb_timestamp,
+                        )
+                        if os.path.isdir(timestamped_feedback_dir):
                             local_feedback_path = os.path.join(
-                                assignment_dir,
-                                nb_timestamp,
+                                timestamped_feedback_dir,
                                 f"{notebook['notebook_id']}.html",
                             )
                             has_local_feedback = os.path.isfile(
                                 os.path.join(
-                                    assignment_dir,
-                                    nb_timestamp,
+                                    timestamped_feedback_dir,
                                     f"{notebook['notebook_id']}.html",
                                 )
                             )
@@ -262,13 +257,13 @@ class ExchangeList(abc.ExchangeList, Exchange):
                 assignment["feedback_updated"] = feedback_updated
                 if has_local_feedback:
                     assignment["local_feedback_path"] = os.path.join(
-                        assignment_dir,
+                        feedback_dir,
                         nb_timestamp,
                     )
                 else:
                     assignment["local_feedback_path"] = None
 
-                # We keep everything we've not filtered out
+            # We keep everything we've not filtered out
             my_assignments.append(assignment)
 
         # concatinate the "released" and "fetched" sublists to my_assignments

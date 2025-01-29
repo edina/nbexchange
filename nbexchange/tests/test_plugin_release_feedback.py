@@ -38,7 +38,6 @@ def test_release_feedback_methods(plugin_config, tmpdir):
 
     plugin = ExchangeReleaseFeedback(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
     plugin.init_src()
-    print(f"asserting plugin.src_path: {plugin.src_path}")
     assert re.search(r"test_release_feedback_methods0/feedback_test/\*/assign_1$", plugin.src_path)
     plugin.coursedir.student_id = student_id
     plugin.init_src()

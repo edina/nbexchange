@@ -156,7 +156,7 @@ See below for more details on that.
 
 - **`base_url`**
 
-This is the _service_ url used by jupyterhub, and defaults to `/services/nbexchange/`
+This is the url the service listens to. It is essentially the _service_ url used by jupyterhub, and defaults to `/services/nbexchange/`
 
 - **`base_storage_location`**
 

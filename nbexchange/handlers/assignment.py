@@ -78,7 +78,6 @@ class Assignments(BaseHandler):
                         continue
                     notebooks = []
                     action_timestamp = self.check_timezone(action.timestamp)
-                    print(f"Assignment.get {action.action} has timestamp {action_timestamp}")
                     for notebook in assignment.notebooks:
                         feedback_available = False
                         feedback_timestamp = None
@@ -91,10 +90,6 @@ class Assignments(BaseHandler):
                                 log=self.log,
                             )
                             if feedback:
-                                print(
-                                    f"Assignment.get feedback found for {notebook.id} with timestamp {action_timestamp}"
-                                )
-
                                 feedback_available = bool(feedback)
                                 feedback_timestamp = self.check_timezone(feedback.timestamp).strftime(
                                     self.timestamp_format

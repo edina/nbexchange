@@ -9,7 +9,7 @@ import nbgrader.exchange.abc as abc
 import requests
 from nbgrader.auth import Authenticator
 from nbgrader.exchange import ExchangeError
-from traitlets import Bool, Instance, Integer, List, Type, Unicode
+from traitlets import Bool, Integer, List, Unicode
 
 
 class MockAuthenticator(Authenticator):
@@ -20,6 +20,7 @@ class MockAuthenticator(Authenticator):
 
 
 class Exchange(abc.Exchange):
+
     path_includes_course = Bool(
         False,
         help=dedent(
@@ -41,15 +42,6 @@ class Exchange(abc.Exchange):
             """
         ),
     ).tag(config=True)
-
-    authenticator = Instance(Authenticator, allow_none=True)
-
-    connection_authenticator_class = Type(
-        MockAuthenticator,
-        klass=Authenticator,
-        config=True,
-        help="The class to use for authenticating users",
-    )
 
     base_service_url = Unicode(os.environ.get("NAAS_BASE_URL", "https://noteable.edina.ac.uk")).tag(config=True)
 
@@ -108,7 +100,7 @@ class Exchange(abc.Exchange):
         else:
             raise NotImplementedError(f"HTTP Method {method} is not implemented")
 
-    # Function fro ELM
+    # Function from ELM
     def add_to_tar(self, tar_file, dir_path, exclude_patterns):
         """
         Adds files to the tar file recursively from the directory path while excluding

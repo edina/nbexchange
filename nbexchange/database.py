@@ -1,4 +1,4 @@
-""" This module exports the database engine.
+"""This module exports the database engine.
 
 Notes:
      Using the scoped_session contextmanager is

@@ -1,4 +1,4 @@
-""" Module for handling all database models.
+"""Module for handling all database models.
 
 Notes:
     The models created with the inherited `Base` constant

@@ -1,7 +1,7 @@
 import base64
 import logging
 import sys
-from datetime import datetime, timezone
+from datetime import datetime
 from unittest.mock import ANY
 
 import pytest
@@ -16,6 +16,8 @@ from nbexchange.tests.utils import (  # noqa: F401 "action_*" & "clear_database"
     clear_database,
     get_feedback_dict,
     get_files_dict,
+    timestamp_format,
+    tz,
     user_brobbere_student,
     user_kiz,
     user_kiz_instructor,
@@ -30,7 +32,7 @@ logger.setLevel(logging.ERROR)
 feedback_filename = sys.argv[0]  # ourself :)
 feedbacks = get_feedback_dict(feedback_filename)
 feedback_base64 = base64.b64encode(open(sys.argv[0]).read().encode("utf-8"))
-files = get_files_dict(sys.argv[0])  # ourself :)
+release_files, notebooks, timestamp = get_files_dict()
 
 
 # #### POST /history #### #
@@ -90,7 +92,7 @@ def test_collections_broken_nbex_user(app, clear_database, caplog):  # noqa: F81
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz):
         r = yield async_requests.get(app.url + "/history")
@@ -105,7 +107,7 @@ def test_history_no_action_param(app, clear_database):  # noqa: F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.get(app.url + "/history")
@@ -146,7 +148,7 @@ def test_history_no_courses_not_suscribed_to(app, clear_database):  # noqa: F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_lkihlman_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_1&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.get(app.url + "/history")
@@ -173,14 +175,14 @@ def test_history_multiple_courses_if_subscribed(app, clear_database):  # noqa: F
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )
     user_kiz2_instructor = dict(user_kiz_instructor)  # duplicate, not reference
     user_kiz2_instructor["course_id"] = "course_2b"
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz2_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2b&assignment_id=assign_a2",
-            files=files,
+            files=release_files,
         )
 
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
@@ -244,14 +246,14 @@ def test_history_actions_filtered_by_course(app, clear_database):  # noqa: F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )
     user_kiz2_instructor = dict(user_kiz_instructor)  # duplicate, not reference
     user_kiz2_instructor["course_id"] = "course_2b"
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz2_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2b&assignment_id=assign_a2",
-            files=files,
+            files=release_files,
         )
 
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
@@ -299,30 +301,32 @@ def test_history_full_set_of_actions_with_duplicates(app, clear_database):  # no
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
             **kwargs,
         )  # release
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )  # re-release
     # Submissions check for a released action, not a fetched one
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+        params = "/submission?course_id=course_2&assignment_id=assign_a&timestamp=2020-01-01%2000%3A00%3A00.0%20UTC"
         r = yield async_requests.post(
-            app.url + "/submission?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            app.url + params,
+            files=release_files,
         )  # Submitted
     with patch.object(BaseHandler, "get_current_user", return_value=user_brobbere_student):
+        params = "/submission?course_id=course_2&assignment_id=assign_a&timestamp=2020-01-01%2000%3A00%3A00.0%20UTC"
         r = yield async_requests.post(
-            app.url + "/submission?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            app.url + params,
+            files=release_files,
         )  # Submitted 2nd user
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.get(app.url + "/collections?course_id=course_2&assignment_id=assign_a")  # collected
 
     # feedback 1
-    timestamp = datetime.now(timezone.utc).isoformat(" ")
+    timestamp = datetime.now(tz).strftime(timestamp_format)
     checksum = notebook_hash(
         feedback_filename,
         make_unique_key("course_2", "assign_a", "notebook", user_kiz_student["name"], timestamp),
@@ -339,7 +343,7 @@ def test_history_full_set_of_actions_with_duplicates(app, clear_database):  # no
         r = yield async_requests.post(app.url + url, files=feedbacks)
 
     # feedback 2
-    timestamp = datetime.now(timezone.utc).isoformat(" ")
+    timestamp = datetime.now(tz).strftime(timestamp_format)
     checksum = notebook_hash(
         feedback_filename,
         make_unique_key("course_2", "assign_a", "notebook", user_brobbere_student["name"], timestamp),
@@ -361,9 +365,7 @@ def test_history_full_set_of_actions_with_duplicates(app, clear_database):  # no
     response_data = r.json()
     assert response_data["success"] is True
     assert "value" in response_data
-    import pprint
 
-    pprint.pprint(response_data["value"])
     assert response_data["value"] == [
         {
             "role": {"Instructor": 1, "Student": 1},
@@ -395,30 +397,32 @@ def test_history_action_feedback_released(app, clear_database):  # noqa: F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
             **kwargs,
         )  # release
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )  # re-release
     # Submissions check for a released action, not a fetched one
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+        params = "/submission?course_id=course_2&assignment_id=assign_a&timestamp=2020-01-01%2000%3A00%3A00.0%20UTC"
         r = yield async_requests.post(
-            app.url + "/submission?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            app.url + params,
+            files=release_files,
         )  # Submitted
     with patch.object(BaseHandler, "get_current_user", return_value=user_brobbere_student):
+        params = "/submission?course_id=course_2&assignment_id=assign_a&timestamp=2020-01-01%2000%3A00%3A00.0%20UTC"
         r = yield async_requests.post(
-            app.url + "/submission?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            app.url + params,
+            files=release_files,
         )  # Submitted 2nd user
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.get(app.url + "/collections?course_id=course_2&assignment_id=assign_a")  # collected
 
     # feedback 1
-    timestamp = datetime.now(timezone.utc).isoformat(" ")
+    timestamp = datetime.now(tz).strftime(timestamp_format)
     checksum = notebook_hash(
         feedback_filename,
         make_unique_key("course_2", "assign_a", "notebook", user_kiz_student["name"], timestamp),
@@ -435,7 +439,7 @@ def test_history_action_feedback_released(app, clear_database):  # noqa: F811
         r = yield async_requests.post(app.url + url, files=feedbacks)
 
     # feedback 2
-    timestamp = datetime.now(timezone.utc).isoformat(" ")
+    timestamp = datetime.now(tz).strftime(timestamp_format)
     checksum = notebook_hash(
         feedback_filename,
         make_unique_key("course_2", "assign_a", "notebook", user_brobbere_student["name"], timestamp),
@@ -501,30 +505,32 @@ def test_history_action_students_much_limited(app, clear_database):  # noqa: F81
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
             **kwargs,
         )  # release
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )  # re-release
     # Submissions check for a released action, not a fetched one
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+        params = "/submission?course_id=course_2&assignment_id=assign_a&timestamp=2020-01-01%2000%3A00%3A00.0%20UTC"
         r = yield async_requests.post(
-            app.url + "/submission?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            app.url + params,
+            files=release_files,
         )  # Submitted
     with patch.object(BaseHandler, "get_current_user", return_value=user_brobbere_student):
+        params = "/submission?course_id=course_2&assignment_id=assign_a&timestamp=2020-01-01%2000%3A00%3A00.0%20UTC"
         r = yield async_requests.post(
-            app.url + "/submission?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            app.url + params,
+            files=release_files,
         )  # Submitted 2nd user
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.get(app.url + "/collections?course_id=course_2&assignment_id=assign_a")  # collected
 
     # feedback 1
-    timestamp = datetime.now(timezone.utc).isoformat(" ")
+    timestamp = datetime.now(tz).strftime(timestamp_format)
     checksum = notebook_hash(
         feedback_filename,
         make_unique_key("course_2", "assign_a", "notebook", user_kiz_student["name"], timestamp),
@@ -541,7 +547,7 @@ def test_history_action_students_much_limited(app, clear_database):  # noqa: F81
         r = yield async_requests.post(app.url + url, files=feedbacks)
 
     # feedback 2
-    timestamp = datetime.now(timezone.utc).isoformat(" ")
+    timestamp = datetime.now(tz).strftime(timestamp_format)
     checksum = notebook_hash(
         feedback_filename,
         make_unique_key("course_2", "assign_a", "notebook", user_brobbere_student["name"], timestamp),

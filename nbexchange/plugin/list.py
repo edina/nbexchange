@@ -1,4 +1,5 @@
 import glob
+import hashlib
 import json
 import os
 from urllib.parse import quote_plus
@@ -8,6 +9,12 @@ from nbgrader.exchange.default.list import ExchangeList as DefaultExchangeList
 from traitlets import Unicode
 
 from .exchange import Exchange
+
+
+def _checksum(path):
+    m = hashlib.md5()
+    m.update(open(path, "rb").read())
+    return m.hexdigest()
 
 
 # "outbound" is files released by instructors (.... but there may be local copies!)
@@ -110,6 +117,7 @@ class ExchangeList(abc.ExchangeList, Exchange):
         return assignment
 
     def parse_assignments(self):
+
         # Set up some general variables
         self.assignments = []
         held_assignments = {"fetched": {}, "released": {}}
@@ -120,7 +128,9 @@ class ExchangeList(abc.ExchangeList, Exchange):
         # if "inbound" or "cached" are true, we're looking for inbound
         #  (submitted) records else we're looking for outbound (released)
         #  records
-        # (everything else is irrelevant for this method)
+        # (everything else is irrelevant for this method - self.assignments will
+        #   contain either a list of `released` items or a list of `submitted items`
+        #   ..... and nothing else!)
         if self.inbound or self.cached:
             for assignment in exchange_listed_assignments:
                 if assignment.get("status") == "submitted":
@@ -131,11 +141,19 @@ class ExchangeList(abc.ExchangeList, Exchange):
                     self.assignments.append(assignment)
 
         # We want to check the local disk for "fetched" items, not what the external server
-        # says we should have
+        #   says we should have.
+        # **NOTE** the way this works is that the status of a `released` record gets changed to
+        #  `fetched` if the item is on disk
         interim_assignments = []
         found_fetched = set([])
         for assignment in self.assignments:
-            assignment_directory = self.fetched_root + "/" + assignment.get("assignment_id")
+            if self.path_includes_course:
+                assignment_directory = os.path.join(
+                    self.assignment_dir, assignment["course_id"], assignment["assignment_id"]
+                )
+            else:
+                assignment_directory = os.path.join(self.assignment_dir, assignment["assignment_id"])
+
             if assignment["status"] == "released":
                 # Has this release already been found on disk?
                 if assignment["assignment_id"] in found_fetched:
@@ -153,6 +171,7 @@ class ExchangeList(abc.ExchangeList, Exchange):
         # - the last "released" per assignment_id - but only if they've not been "fetched"
         #
         my_assignments = []
+
         for assignment in interim_assignments:
             # Skip those not being seen
             if assignment is None:
@@ -169,16 +188,17 @@ class ExchangeList(abc.ExchangeList, Exchange):
             # filter out all the released items:
             if assignment.get("status") == "released":
                 # This is complicated:
-                #  - If the user has "fetched" the assignment, don't keep it
+                #  - If the user has "fetched" the assignment, we ignore any released records
+                #    ... whatever age they are
                 #  - otherwise keep the latest one
                 if assignment.get("assignment_id") in held_assignments["fetched"]:
                     continue
                 else:
                     latest = held_assignments["released"].get(
                         assignment.get("assignment_id"),
-                        {"timestamp": "1990-01-01 00:00:00"},
+                        {"timestamp": "1990-01-01 00:00:00 UTC"},
                     )
-                    if assignment.get("timestamp") > latest.get("timestamp"):
+                    if assignment.get("timestamp") >= latest.get("timestamp"):
                         held_assignments["released"][assignment.get("assignment_id")] = assignment
                     continue
 
@@ -190,9 +210,9 @@ class ExchangeList(abc.ExchangeList, Exchange):
             # will provide a link to a folder that is the "feedback" time
             # ("feedback-time" for all notebooks in one 'release' is the same)
             if assignment.get("status") == "submitted":
-                assignment_dir = os.path.join(assignment.get("assignment_id"), "feedback")
+                feedback_dir = os.path.join(assignment.get("assignment_id"), "feedback")
                 if self.path_includes_course:
-                    assignment_dir = os.path.join(
+                    feedback_dir = os.path.join(
                         self.coursedir.course_id,
                         assignment.get("assignment_id"),
                         "feedback",
@@ -207,21 +227,18 @@ class ExchangeList(abc.ExchangeList, Exchange):
                     # This has to match timestamp in fetch_feedback.download
                     if nb_timestamp:
                         # get the individual notebook details
-                        if os.path.isdir(
-                            os.path.join(
-                                assignment_dir,
-                                nb_timestamp,
-                            )
-                        ):
+                        timestamped_feedback_dir = os.path.join(
+                            feedback_dir,
+                            nb_timestamp,
+                        )
+                        if os.path.isdir(timestamped_feedback_dir):
                             local_feedback_path = os.path.join(
-                                assignment_dir,
-                                nb_timestamp,
+                                timestamped_feedback_dir,
                                 f"{notebook['notebook_id']}.html",
                             )
                             has_local_feedback = os.path.isfile(
                                 os.path.join(
-                                    assignment_dir,
-                                    nb_timestamp,
+                                    timestamped_feedback_dir,
                                     f"{notebook['notebook_id']}.html",
                                 )
                             )
@@ -245,13 +262,13 @@ class ExchangeList(abc.ExchangeList, Exchange):
                 assignment["feedback_updated"] = feedback_updated
                 if has_local_feedback:
                     assignment["local_feedback_path"] = os.path.join(
-                        assignment_dir,
+                        feedback_dir,
                         nb_timestamp,
                     )
                 else:
                     assignment["local_feedback_path"] = None
 
-                # We keep everything we've not filtered out
+            # We keep everything we've not filtered out
             my_assignments.append(assignment)
 
         # concatinate the "released" and "fetched" sublists to my_assignments
@@ -290,7 +307,7 @@ class ExchangeList(abc.ExchangeList, Exchange):
 
     def list_files(self):
         """List files"""
-        self.log.debug("ExchaneList.list_file starting")
+        self.log.debug("ExchangeList.list_file starting")
 
         assignments = self.parse_assignments()
         if self.inbound or self.cached:
@@ -318,27 +335,6 @@ class ExchangeList(abc.ExchangeList, Exchange):
             self.log.info(f"Got back {r.status_code} after assignment unrelease")
 
     def start(self):
-        #####
-        #
-        # This is the code that changes the submitted directory
-        #   away from default.
-        # The feature flag NAAS_FEATURE_MULTI_MARKERS is also used
-        #   to revert to default nbgrader behaviour
-        # Once the feature flag becomes the default, `self.fetched_root`
-        #   can be ditched
-        #####
-        if not os.environ.get("NAAS_FEATURE_MULTI_MARKERS"):
-            if self.path_includes_course:
-                self.coursedir.submitted_directory = os.path.join(self.coursedir.course_id, "collected")
-            else:
-                self.coursedir.submitted_directory = "collected"
-
-        if self.path_includes_course:
-            r = self.coursedir.course_id
-        else:
-            r = "."
-        self.fetched_root = os.path.abspath(os.path.join("", r))
-
         if self.remove:
             return self.remove_files()
         else:

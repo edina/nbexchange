@@ -1,5 +1,4 @@
 import logging
-import sys
 
 import pytest
 from mock import patch
@@ -18,7 +17,9 @@ logger = logging.getLogger(__file__)
 logger.setLevel(logging.ERROR)
 
 # set up the file to be uploaded as part of the testing later
-files = get_files_dict(sys.argv[0])  # ourself :)
+release_files, notebooks, timestamp = get_files_dict()
+
+notebooks = []
 
 #################################
 #
@@ -130,7 +131,7 @@ def test_instructor_can_fetch(app, clear_database):  # noqa: F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.get(app.url + "/assignment?course_id=course_2&assignment_id=assign_a")
@@ -146,7 +147,7 @@ def test_fetch_broken_nbex_user(app, clear_database, caplog):  # noqa: F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz):
         r = yield async_requests.get(app.url + "/assignment?course_id=course_2&assignment_id=assign_a")
@@ -163,7 +164,7 @@ def test_student_can_fetch(app, clear_database):  # noqa: F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_brobbere_student):
         r = yield async_requests.get(app.url + "/assignment?course_id=course_2&assignment_id=assign_a")
@@ -178,15 +179,15 @@ def test_fetch_after_rerelease_gets_different_file(app, clear_database):  # noqa
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_brobbere_student):
         r = yield async_requests.get(app.url + "/assignment?&course_id=course_2&assignment_id=assign_a")
@@ -194,7 +195,7 @@ def test_fetch_after_rerelease_gets_different_file(app, clear_database):  # noqa
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_brobbere_student):
         r = yield async_requests.get(app.url + "/assignment?&course_id=course_2&assignment_id=assign_a")

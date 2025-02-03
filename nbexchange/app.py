@@ -20,11 +20,16 @@ from traitlets.config import Application, catch_config_error
 import nbexchange.dbutil
 from nbexchange import dbutil, handlers
 from nbexchange.handlers import base
-from nbexchange.handlers.auth.naas_user_handler import NaasUserHandler
 from nbexchange.handlers.auth.user_handler import BaseUserHandler
 
 ROOT = os.path.dirname(__file__)
 STATIC_FILES_DIR = os.path.join(ROOT, "static")
+
+
+class MockUserHandler(BaseUserHandler):
+
+    def get_current_user(self, request):
+        return
 
 
 flags = {
@@ -60,24 +65,80 @@ class NbExchange(PrometheusMixIn, Application):
 
     flags = Dict(flags)
 
-    config_file = Unicode("nbexchange_config.py", help="The config file to load").tag(config=True)
+    config_file = Unicode("/etc/config/nbexchange_config.py", help="The config file to load", config=True)
 
-    base_url = os.environ.get("JUPYTERHUB_SERVICE_PREFIX", "/services/nbexchange/")
-    base_storage_location = os.environ.get("NBEX_BASE_STORE", "/tmp/courses")
-    # naas_url = os.environ.get("NAAS_URL", "https://127.0.0.1:8080")
+    timezone = Unicode("UTC", help="Timezone for recording timestamps").tag(config=True)
+
+    timestamp_format = Unicode("%Y-%m-%d %H:%M:%S.%f %Z", help="Format string for timestamps").tag(config=True)
+
+    base_url = Unicode(
+        "/services/nbexchange/",
+        config=True,
+        help="""
+Base url for api queries into the exchange.
+Defaults to '/services/nbexchange/'
+""",
+    )
+
+    base_storage_location = Unicode(
+        "/tmp/courses",
+        config=True,
+        help="""
+Where the exchange stores the files uploaded.
+Defaults to '/tmp/courses'
+""",
+    )
+
+    db_url = Unicode(
+        "sqlite:///:memory:",
+        config=True,
+        help="""
+Where the exchange stores the files uploaded.
+Defaults to 'sqlite:///:memory:' (an in-memory SQLite database)
+""",
+    )
+
+    db_kwargs = Dict(
+        config=True,
+        help="""Include any kwargs to pass to the database connection.
+        See sqlalchemy.create_engine for details.
+        """,
+    )
+
+    upgrade_db = Bool(
+        False,
+        config=True,
+        help="""Upgrade the database automatically on start.
+
+        Only safe if database is regularly backed up.
+        Only SQLite databases will be backed up to a local file automatically.
+    """,
+    )
+
+    reset_db = Bool(False, config=True, help="Purge and reset the database.")
+    debug_db = Bool(False, config=True, help="log all database transactions. This has A LOT of output")
+
+    max_buffer_size = Integer(
+        5253530000, config=True, help="The maximum size, in bytes, of an upload (defaults to 5GB)"
+    )
+
     user_plugin_class = Type(
-        NaasUserHandler,
+        MockUserHandler,
+        # NaasUserHandler,
         klass=BaseUserHandler,
+        config=True,
         help="The class to use for handling users",
-    ).tag(config=True)
+    )
 
-    debug = bool(int(os.environ.get("DEBUG", 0)))
+    debug = Bool(False, config=True, help="Sets logging level to DEBUG, defaults to 0/False")
 
-    ip = Unicode("0.0.0.0").tag(config=True)
+    ip = Unicode("0.0.0.0", config=True)
 
-    port = Integer(9000).tag(config=True)
+    port = Integer(9000, config=True)
 
     sentry_dsn = os.environ.get("SENTRY_DSN", "")
+
+    timestamp_format = Unicode("%Y-%m-%d %H:%M:%S.%f %Z", help="Format string for timestamps").tag(config=True)
 
     tornado_settings = Dict()
 
@@ -134,29 +195,6 @@ class NbExchange(PrometheusMixIn, Application):
         stdout_handler = logging.StreamHandler(sys.stdout)
         access_log.addHandler(stdout_handler)
 
-    db_url = os.environ.get("NBEX_DB_URL", "sqlite:///:memory:")  # nbexchange2.sqlite")
-
-    db_kwargs = Dict(
-        help="""Include any kwargs to pass to the database connection.
-        See sqlalchemy.create_engine for details.
-        """
-    ).tag(config=True)
-
-    upgrade_db = Bool(
-        False,
-        help="""Upgrade the database automatically on start.
-
-        Only safe if database is regularly backed up.
-        Only SQLite databases will be backed up to a local file automatically.
-    """,
-    ).tag(config=True)
-    reset_db = Bool(False, help="Purge and reset the database.").tag(config=True)
-    debug_db = Bool(False, help="log all database transactions. This has A LOT of output").tag(config=True)
-
-    max_buffer_size = Integer(5253530000, help="The maximum size, in bytes, of an upload (defaults to 5GB)").tag(
-        config=True
-    )
-
     def _check_db_path(self, path):
         """More informative log messages for failed filesystem access"""
         path = os.path.abspath(path)
@@ -171,7 +209,7 @@ class NbExchange(PrometheusMixIn, Application):
 
     def init_db(self):
         """Initialize the nbexchange database"""
-        self.log.debug(f"db_url = {self.db_url}")
+        self.log.debug(f"app.py.init_db: db_url = {self.db_url}")
         if self.upgrade_db:
             dbutil.upgrade_if_needed(self.db_url, log=self.log)
 
@@ -210,7 +248,7 @@ class NbExchange(PrometheusMixIn, Application):
         if os.path.isdir(os.path.join(parent, ".git")):
             version_hash = ""
         else:
-            version_hash = (datetime.now().strftime("%Y%m%d%H%M%S"),)
+            version_hash = datetime.now().strftime("%Y%m%d%H%M%S")
 
         settings = dict(
             log_function=log_request,
@@ -255,27 +293,38 @@ class NbExchange(PrometheusMixIn, Application):
     @catch_config_error
     def initialize(self, *args, **kwargs):
         """Load configuration settings."""
+        logging.info("app.initialisze called")
+
         super().initialize(*args, **kwargs)
+        logging.info("app.initialisze loading config file")
         self.load_config_file(self.config_file)
         if self.subapp:
             return
+        logging.info(f"app.initialisze - db_url: {self.db_url}")
         self.init_db()
+        logging.info("app.initialisze init_db completed")
         self.init_tornado_settings()
+        logging.info("app.initialisze init_tornado_settings completed")
         self.init_handlers()
+        logging.info("app.initialisze init_handlers completed")
         self.init_tornado_application()
+        logging.info("app.initialisze init_tornado_application completed")
 
     def stop(self):
         self.http_server.stop()
 
     def start(self, run_loop=True):
+        logging.info("app.start called")
         if self.subapp:
             self.subapp.start()
             return
+        logging.info("app.start not a subapp")
 
         # *NOT* adding 'max_buffer_size=self.max_buffer_size' here, as we handle the
         # size-checks in code (both plugin & exchange side)
         self.http_server = HTTPServer(self.tornado_application, xheaders=True)
         self.http_server.listen(self.port, address=self.ip)
+        logging.info("app.start about to hit the IOLoop start")
         if run_loop:
             IOLoop.current().start()
 

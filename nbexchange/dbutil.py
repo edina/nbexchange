@@ -86,6 +86,7 @@ def upgrade(db_url, revision="head"):
     revision: str [default: head]
         The alembic revision to upgrade to.
     """
+
     with _temp_alembic_ini(db_url) as alembic_ini:
         check_call(["alembic", "-c", alembic_ini, "upgrade", revision])
 
@@ -149,7 +150,6 @@ def main(args=None):
     # to subcommands
     choices = ["alembic"]
     if not args or args[0] not in choices:
-        print("Select a command from: %s" % ", ".join(choices))
         return 1
     cmd, args = args[0], args[1:]
 

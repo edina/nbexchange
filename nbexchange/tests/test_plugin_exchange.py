@@ -58,6 +58,7 @@ def test_base_methods(monkeypatch):
 
 @pytest.mark.gen_test
 def test_exhange_api_request_post():
+
     plugin = Exchange()
 
     def asserts(*args, **kwargs):

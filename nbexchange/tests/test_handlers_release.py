@@ -1,5 +1,4 @@
 import logging
-import sys
 
 import pytest
 from mock import patch
@@ -18,8 +17,7 @@ logger = logging.getLogger(__file__)
 logger.setLevel(logging.ERROR)
 
 # set up the file to be uploaded
-files = get_files_dict(sys.argv[0])  # ourself :)
-
+release_files, notebooks, timestamp = get_files_dict()  # ourself :)
 
 # #### POST /assignment (upload/release assignment) ##### #
 
@@ -93,7 +91,8 @@ def test_post_release_ok(app, clear_database):  # noqa: F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            data={"notebooks": notebooks},
+            files=release_files,
         )
     assert r.status_code == 200
     response_data = r.json()
@@ -106,7 +105,7 @@ def test_post_release_broken_nbex_user(app, clear_database, caplog):  # noqa: F8
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )
     assert r.status_code == 500
     assert "Both current_course ('None') and current_role ('None') must have values. User was '1-kiz'" in caplog.text
@@ -137,7 +136,8 @@ def test_post_picks_first_instance_of_param_gets_it_wrong(app, clear_database): 
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_1&course_id=course_2&assignment_id=assign_a",
-            files=files,
+            data={"notebooks": notebooks},
+            files=release_files,
         )
     assert r.status_code == 200
     response_data = r.json()
@@ -151,7 +151,8 @@ def test_post_picks_first_instance_of_param_gets_it_right(app, clear_database): 
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&course_id=course_1&assignment_id=assign_a",
-            files=files,
+            data={"notebooks": notebooks},
+            files=release_files,
         )
     assert r.status_code == 200
     response_data = r.json()
@@ -163,22 +164,27 @@ def test_post_picks_first_instance_of_param_gets_it_right(app, clear_database): 
 # @pytest.mark.skip
 @pytest.mark.gen_test
 def test_post_location_different_each_time(app, clear_database):  # noqa: F811
+    data = {"notebooks": notebooks}
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            data=data,
+            files=release_files,
         )
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            # data=data,
+            files=release_files,
         )
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            # data={"notebooks": notebooks},
+            files=release_files,
         )
         r = yield async_requests.get(app.url + "/assignments?course_id=course_2")
     assert r.status_code == 200
     response_data = r.json()
+
     assert response_data["success"] is True
     assert "note" not in response_data  # just that it's missing
     paths = list(map(lambda assignment: assignment["path"], response_data["value"]))
@@ -197,7 +203,8 @@ def test_blocks_filesize(app, clear_database):  # noqa: F811
         with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
             r = yield async_requests.post(
                 app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-                files=files,
+                data={"notebooks": notebooks},
+                files=release_files,
             )
     assert r.status_code == 200
     response_data = r.json()

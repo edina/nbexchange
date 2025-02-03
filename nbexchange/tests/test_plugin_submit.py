@@ -54,7 +54,7 @@ def test_submit_methods(plugin_config, tmpdir, caplog):
     with pytest.raises(AttributeError) as e_info:
         plugin.dest_path
         assert str(e_info.value) == "'ExchangeReleaseAssignment' object has no attribute 'dest_path'"
-    file = plugin.tar_source()
+    file, timestamp = plugin.tar_source()
     assert len(file) > 1000
 
     def api_request_wrong_nb(*args, **kwargs):
@@ -81,7 +81,7 @@ def test_submit_methods(plugin_config, tmpdir, caplog):
                                         "feedback_timestamp": False,
                                     }
                                 ],
-                                "timestamp": "2020-01-01 00:00:00.0 UTC",
+                                "timestamp": "2020-01-01 00:00:00.000000 UTC",
                             }
                         ],
                     }
@@ -113,7 +113,7 @@ def test_submit_methods(plugin_config, tmpdir, caplog):
                                         "feedback_timestamp": False,
                                     }
                                 ],
-                                "timestamp": "2020-01-01 00:00:00.0 UTC",
+                                "timestamp": "2020-01-01 00:00:00.000000 UTC",
                             }
                         ],
                     }
@@ -171,7 +171,7 @@ def test_submit_single_item(plugin_config, tmpdir):
                                                 "feedback_timestamp": False,
                                             }
                                         ],
-                                        "timestamp": "2020-01-01 00:00:00.0 UTC",
+                                        "timestamp": "2020-01-01 00:00:00.000000 UTC",
                                     }
                                 ],
                             }
@@ -180,7 +180,8 @@ def test_submit_single_item(plugin_config, tmpdir):
                 )
             else:
                 pth = str(tmpdir.mkdir("submit_several").realpath())
-                assert args[0] == (f"submission?course_id={course_id}&assignment_id={assignment_id1}")
+
+                assert args[0].startswith(f"submission?course_id={course_id}&assignment_id={assignment_id1}&timestamp=")
                 assert "method" not in kwargs or kwargs.get("method").lower() == "post"
                 files = kwargs.get("files")
                 assert "assignment" in files
@@ -244,7 +245,7 @@ def test_submit_single_item_with_path_includes_course(plugin_config, tmpdir):
                                                 "feedback_timestamp": False,
                                             }
                                         ],
-                                        "timestamp": "2020-01-01 00:00:00.0 UTC",
+                                        "timestamp": "2020-01-01 00:00:00.000000 UTC",
                                     }
                                 ],
                             }
@@ -253,7 +254,7 @@ def test_submit_single_item_with_path_includes_course(plugin_config, tmpdir):
                 )
             else:
                 pth = str(tmpdir.mkdir("submit_several").realpath())
-                assert args[0] == (f"submission?course_id={course_id}&assignment_id={assignment_id1}")
+                assert args[0].startswith(f"submission?course_id={course_id}&assignment_id={assignment_id1}&timestamp=")
                 assert "method" not in kwargs or kwargs.get("method").lower() == "post"
                 files = kwargs.get("files")
                 assert "assignment" in files
@@ -316,7 +317,7 @@ def test_submit_fail(plugin_config, tmpdir):
                                                 "feedback_timestamp": False,
                                             }
                                         ],
-                                        "timestamp": "2020-01-01 00:00:00.0 UTC",
+                                        "timestamp": "2020-01-01 00:00:00.000000 UTC",
                                     }
                                 ],
                             }
@@ -324,7 +325,7 @@ def test_submit_fail(plugin_config, tmpdir):
                     },
                 )
             else:
-                assert args[0] == (f"submission?course_id={course_id}&assignment_id={assignment_id1}")
+                assert args[0].startswith(f"submission?course_id={course_id}&assignment_id={assignment_id1}&timestamp=")
                 assert "method" not in kwargs or kwargs.get("method").lower() == "post"
 
                 return type(
@@ -387,7 +388,7 @@ def test_submit_multiple_notebooks_in_assignment(plugin_config, tmpdir):
                                                 "feedback_timestamp": False,
                                             },
                                         ],
-                                        "timestamp": "2020-01-01 00:00:00.0 UTC",
+                                        "timestamp": "2020-01-01 00:00:00.000000 UTC",
                                     }
                                 ],
                             }
@@ -396,7 +397,7 @@ def test_submit_multiple_notebooks_in_assignment(plugin_config, tmpdir):
                 )
             else:
                 pth = str(tmpdir.mkdir("submit_several").realpath())
-                assert args[0] == (f"submission?course_id={course_id}&assignment_id={assignment_id3}")
+                assert args[0].startswith(f"submission?course_id={course_id}&assignment_id={assignment_id3}&timestamp=")
                 assert "method" not in kwargs or kwargs.get("method").lower() == "post"
                 files = kwargs.get("files")
                 assert "assignment" in files
@@ -457,7 +458,7 @@ def test_submit_fail_no_folder(plugin_config, tmpdir):
                                                 "feedback_timestamp": False,
                                             }
                                         ],
-                                        "timestamp": "2020-01-01 00:00:00.0 UTC",
+                                        "timestamp": "2020-01-01 00:00:00.000000 UTC",
                                     }
                                 ],
                             }
@@ -466,7 +467,7 @@ def test_submit_fail_no_folder(plugin_config, tmpdir):
                 )
             else:
                 pth = str(tmpdir.mkdir("submit_several").realpath())
-                assert args[0] == (f"submission?course_id={course_id}&assignment_id={assignment_id1}")
+                assert args[0].startswith(f"submission?course_id={course_id}&assignment_id={assignment_id1}&timestamp=")
                 assert "method" not in kwargs or kwargs.get("method").lower() == "post"
                 files = kwargs.get("files")
                 assert "assignment" in files
@@ -526,7 +527,7 @@ def test_submit_warning_no_notebook(plugin_config, tmpdir):
                                                 "feedback_timestamp": False,
                                             }
                                         ],
-                                        "timestamp": "2020-01-01 00:00:00.0 UTC",
+                                        "timestamp": "2020-01-01 00:00:00.000000 UTC",
                                     }
                                 ],
                             }
@@ -539,7 +540,9 @@ def test_submit_warning_no_notebook(plugin_config, tmpdir):
                     match=r"Possible missing notebooks and/or extra notebooks",
                 ):
                     pth = str(tmpdir.mkdir("submit_several").realpath())
-                    assert args[0] == (f"submission?course_id={course_id}&assignment_id={assignment_id1}")
+                    assert args[0].startswith(
+                        f"submission?course_id={course_id}&assignment_id={assignment_id1}&timestamp="
+                    )
                     assert "method" not in kwargs or kwargs.get("method").lower() == "post"
                     files = kwargs.get("files")
                     assert "assignment" in files
@@ -603,7 +606,7 @@ def test_submit_warning_wrong_notebook(plugin_config, tmpdir):
                                                 "feedback_timestamp": False,
                                             }
                                         ],
-                                        "timestamp": "2020-01-01 00:00:00.0 UTC",
+                                        "timestamp": "2020-01-01 00:00:00.000000 UTC",
                                     }
                                 ],
                             }
@@ -616,7 +619,9 @@ def test_submit_warning_wrong_notebook(plugin_config, tmpdir):
                     match=r"Possible missing notebooks and/or extra notebooks",
                 ):
                     pth = str(tmpdir.mkdir("submit_several").realpath())
-                    assert args[0] == (f"submission?course_id={course_id}&assignment_id={assignment_id1}")
+                    assert args[0].startswith(
+                        f"submission?course_id={course_id}&assignment_id={assignment_id1}&timestamp="
+                    )
                     assert "method" not in kwargs or kwargs.get("method").lower() == "post"
                     files = kwargs.get("files")
                     assert "assignment" in files
@@ -679,7 +684,7 @@ def test_submit_no_notebook_strict_means_fail(plugin_config, tmpdir):
                                                 "feedback_timestamp": False,
                                             }
                                         ],
-                                        "timestamp": "2020-01-01 00:00:00.0 UTC",
+                                        "timestamp": "2020-01-01 00:00:00.000000 UTC",
                                     }
                                 ],
                             }
@@ -689,7 +694,9 @@ def test_submit_no_notebook_strict_means_fail(plugin_config, tmpdir):
             else:
                 with pytest.raises(ExchangeError, match=r"Assignment \w+ not submitted"):
                     pth = str(tmpdir.mkdir("submit_several").realpath())
-                    assert args[0] == (f"submission?course_id={course_id}&assignment_id={assignment_id1}")
+                    assert args[0].startswith(
+                        f"submission?course_id={course_id}&assignment_id={assignment_id1}&timestamp="
+                    )
                     assert "method" not in kwargs or kwargs.get("method").lower() == "post"
                     files = kwargs.get("files")
                     assert "assignment" in files
@@ -755,7 +762,7 @@ def test_submit_wrong_notebook_strict_means_faile(plugin_config, tmpdir):
                                                 "feedback_timestamp": False,
                                             }
                                         ],
-                                        "timestamp": "2020-01-01 00:00:00.0 UTC",
+                                        "timestamp": "2020-01-01 00:00:00.000000 UTC",
                                     }
                                 ],
                             }
@@ -765,7 +772,9 @@ def test_submit_wrong_notebook_strict_means_faile(plugin_config, tmpdir):
             else:
                 with pytest.raises(ExchangeError, match=r"Assignment \w+ not submitted"):
                     pth = str(tmpdir.mkdir("submit_several").realpath())
-                    assert args[0] == (f"submission?course_id={course_id}&assignment_id={assignment_id1}")
+                    assert args[0].startswith(
+                        f"submission?course_id={course_id}&assignment_id={assignment_id1}&timestamp="
+                    )
                     assert "method" not in kwargs or kwargs.get("method").lower() == "post"
                     files = kwargs.get("files")
                     assert "assignment" in files
@@ -832,7 +841,7 @@ def test_submit_warning_wrong_notebook_two(plugin_config, tmpdir):
                                                 "feedback_timestamp": False,
                                             }
                                         ],
-                                        "timestamp": "2020-01-01 00:00:00.0 UTC",
+                                        "timestamp": "2020-01-01 00:00:00.000000 UTC",
                                     }
                                 ],
                             }
@@ -845,7 +854,9 @@ def test_submit_warning_wrong_notebook_two(plugin_config, tmpdir):
                     match=r"Possible missing notebooks and/or extra notebooks",
                 ):
                     pth = str(tmpdir.mkdir("submit_several").realpath())
-                    assert args[0] == (f"submission?course_id={course_id}&assignment_id={assignment_id1}")
+                    assert args[0].startswith(
+                        f"submission?course_id={course_id}&assignment_id={assignment_id1}&timestamp="
+                    )
                     assert "method" not in kwargs or kwargs.get("method").lower() == "post"
                     files = kwargs.get("files")
                     assert "assignment" in files
@@ -911,7 +922,7 @@ def test_submit_extra_notebook_strict_means_fail(plugin_config, tmpdir):
                                                 "feedback_timestamp": False,
                                             }
                                         ],
-                                        "timestamp": "2020-01-01 00:00:00.0 UTC",
+                                        "timestamp": "2020-01-01 00:00:00.000000 UTC",
                                     }
                                 ],
                             }
@@ -921,7 +932,9 @@ def test_submit_extra_notebook_strict_means_fail(plugin_config, tmpdir):
             else:
                 with pytest.raises(ExchangeError, match=r"Assignment \w+ not submitted"):
                     pth = str(tmpdir.mkdir("submit_several").realpath())
-                    assert args[0] == (f"submission?course_id={course_id}&assignment_id={assignment_id1}")
+                    assert args[0].startswith(
+                        f"submission?course_id={course_id}&assignment_id={assignment_id1}&timestamp="
+                    )
                     assert "method" not in kwargs or kwargs.get("method").lower() == "post"
                     files = kwargs.get("files")
                     assert "assignment" in files
@@ -985,7 +998,7 @@ def test_submit_two_releases_newest_first(plugin_config, tmpdir):
                                                 "feedback_timestamp": False,
                                             }
                                         ],
-                                        "timestamp": "2020-01-01 00:01:00.0 UTC",
+                                        "timestamp": "2020-01-01 00:01:00.000000 UTC",
                                     },
                                     {
                                         "assignment_id": assignment_id1,
@@ -1001,7 +1014,7 @@ def test_submit_two_releases_newest_first(plugin_config, tmpdir):
                                                 "feedback_timestamp": False,
                                             }
                                         ],
-                                        "timestamp": "2020-01-01 00:00:00.0 UTC",
+                                        "timestamp": "2020-01-01 00:00:00.000000 UTC",
                                     },
                                 ],
                             }
@@ -1010,7 +1023,7 @@ def test_submit_two_releases_newest_first(plugin_config, tmpdir):
                 )
             else:
                 pth = str(tmpdir.mkdir("submit_several").realpath())
-                assert args[0] == (f"submission?course_id={course_id}&assignment_id={assignment_id1}")
+                assert args[0].startswith(f"submission?course_id={course_id}&assignment_id={assignment_id1}&timestamp=")
                 assert "method" not in kwargs or kwargs.get("method").lower() == "post"
                 files = kwargs.get("files")
                 assert "assignment" in files
@@ -1073,7 +1086,7 @@ def test_submit_two_releases_newest_last(plugin_config, tmpdir):
                                                 "feedback_timestamp": False,
                                             }
                                         ],
-                                        "timestamp": "2020-01-01 00:00:00.0 UTC",
+                                        "timestamp": "2020-01-01 00:00:00.000000 UTC",
                                     },
                                     {
                                         "assignment_id": assignment_id1,
@@ -1089,7 +1102,7 @@ def test_submit_two_releases_newest_last(plugin_config, tmpdir):
                                                 "feedback_timestamp": False,
                                             }
                                         ],
-                                        "timestamp": "2020-01-01 00:01:00.0 UTC",
+                                        "timestamp": "2020-01-01 00:01:00.000000 UTC",
                                     },
                                 ],
                             }
@@ -1098,7 +1111,7 @@ def test_submit_two_releases_newest_last(plugin_config, tmpdir):
                 )
             else:
                 pth = str(tmpdir.mkdir("submit_several").realpath())
-                assert args[0] == (f"submission?course_id={course_id}&assignment_id={assignment_id1}")
+                assert args[0].startswith(f"submission?course_id={course_id}&assignment_id={assignment_id1}&timestamp=")
                 assert "method" not in kwargs or kwargs.get("method").lower() == "post"
                 files = kwargs.get("files")
                 assert "assignment" in files
@@ -1161,7 +1174,7 @@ def test_submit_warning_wrong_notebook_three(plugin_config, tmpdir):
                                                 "feedback_timestamp": False,
                                             }
                                         ],
-                                        "timestamp": "2020-01-01 00:00:00.0 UTC",
+                                        "timestamp": "2020-01-01 00:00:00.000000 UTC",
                                     },
                                     {
                                         "assignment_id": assignment_id1,
@@ -1177,7 +1190,7 @@ def test_submit_warning_wrong_notebook_three(plugin_config, tmpdir):
                                                 "feedback_timestamp": False,
                                             }
                                         ],
-                                        "timestamp": "2020-01-01 00:01:00.0 UTC",
+                                        "timestamp": "2020-01-01 00:01:00.000000 UTC",
                                     },
                                 ],
                             }
@@ -1190,7 +1203,9 @@ def test_submit_warning_wrong_notebook_three(plugin_config, tmpdir):
                     match=r"Possible missing notebooks and/or extra notebooks",
                 ):
                     pth = str(tmpdir.mkdir("submit_several").realpath())
-                    assert args[0] == (f"submission?course_id={course_id}&assignment_id={assignment_id1}")
+                    assert args[0].startswith(
+                        f"submission?course_id={course_id}&assignment_id={assignment_id1}&timestamp="
+                    )
                     assert "method" not in kwargs or kwargs.get("method").lower() == "post"
                     files = kwargs.get("files")
                     assert "assignment" in files
@@ -1252,7 +1267,7 @@ def test_submit_with_multiple_assignments_newest_first(plugin_config, tmpdir):
                                                 "feedback_timestamp": None,
                                             }
                                         ],
-                                        "timestamp": "2020-03-02 11:58:27.5 00:00",
+                                        "timestamp": "2020-03-02 11:58:27.500000 UTC",
                                     },
                                     {
                                         "assignment_id": assignment_id3,
@@ -1268,7 +1283,7 @@ def test_submit_with_multiple_assignments_newest_first(plugin_config, tmpdir):
                                                 "feedback_timestamp": None,
                                             }
                                         ],
-                                        "timestamp": "2020-03-02 08:26:01.4 00:00",
+                                        "timestamp": "2020-03-02 08:26:01.400000 UTC",
                                     },
                                     {
                                         "assignment_id": assignment_id3,
@@ -1284,7 +1299,7 @@ def test_submit_with_multiple_assignments_newest_first(plugin_config, tmpdir):
                                                 "feedback_timestamp": None,
                                             }
                                         ],
-                                        "timestamp": "2020-03-02 08:07:28.61 00:00",
+                                        "timestamp": "2020-03-02 08:07:28.61.000000 UTC",
                                     },
                                     {
                                         "assignment_id": assignment_id3,
@@ -1300,7 +1315,7 @@ def test_submit_with_multiple_assignments_newest_first(plugin_config, tmpdir):
                                                 "feedback_timestamp": None,
                                             }
                                         ],
-                                        "timestamp": "2020-03-02 07:20:37.7 00:00",
+                                        "timestamp": "2020-03-02 07:20:37.7.000000 UTC",
                                     },
                                     {
                                         "assignment_id": assignment_id3,
@@ -1316,7 +1331,7 @@ def test_submit_with_multiple_assignments_newest_first(plugin_config, tmpdir):
                                                 "feedback_timestamp": None,
                                             }
                                         ],
-                                        "timestamp": "2020-03-02 07:20:32.3 00:00",
+                                        "timestamp": "2020-03-02 07:20:32.300000 UTC",
                                     },
                                     {
                                         "assignment_id": assignment_id3,
@@ -1332,7 +1347,7 @@ def test_submit_with_multiple_assignments_newest_first(plugin_config, tmpdir):
                                                 "feedback_timestamp": None,
                                             }
                                         ],
-                                        "timestamp": "2020-03-01 12:56:44.6 00:00",
+                                        "timestamp": "2020-03-01 12:56:44.600000 UTC",
                                     },
                                     {
                                         "assignment_id": "assign_1_3",
@@ -1348,7 +1363,7 @@ def test_submit_with_multiple_assignments_newest_first(plugin_config, tmpdir):
                                                 "feedback_timestamp": None,
                                             },
                                         ],
-                                        "timestamp": "2020-03-01 10:45:49.9 00:00",
+                                        "timestamp": "2020-03-01 10:45:49.900000 UTC",
                                     },
                                     {
                                         "assignment_id": assignment_id1,
@@ -1388,7 +1403,7 @@ def test_submit_with_multiple_assignments_newest_first(plugin_config, tmpdir):
                                                 "feedback_timestamp": None,
                                             },
                                         ],
-                                        "timestamp": "2020-01-01 10:45:49.9 00:00",
+                                        "timestamp": "2020-01-01 10:45:49.900000 UTC",
                                     },
                                 ],
                             }
@@ -1397,7 +1412,7 @@ def test_submit_with_multiple_assignments_newest_first(plugin_config, tmpdir):
                 )
             else:
                 pth = str(tmpdir.mkdir("submit_several").realpath())
-                assert args[0] == (f"submission?course_id={course_id}&assignment_id=assign_1_3")
+                assert args[0].startswith(f"submission?course_id={course_id}&assignment_id={assignment_id3}&timestamp=")
                 assert "method" not in kwargs or kwargs.get("method").lower() == "post"
                 files = kwargs.get("files")
                 assert "assignment" in files
@@ -1482,7 +1497,7 @@ def test_submit_with_multiple_assignments_oldest_first(plugin_config, tmpdir):
                                                 "feedback_timestamp": None,
                                             },
                                         ],
-                                        "timestamp": "2020-01-01 10:45:49.9 00:00",
+                                        "timestamp": "2020-01-01 10:45:49.900000 UTC",
                                     },
                                     {
                                         "assignment_id": assignment_id3,
@@ -1498,7 +1513,7 @@ def test_submit_with_multiple_assignments_oldest_first(plugin_config, tmpdir):
                                                 "feedback_timestamp": None,
                                             }
                                         ],
-                                        "timestamp": "2020-03-02 11:58:27.5 00:00",
+                                        "timestamp": "2020-03-02 11:58:27.500000 UTC",
                                     },
                                     {
                                         "assignment_id": assignment_id3,
@@ -1514,7 +1529,7 @@ def test_submit_with_multiple_assignments_oldest_first(plugin_config, tmpdir):
                                                 "feedback_timestamp": None,
                                             }
                                         ],
-                                        "timestamp": "2020-03-02 08:26:01.4 00:00",
+                                        "timestamp": "2020-03-02 08:26:01.400000 UTC",
                                     },
                                     {
                                         "assignment_id": assignment_id3,
@@ -1530,7 +1545,7 @@ def test_submit_with_multiple_assignments_oldest_first(plugin_config, tmpdir):
                                                 "feedback_timestamp": None,
                                             }
                                         ],
-                                        "timestamp": "2020-03-02 08:07:28.61 00:00",
+                                        "timestamp": "2020-03-02 08:07:28.610000 UTC",
                                     },
                                     {
                                         "assignment_id": assignment_id3,
@@ -1546,7 +1561,7 @@ def test_submit_with_multiple_assignments_oldest_first(plugin_config, tmpdir):
                                                 "feedback_timestamp": None,
                                             }
                                         ],
-                                        "timestamp": "2020-03-02 07:20:37.7 00:00",
+                                        "timestamp": "2020-03-02 07:20:37.700000 UTC",
                                     },
                                     {
                                         "assignment_id": assignment_id3,
@@ -1562,7 +1577,7 @@ def test_submit_with_multiple_assignments_oldest_first(plugin_config, tmpdir):
                                                 "feedback_timestamp": None,
                                             }
                                         ],
-                                        "timestamp": "2020-03-02 07:20:32.3 00:00",
+                                        "timestamp": "2020-03-02 07:20:32.300000 UTC",
                                     },
                                     {
                                         "assignment_id": assignment_id3,
@@ -1578,7 +1593,7 @@ def test_submit_with_multiple_assignments_oldest_first(plugin_config, tmpdir):
                                                 "feedback_timestamp": None,
                                             }
                                         ],
-                                        "timestamp": "2020-03-01 12:56:44.6 00:00",
+                                        "timestamp": "2020-03-01 12:56:44.600000 UTC",
                                     },
                                     {
                                         "assignment_id": "assign_1_3",
@@ -1594,7 +1609,7 @@ def test_submit_with_multiple_assignments_oldest_first(plugin_config, tmpdir):
                                                 "feedback_timestamp": None,
                                             },
                                         ],
-                                        "timestamp": "2020-03-01 10:45:49.9 00:00",
+                                        "timestamp": "2020-03-01 10:45:49.900000 UTC",
                                     },
                                 ],
                             }
@@ -1603,7 +1618,7 @@ def test_submit_with_multiple_assignments_oldest_first(plugin_config, tmpdir):
                 )
             else:
                 pth = str(tmpdir.mkdir("submit_several").realpath())
-                assert args[0] == (f"submission?course_id={course_id}&assignment_id=assign_1_3")
+                assert args[0].startswith(f"submission?course_id={course_id}&assignment_id={assignment_id3}&timestamp=")
                 assert "method" not in kwargs or kwargs.get("method").lower() == "post"
                 files = kwargs.get("files")
                 assert "assignment" in files
@@ -1669,7 +1684,7 @@ def test_submit_fails_oversize(plugin_config, tmpdir):
                                                 "feedback_timestamp": False,
                                             }
                                         ],
-                                        "timestamp": "2020-01-01 00:00:00.0 UTC",
+                                        "timestamp": "2020-01-01 00:00:00.000000 UTC",
                                     }
                                 ],
                             }
@@ -1678,7 +1693,7 @@ def test_submit_fails_oversize(plugin_config, tmpdir):
                 )
             else:
                 pth = str(tmpdir.mkdir("submit_several").realpath())
-                assert args[0] == (f"submission?course_id={course_id}&assignment_id={assignment_id1}")
+                assert args[0].startswith(f"submission?course_id={course_id}&assignment_id={assignment_id1}&timestamp=")
                 assert "method" not in kwargs or kwargs.get("method").lower() == "post"
                 files = kwargs.get("files")
                 assert "assignment" in files

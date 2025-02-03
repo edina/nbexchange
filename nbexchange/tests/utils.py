@@ -92,6 +92,109 @@ user_lkihlman_student = {
     "course_role": "Student",
 }
 
+root_notebook_name = "assignment-0.6"
+timestamp = "2020-01-01 00:00:00.000000 UTC"
+
+mock_api_released_assign_a_0_seconds = {
+    "assignment_id": "assign_a",
+    "student_id": 1,
+    "course_id": "no_course",
+    "status": "released",
+    "path": "released/1/assign_a/foo",
+    "notebooks": [
+        {
+            "notebook_id": root_notebook_name,
+            "has_exchange_feedback": False,
+            "feedback_updated": False,
+            "feedback_timestamp": None,
+        }
+    ],
+    "timestamp": timestamp,
+}
+mock_api_released_assign_b_0_seconds = {
+    "assignment_id": "assign_b",
+    "student_id": 1,
+    "course_id": "no_course",
+    "status": "released",
+    "path": "released/1/assign_b/foo",
+    "notebooks": [
+        {
+            "notebook_id": "assignment-0.6-wrong",
+            "has_exchange_feedback": False,
+            "feedback_updated": False,
+            "feedback_timestamp": None,
+        }
+    ],
+    "timestamp": timestamp,
+}
+
+mock_api_fetched_assign_a_0_seconds = {
+    "assignment_id": "assign_a",
+    "student_id": 1,
+    "course_id": "no_course",
+    "status": "fetched",
+    "path": "released/1/assign_a/foo",
+    "notebooks": [
+        {
+            "notebook_id": root_notebook_name,
+            "has_exchange_feedback": False,
+            "feedback_updated": False,
+            "feedback_timestamp": None,
+        }
+    ],
+    "timestamp": timestamp,
+}
+mock_api_fetched_assign_b_0_seconds = {
+    "assignment_id": "assign_b",
+    "student_id": 1,
+    "course_id": "no_course",
+    "status": "fetched",
+    "path": "released/1/assign_b/foo",
+    "notebooks": [
+        {
+            "notebook_id": root_notebook_name,
+            "has_exchange_feedback": False,
+            "feedback_updated": False,
+            "feedback_timestamp": None,
+        }
+    ],
+    "timestamp": timestamp,
+}
+
+mock_api_submit_assign_a_0_seconds = {
+    "assignment_id": "assign_a",
+    "student_id": 1,
+    "course_id": "no_course",
+    "status": "submitted",
+    "path": "submitted/1/assign_a/1/foo",
+    "notebooks": [
+        {
+            "notebook_id": root_notebook_name,
+            "has_exchange_feedback": False,
+            "feedback_updated": False,
+            "feedback_timestamp": None,
+        }
+    ],
+    "timestamp": timestamp,
+}
+
+mock_api_release_feedback_assign_a_0_seconds = {
+    "assignment_id": "assign_a",
+    "course_id": "no_course",
+    "notebooks": [
+        {
+            "feedback_timestamp": None,
+            "feedback_updated": False,
+            "has_exchange_feedback": False,
+            "notebook_id": root_notebook_name,
+        },
+    ],
+    "path": "feedback/1/9cf90d9fcb620713a78b08106f9fcbbc.html",
+    "status": "feedback_released",
+    "student_id": 1,
+    "timestamp": timestamp,
+}
+
 
 def tar_source(filename):
     import tarfile
@@ -123,7 +226,7 @@ def api_request(self, url, method="GET", *args, **kwargs):
 def get_files_dict(timestamp: str = None) -> list:
 
     if timestamp is None:
-        timestamp = datetime.datetime.now(tz).strftime(timestamp_format).strip()
+        timestamp = datetime.datetime.now(tz).strftime(timestamp_format)
 
     notebooks = ["assignment-0.6", "assignment-0.6-2"]
 

@@ -5,6 +5,7 @@ import re
 from urllib.parse import quote_plus
 
 import nbgrader.exchange.abc as abc
+from dateutil import parser
 from nbgrader.utils import make_unique_key, notebook_hash
 
 from .exchange import Exchange
@@ -73,7 +74,9 @@ class ExchangeReleaseFeedback(abc.ExchangeReleaseFeedback, Exchange):
                 self.coursedir.assignment_id,
             )
 
-            timestamp = open(os.path.join(feedback_dir, "timestamp.txt")).read().strip()
+            timestamp = open(os.path.join(feedback_dir, "timestamp.txt")).read()
+            timestamp = self.check_timezone(parser.parse(timestamp)).strftime(self.timestamp_format)
+
             nbfile = os.path.join(submission_dir, "{}.ipynb".format(notebook_id))
             unique_key = make_unique_key(
                 self.coursedir.course_id,
@@ -85,8 +88,6 @@ class ExchangeReleaseFeedback(abc.ExchangeReleaseFeedback, Exchange):
 
             self.log.debug("Unique key is: {}".format(unique_key))
             checksum = notebook_hash(nbfile, unique_key)
-
-            # timestamp = parser.parse(timestamp).strftime(self.timestamp_format).strip()
 
             self.log.info(
                 "Releasing feedback for student '{}' on assignment '{}/{}/{}' ({})".format(

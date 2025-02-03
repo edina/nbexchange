@@ -1,7 +1,7 @@
-import datetime
 import os
 import uuid
 
+from dateutil import parser
 from tornado import web
 
 from nbexchange.database import scoped_session
@@ -76,6 +76,9 @@ class Submission(BaseHandler):
                 self.finish({"success": False, "note": note})
                 return
 
+            # validate timestamp: convert to datetime object & ensure it's got a timezone
+            timestamp = self.check_timezone(parser.parse(timestamp))
+
             # storage is dynamically in $path/submitted/$course_code/$assignment_code/$username/<timestamp>/
             # Note - this means that a user can submit multiple times, and we have all copies
             release_file = os.path.join(
@@ -85,7 +88,7 @@ class Submission(BaseHandler):
                 course_code,
                 assignment_code,
                 this_user["name"],
-                timestamp,
+                str(int(timestamp.timestamp())),  # this is a daterime rendition (eg '1738054326')
             )
 
             if not self.request.files:
@@ -152,7 +155,7 @@ class Submission(BaseHandler):
                 assignment_id=assignment.id,
                 action=AssignmentActions.submitted,
                 location=release_file,
-                timestamp=datetime.datetime.strptime(timestamp, self.timestamp_format),
+                timestamp=timestamp,
             )
             session.add(action)
 

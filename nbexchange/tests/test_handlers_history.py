@@ -326,7 +326,7 @@ def test_history_full_set_of_actions_with_duplicates(app, clear_database):  # no
         r = yield async_requests.get(app.url + "/collections?course_id=course_2&assignment_id=assign_a")  # collected
 
     # feedback 1
-    timestamp = datetime.now(tz).strftime(timestamp_format).strip()
+    timestamp = datetime.now(tz).strftime(timestamp_format)
     checksum = notebook_hash(
         feedback_filename,
         make_unique_key("course_2", "assign_a", "notebook", user_kiz_student["name"], timestamp),
@@ -343,7 +343,7 @@ def test_history_full_set_of_actions_with_duplicates(app, clear_database):  # no
         r = yield async_requests.post(app.url + url, files=feedbacks)
 
     # feedback 2
-    timestamp = datetime.now(tz).strftime(timestamp_format).strip()
+    timestamp = datetime.now(tz).strftime(timestamp_format)
     checksum = notebook_hash(
         feedback_filename,
         make_unique_key("course_2", "assign_a", "notebook", user_brobbere_student["name"], timestamp),
@@ -422,7 +422,7 @@ def test_history_action_feedback_released(app, clear_database):  # noqa: F811
         r = yield async_requests.get(app.url + "/collections?course_id=course_2&assignment_id=assign_a")  # collected
 
     # feedback 1
-    timestamp = datetime.now(tz).strftime(timestamp_format).strip()
+    timestamp = datetime.now(tz).strftime(timestamp_format)
     checksum = notebook_hash(
         feedback_filename,
         make_unique_key("course_2", "assign_a", "notebook", user_kiz_student["name"], timestamp),
@@ -439,7 +439,7 @@ def test_history_action_feedback_released(app, clear_database):  # noqa: F811
         r = yield async_requests.post(app.url + url, files=feedbacks)
 
     # feedback 2
-    timestamp = datetime.now(tz).strftime(timestamp_format).strip()
+    timestamp = datetime.now(tz).strftime(timestamp_format)
     checksum = notebook_hash(
         feedback_filename,
         make_unique_key("course_2", "assign_a", "notebook", user_brobbere_student["name"], timestamp),
@@ -530,7 +530,7 @@ def test_history_action_students_much_limited(app, clear_database):  # noqa: F81
         r = yield async_requests.get(app.url + "/collections?course_id=course_2&assignment_id=assign_a")  # collected
 
     # feedback 1
-    timestamp = datetime.now(tz).strftime(timestamp_format).strip()
+    timestamp = datetime.now(tz).strftime(timestamp_format)
     checksum = notebook_hash(
         feedback_filename,
         make_unique_key("course_2", "assign_a", "notebook", user_kiz_student["name"], timestamp),
@@ -547,7 +547,7 @@ def test_history_action_students_much_limited(app, clear_database):  # noqa: F81
         r = yield async_requests.post(app.url + url, files=feedbacks)
 
     # feedback 2
-    timestamp = datetime.now(tz).strftime(timestamp_format).strip()
+    timestamp = datetime.now(tz).strftime(timestamp_format)
     checksum = notebook_hash(
         feedback_filename,
         make_unique_key("course_2", "assign_a", "notebook", user_brobbere_student["name"], timestamp),

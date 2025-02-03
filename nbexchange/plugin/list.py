@@ -117,6 +117,7 @@ class ExchangeList(abc.ExchangeList, Exchange):
         return assignment
 
     def parse_assignments(self):
+
         # Set up some general variables
         self.assignments = []
         held_assignments = {"fetched": {}, "released": {}}
@@ -127,7 +128,9 @@ class ExchangeList(abc.ExchangeList, Exchange):
         # if "inbound" or "cached" are true, we're looking for inbound
         #  (submitted) records else we're looking for outbound (released)
         #  records
-        # (everything else is irrelevant for this method)
+        # (everything else is irrelevant for this method - self.assignments will
+        #   contain either a list of `released` items or a list of `submitted items`
+        #   ..... and nothing else!)
         if self.inbound or self.cached:
             for assignment in exchange_listed_assignments:
                 if assignment.get("status") == "submitted":
@@ -138,11 +141,12 @@ class ExchangeList(abc.ExchangeList, Exchange):
                     self.assignments.append(assignment)
 
         # We want to check the local disk for "fetched" items, not what the external server
-        # says we should have
+        #   says we should have.
+        # **NOTE** the way this works is that the status of a `released` record gets changed to
+        #  `fetched` if the item is on disk
         interim_assignments = []
         found_fetched = set([])
         for assignment in self.assignments:
-            # assignment_directory = self.fetched_root + "/" + assignment.get("assignment_id")
             if self.path_includes_course:
                 assignment_directory = os.path.join(
                     self.assignment_dir, assignment["course_id"], assignment["assignment_id"]
@@ -184,7 +188,8 @@ class ExchangeList(abc.ExchangeList, Exchange):
             # filter out all the released items:
             if assignment.get("status") == "released":
                 # This is complicated:
-                #  - If the user has "fetched" the assignment, don't keep it
+                #  - If the user has "fetched" the assignment, we ignore any released records
+                #    ... whatever age they are
                 #  - otherwise keep the latest one
                 if assignment.get("assignment_id") in held_assignments["fetched"]:
                     continue
@@ -193,7 +198,7 @@ class ExchangeList(abc.ExchangeList, Exchange):
                         assignment.get("assignment_id"),
                         {"timestamp": "1990-01-01 00:00:00 UTC"},
                     )
-                    if assignment.get("timestamp") > latest.get("timestamp"):
+                    if assignment.get("timestamp") >= latest.get("timestamp"):
                         held_assignments["released"][assignment.get("assignment_id")] = assignment
                     continue
 
@@ -330,18 +335,6 @@ class ExchangeList(abc.ExchangeList, Exchange):
             self.log.info(f"Got back {r.status_code} after assignment unrelease")
 
     def start(self):
-        # if not os.environ.get("NAAS_FEATURE_MULTI_MARKERS"):
-        #     if self.path_includes_course:
-        #         self.coursedir.submitted_directory = os.path.join(self.coursedir.course_id, "collected")
-        #     else:
-        #         self.coursedir.submitted_directory = "collected"
-
-        # if self.path_includes_course:
-        #     r = self.coursedir.course_id
-        # else:
-        #     r = "."
-        # self.fetched_root = os.path.abspath(os.path.join("", r))
-
         if self.remove:
             return self.remove_files()
         else:

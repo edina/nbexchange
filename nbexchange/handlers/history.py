@@ -167,10 +167,8 @@ class History(BaseHandler):
                                     temp_dict[assignment.id]["action_summary"][action_string] += 1
                                     this_action["action"] = str(action.action)
                                     self.log.debug(f"action: {action}")
-                                    this_action["timestamp"] = (
-                                        self.check_timezone(action.timestamp)
-                                        .strftime("%Y-%m-%d %H:%M:%S.%f %Z")
-                                        .strip()
+                                    this_action["timestamp"] = self.check_timezone(action.timestamp).strftime(
+                                        self.timestamp_format
                                     )
                                     # I thought about this - and actually, there is merit in students knowing
                                     # _which_ instructor released an assignment when

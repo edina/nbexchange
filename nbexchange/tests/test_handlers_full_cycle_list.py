@@ -25,6 +25,97 @@ logger = logging.getLogger(__file__)
 logger.setLevel(logging.ERROR)
 
 
+# These data elements get repeated below, fairly often
+released_match = {
+    "assignment_id": "assign_a",
+    "course_id": "course_2",
+    "notebooks": [
+        {
+            "feedback_timestamp": None,
+            "feedback_updated": False,
+            "has_exchange_feedback": False,
+            "notebook_id": "assignment-0.6",
+        },
+        {
+            "feedback_timestamp": None,
+            "feedback_updated": False,
+            "has_exchange_feedback": False,
+            "notebook_id": "assignment-0.6-2",
+        },
+    ],
+    "path": ANY,
+    "status": "released",
+    "student_id": 1,
+    "timestamp": ANY,
+}
+fetched_match = {
+    "assignment_id": "assign_a",
+    "course_id": "course_2",
+    "notebooks": [
+        {
+            "feedback_timestamp": None,
+            "feedback_updated": False,
+            "has_exchange_feedback": False,
+            "notebook_id": "assignment-0.6",
+        },
+        {
+            "feedback_timestamp": None,
+            "feedback_updated": False,
+            "has_exchange_feedback": False,
+            "notebook_id": "assignment-0.6-2",
+        },
+    ],
+    "path": ANY,
+    "status": "fetched",
+    "student_id": 1,
+    "timestamp": ANY,
+}
+feedback_released_match = {
+    "assignment_id": "assign_a",
+    "course_id": "course_2",
+    "notebooks": [
+        {
+            "feedback_timestamp": None,
+            "feedback_updated": False,
+            "has_exchange_feedback": False,
+            "notebook_id": "assignment-0.6",
+        },
+        {
+            "feedback_timestamp": None,
+            "feedback_updated": False,
+            "has_exchange_feedback": False,
+            "notebook_id": "assignment-0.6-2",
+        },
+    ],
+    "path": ANY,
+    "status": "feedback_released",
+    "student_id": 1,
+    "timestamp": ANY,
+}
+submit_with_no_feedback_match = {
+    "assignment_id": "assign_a",
+    "course_id": "course_2",
+    "notebooks": [
+        {
+            "feedback_timestamp": None,
+            "feedback_updated": False,
+            "has_exchange_feedback": False,
+            "notebook_id": "assignment-0.6",
+        },
+        {
+            "feedback_timestamp": None,
+            "feedback_updated": False,
+            "has_exchange_feedback": False,
+            "notebook_id": "assignment-0.6-2",
+        },
+    ],
+    "path": ANY,
+    "status": "submitted",
+    "student_id": 1,
+    "timestamp": ANY,
+}
+
+
 class TestHandlersFetchFullCycle(BaseTestHandlers):
 
     def _filter_like_plugin(self, assignments):
@@ -85,28 +176,7 @@ class TestHandlersFetchFullCycle(BaseTestHandlers):
         assert r.status_code == 200
         response_data = r.json()
         assert response_data["value"] == [
-            {
-                "assignment_id": "assign_a",
-                "course_id": "course_2",
-                "notebooks": [
-                    {
-                        "feedback_timestamp": None,
-                        "feedback_updated": False,
-                        "has_exchange_feedback": False,
-                        "notebook_id": "assignment-0.6",
-                    },
-                    {
-                        "feedback_timestamp": None,
-                        "feedback_updated": False,
-                        "has_exchange_feedback": False,
-                        "notebook_id": "assignment-0.6-2",
-                    },
-                ],
-                "path": ANY,
-                "status": "released",
-                "student_id": 1,
-                "timestamp": ANY,
-            },
+            released_match,
         ]
 
         # a student fetch & list
@@ -116,56 +186,13 @@ class TestHandlersFetchFullCycle(BaseTestHandlers):
         response_data = r.json()
 
         assert response_data["value"] == [
-            {
-                "assignment_id": "assign_a",
-                "course_id": "course_2",
-                "notebooks": [
-                    {
-                        "feedback_timestamp": None,
-                        "feedback_updated": False,
-                        "has_exchange_feedback": False,
-                        "notebook_id": "assignment-0.6",
-                    },
-                    {
-                        "feedback_timestamp": None,
-                        "feedback_updated": False,
-                        "has_exchange_feedback": False,
-                        "notebook_id": "assignment-0.6-2",
-                    },
-                ],
-                "path": ANY,
-                "status": "released",
-                "student_id": 1,
-                "timestamp": ANY,
-            },
-            {
-                "assignment_id": "assign_a",
-                "course_id": "course_2",
-                "notebooks": [
-                    {
-                        "feedback_timestamp": None,
-                        "feedback_updated": False,
-                        "has_exchange_feedback": False,
-                        "notebook_id": "assignment-0.6",
-                    },
-                    {
-                        "feedback_timestamp": None,
-                        "feedback_updated": False,
-                        "has_exchange_feedback": False,
-                        "notebook_id": "assignment-0.6-2",
-                    },
-                ],
-                "path": ANY,
-                "status": "fetched",
-                "student_id": 1,
-                "timestamp": ANY,
-            },
+            released_match,
+            fetched_match,
         ]
 
         # student submits & list
         # Note - we need to note _this_ timestamp to check it's being kept in the datastructure
         submit_timestamp = timestamp
-
         with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
             r = yield async_requests.post(
                 app.url + f"/submission?course_id=course_2&assignment_id=assign_a&timestamp={submit_timestamp}",
@@ -175,72 +202,9 @@ class TestHandlersFetchFullCycle(BaseTestHandlers):
         response_data = r.json()
 
         assert response_data["value"] == [
-            {
-                "assignment_id": "assign_a",
-                "course_id": "course_2",
-                "notebooks": [
-                    {
-                        "feedback_timestamp": None,
-                        "feedback_updated": False,
-                        "has_exchange_feedback": False,
-                        "notebook_id": "assignment-0.6",
-                    },
-                    {
-                        "feedback_timestamp": None,
-                        "feedback_updated": False,
-                        "has_exchange_feedback": False,
-                        "notebook_id": "assignment-0.6-2",
-                    },
-                ],
-                "path": ANY,
-                "status": "released",
-                "student_id": 1,
-                "timestamp": ANY,
-            },
-            {
-                "assignment_id": "assign_a",
-                "course_id": "course_2",
-                "notebooks": [
-                    {
-                        "feedback_timestamp": None,
-                        "feedback_updated": False,
-                        "has_exchange_feedback": False,
-                        "notebook_id": "assignment-0.6",
-                    },
-                    {
-                        "feedback_timestamp": None,
-                        "feedback_updated": False,
-                        "has_exchange_feedback": False,
-                        "notebook_id": "assignment-0.6-2",
-                    },
-                ],
-                "path": ANY,
-                "status": "fetched",
-                "student_id": 1,
-                "timestamp": ANY,
-            },
-            {
-                "assignment_id": "assign_a",
-                "course_id": "course_2",
-                "notebooks": [
-                    {
-                        "feedback_timestamp": None,
-                        "feedback_updated": False,
-                        "has_exchange_feedback": False,
-                        "notebook_id": "assignment-0.6",
-                    },
-                    {
-                        "feedback_timestamp": None,
-                        "feedback_updated": False,
-                        "has_exchange_feedback": False,
-                        "notebook_id": "assignment-0.6-2",
-                    },
-                ],
-                "path": ANY,
-                "status": "submitted",
-                "student_id": 1,
-                "timestamp": ANY,
-            },
+            released_match,
+            fetched_match,
+            submit_with_no_feedback_match,
         ]
 
         # instructor collects & student list - should be no different to above
@@ -301,50 +265,8 @@ class TestHandlersFetchFullCycle(BaseTestHandlers):
 
         # Adds *two* actions - feedback releases html files individually, and there are two assignments
         assert response_data["value"] == [
-            {
-                "assignment_id": "assign_a",
-                "course_id": "course_2",
-                "notebooks": [
-                    {
-                        "feedback_timestamp": None,
-                        "feedback_updated": False,
-                        "has_exchange_feedback": False,
-                        "notebook_id": "assignment-0.6",
-                    },
-                    {
-                        "feedback_timestamp": None,
-                        "feedback_updated": False,
-                        "has_exchange_feedback": False,
-                        "notebook_id": "assignment-0.6-2",
-                    },
-                ],
-                "path": ANY,
-                "status": "released",
-                "student_id": 1,
-                "timestamp": ANY,
-            },
-            {
-                "assignment_id": "assign_a",
-                "course_id": "course_2",
-                "notebooks": [
-                    {
-                        "feedback_timestamp": None,
-                        "feedback_updated": False,
-                        "has_exchange_feedback": False,
-                        "notebook_id": "assignment-0.6",
-                    },
-                    {
-                        "feedback_timestamp": None,
-                        "feedback_updated": False,
-                        "has_exchange_feedback": False,
-                        "notebook_id": "assignment-0.6-2",
-                    },
-                ],
-                "path": ANY,
-                "status": "fetched",
-                "student_id": 1,
-                "timestamp": ANY,
-            },
+            released_match,
+            fetched_match,
             {
                 "assignment_id": "assign_a",
                 "course_id": "course_2",
@@ -367,50 +289,8 @@ class TestHandlersFetchFullCycle(BaseTestHandlers):
                 "student_id": 1,
                 "timestamp": ANY,
             },
-            {
-                "assignment_id": "assign_a",
-                "course_id": "course_2",
-                "notebooks": [
-                    {
-                        "feedback_timestamp": None,
-                        "feedback_updated": False,
-                        "has_exchange_feedback": False,
-                        "notebook_id": "assignment-0.6",
-                    },
-                    {
-                        "feedback_timestamp": None,
-                        "feedback_updated": False,
-                        "has_exchange_feedback": False,
-                        "notebook_id": "assignment-0.6-2",
-                    },
-                ],
-                "path": ANY,
-                "status": "feedback_released",
-                "student_id": 1,
-                "timestamp": ANY,
-            },
-            {
-                "assignment_id": "assign_a",
-                "course_id": "course_2",
-                "notebooks": [
-                    {
-                        "feedback_timestamp": None,
-                        "feedback_updated": False,
-                        "has_exchange_feedback": False,
-                        "notebook_id": "assignment-0.6",
-                    },
-                    {
-                        "feedback_timestamp": None,
-                        "feedback_updated": False,
-                        "has_exchange_feedback": False,
-                        "notebook_id": "assignment-0.6-2",
-                    },
-                ],
-                "path": ANY,
-                "status": "feedback_released",
-                "student_id": 1,
-                "timestamp": ANY,
-            },
+            feedback_released_match,
+            feedback_released_match,
         ]
 
         # student fetches feedback - assert timestamps match original submitted timestamp,
@@ -440,28 +320,7 @@ class TestHandlersFetchFullCycle(BaseTestHandlers):
         my_assignments = self._filter_like_plugin(response_data["value"])
 
         assert my_assignments == [
-            {
-                "assignment_id": "assign_a",
-                "course_id": "course_2",
-                "notebooks": [
-                    {
-                        "feedback_timestamp": None,
-                        "feedback_updated": False,
-                        "has_exchange_feedback": False,
-                        "notebook_id": "assignment-0.6",
-                    },
-                    {
-                        "feedback_timestamp": None,
-                        "feedback_updated": False,
-                        "has_exchange_feedback": False,
-                        "notebook_id": "assignment-0.6-2",
-                    },
-                ],
-                "path": ANY,
-                "status": "released",
-                "student_id": 1,
-                "timestamp": ANY,
-            },
+            released_match,
             {
                 "assignment_id": "assign_a",
                 "course_id": "course_2",

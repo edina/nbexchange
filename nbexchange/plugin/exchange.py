@@ -1,9 +1,11 @@
 import fnmatch
 import glob
 import os
+from datetime import datetime
 from functools import partial
 from textwrap import dedent
 from urllib.parse import urljoin
+from zoneinfo import ZoneInfo
 
 import nbgrader.exchange.abc as abc
 import requests
@@ -71,13 +73,17 @@ class Exchange(abc.Exchange):
         ),
     ).tag(config=True)
 
+    def check_timezone(self, value: datetime) -> datetime:
+        if value.tzinfo is None or value.tzinfo.utcoffset(value) is None:
+            value = value.replace(tzinfo=ZoneInfo(self.timezone))
+        return value
+
     def fail(self, msg):
         self.log.fatal(msg)
         raise ExchangeError(msg)
 
     def api_request(self, path, method="GET", *args, **kwargs):
         jwt_token = os.environ.get("NAAS_JWT")
-
         cookies = dict()
         headers = dict()
 
@@ -145,8 +151,7 @@ class Exchange(abc.Exchange):
 
     def start(self):
         self.log.debug(f"Called start on {self.__class__.__name__}")
-        self.set_timestamp()
-        self.log.info(f"timetamp: {self.timestamp}")
+        self.set_timestamp()  # a datetime object
         if self.coursedir and not self.coursedir.course_id:
             self.coursedir.course_id = self.course_id
 

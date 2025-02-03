@@ -213,7 +213,7 @@ def test_feedback_post_authenticated_with_incorrect_assignment_id(app, clear_dat
     course_id = "course_2"
     notebook = "notebook"
     student = user_kiz_student
-    timestamp = datetime.now(tz).strftime(timestamp_format).strip()
+    timestamp = datetime.now(tz).strftime(timestamp_format)
     checksum = notebook_hash(
         feedback_filename,
         make_unique_key(course_id, assignment_id, notebook, student["name"], timestamp),
@@ -230,7 +230,7 @@ def test_feedback_post_authenticated_with_incorrect_assignment_id(app, clear_dat
         r = yield async_requests.get(app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.post(
-            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id}&timestamp={timestamp.strip()}",
+            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id}&timestamp={timestamp}",
             files=released_files,
         )
 
@@ -254,7 +254,7 @@ def test_feedback_post_authenticated_with_incorrect_notebook_id(app, clear_datab
     course_id = "course_2"
     notebook = "notebook"
     student = user_kiz_student
-    timestamp = datetime.now(tz).strftime(timestamp_format).strip()
+    timestamp = datetime.now(tz).strftime(timestamp_format)
     checksum = notebook_hash(
         feedback_filename,
         make_unique_key(course_id, assignment_id, notebook, student["name"], timestamp),
@@ -272,7 +272,7 @@ def test_feedback_post_authenticated_with_incorrect_notebook_id(app, clear_datab
         r = yield async_requests.get(app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.post(
-            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id}&timestamp={timestamp.strip()}",
+            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id}&timestamp={timestamp}",
             files=released_files,
         )
 
@@ -296,7 +296,7 @@ def test_feedback_post_authenticated_with_incorrect_student_id(app, clear_databa
     course_id = "course_2"
     notebook = "notebook"
     student = user_brobbere_student
-    timestamp = datetime.now(tz).strftime(timestamp_format).strip()
+    timestamp = datetime.now(tz).strftime(timestamp_format)
     checksum = notebook_hash(
         feedback_filename,
         make_unique_key(course_id, assignment_id, notebook, student["name"], timestamp),
@@ -314,7 +314,7 @@ def test_feedback_post_authenticated_with_incorrect_student_id(app, clear_databa
         r = yield async_requests.get(app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.post(
-            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id}&timestamp={timestamp.strip()}",
+            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id}&timestamp={timestamp}",
             files=released_files,
         )
 
@@ -340,7 +340,7 @@ def test_feedback_post_authenticated_with_incorrect_checksum(app, clear_database
     course_id = "course_2"
     notebook = "notebook"
     student = user_kiz_student
-    timestamp = datetime.now(tz).strftime(timestamp_format).strip()
+    timestamp = datetime.now(tz).strftime(timestamp_format)
     notebook_hash(
         feedback_filename,
         make_unique_key(course_id, assignment_id, notebook, student["name"], timestamp),
@@ -358,7 +358,7 @@ def test_feedback_post_authenticated_with_incorrect_checksum(app, clear_database
         r = yield async_requests.get(app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.post(
-            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id}&timestamp={timestamp.strip()}",
+            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id}&timestamp={timestamp}",
             files=released_files,
         )
 
@@ -382,7 +382,7 @@ def test_feedback_post_authenticated_with_correct_params(app, clear_database):  
     course_id = "course_2"
     notebook = "notebook"
     student = user_kiz_student
-    timestamp = datetime.now(tz).strftime(timestamp_format).strip()
+    timestamp = datetime.now(tz).strftime(timestamp_format)
     checksum = notebook_hash(
         feedback_filename,
         make_unique_key(course_id, assignment_id, notebook, student["name"], timestamp),
@@ -400,7 +400,7 @@ def test_feedback_post_authenticated_with_correct_params(app, clear_database):  
         r = yield async_requests.get(app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.post(
-            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id}&timestamp={timestamp.strip()}",
+            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id}&timestamp={timestamp}",
             files=released_files,
         )
 
@@ -426,7 +426,7 @@ def test_feedback_post_authenticated_with_correct_params_incorrect_instructor(ap
     course_id = "course_2"
     notebook = "notebook"
     student = user_kiz_student
-    timestamp = datetime.now(tz).strftime(timestamp_format).strip()
+    timestamp = datetime.now(tz).strftime(timestamp_format)
     checksum = notebook_hash(
         feedback_filename,
         make_unique_key(course_id, assignment_id, notebook, student["name"], timestamp),
@@ -444,7 +444,7 @@ def test_feedback_post_authenticated_with_correct_params_incorrect_instructor(ap
         r = yield async_requests.get(app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.post(
-            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id}&timestamp={timestamp.strip()}",
+            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id}&timestamp={timestamp}",
             files=released_files,
         )
 
@@ -471,7 +471,7 @@ def test_feedback_post_authenticated_with_correct_params_student_submitter(app, 
     course_id = "course_2"
     notebook = "notebook"
     student = user_kiz_student
-    timestamp = datetime.now(tz).strftime(timestamp_format).strip()
+    timestamp = datetime.now(tz).strftime(timestamp_format)
     checksum = notebook_hash(
         feedback_filename,
         make_unique_key(course_id, assignment_id, notebook, student["name"], timestamp),
@@ -489,7 +489,7 @@ def test_feedback_post_authenticated_with_correct_params_student_submitter(app, 
         r = yield async_requests.get(app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.post(
-            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id}&timestamp={timestamp.strip()}",
+            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id}&timestamp={timestamp}",
             files=released_files,
         )
 
@@ -516,7 +516,7 @@ def test_feedback_get_authenticated_with_incorrect_student(app, clear_database):
     course_id = "course_2"
     notebook = "notebook"
     student = user_kiz_student
-    timestamp = datetime.now(tz).strftime(timestamp_format).strip()
+    timestamp = datetime.now(tz).strftime(timestamp_format)
     checksum = notebook_hash(
         feedback_filename,
         make_unique_key(course_id, assignment_id, notebook, student["name"], timestamp),
@@ -534,7 +534,7 @@ def test_feedback_get_authenticated_with_incorrect_student(app, clear_database):
         r = yield async_requests.get(app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.post(
-            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id}&timestamp={timestamp.strip()}",
+            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id}&timestamp={timestamp}",
             files=released_files,
         )
 
@@ -568,7 +568,7 @@ def test_feedback_get_authenticated_with_correct_params(app, clear_database):  #
     course_id = "course_2"
     notebook = "notebook"
     student = user_kiz_student
-    timestamp = datetime.now(tz).strftime(timestamp_format).strip()
+    timestamp = datetime.now(tz).strftime(timestamp_format)
     checksum = notebook_hash(
         feedback_filename,
         make_unique_key(course_id, assignment_id, notebook, student["name"], timestamp),
@@ -586,7 +586,7 @@ def test_feedback_get_authenticated_with_correct_params(app, clear_database):  #
         r = yield async_requests.get(app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.post(
-            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id}&timestamp={timestamp.strip()}",
+            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id}&timestamp={timestamp}",
             files=released_files,
         )
 
@@ -619,7 +619,7 @@ def test_feedback_get_broken_nbex_user(app, clear_database, caplog):  # noqa: F8
     course_id = "course_2"
     notebook = "notebook"
     student = user_kiz_student
-    timestamp = datetime.now(tz).strftime(timestamp_format).strip()
+    timestamp = datetime.now(tz).strftime(timestamp_format)
     checksum = notebook_hash(
         feedback_filename,
         make_unique_key(course_id, assignment_id, notebook, student["name"], timestamp),
@@ -637,7 +637,7 @@ def test_feedback_get_broken_nbex_user(app, clear_database, caplog):  # noqa: F8
         r = yield async_requests.get(app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.post(
-            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id}&timestamp={timestamp.strip()}",
+            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id}&timestamp={timestamp}",
             files=released_files,
         )
 
@@ -673,7 +673,7 @@ def test_feedback_get_correct_assignment_across_courses(app, clear_database):  #
     course_2 = "course_2"
     notebook = "notebook"
     student = user_kiz_student
-    timestamp = datetime.now(tz).strftime(timestamp_format).strip()
+    timestamp = datetime.now(tz).strftime(timestamp_format)
     checksum = notebook_hash(
         feedback_filename,
         make_unique_key(course_2, assignment_id, notebook, student["name"], timestamp),
@@ -700,7 +700,7 @@ def test_feedback_get_correct_assignment_across_courses(app, clear_database):  #
         r = yield async_requests.get(app.url + f"/assignment?course_id={course_2}&assignment_id={assignment_id}")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.post(
-            app.url + f"/submission?course_id={course_2}&assignment_id={assignment_id}&timestamp={timestamp.strip()}",
+            app.url + f"/submission?course_id={course_2}&assignment_id={assignment_id}&timestamp={timestamp}",
             files=released_files,
         )
 

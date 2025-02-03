@@ -89,9 +89,9 @@ def test_release_feedback_fetch_normal(plugin_config, tmpdir):
         ),
         "w",
     ) as fp:
-        fp.write("2020-01-01 00:00:00.0 UTC")
+        fp.write("2020-01-01 00:00:00.000000 UTC")
 
-    unique_key = make_unique_key("no_course", assignment_id, "feedback", student_id, "2020-01-01 00:00:00.0 UTC")
+    unique_key = make_unique_key("no_course", assignment_id, "feedback", student_id, "2020-01-01 00:00:00.000000 UTC")
     checksum = notebook_hash(
         os.path.join(
             plugin_config.CourseDirectory.submitted_directory,
@@ -110,7 +110,7 @@ def test_release_feedback_fetch_normal(plugin_config, tmpdir):
             f"&assignment_id={assignment_id}"
             "&notebook=feedback"
             f"&student={student_id}"
-            "&timestamp=2020-01-01+00%3A00%3A00.0+UTC"
+            "&timestamp=2020-01-01+00%3A00%3A00.000000+UTC"
             "&checksum=" + checksum
         )
         assert kwargs.get("method").lower() == "post"
@@ -160,15 +160,15 @@ def test_release_feedback_fetch_several_normal(plugin_config, tmpdir):
         os.path.join(feedback_directory, student_id, assignment_id, "timestamp.txt"),
         "w",
     ) as fp:
-        fp.write("2020-01-01 00:01:00.0 UTC")
+        fp.write("2020-01-01 00:01:00.000000 UTC")
 
     # this makes the unique key & checksums for the submission
-    unique_key1 = make_unique_key("no_course", assignment_id, "feedback1", student_id, "2020-01-01 00:01:00.0 UTC")
+    unique_key1 = make_unique_key("no_course", assignment_id, "feedback1", student_id, "2020-01-01 00:01:00.000000 UTC")
     checksum1 = notebook_hash(
         os.path.join(submitted_directory, student_id, assignment_id, "feedback1.ipynb"),
         unique_key1,
     )
-    unique_key2 = make_unique_key("no_course", assignment_id, "feedback2", student_id, "2020-01-01 00:01:00.0 UTC")
+    unique_key2 = make_unique_key("no_course", assignment_id, "feedback2", student_id, "2020-01-01 00:01:00.000000 UTC")
     checksum2 = notebook_hash(
         os.path.join(submitted_directory, student_id, assignment_id, "feedback2.ipynb"),
         unique_key2,
@@ -188,7 +188,7 @@ def test_release_feedback_fetch_several_normal(plugin_config, tmpdir):
                 f"&assignment_id={assignment_id}"
                 "&notebook=feedback1"
                 f"&student={student_id}"
-                "&timestamp=2020-01-01+00%3A01%3A00.0+UTC"
+                "&timestamp=2020-01-01+00%3A01%3A00.000000+UTC"
                 "&checksum=" + checksum1
             )
             assert kwargs.get("method").lower() == "post"
@@ -208,7 +208,7 @@ def test_release_feedback_fetch_several_normal(plugin_config, tmpdir):
                 f"&assignment_id={assignment_id}"
                 "&notebook=feedback2"
                 f"&student={student_id}"
-                "&timestamp=2020-01-01+00%3A01%3A00.0+UTC"
+                "&timestamp=2020-01-01+00%3A01%3A00.000000+UTC"
                 "&checksum=" + checksum2
             )
             assert kwargs.get("method").lower() == "post"
@@ -273,7 +273,7 @@ def test_release_feedback_fetch_fail(plugin_config, tmpdir):
         ),
         "w",
     ) as fp:
-        fp.write("2020-01-01 00:00:00.0 UTC")
+        fp.write("2020-01-01 00:00:00.000000 UTC")
 
     plugin = ExchangeReleaseFeedback(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
 

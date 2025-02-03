@@ -362,13 +362,15 @@ class Assignment(BaseHandler):
             self.log.info(
                 f"Adding action {AssignmentActions.released.value} for user {this_user['id']} against assignment {assignment.id}"  # noqa: E501
             )
-            timestamp = self.get_timestamp()
+            timestamp = self.get_timestamp()  # this is a string object
             action = Action(
                 user_id=this_user["id"],
                 assignment_id=assignment.id,
                 action=AssignmentActions.released,
                 location=release_file,
-                timestamp=datetime.datetime.strptime(timestamp, self.timestamp_format),
+                timestamp=datetime.datetime.strptime(
+                    timestamp, self.timestamp_format
+                ),  # database wants a datetime object
             )
             session.add(action)
 

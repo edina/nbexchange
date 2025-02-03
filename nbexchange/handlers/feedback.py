@@ -89,7 +89,7 @@ class FeedbackHandler(BaseHandler):
                 f["filename"] = feedback_name
 
                 # This matches self.timestamp_format
-                f["timestamp"] = self.check_timezone(r.timestamp).strftime(self.timestamp_format).strip()
+                f["timestamp"] = self.check_timezone(r.timestamp).strftime(self.timestamp_format)
                 f["checksum"] = r.checksum
                 feedbacks.append(f)
 
@@ -116,7 +116,7 @@ class FeedbackHandler(BaseHandler):
         assignment_id: assignment code [eg 'Lab 1 final test'],
         student_id: the "username" of the student [eg '1-ug241234'],
         notebook_id: the name of the notebook without the extension [eg 'Main test'],
-        timestamp: the timestap for the submission that this feedback belongs to [eg '2025-01-17 15:17:58.447679']
+        timestamp: the timestap for the submission that this feedback belongs to [eg '2025-01-17 15:17:58.447679 UTC']
 
         [checksum: not used]
 
@@ -234,13 +234,15 @@ class FeedbackHandler(BaseHandler):
                 self.log.error(f"Could not save file. \n {e}")
                 raise web.HTTPError(500)
 
+            # convert to datetime object & ensure it's got a timezone
+            timestamp = self.check_timezone(parser.parse(timestamp))  #
             feedback = Feedback(
                 notebook_id=notebook.id,
                 checksum=checksum,
                 location=feedback_file,
                 student_id=student.id,
                 instructor_id=this_user.get("id"),
-                timestamp=parser.parse(timestamp),
+                timestamp=timestamp,
             )
 
             session.add(feedback)

@@ -14,8 +14,6 @@ from nbexchange.models.courses import Course
 from nbexchange.models.subscriptions import Subscription
 from nbexchange.models.users import User
 
-# from nbexchange.app import NbExchange
-
 
 def authenticated(method: Callable[..., Optional[Awaitable[None]]]) -> Callable[..., Optional[Awaitable[None]]]:
     """Decorate methods with this to require that the user be logged in.
@@ -42,22 +40,24 @@ class BaseHandler(web.RequestHandler):
         super(BaseHandler, self).__init__(application, request, **kwargs)
         self.set_header("Content-type", "application/json")
 
+    # hard-coded copy of nbgrader.exchange.timezone
     timezone = "UTC"
     # @property
     # def timezone(self):
     #     return self.settings["timezone"]
 
+    # hard-coded copy of nbgrader.exchange.timestamp_format
     timestamp_format = "%Y-%m-%d %H:%M:%S.%f %Z"
     # @property
     # def timestamp_format(self):
     #     return self.settings['timestamp_format']
 
-    def get_timestamp(self):
+    def get_timestamp(self) -> datetime:
         tz = gettz(self.timezone)
         timestamp = datetime.now(tz).strftime(self.timestamp_format)
         return timestamp
 
-    def check_timezone(self, value):
+    def check_timezone(self, value: datetime) -> datetime:
         if value.tzinfo is None or value.tzinfo.utcoffset(value) is None:
             value = value.replace(tzinfo=ZoneInfo(self.timezone))
         return value

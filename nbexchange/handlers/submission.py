@@ -49,11 +49,17 @@ class Submission(BaseHandler):
             f"Called POST /submission with arguments: course {course_code} and ",
             f"assignment {assignment_code}, giving a timestamp of {timestamp}",
         )
-        if not (course_code and assignment_code and timestamp):
-            note = "Submission call requires a course code, an assignment code, and a given timestamp"
+        if not (course_code and assignment_code):
+            note = "Submission call requires a course code and an assignment code"
             self.log.info(note)
             self.finish({"success": False, "note": note})
             return
+
+        # If this happens, then any feedback isn't going to sync with this submission
+        if not timestamp:
+            timestamp = self.get_timestamp()
+            note = f"Submission was posted without a timestamp. We've set it to {timestamp}, but feedback will not sync to this."  # noqa: E501
+            self.log.info(note)
 
         this_user = self.nbex_user
 
@@ -146,7 +152,7 @@ class Submission(BaseHandler):
             # Record the action.
             # Note we record the path to the files.
             self.log.info(
-                f"Adding action {AssignmentActions.submitted.value} for user {this_user['id']} against assignment {assignment.id}"  # noqa: E501
+                f"Adding action {AssignmentActions.submitted.value} for user {this_user['id']} against assignment {assignment.id} at time {timestamp}"  # noqa: E501
             )
 
             # The action timestamp _must_ be the same value as in the timestamp.txt file in the submission

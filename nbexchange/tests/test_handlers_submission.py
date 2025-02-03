@@ -55,7 +55,7 @@ def test_post_submision_requires_two_params(app, clear_database):  # noqa: F811
     assert r.status_code == 200
     response_data = r.json()
     assert response_data["success"] is False
-    assert response_data["note"] == "Submission call requires a course code, an assignment code, and a given timestamp"
+    assert response_data["note"] == "Submission call requires a course code and an assignment code"
 
 
 # Requires both params (just course)
@@ -66,7 +66,7 @@ def test_post_submision_needs_assignment(app, clear_database):  # noqa: F811
     assert r.status_code == 200
     response_data = r.json()
     assert response_data["success"] is False
-    assert response_data["note"] == "Submission call requires a course code, an assignment code, and a given timestamp"
+    assert response_data["note"] == "Submission call requires a course code and an assignment code"
 
 
 # Requires both params (just assignment)
@@ -77,7 +77,7 @@ def test_post_submision_needs_course(app, clear_database):  # noqa: F811
     assert r.status_code == 200
     response_data = r.json()
     assert response_data["success"] is False
-    assert response_data["note"] == "Submission call requires a course code, an assignment code, and a given timestamp"
+    assert response_data["note"] == "Submission call requires a course code and an assignment code"
 
 
 # User not fetched assignment
@@ -106,6 +106,30 @@ def test_post_submision_student_can_submit(app, clear_database):  # noqa: F811
         r = yield async_requests.get(app.url + "/assignment?course_id=course_2&assignment_id=assign_a")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         params = "/submission?course_id=course_2&assignment_id=assign_a&timestamp=2020-01-01%2000%3A00%3A00.0%20UTC"
+        r = yield async_requests.post(
+            app.url + params,
+            files=release_files,
+        )
+    assert r.status_code == 200
+    response_data = r.json()
+    assert response_data["success"] is True
+    assert response_data["note"] == "Submitted"
+
+
+# Autogenerates a timestamp if one isn't given
+# (needs to be fetched before it can be submitted )
+# (needs to be released before it can be fetched )
+@pytest.mark.gen_test
+def test_post_submision_timestamp_autocreated(app, clear_database):  # noqa: F811
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
+        r = yield async_requests.post(
+            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
+            files=release_files,
+        )
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+        r = yield async_requests.get(app.url + "/assignment?course_id=course_2&assignment_id=assign_a")
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+        params = "/submission?course_id=course_2&assignment_id=assign_a"
         r = yield async_requests.post(
             app.url + params,
             files=release_files,

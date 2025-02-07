@@ -24,6 +24,7 @@ Configuration documentation is in the [README.md](README.md)
   - [Collection](#collection)
   - [Feedback](#feedback)
   - [History](#history-1)
+- [On disk storage](#on-disk-storage)
 
 <!-- /TOC -->
 
@@ -60,27 +61,29 @@ Get list of all _assignments_ associated with that course. We return a list of a
 
 #### release-assignment
 
-    POST /assignment?course_id=$cid&assignment_id=$aid, files = _zip-file_
+    POST /assignment?course_id=$cid&assignment_id=$aid, data = _list of notebooks_, files = _zip-file_
 
 We verify the user is an `instructor`, and subscribed to the course.
 
 1. Creates the assignment and link it to the course,
 2. Grabs the first uploaded file (we use `.zip` files for assignments) and store it in a _location_,
-3. Creates an `action` record, noting `action=released`, the assignment, file location, who did the action, and add a timestamp
+3. Notes the notbooks, and associates them with this assignment,
+4. Creates an `action` record, noting `action=released`, the assignment, file location, who did the action, and add a timestamp
 
 #### fetch-assignment
 
     GET /assignment?course_id=$cid&assignment_id=$aid
 
-1. Finds the `released` _action_ for that assignment, and download the file from the given `location`
+1. Finds the last `released` _action_ for that assignment, and download the file from the `location` defined in that action,
 2. Creates an `action` record, noting `action=fetched`, the assignment, file location, who did the action, and add a timestamp
 
 #### submit
 
-    POST /submission?course_id=$cid&assignment_id=$aid, files = _zip-file_
+    POST /submission?course_id=$cid&assignment_id=$aid&timestamp=$timestamp, files = _zip-file_
 
-1. Grabs the first uploaded file (we use `.zip` files for assignments) and store it in a _location_,
-2. Creates an `action` record, noting `action=submitted`, the assignment, file location, who did the action, and add a timestamp
+1. Grabs the uploaded file (we use `.zip` files for assignments) and store it in a _location_,
+2. Note that we specifically define the timestamp - this should be the same string as stored in `timestamp.txt`
+3. Creates an `action` record, noting `action=submitted`, the assignment, file location, who did the action, and add the timestamp
 
 #### collect
 
@@ -142,11 +145,15 @@ Returns
             "status": Str,
             "path": path,
             "notebooks": [
-                { "notebook_id": x.name,
-                  "has_exchange_feedback": False,
-                  "feedback_updated": False,
-                  "feedback_timestamp": None, } for x in assignment.notebooks],
-            "timestamp": action.timestamp.strftime(
+                {
+                    "notebook_id": name,
+                    "has_exchange_feedback": False,
+                    "feedback_updated": False,
+                    "feedback_timestamp": None,
+                },
+                {....},
+            ],
+            "timestamp": timestamp.strftime(
                 "%Y-%m-%d %H:%M:%S.%f %Z"
             ),
         },
@@ -156,6 +163,11 @@ or
 
     {"success": False, "note": $note}
 
+Note that, for a `submitted` action, the `record['timrstamp']` should be
+specifically set to the same timestamp string that is written into the
+`timestamp.txt` file.
+
+This is important, as the _feedback_ is matched on that string.
 
 ## Assignment
 
@@ -193,7 +205,7 @@ If there are permission issues, returns
 
 ## Submission
 
-    .../submission?course_id=$course_code&assignment_id=$assignment_code
+    .../submission?course_id=$course_code&assignment_id=$assignment_code&timestamp=$time_string
 
 **POST**: stores the submission for that user
 returns
@@ -239,6 +251,9 @@ Return: Returns a data structure similar to the above, except `value` is a list 
         },
         {},..
         ]}
+
+Note that the `timestamp` is the timestamp for the corresponding `submitted` assignment, and not
+the time the feedback was released.
 
 **POST**: uploads feedback (one notebook at a time)
 
@@ -296,3 +311,14 @@ Returns
 or
 
     {"success": False, "note": $note}
+
+# On disk storage
+
+An exchange needs to store uploaded files somewhere, and nbexchange stores them wherever `base_storage_location` defines.
+
+Nbexchange follows the idea from nbgrader, and has a structure for saving files:
+
+    <base_storage_location>/<org_id>/<nbgrader_step>/<course_code>/<assignment_code>/<username>/<timestamp>
+
+The `nbgrader_step` is only every going to be `released`, `submitted`, or `feedback` - noting that `released` does not use the username level (consider `username` to be `''`)
+

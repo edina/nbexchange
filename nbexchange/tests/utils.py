@@ -1,12 +1,19 @@
 import asyncio
 import base64
+import datetime
 import io
+import os
+import tarfile
+import time
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import closing
 from functools import partial
 
 import pytest
 import requests
+from dateutil.tz import gettz
 
+from nbexchange.app import NbExchange
 from nbexchange.models.actions import Action
 from nbexchange.models.assignments import Assignment as AssignmentModel
 from nbexchange.models.courses import Course
@@ -14,6 +21,12 @@ from nbexchange.models.feedback import Feedback
 from nbexchange.models.notebooks import Notebook
 from nbexchange.models.subscriptions import Subscription
 from nbexchange.models.users import User
+
+# These replicate what's defined in nbexchange/app.py, nbexchange/handlers/base.py.... and nbgrader/exchange/exchange.py
+n = NbExchange()
+time_zone = n.timezone
+timestamp_format = n.timestamp_format
+tz = gettz(time_zone)
 
 #####
 #
@@ -23,6 +36,7 @@ user_kiz = {"name": "1-kiz"}
 user_bert = {"name": "1-bert"}
 
 user_kiz_instructor = {
+    "id": 1,
     "name": "1-kiz",
     "course_id": "course_2",
     "course_role": "Instructor",
@@ -30,6 +44,7 @@ user_kiz_instructor = {
 }
 
 user_kiz_student = {
+    "id": 1,
     "name": "1-kiz",
     "course_id": "course_2",
     "course_role": "Student",
@@ -37,6 +52,7 @@ user_kiz_student = {
 }
 
 user_zik_student = {
+    "id": 2,
     "name": "1-zik",
     "course_id": "course_2",
     "course_role": "Student",
@@ -47,6 +63,7 @@ user_zik_student = {
 }
 
 user_brobbere_instructor = {
+    "id": 3,
     "name": "1-brobbere",
     "course_id": "course_2",
     "course_role": "Instructor",
@@ -54,12 +71,14 @@ user_brobbere_instructor = {
 }
 
 user_brobbere_student = {
+    "id": 3,
     "name": "1-brobbere",
     "course_id": "course_2",
     "course_role": "Student",
 }
 
 user_lkihlman_instructor = {
+    "id": 4,
     "name": "1-lkihlman",
     "course_id": "course_1",
     "course_role": "Instructor",
@@ -67,9 +86,113 @@ user_lkihlman_instructor = {
 }
 
 user_lkihlman_student = {
+    "id": 4,
     "name": "1-lkihlman",
     "course_id": "course_1",
     "course_role": "Student",
+}
+
+root_notebook_name = "assignment-0.6"
+timestamp = "2020-01-01 00:00:00.000000 UTC"
+
+mock_api_released_assign_a_0_seconds = {
+    "assignment_id": "assign_a",
+    "student_id": 1,
+    "course_id": "no_course",
+    "status": "released",
+    "path": "released/1/assign_a/foo",
+    "notebooks": [
+        {
+            "notebook_id": root_notebook_name,
+            "has_exchange_feedback": False,
+            "feedback_updated": False,
+            "feedback_timestamp": None,
+        }
+    ],
+    "timestamp": timestamp,
+}
+mock_api_released_assign_b_0_seconds = {
+    "assignment_id": "assign_b",
+    "student_id": 1,
+    "course_id": "no_course",
+    "status": "released",
+    "path": "released/1/assign_b/foo",
+    "notebooks": [
+        {
+            "notebook_id": "assignment-0.6-wrong",
+            "has_exchange_feedback": False,
+            "feedback_updated": False,
+            "feedback_timestamp": None,
+        }
+    ],
+    "timestamp": timestamp,
+}
+
+mock_api_fetched_assign_a_0_seconds = {
+    "assignment_id": "assign_a",
+    "student_id": 1,
+    "course_id": "no_course",
+    "status": "fetched",
+    "path": "released/1/assign_a/foo",
+    "notebooks": [
+        {
+            "notebook_id": root_notebook_name,
+            "has_exchange_feedback": False,
+            "feedback_updated": False,
+            "feedback_timestamp": None,
+        }
+    ],
+    "timestamp": timestamp,
+}
+mock_api_fetched_assign_b_0_seconds = {
+    "assignment_id": "assign_b",
+    "student_id": 1,
+    "course_id": "no_course",
+    "status": "fetched",
+    "path": "released/1/assign_b/foo",
+    "notebooks": [
+        {
+            "notebook_id": root_notebook_name,
+            "has_exchange_feedback": False,
+            "feedback_updated": False,
+            "feedback_timestamp": None,
+        }
+    ],
+    "timestamp": timestamp,
+}
+
+mock_api_submit_assign_a_0_seconds = {
+    "assignment_id": "assign_a",
+    "student_id": 1,
+    "course_id": "no_course",
+    "status": "submitted",
+    "path": "submitted/1/assign_a/1/foo",
+    "notebooks": [
+        {
+            "notebook_id": root_notebook_name,
+            "has_exchange_feedback": False,
+            "feedback_updated": False,
+            "feedback_timestamp": None,
+        }
+    ],
+    "timestamp": timestamp,
+}
+
+mock_api_release_feedback_assign_a_0_seconds = {
+    "assignment_id": "assign_a",
+    "course_id": "no_course",
+    "notebooks": [
+        {
+            "feedback_timestamp": None,
+            "feedback_updated": False,
+            "has_exchange_feedback": False,
+            "notebook_id": root_notebook_name,
+        },
+    ],
+    "path": "feedback/1/9cf90d9fcb620713a78b08106f9fcbbc.html",
+    "status": "feedback_released",
+    "student_id": 1,
+    "timestamp": timestamp,
 }
 
 
@@ -100,17 +223,37 @@ def api_request(self, url, method="GET", *args, **kwargs):
         raise NotImplementedError(f"HTTP Method {method} is not implemented")
 
 
-def get_files_dict(filename):
-    import tarfile
+def get_files_dict(timestamp: str = None) -> list:
+
+    if timestamp is None:
+        timestamp = datetime.datetime.now(tz).strftime(timestamp_format)
+
+    notebooks = ["assignment-0.6", "assignment-0.6-2"]
+
+    # notebook 1
+    notebook1_filename = os.path.join(os.path.dirname(__file__), "data", f"{notebooks[0]}.ipynb")
+
+    # notebook 2
+    notebook2_filename = os.path.join(os.path.dirname(__file__), "data", f"{notebooks[1]}.ipynb")
 
     tar_file = io.BytesIO()
-
     with tarfile.open(fileobj=tar_file, mode="w:gz") as tar_handle:
-        tar_handle.add(filename, arcname=".")
+
+        arcname = os.path.relpath(notebook1_filename, start=os.path.dirname(__file__))
+        tar_handle.add(notebook1_filename, arcname=arcname)
+        arcname = os.path.relpath(notebook2_filename, start=os.path.dirname(__file__))
+        tar_handle.add(notebook2_filename, arcname=arcname)
+
+        with closing(io.BytesIO(timestamp.encode())) as fobj:
+            tarinfo = tarfile.TarInfo("timestamp.txt")
+            tarinfo.size = len(fobj.getvalue())
+            tarinfo.mtime = time.time()
+            tar_handle.addfile(tarinfo, fileobj=fobj)
+
     tar_file.seek(0)
     tar_file = tar_file.read()
     files = {"assignment": ("assignment.tar.gz", tar_file)}
-    return files
+    return files, notebooks, timestamp
 
 
 def get_feedback_dict(filename):

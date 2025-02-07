@@ -36,13 +36,6 @@ class ExchangeFetchFeedback(abc.ExchangeFetchFeedback, Exchange):
             for f in content["feedback"]:
                 self.log.debug(f"fetch-feedback.download has {f['filename']}, {f['timestamp']}")
                 try:
-                    # This matches nb_timestamp in list.parse_assignments, "status" == "submitted"
-                    # The format should match the nbgrader default "%Y-%m-%d %H:%M:%S.%f %Z"
-                    # timestamp = (
-                    #     parser.parse(str(f["timestamp"]))
-                    #     .strftime(self.timestamp_format)
-                    #     .strip()
-                    # )
                     timestamp = f["timestamp"]
                     os.makedirs(os.path.join(self.dest_path, timestamp), exist_ok=True)
                     self.log.info(f"Downloading feedback to {os.path.join(self.dest_path, timestamp)}")

@@ -21,7 +21,8 @@ student_id = "1"
 assignment_id = "assign_1"
 
 """
-Note that the directory created for feedback is "2020-01-01 00:00:00.100000", not "2020-01-01 00:00:00.10 00:00"
+Note that the directory created for feedback is "2020-01-01 00:00:00.100000 UTC", not
+"2020-01-01 00:00:00.10 00:00"
 """
 
 

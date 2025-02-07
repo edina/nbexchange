@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "naas.fullname" . }}-nbexchange-config
+data:
+  nbexchange_config.py: |
+    import json
+    import logging
+    import os
+    import requests
+
+    from tornado import web
+
+    from nbexchange.handlers.auth.user_handler import BaseUserHandler
+
+    class MyUserHandler(BaseUserHandler):
+
+        def get_current_user(self, request: web.RequestHandler) -> dict:
+            resp = requests.get('http://example.com/getUser').json()
+            result = json.dumps(resp)
+
+            return {
+                "name": result.get["username", ""],
+                "full_name": result.get("fullname", ""),
+                "course_id": result["course_code"],
+                "course_title": result["course_title"],
+                "course_role": result["course_role"],
+                "org_id": result["org_id", 1],
+                "email": result["email_addy"],
+                "lms_user_id": result["lms_id"],
+            }
+
+
+    c.NbExchange.user_plugin_class = MyUserHandler
+    c.NbExchange.base_url = "{{ .Values.nbexchange.paths.service_prefix }}"
+    c.NbExchange.base_storage_location = "{{ .Values.nbexchange.paths.base_store }}"
+    c.NbExchange.db_url = f"{os.environ.get('NBEX_DB_URL')}"
+    c.NbExchange.debug = int(f"{os.environ.get('DEBUG', 0)}")

@@ -3,6 +3,7 @@ import os
 import sys
 from urllib.parse import quote_plus
 
+from dateutil import parser
 from nbgrader.exchange.abc import ExchangeSubmit as ABCExchangeSubmit
 from nbgrader.utils import find_all_notebooks
 
@@ -35,26 +36,29 @@ class ExchangeSubmit(Exchange, ABCExchangeSubmit):
         import time
         from contextlib import closing
 
-        timestamp = self.timestamp
+        timestamp = self.timestamp  # This is a string object
         tar_file = io.BytesIO()
         with tarfile.open(fileobj=tar_file, mode="w:gz") as tar_handle:
-            tar_handle.add(self.src_path, arcname=".")
+            self.add_to_tar(tar_handle, self.src_path, self.ignore)
             with closing(io.BytesIO(timestamp.encode())) as fobj:
                 tarinfo = tarfile.TarInfo("timestamp.txt")
                 tarinfo.size = len(fobj.getvalue())
                 tarinfo.mtime = time.time()
                 tar_handle.addfile(tarinfo, fileobj=fobj)
         tar_file.seek(0)
-        return tar_file.read()
+        return tar_file.read(), timestamp
 
-    def upload(self, file):
+    def upload(self, file: bytes, timestamp: str):
         self.log.debug(f"ExchangeSubmit uploading to: {self.service_url()}")
         self.log.info(f"Source: {self.src_path}")
         self.log.info("Destination: The exhange service")
 
+        # validate timestamp
+        timestamp = self.check_timezone(parser.parse(timestamp)).strftime(self.timestamp_format)
+
         files = {"assignment": ("assignment.tar.gz", file)}
         r = self.api_request(
-            f"submission?course_id={quote_plus(self.coursedir.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}",  # noqa: E501
+            f"submission?course_id={quote_plus(self.coursedir.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}&timestamp={quote_plus(timestamp)}",  # noqa: E501
             method="POST",
             files=files,
         )
@@ -63,9 +67,9 @@ class ExchangeSubmit(Exchange, ABCExchangeSubmit):
         if not data["success"]:
             self.fail(data["note"])
 
-        self.log.info(f"Submitted as: {self.coursedir.course_id} {self.coursedir.assignment_id} {self.timestamp}")
+        self.log.info(f"Submitted as: {self.coursedir.course_id} {self.coursedir.assignment_id} {timestamp}")
 
-    # Like the default Submit, we log differences, and do not rener then in the display
+    # Like the default Submit, we log differences, and do not render then in the display
     # (not sure that's any ues to anyone - but that's what the original does)
     def check_filename_diff(self):
         # List of filenames, no paths
@@ -125,8 +129,8 @@ class ExchangeSubmit(Exchange, ABCExchangeSubmit):
 
     def copy_files(self):
         self.check_filename_diff()
-        # Grab files from hard drive
-        file = self.tar_source()
+        # Grab files from hard drive, and the timestamp string we put in the timestamp file
+        file, timestamp = self.tar_source()
         if sys.getsizeof(file) > self.max_buffer_size:
             self.fail(
                 "Assignment {} not submitted. "
@@ -135,4 +139,4 @@ class ExchangeSubmit(Exchange, ABCExchangeSubmit):
                 "".format(self.coursedir.assignment_id)
             )
         # Upload files to exchange
-        self.upload(file)
+        self.upload(file, timestamp)

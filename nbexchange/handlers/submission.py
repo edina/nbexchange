@@ -1,7 +1,7 @@
 import os
-import time
 import uuid
 
+from dateutil import parser
 from tornado import web
 
 from nbexchange.database import scoped_session
@@ -21,8 +21,9 @@ This relys on users being logged in, and the user-object having additional data:
 class Submission(BaseHandler):
     """.../submisssion/
     parmas:
-        course_id: course_code
-        assignment_id: assignment_code
+        course_id: course_code [eg 'cool course']
+        assignment_id: assignment_code [eg 'Indivisual Assessment 1']
+        timestamp: The timestamp in timestamp.txt [eg '2020-01-01 00:00:00.0 UTC']
 
     POST: (with file) submits an assignment"""
 
@@ -43,15 +44,22 @@ class Submission(BaseHandler):
             self.finish({"success": False, "note": note})
             return
 
-        [course_code, assignment_code] = self.get_params(["course_id", "assignment_id"])
+        [course_code, assignment_code, timestamp] = self.get_params(["course_id", "assignment_id", "timestamp"])
         self.log.debug(
-            f"Called POST /submission with arguments: course {course_code} and  assignment {assignment_code}"
+            f"Called POST /submission with arguments: course {course_code} and ",
+            f"assignment {assignment_code}, giving a timestamp of {timestamp}",
         )
         if not (course_code and assignment_code):
-            note = "Submission call requires both a course code and an assignment code"
+            note = "Submission call requires a course code and an assignment code"
             self.log.info(note)
             self.finish({"success": False, "note": note})
             return
+
+        # If this happens, then any feedback isn't going to sync with this submission
+        if not timestamp:
+            timestamp = self.get_timestamp()
+            note = f"Submission was posted without a timestamp. We've set it to {timestamp}, but feedback will not sync to this."  # noqa: E501
+            self.log.info(note)
 
         this_user = self.nbex_user
 
@@ -74,18 +82,19 @@ class Submission(BaseHandler):
                 self.finish({"success": False, "note": note})
                 return
 
+            # validate timestamp: convert to datetime object & ensure it's got a timezone
+            timestamp = self.check_timezone(parser.parse(timestamp))
+
             # storage is dynamically in $path/submitted/$course_code/$assignment_code/$username/<timestamp>/
             # Note - this means that a user can submit multiple times, and we have all copies
-            release_file = "/".join(
-                [
-                    self.base_storage_location,
-                    str(this_user["org_id"]),
-                    AssignmentActions.submitted.value,
-                    course_code,
-                    assignment_code,
-                    this_user["name"],
-                    str(int(time.time())),
-                ]
+            release_file = os.path.join(
+                self.base_storage_location,
+                str(this_user["org_id"]),
+                AssignmentActions.submitted.value,
+                course_code,
+                assignment_code,
+                this_user["name"],
+                str(int(timestamp.timestamp())),  # this is a daterime rendition (eg '1738054326')
             )
 
             if not self.request.files:
@@ -143,15 +152,19 @@ class Submission(BaseHandler):
             # Record the action.
             # Note we record the path to the files.
             self.log.info(
-                f"Adding action {AssignmentActions.submitted.value} for user {this_user['id']} against assignment {assignment.id}"  # noqa: E501
+                f"Adding action {AssignmentActions.submitted.value} for user {this_user['id']} against assignment {assignment.id} at time {timestamp}"  # noqa: E501
             )
+
+            # The action timestamp _must_ be the same value as in the timestamp.txt file in the submission
             action = Action(
                 user_id=this_user["id"],
                 assignment_id=assignment.id,
                 action=AssignmentActions.submitted,
                 location=release_file,
+                timestamp=timestamp,
             )
             session.add(action)
+
         self.finish({"success": True, "note": "Submitted"})
 
 

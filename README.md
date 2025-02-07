@@ -14,7 +14,7 @@ A dockerised service that replaces the defaukt nbgrader Exchange.
 - [Configuration](#configuration)
   - [Configuring the `nbexchange` service](#configuring-the-nbexchange-service)
     - [**`user_plugin_class`** revisited](#user_plugin_class-revisited)
-  - [Configuring `nbgrader` to use the alternative exchange](#configuring-nbgrader-to-use-the-alternative-exchange)
+  - [Configuring `nbgrader` to use the alternative exchange in Jupyterlab/Jupyter-Notebook](#configuring-nbgrader-to-use-the-alternative-exchange-in-jupyterlabjupyter-notebook)
 - [Contributing](#contributing)
   - [Releasing new versions](#releasing-new-versions)
 
@@ -50,7 +50,7 @@ The team that created the inital code use nbexchange in a cloud environment, wit
 
 ## Compatibility
 
-This version installs `nbgrader`  0.9.1 (which makes it compatible with JupyterLab & Notebook 7)
+This version installs `nbgrader`  0.9.5 (which makes it compatible with JupyterLab & Notebook 7)
 
 # Documentation
 
@@ -66,8 +66,8 @@ There are the following assumptions:
 - There will always be a `course_code`
   - There may be multiple assignments under one course,
   - `assignment_code`s will be unique to a course
-  - `assignment_code`s may be repeated in different  `organisation_id`
-  - Note that default nbgrader does not distinguish `assignment_code`s across different `course_codes`, within the same `gradebook` database.
+    - `assignment_code`s may be repeated in different `course_code`s
+    - Note that default nbgrader does not distinguish `assignment_code`s across different `course_codes`, within the same `gradebook` database.
 - There will always be an `organisation_id`
   - `course_code`s must be uniqie within an `organisation_id`,
   - `course_code`s may be repeated in different `organisation_id`
@@ -113,7 +113,7 @@ Note that nbgrader installs and enables the jupyter extensions automatically - y
 
 ## Configuring the `nbexchange` service
 
-The exchange uses `nbexchange_config.py` for configuration.
+The exchange uses `/etc/config/nbexchange_config.py` for configuration... though you can override this with the `--NbExchange.config_file=<file>` parameter on start-up
 
 This is an example config file:
 
@@ -144,27 +144,27 @@ c.NbExchange.db_url = mysql://username:password@my.msql.server.host:3306/db_name
 
 - **`user_plugin_class`**
 
-For the exchange to work it needs some details about the user connecting to it. This parameter defines the class that provides the `get_current_user` method.
+This class performs two roles: Is the user authorised to use the service, and provide some details about the user. Being able to provide user details is taken as an implication of authorisation.  
+
+For the exchange to determine how to handle a connection, it needs some details about the user connecting to it. This parameter defines the class that provides the `get_current_user` method.
+
+You need to write this method for your own application.
+
+Notice that the example above creates the class that provides the method in the config file.
 
 See below for more details on that.
 
 - **`base_url`**
 
-This is the _service_ url used by jupyterhub, and defaults to `/services/nbexchange/`
-
-Can also be defined in the environment variable `JUPYTERHUB_SERVICE_PREFIX`
+This is the url the service listens to. It is essentially the _service_ url used by jupyterhub, and defaults to `/services/nbexchange/`
 
 - **`base_storage_location`**
 
 This is where the exchange will store the files uploaded, and defaults to `/tmp/courses`
 
-Can also be defined in the environment variable `NBEX_BASE_STORE`
-
 - **`db_url`**
 
 This is the database connector, and defaults to an in-memory SQLite (`sqlite:///:memory:`)
-
-Can also be defined in the environment variable `NBEX_DB_URL`
 
 - **`db_kwargs`** 
 
@@ -191,41 +191,33 @@ For the exchange to work, it needs some details about the user connecting to it 
   - The full name appears in the `formgrader` UI.
   - nbgrader stores `first_name` and `last_name`
 - `email`: An email address for the user, if supplied by the remote authenticator.
-  - This is an nbgrader field
+  - This is an nbgrader field, nbexchange doesn't use it itself
 - `lms_user_id`: This is the identifier for the user in the LMS/VLE, if supplied by the remote authenticator.
-  - This is an nbgrader field
-  - username to access the system running notebooks is probably not the same as the ID the LMS uses to idnetify the user.
-- `course_id`: The course code as used in nbgrader (eg `cool_course`).
+  - This is an nbgrader field, nbexchange doesn't use it itself
+  - _username_ to access the system running notebooks is probably not the same as the ID the LMS uses to idnetify the user.
+- `course_id`: The course code as used in nbgrader (eg `cool course`). 
   - This is `course_id` not `course_code`, as nbgrader uses `course_id` for this piece of data.
+  - Note that any of the characters `{}(){}/\` will give nbgrader a problem [beyond nbexchange]
 - `course_title`: A long name for the course (eg `A course of understanding thermondynamics in bulk refrigerant transport`).
 - `course_role`: The role of the user, normally `Student` or `Instructor`. (currently only `Instructor` get privilaged actions).
 - `org_id`: As mentioned above, nbexchange divides courses and users across organisations. This is an id (numeric) for the org_id for the user. It defaults to `1` if not given.
 
-## Configuring `nbgrader` to use the alternative exchange
+## Configuring `nbgrader` to use the alternative exchange in Jupyterlab/Jupyter-Notebook
 
 The primary reference for this should be the `nbgrader` documentation - but in short:
 
-1. Use the `nbgrader` code-base that supports the external exchange (nbgrader 0.7 and later)
-2. Install the code from `nbexchange/plugin` into `nbgrader`
-3. Include the following in your `nbgrader_config.py` file:
+1. Install `nbexchange` into your jupyter environment [from github, using pip]
+2. Include the following in your `nbgrader_config.py` file:
 
 ```python
-## A plugin for collecting assignments.
-c.ExchangeFactory.collect = 'nbexchange.plugin.ExchangeCollect'
-## A plugin for exchange.
 c.ExchangeFactory.exchange = 'nbexchange.plugin.Exchange'
-## A plugin for fetching assignments.
-c.ExchangeFactory.fetch_assignment = 'nbexchange.plugin.ExchangeFetchAssignment'
-## A plugin for fetching feedback.
-c.ExchangeFactory.fetch_feedback = 'nbexchange.plugin.ExchangeFetchFeedback'
-## A plugin for listing exchange files.
 c.ExchangeFactory.list = 'nbexchange.plugin.ExchangeList'
-## A plugin for releasing assignments.
 c.ExchangeFactory.release_assignment = 'nbexchange.plugin.ExchangeReleaseAssignment'
-## A plugin for releasing feedback.
-c.ExchangeFactory.release_feedback = 'nbexchange.plugin.ExchangeReleaseFeedback'
-## A plugin for submitting assignments.
+c.ExchangeFactory.fetch_assignment = 'nbexchange.plugin.ExchangeFetchAssignment'
 c.ExchangeFactory.submit = 'nbexchange.plugin.ExchangeSubmit'
+c.ExchangeFactory.collect = 'nbexchange.plugin.ExchangeCollect'
+c.ExchangeFactory.release_feedback = 'nbexchange.plugin.ExchangeReleaseFeedback'
+c.ExchangeFactory.fetch_feedback = 'nbexchange.plugin.ExchangeFetchFeedback'
 ```
 
 These plugins will also check the size of _releases_ & _submissions_

@@ -1,6 +1,5 @@
 import logging
 import re
-import sys
 
 import pytest
 from mock import patch
@@ -20,7 +19,7 @@ logger = logging.getLogger(__file__)
 logger.setLevel(logging.ERROR)
 
 # set up the file to be uploaded as part of the testing later
-files = get_files_dict(sys.argv[0])  # ourself :)
+release_files, notebooks, timestamp = get_files_dict()
 
 
 # #### POST /collection #### #
@@ -71,14 +70,15 @@ def test_get_collection_catches_missing_path(app, clear_database):  # noqa: F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.get(app.url + "/assignment?course_id=course_2&assignment_id=assign_a")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+        params = "/submission?course_id=course_2&assignment_id=assign_a&timestamp=2020-01-01%2000%3A00%3A00.0%20UTC"
         r = yield async_requests.post(
-            app.url + "/submission?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            app.url + params,
+            files=release_files,
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         collected_data = None
@@ -106,14 +106,15 @@ def test_get_collection_catches_missing_assignment(app, clear_database):  # noqa
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.get(app.url + "/assignment?course_id=course_2&assignment_id=assign_a")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+        params = "/submission?course_id=course_2&assignment_id=assign_a&timestamp=2020-01-01%2000%3A00%3A00.0%20UTC"
         r = yield async_requests.post(
-            app.url + "/submission?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            app.url + params,
+            files=release_files,
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         collected_data = None
@@ -140,14 +141,15 @@ def test_get_collection_catches_missing_course(app, clear_database):  # noqa: F8
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.get(app.url + "/assignment?course_id=course_2&assignment_id=assign_a")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+        params = "/submission?course_id=course_2&assignment_id=assign_a&timestamp=2020-01-01%2000%3A00%3A00.0%20UTC"
         r = yield async_requests.post(
-            app.url + "/submission?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            app.url + params,
+            files=release_files,
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         collected_data = None
@@ -174,14 +176,15 @@ def test_get_collection_checks_for_user_subscription(app, clear_database):  # no
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.get(app.url + "/assignment?course_id=course_2&assignment_id=assign_a")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+        params = "/submission?course_id=course_2&assignment_id=assign_a&timestamp=2020-01-01%2000%3A00%3A00.0%20UTC"
         r = yield async_requests.post(
-            app.url + "/submission?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            app.url + params,
+            files=release_files,
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         collected_data = None
@@ -190,9 +193,9 @@ def test_get_collection_checks_for_user_subscription(app, clear_database):  # no
         )  # Get the data we need to make test the call we want to make
         response_data = r.json()
         collected_data = response_data["value"][0]
+        params = f"/collection?course_id=course_1&path={collected_data['path']}&assignment_id={collected_data['assignment_id']}"  # noqa: E501
         r = yield async_requests.get(
-            app.url
-            + f"/collection?course_id=course_1&path={collected_data['path']}&assignment_id={collected_data['assignment_id']}"  # noqa: E501 W503
+            app.url + params,
         )
     assert r.status_code == 200
     response_data = r.json()
@@ -208,7 +211,7 @@ def test_get_collection_check_catches_student_role(app, clear_database):  # noqa
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_brobbere_student):
         r = yield async_requests.get(
@@ -229,14 +232,15 @@ def test_get_collection_confirm_instructor_does_download(app, clear_database):  
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.get(app.url + "/assignment?course_id=course_2&assignment_id=assign_a")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+        params = "/submission?course_id=course_2&assignment_id=assign_a&timestamp=2020-01-01%2000%3A00%3A00.0%20UTC"
         r = yield async_requests.post(
-            app.url + "/submission?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            app.url + params,
+            files=release_files,
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         collected_data = None
@@ -245,10 +249,8 @@ def test_get_collection_confirm_instructor_does_download(app, clear_database):  
         )  # Get the data we need to make test the call we want to make
         response_data = r.json()
         collected_data = response_data["value"][0]
-        r = yield async_requests.get(
-            app.url
-            + f"/collection?course_id={collected_data['course_id']}&path={collected_data['path']}&assignment_id={collected_data['assignment_id']}"  # noqa: E501 W503
-        )
+        params = f"/collection?course_id={collected_data['course_id']}&path={collected_data['path']}&assignment_id={collected_data['assignment_id']}"  # noqa: E501 W503
+        r = yield async_requests.get(app.url + params)
     assert r.status_code == 200
     assert r.headers["Content-Type"] == "application/gzip"
     assert int(r.headers["Content-Length"]) > 0
@@ -263,14 +265,15 @@ def test_get_collection_broken_nbex_user(app, clear_database, caplog):  # noqa: 
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.get(app.url + "/assignment?course_id=course_2&assignment_id=assign_a")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+        params = "/submission?course_id=course_2&assignment_id=assign_a&timestamp=2020-01-01%2000%3A00%3A00.0%20UTC"
         r = yield async_requests.post(
-            app.url + "/submission?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            app.url + params,
+            files=release_files,
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         collected_data = None
@@ -280,10 +283,8 @@ def test_get_collection_broken_nbex_user(app, clear_database, caplog):  # noqa: 
         response_data = r.json()
         collected_data = response_data["value"][0]
         with patch.object(BaseHandler, "get_current_user", return_value=user_kiz):
-            r = yield async_requests.get(
-                app.url
-                + f"/collection?course_id={collected_data['course_id']}&path={collected_data['path']}&assignment_id={collected_data['assignment_id']}"  # noqa: E501 W503
-            )
+            params = f"/collection?course_id={collected_data['course_id']}&path={collected_data['path']}&assignment_id={collected_data['assignment_id']}"  # noqa: E501
+            r = yield async_requests.get(app.url + params)
     assert r.status_code == 500
     assert "Both current_course ('None') and current_role ('None') must have values. User was '1-kiz'" in caplog.text
 
@@ -294,28 +295,32 @@ async def test_collection_actions_show_correctly(app, clear_database):  # noqa: 
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = await async_requests.post(  # release
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )
         r = await async_requests.get(app.url + "/assignment?&course_id=course_2&assignment_id=assign_a")  # fetch
+        params = "/submission?course_id=course_2&assignment_id=assign_a&timestamp=2020-01-01%2000%3A00%3A00.0%20UTC"
         r = await async_requests.post(  # submit
-            app.url + "/submission?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            app.url + params,
+            files=release_files,
         )
+        params = "/submission?course_id=course_2&assignment_id=assign_a&timestamp=2020-01-01%2000%3A00%3A01.0%20UTC"
         r = await async_requests.post(  # submit
-            app.url + "/submission?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            app.url + params,
+            files=release_files,
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_brobbere_student):
         r = yield async_requests.get(
             app.url + "/assignment?&course_id=course_2&assignment_id=assign_a"
         )  # fetch as another user
+        params = "/submission?course_id=course_2&assignment_id=assign_a&timestamp=2020-01-01%2000%3A00%3A00.0%20UTC"
         r = yield async_requests.post(
-            app.url + "/submission?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            app.url + params,
+            files=release_files,
         )  # submit as that user
+        params = "/submission?course_id=course_2&assignment_id=assign_a&timestamp=2020-01-01%2000%3A00%3A01.0%20UTC"
         r = yield async_requests.post(
-            app.url + "/submission?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            app.url + params,
+            files=release_files,
         )  # submit as that user again
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.get(app.url + "/collections?course_id=course_2&assignment_id=assign_a")
@@ -335,10 +340,8 @@ async def test_collection_actions_show_correctly(app, clear_database):  # noqa: 
 
         collected_items = response_data["value"]
         for collected_data in collected_items:
-            r = yield async_requests.get(  # collect submission
-                app.url
-                + f"/collection?course_id={collected_data['course_id']}&path={collected_data['path']}&assignment_id={collected_data['assignment_id']}"  # noqa: E501 W503
-            )
+            params = f"/collection?course_id={collected_data['course_id']}&path={collected_data['path']}&assignment_id={collected_data['assignment_id']}"  # noqa: E501
+            r = yield async_requests.get(app.url + params)  # collect submission
 
         r = yield async_requests.get(app.url + "/assignments?course_id=course_2")
 
@@ -384,14 +387,15 @@ def test_get_collection_path_is_incorrect(app, clear_database):  # noqa: F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.get(app.url + "/assignment?course_id=course_2&assignment_id=assign_a")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+        params = "/submission?course_id=course_2&assignment_id=assign_a&timestamp=2020-01-01%2000%3A00%3A00.0%20UTC"
         r = yield async_requests.post(
-            app.url + "/submission?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            app.url + params,
+            files=release_files,
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         collected_data = None
@@ -400,10 +404,8 @@ def test_get_collection_path_is_incorrect(app, clear_database):  # noqa: F811
         )  # Get the data we need to make test the call we want to make
         response_data = r.json()
         collected_data = response_data["value"][0]
-        r = yield async_requests.get(
-            app.url
-            + f"/collection?course_id={collected_data['course_id']}&path=/some/random/path&assignment_id={collected_data['assignment_id']}"  # noqa: E501 W503
-        )
+        params = f"/collection?course_id={collected_data['course_id']}&path=/some/random/path&assignment_id={collected_data['assignment_id']}"  # noqa: E501
+        r = yield async_requests.get(app.url + params)
     assert r.status_code == 200
     assert r.headers["Content-Type"] == "application/gzip"
     assert int(r.headers["Content-Length"]) == 0
@@ -418,14 +420,15 @@ def test_get_collection_with_a_blank_feedback_path_injected(app, clear_database)
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            files=release_files,
         )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
         r = yield async_requests.get(app.url + "/assignment?course_id=course_2&assignment_id=assign_a")
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+        params = "/submission?course_id=course_2&assignment_id=assign_a&timestamp=2020-01-01%2000%3A00%3A00.0%20UTC"
         r = yield async_requests.post(
-            app.url + "/submission?course_id=course_2&assignment_id=assign_a",
-            files=files,
+            app.url + params,
+            files=release_files,
         )
 
     # Now manually inject a `feedback_fetched` action
@@ -448,9 +451,9 @@ def test_get_collection_with_a_blank_feedback_path_injected(app, clear_database)
         )  # Get the data we need to make test the call we want to make
         response_data = r.json()
         collected_data = response_data["value"][0]
+        params = f"/collection?course_id={collected_data['course_id']}&path={collected_data['path']}&assignment_id={collected_data['assignment_id']}"  # noqa: E501
         r = yield async_requests.get(
-            app.url
-            + f"/collection?course_id={collected_data['course_id']}&path={collected_data['path']}&assignment_id={collected_data['assignment_id']}"  # noqa: E501 W503
+            app.url + params,
         )
     assert r.status_code == 200
     assert r.headers["Content-Type"] == "application/gzip"

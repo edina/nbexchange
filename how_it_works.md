@@ -40,7 +40,7 @@ The location follows a standard format:
         action,
         course_code,
         assignment_code,
-        time.now(),
+        epoch_time,
         filename
     )
 
@@ -52,6 +52,8 @@ Lets follow an assignment cycle, and see how the exchange records everything
 In all cases, the user is _authenticated_ using the `get_current_user` method, and _subscribed_ to the `course` with the `role` defined in that call.
 
 All calls check that the user is subscribed to the course given in the parameter
+
+Note that all `action` timestamps in the exchange are timezine aware, and use the `UTC` timezone.
 
 #### list
 
@@ -82,7 +84,7 @@ We verify the user is an `instructor`, and subscribed to the course.
     POST /submission?course_id=$cid&assignment_id=$aid&timestamp=$timestamp, files = _zip-file_
 
 1. Grabs the uploaded file (we use `.zip` files for assignments) and store it in a _location_,
-2. Note that we specifically define the timestamp - this should be the same string as stored in `timestamp.txt`
+2. Note that we specifically define the `timestamp` - this should be the same string as the plugin stored in the `timestamp.txt` file,
 3. Creates an `action` record, noting `action=submitted`, the assignment, file location, who did the action, and add the timestamp
 
 #### collect
@@ -214,6 +216,8 @@ returns
 
 or raises Exception (which is returned as a `503` error)
 
+**Note** If `timestamp` is not supplied, then _now()_ is used. This is not ideal, as this timestamp is used by the exchange to link `feedback` to the correct `submission`
+
 ## Collections
 
 
@@ -273,7 +277,9 @@ or raises an error - should be a 404 or 412.
 
     .../history?course_id=$course_code&action=$action
 
-**GET**: returns list of actions, grouped by course, and then assignment
+**GET**: returns list of actions, grouped by course, and then assignment.
+
+(this was added for the grade-passback system in the Noteable service, and expanded to be of potential use by services. See the Handler docstring for more details on what data's listed.)
 
 Returns 
 
@@ -318,7 +324,7 @@ An exchange needs to store uploaded files somewhere, and nbexchange stores them 
 
 Nbexchange follows the idea from nbgrader, and has a structure for saving files:
 
-    <base_storage_location>/<org_id>/<nbgrader_step>/<course_code>/<assignment_code>/<username>/<timestamp>
+    <base_storage_location>/<org_id>/<nbgrader_step>/<course_code>/<assignment_code>/<username>/<epoch-time>
 
 The `nbgrader_step` is only every going to be `released`, `submitted`, or `feedback` - noting that `released` does not use the username level (consider `username` to be `''`)
 

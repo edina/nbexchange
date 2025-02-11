@@ -46,7 +46,7 @@ class Action(Base):
 
     """
 
-    time_zone = "UTC"  # How to get this from a central configuration??
+    time_zone = "UTC"  # the _database_ stores all actions in UTC [unless given otherwise]
     tz = gettz(time_zone)
 
     __tablename__ = "action"

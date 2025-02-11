@@ -50,7 +50,7 @@ The team that created the inital code use nbexchange in a cloud environment, wit
 
 ## Compatibility
 
-This version installs `nbgrader`  0.9.5 (which makes it compatible with JupyterLab & Notebook 7)
+This version installs `nbgrader`  0.9.5 (which makes it compatible with JupyterLab 4.2 & Notebook 7)
 
 # Documentation
 
@@ -67,7 +67,7 @@ There are the following assumptions:
   - There may be multiple assignments under one course,
   - `assignment_code`s will be unique to a course
     - `assignment_code`s may be repeated in different `course_code`s
-    - Note that default nbgrader does not distinguish `assignment_code`s across different `course_codes`, within the same `gradebook` database.
+    - Note that default _nbgrader_ does not distinguish `assignment_code`s across different `course_codes`, within the same `gradebook` database.
 - There will always be an `organisation_id`
   - `course_code`s must be uniqie within an `organisation_id`,
   - `course_code`s may be repeated in different `organisation_id`
@@ -190,17 +190,21 @@ For the exchange to work, it needs some details about the user connecting to it 
 - `full_name`: The optional full name, if supplied by the remote authenticator.
   - The full name appears in the `formgrader` UI.
   - nbgrader stores `first_name` and `last_name`
-- `email`: An email address for the user, if supplied by the remote authenticator.
-  - This is an nbgrader field, nbexchange doesn't use it itself
-- `lms_user_id`: This is the identifier for the user in the LMS/VLE, if supplied by the remote authenticator.
-  - This is an nbgrader field, nbexchange doesn't use it itself
-  - _username_ to access the system running notebooks is probably not the same as the ID the LMS uses to idnetify the user.
 - `course_id`: The course code as used in nbgrader (eg `cool course`). 
   - This is `course_id` not `course_code`, as nbgrader uses `course_id` for this piece of data.
   - Note that any of the characters `{}(){}/\` will give nbgrader a problem [beyond nbexchange]
 - `course_title`: A long name for the course (eg `A course of understanding thermondynamics in bulk refrigerant transport`).
 - `course_role`: The role of the user, normally `Student` or `Instructor`. (currently only `Instructor` get privilaged actions).
 - `org_id`: As mentioned above, nbexchange divides courses and users across organisations. This is an id (numeric) for the org_id for the user. It defaults to `1` if not given.
+
+In addition, it will look for the optional
+- `email`: An email address for the user, if supplied by the remote authenticator.
+  - This is an nbgrader field, nbexchange doesn't use it itself
+- `lms_user_id`: This is the identifier for the user in the LMS/VLE, if supplied by the remote authenticator.
+  - This is an nbgrader field, nbexchange doesn't use it itself
+  - _username_ to access the system running notebooks is probably not the same as the ID the LMS uses to idnetify the user.
+
+.... these are not used by the exchange, however are passed to the Gradebook database if supplied.
 
 ## Configuring `nbgrader` to use the alternative exchange in Jupyterlab/Jupyter-Notebook
 

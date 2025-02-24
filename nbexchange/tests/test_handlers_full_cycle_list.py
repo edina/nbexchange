@@ -500,6 +500,7 @@ class TestHandlersFetchFullCycle(BaseTestHandlers):
             r = yield async_requests.get(app.url + "/assignments?course_id=course_2")
         response_data = r.json()
         data = response_data["value"]
+
         # Check submissions & feedback_timestamps line up
         assert data[2]["status"] == "submitted"
         assert data[2]["notebooks"][0]["feedback_timestamp"] is None
@@ -533,6 +534,208 @@ class TestHandlersFetchFullCycle(BaseTestHandlers):
 
         # Check submissions & feedback_timestamps line up
         # Note we've cheated, and set it so local feeback always exists if released
+
+        # no feedback
+        _test_assignment_feedback(my_assignments[1])
+
+        # with feedback
+        _test_assignment_feedback(my_assignments[2])
+
+        # no feedback
+        _test_assignment_feedback(my_assignments[3])
+
+        # with feedback
+        _test_assignment_feedback(my_assignments[4])
+
+        # no feedback
+        _test_assignment_feedback(my_assignments[5])
+
+    # assume submit, submit, feedback, submit, submit, feedback, submit
+    # the list should match timestamps to submissions 2 & 4 only
+    @pytest.mark.gen_test
+    def test_feedback_does_not_maps_to_submissions_aka_old_stylee(self, app, clear_database):  # noqa: F811
+        release_files, notebooks, timestamp = get_files_dict()
+        import datetime
+
+        # release
+        with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
+            r = yield async_requests.post(
+                app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
+                data={"notebooks": notebooks},
+                files=release_files,
+            )
+        # a student fetch
+        with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+            r = yield async_requests.get(app.url + "/assignment?course_id=course_2&assignment_id=assign_a")
+
+        # student submit twice, delay between them
+        with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+            timestamp = datetime.datetime.now(tz).strftime(timestamp_format)
+            r = yield async_requests.post(
+                app.url + "/submission?course_id=course_2&assignment_id=assign_a",
+                files=release_files,
+            )
+            sleep(1)
+            timestamp = datetime.datetime.now(tz).strftime(timestamp_format)
+            r = yield async_requests.post(
+                app.url + "/submission?course_id=course_2&assignment_id=assign_a",
+                files=release_files,
+            )
+
+        # instructor collects
+        with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
+            collected_data = None
+            r = yield async_requests.get(
+                app.url + "/collections?course_id=course_2&assignment_id=assign_a"
+            )  # Get the data we need to make test the call we want to make
+            response_data = r.json()
+            collected_data = response_data["value"][0]
+            r = yield async_requests.get(
+                app.url
+                + f"/collection?course_id={collected_data['course_id']}&assignment_id={collected_data['assignment_id']}"  # noqa: E501 W503
+            )
+
+        # instructor releases feedback
+        notebooks = ["assignment-0.6", "assignment-0.6-2"]
+        html_files = [
+            os.path.join(os.path.dirname(__file__), "data", f"{notebooks[0]}.html"),
+            os.path.join(os.path.dirname(__file__), "data", f"{notebooks[1]}.html"),
+        ]
+        student_id = user_kiz_student["name"]
+        for html_file in html_files:
+            notebook_id = Path(html_file).stem
+            unique_key = make_unique_key(
+                "course_2",
+                "assign_a",
+                notebook_id,
+                student_id,
+                timestamp,  # this is the last submitted timestamp
+            )
+            checksum = notebook_hash(html_file, unique_key)
+            with open(html_file) as feedback_file:
+                feedback_data = {"feedback": ("feedback.html", feedback_file.read())}
+
+            url = (
+                f"/feedback?course_id={quote_plus('course_2')}"
+                f"&assignment_id={quote_plus('assign_a')}"
+                f"&notebook={quote_plus(notebook_id)}"
+                f"&student={quote_plus(student_id)}"
+                f"&timestamp={quote_plus(timestamp)}"
+                f"&checksum={quote_plus(checksum)}"
+            )
+            with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
+                r = yield async_requests.post(app.url + url, files=feedback_data)
+
+        # student submit twice, more delays....
+        sleep(1)
+        with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+            timestamp = datetime.datetime.now(tz).strftime(timestamp_format)
+            r = yield async_requests.post(
+                app.url + "/submission?course_id=course_2&assignment_id=assign_a&",
+                files=release_files,
+            )
+            sleep(1)
+            timestamp = datetime.datetime.now(tz).strftime(timestamp_format)
+            r = yield async_requests.post(
+                app.url + "/submission?course_id=course_2&assignment_id=assign_a",
+                files=release_files,
+            )
+
+        # instructor collects
+        with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
+            collected_data = None
+            r = yield async_requests.get(
+                app.url + "/collections?course_id=course_2&assignment_id=assign_a"
+            )  # Get the data we need to make test the call we want to make
+            response_data = r.json()
+            collected_data = response_data["value"][0]
+            r = yield async_requests.get(
+                app.url
+                + f"/collection?course_id={collected_data['course_id']}&assignment_id={collected_data['assignment_id']}"  # noqa: E501 W503
+            )
+
+        # instructor releases feedback
+        notebooks = ["assignment-0.6", "assignment-0.6-2"]
+        html_files = [
+            os.path.join(os.path.dirname(__file__), "data", f"{notebooks[0]}.html"),
+            os.path.join(os.path.dirname(__file__), "data", f"{notebooks[1]}.html"),
+        ]
+        student_id = user_kiz_student["name"]
+        for html_file in html_files:
+            notebook_id = Path(html_file).stem
+            unique_key = make_unique_key(
+                "course_2",
+                "assign_a",
+                notebook_id,
+                student_id,
+                timestamp,  # this is the last submitted timestamp
+            )
+            checksum = notebook_hash(html_file, unique_key)
+            with open(html_file) as feedback_file:
+                feedback_data = {"feedback": ("feedback.html", feedback_file.read())}
+
+            url = (
+                f"/feedback?course_id={quote_plus('course_2')}"
+                f"&assignment_id={quote_plus('assign_a')}"
+                f"&notebook={quote_plus(notebook_id)}"
+                f"&student={quote_plus(student_id)}"
+                f"&timestamp={quote_plus(timestamp)}"
+                f"&checksum={quote_plus(checksum)}"
+            )
+            with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
+                r = yield async_requests.post(app.url + url, files=feedback_data)
+
+        # student submits number 5....
+        with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+            timestamp = datetime.datetime.now(tz).strftime(timestamp_format)
+            r = yield async_requests.post(
+                app.url + "/submission?course_id=course_2&assignment_id=assign_a",
+                files=release_files,
+            )
+
+        with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+            r = yield async_requests.get(app.url + "/assignments?course_id=course_2")
+        response_data = r.json()
+        data = response_data["value"]
+
+        # Old stylee: all submissions get the last released feedback
+        assert data[2]["status"] == "submitted"
+        assert isinstance(data[2]["notebooks"][0]["feedback_timestamp"], str)
+        assert data[3]["status"] == "submitted"
+        assert isinstance(data[3]["notebooks"][0]["feedback_timestamp"], str)
+        assert data[6]["status"] == "submitted"
+        assert isinstance(data[6]["notebooks"][0]["feedback_timestamp"], str)
+        assert data[7]["status"] == "submitted"
+        assert isinstance(data[7]["notebooks"][0]["feedback_timestamp"], str)
+        assert data[10]["status"] == "submitted"
+        assert isinstance(data[10]["notebooks"][0]["feedback_timestamp"], str)
+
+        # old stylee - all feedback timestamps are the same value
+        assert data[2]["notebooks"][0]["feedback_timestamp"] == data[3]["notebooks"][0]["feedback_timestamp"]
+        assert data[3]["notebooks"][0]["feedback_timestamp"] == data[6]["notebooks"][0]["feedback_timestamp"]
+        assert data[6]["notebooks"][0]["feedback_timestamp"] == data[7]["notebooks"][0]["feedback_timestamp"]
+        assert data[7]["notebooks"][0]["feedback_timestamp"] == data[10]["notebooks"][0]["feedback_timestamp"]
+
+        # old stylee - not of the feedback timestamps match the submitted timestamp
+        assert data[2]["notebooks"][0]["feedback_timestamp"] != data[2]["timestamp"]
+        assert data[3]["notebooks"][0]["feedback_timestamp"] != data[3]["timestamp"]
+        assert data[6]["notebooks"][0]["feedback_timestamp"] != data[6]["timestamp"]
+        assert data[7]["notebooks"][0]["feedback_timestamp"] != data[7]["timestamp"]
+        assert data[10]["notebooks"][0]["feedback_timestamp"] != data[10]["timestamp"]
+
+        # Assert that all submissions have a local feedback path of the last record
+        def _test_assignment_feedback(assignment):
+            assert assignment["notebooks"][0]["has_exchange_feedback"] is True
+            assert assignment["has_local_feedback"] is True
+            assert assignment["notebooks"][0]["local_feedback_path"] == os.path.join(
+                "assign_a", "feedback", assignment["notebooks"][0]["feedback_timestamp"]
+            )
+            assert assignment["local_feedback_path"] == my_assignments[5]["notebooks"][0]["local_feedback_path"]
+
+        # Filter response as plugin would - "inbound" [aka submitted], and mapping to fetched feedback
+        # [which we have done, that was the last action - so we'll fake it]
+        my_assignments = self._filter_like_plugin(data)
+        # old stylee - confirm submissions & feedback_timestamps do NOT line up
 
         # no feedback
         _test_assignment_feedback(my_assignments[1])

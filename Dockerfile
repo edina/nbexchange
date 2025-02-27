@@ -14,7 +14,7 @@ RUN pip install supervisor
 COPY supervisord.conf /usr/src/app
 
 # Copy package
-COPY pyproject.toml README.md /usr/src/app/
+COPY pyproject.toml README.md LICENSE /usr/src/app/
 COPY nbexchange /usr/src/app/nbexchange
 # Install dependencies
 RUN pip install .

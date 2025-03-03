@@ -70,6 +70,28 @@ class Assignments(BaseHandler):
             for assignment in assignments:
                 self.log.debug("==========")
                 self.log.debug(f"Assignment: {assignment}")
+
+                # To maintain backward compatibility we need to test to see if any feedback timestamps match any
+                #   submission timestamps. New code will, old code won't.
+                # New code matches feedback to submission on timestamp
+                # Old code adds latest feedback to all submissions
+                # To test old vs new, we check to see if any submit timestamps exist in the set of feedback timestamps
+                #   .... if any do, we're new stylee.... and thus _include_ the timestamp in the feedback query.
+                feedback_timestamps = set()
+                notebook_ids = [notebook.id for notebook in assignment.notebooks]
+                submit_timestamps = [
+                    action.timestamp
+                    for action in assignment.actions
+                    if action.action == AssignmentActions.submitted and this_user.get("id") == action.user_id
+                ]
+
+                for f in session.query(Feedback).filter(
+                    Feedback.notebook_id.in_(notebook_ids), Feedback.timestamp.in_(submit_timestamps)
+                ):
+                    feedback_timestamps.add(f.timestamp)
+                new_stylee = [sub_ts for sub_ts in submit_timestamps if sub_ts in feedback_timestamps]
+                # End of new_stylee discovery
+
                 for action in assignment.actions:
                     # For every action that is not "released" checked if the user id matches
                     if action.action != AssignmentActions.released and this_user.get("id") != action.user_id:
@@ -82,13 +104,15 @@ class Assignments(BaseHandler):
                         feedback_available = False
                         feedback_timestamp = None
                         if action.action == AssignmentActions.submitted:
-                            feedback = Feedback.find_notebook_for_student(
-                                db=session,
-                                notebook_id=notebook.id,
-                                student_id=this_user.get("id"),
-                                timestamp=action_timestamp,
-                                log=self.log,
-                            )
+                            query_params = {
+                                "db": session,
+                                "notebook_id": notebook.id,
+                                "student_id": this_user.get("id"),
+                                "log": self.log,
+                            }
+                            if new_stylee:
+                                query_params["timestamp"] = action_timestamp
+                            feedback = Feedback.find_notebook_for_student(**query_params)
                             if feedback:
                                 feedback_available = bool(feedback)
                                 feedback_timestamp = self.check_timezone(feedback.timestamp).strftime(

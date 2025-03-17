@@ -1,5 +1,6 @@
 import base64
 import os
+import shutil
 from datetime import datetime
 
 import pytest
@@ -20,6 +21,20 @@ from nbexchange.tests.utils import (  # noqa: F401 "clear_database"
     user_kiz_student,
     user_lkihlman_instructor,
 )
+
+#################################
+#
+# Very Important Note
+#
+# The `clear_database` fixture removed all database records.
+# In this suite of tests, we do that FOR EVERY TEST
+# This means that every single test is run in isolation, and therefore will need to have the full Release, Fetch,
+#   Submit steps done before the collection can be tested.
+# (On the plus side, adding or changing a test will no longer affect those below)
+#
+# Note you also want to clear the exchange filestore too.... again, so files from 1 test don't throw another test
+#
+#################################
 
 # set up the file to be uploaded
 feedback_filename = os.path.join(os.path.dirname(__file__), "data", "assignment-0.6.html")
@@ -246,6 +261,7 @@ def test_feedback_post_authenticated_with_incorrect_assignment_id(app, clear_dat
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(app.url + url, files=feedbacks)
     assert r.status_code == 404
+    shutil.rmtree(app.base_storage_location)
 
 
 @pytest.mark.gen_test
@@ -288,6 +304,7 @@ def test_feedback_post_authenticated_with_incorrect_notebook_id(app, clear_datab
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(app.url + url, files=feedbacks)
     assert r.status_code == 404
+    shutil.rmtree(app.base_storage_location)
 
 
 @pytest.mark.gen_test
@@ -330,6 +347,7 @@ def test_feedback_post_authenticated_with_incorrect_student_id(app, clear_databa
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(app.url + url, files=feedbacks)
     assert r.status_code == 404
+    shutil.rmtree(app.base_storage_location)
 
 
 # Not yet implemented on exchange server...
@@ -374,6 +392,7 @@ def test_feedback_post_authenticated_with_incorrect_checksum(app, clear_database
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(app.url + url, files=feedbacks)
     assert r.status_code == 403
+    shutil.rmtree(app.base_storage_location)
 
 
 @pytest.mark.gen_test
@@ -418,6 +437,7 @@ def test_feedback_post_authenticated_with_correct_params(app, clear_database):  
     assert r.status_code == 200
     response_data = r.json()
     assert response_data["success"] is True
+    shutil.rmtree(app.base_storage_location)
 
 
 @pytest.mark.gen_test
@@ -463,6 +483,7 @@ def test_feedback_post_authenticated_with_correct_params_incorrect_instructor(ap
     response_data = r.json()
     assert response_data["success"] is False
     assert response_data["note"] == f"User not subscribed to course {course_id}"
+    shutil.rmtree(app.base_storage_location)
 
 
 @pytest.mark.gen_test
@@ -508,6 +529,7 @@ def test_feedback_post_authenticated_with_correct_params_student_submitter(app, 
     response_data = r.json()
     assert response_data["success"] is False
     assert response_data["note"] == f"User not an instructor to course {course_id}"
+    shutil.rmtree(app.base_storage_location)
 
 
 @pytest.mark.gen_test
@@ -560,6 +582,7 @@ def test_feedback_get_authenticated_with_incorrect_student(app, clear_database):
     response_data = r.json()
     assert response_data["success"] is True
     assert len(response_data["feedback"]) == 0
+    shutil.rmtree(app.base_storage_location)
 
 
 @pytest.mark.gen_test
@@ -611,6 +634,7 @@ def test_feedback_get_authenticated_with_correct_params(app, clear_database):  #
     assert response_data["success"] is True
     assert len(response_data["feedback"]) >= 1
     assert response_data["feedback"][0].get("content") == feedback_base64.decode("utf-8")
+    shutil.rmtree(app.base_storage_location)
 
 
 @pytest.mark.gen_test
@@ -660,6 +684,7 @@ def test_feedback_get_broken_nbex_user(app, clear_database, caplog):  # noqa: F8
 
     assert r.status_code == 500
     assert "Both current_course ('None') and current_role ('None') must have values. User was '1-kiz'" in caplog.text
+    shutil.rmtree(app.base_storage_location)
 
 
 # test feedback picks up the correct assignment when two courses have the same assignment name
@@ -733,3 +758,4 @@ def test_feedback_get_correct_assignment_across_courses(app, clear_database):  #
     assert response_data["success"] is True
     assert len(response_data["feedback"]) >= 1
     assert response_data["feedback"][0].get("content") == feedback_base64.decode("utf-8")
+    shutil.rmtree(app.base_storage_location)

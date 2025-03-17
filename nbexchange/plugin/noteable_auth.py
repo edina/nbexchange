@@ -1,5 +1,6 @@
 import json
 
+import requests
 from nbgrader.auth import BaseAuthPlugin
 from tornado import gen
 
@@ -17,7 +18,10 @@ class NoteableApiError(Exception):
 class NoteableAuthPlugin(BaseAuthPlugin):
     def query_exchange(self):
         """List all courses"""
-        r = Exchange.api_request(self, "courses")  # use method in Exchange
+        try:
+            r = Exchange.api_request(self, "courses")  # use method in Exchange
+        except requests.exceptions.Timeout:
+            self.fail("Timed out trying to reach the exchange service to fetch feedback.")
 
         self.log.debug(f"Got back {r} when listing courses")
 

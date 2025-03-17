@@ -1,4 +1,5 @@
 import logging
+import shutil
 
 import pytest
 from mock import patch
@@ -115,6 +116,7 @@ def test_delete_instructor_delete(app, clear_database):  # noqa: F811
     response_data = r.json()
     assert response_data["success"] is True
     assert response_data["note"] == "Assignment 'assign_a' on course 'course_2' marked as unreleased"
+    shutil.rmtree(app.base_storage_location)
 
 
 @pytest.mark.gen_test
@@ -131,6 +133,7 @@ def test_delete_broken_nbex_user(app, clear_database, caplog):  # noqa: F811
         )
     assert r.status_code == 500
     assert "Both current_course ('None') and current_role ('None') must have values. User was '1-kiz'" in caplog.text
+    shutil.rmtree(app.base_storage_location)
 
 
 # instructor can purge
@@ -149,6 +152,7 @@ def test_delete_instructor_purge(app, clear_database):  # noqa: F811
     response_data = r.json()
     assert response_data["success"] is True
     assert response_data["note"] == "Assignment 'assign_b' on course 'course_2' deleted and purged from the database"
+    shutil.rmtree(app.base_storage_location)
 
 
 # instructor releasing - Picks up the first attribute if more than 1 (wrong course)
@@ -167,6 +171,7 @@ def test_delete_multiple_courses_listed_first_wrong_blocked(app, clear_database)
     response_data = r.json()
     assert response_data["success"] is False
     assert response_data["note"] == "User not subscribed to course course_1"
+    shutil.rmtree(app.base_storage_location)
 
 
 # instructor releasing - Picks up the first attribute if more than 1 (wrong course)
@@ -185,6 +190,7 @@ def test_assignment_missing(app, clear_database):  # noqa: F811
     response_data = r.json()
     assert response_data["success"] is False
     assert response_data["note"] == "Missing assignment for noexist and course_2, cannot delete"
+    shutil.rmtree(app.base_storage_location)
 
 
 # instructor releasing - Picks up the first attribute if more than 1 (wrong course)
@@ -203,6 +209,7 @@ def test_delete_multiple_courses_listed_first_right_passes(app, clear_database):
     response_data = r.json()
     assert response_data["success"] is True
     assert response_data["note"] == "Assignment 'assign_a' on course 'course_2' marked as unreleased"
+    shutil.rmtree(app.base_storage_location)
 
 
 # confirm unreleased does not show in list
@@ -223,3 +230,4 @@ def test_delete_assignment10(app, clear_database):  # noqa: F811
     assert response_data["success"] is True
     assert "note" not in response_data  # just that it's missing
     assert len(response_data["value"]) == 0
+    shutil.rmtree(app.base_storage_location)

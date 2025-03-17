@@ -6,6 +6,7 @@ import tarfile
 from urllib.parse import quote_plus
 
 import nbgrader.exchange.abc as abc
+import requests
 from nbgrader.api import Gradebook, MissingEntry
 
 from .exchange import Exchange
@@ -26,9 +27,13 @@ class ExchangeCollect(abc.ExchangeCollect, Exchange):
 
     def download(self, submission, dest_path):
         self.log.debug(f"ExchangeCollect.download - record {submission} to {dest_path}")
-        r = self.api_request(
-            f"collection?course_id={quote_plus(self.coursedir.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}&path={quote_plus(submission['path'])}"  # noqa: E501
-        )
+        try:
+            r = self.api_request(
+                f"collection?course_id={quote_plus(self.coursedir.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}&path={quote_plus(submission['path'])}"  # noqa: E501
+            )
+        except requests.exceptions.Timeout:
+            self.fail("Timed out trying to reach the exchange service to collect submissions.")
+
         self.log.debug(f"Got back {r.status_code}  {r.headers['content-type']} after file download")
 
         if r.status_code > 399:
@@ -54,7 +59,11 @@ class ExchangeCollect(abc.ExchangeCollect, Exchange):
                     )
         else:
             # Fails, even if the json response is a success (for now)
-            data = r.json()
+            try:
+                data = r.json()
+            except json.decoder.JSONDecodeError as err:
+                self.log.error("collect failed to download:\n" f"response text: {r.text}\n" f"JSONDecodeError: {err}")
+
             if not data["success"]:
                 self.fail(
                     f"Error failing to collect for assignment {self.coursedir.assignment_id} on course {self.coursedir.course_id}"  # noqa: E501
@@ -74,14 +83,17 @@ class ExchangeCollect(abc.ExchangeCollect, Exchange):
         url = f"collections?course_id={quote_plus(self.coursedir.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}"  # noqa: E501
         if self.coursedir.student_id != "*":
             url = url + f"&user_id={quote_plus(self.coursedir.student_id)}"
-        r = self.api_request(url)
+        try:
+            r = self.api_request(url)
+        except requests.exceptions.Timeout:
+            self.fail("Timed out trying to reach the exchange service to get a list of submissions.")
 
         self.log.debug(f"Got back {r} when listing collectable assignments")
 
         try:
             data = r.json()
-        except json.decoder.JSONDecodeError:
-            self.log.error("Got back an invalid response when listing assignments")
+        except json.decoder.JSONDecodeError as err:
+            self.log.error(f"Got back an invalid response when listing assignments: {err}")
             return []
 
         if not data["success"]:

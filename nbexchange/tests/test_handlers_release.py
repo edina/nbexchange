@@ -1,8 +1,11 @@
 import logging
+import shutil
 
 import pytest
 from mock import patch
+from tornado import web
 
+from nbexchange.handlers.assignment import Assignment
 from nbexchange.handlers.base import BaseHandler
 from nbexchange.tests.utils import (  # noqa: F401 "clear_database"
     async_requests,
@@ -21,6 +24,7 @@ release_files, notebooks, timestamp = get_files_dict()  # ourself :)
 
 # #### POST /assignment (upload/release assignment) ##### #
 
+
 #################################
 #
 # Very Important Note
@@ -30,6 +34,8 @@ release_files, notebooks, timestamp = get_files_dict()  # ourself :)
 # This means that every single test is run in isolation, and therefore will need to have the full Release, Fetch,
 #   Submit steps done before the collection can be tested.
 # (On the plus side, adding or changing a test will no longer affect those below)
+#
+# Note you also want to clear the exchange filestore too.... again, so files from 1 test don't throw another test
 #
 #################################
 
@@ -113,10 +119,11 @@ def test_post_release_broken_nbex_user(app, clear_database, caplog):  # noqa: F8
 
 # fails if no file is part of post request
 @pytest.mark.gen_test
-def test_post_no_file_provided(app, clear_database):  # noqa: F811
+def test_post_no_file_provided(app, clear_database, caplog):  # noqa: F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(app.url + "/assignment?course_id=course_2&assignment_id=assign_a")
     assert r.status_code == 412
+    assert "assignment handler upload: No file supplied in upload" in caplog.text
 
 
 # Instructor, wrong course, cannot release
@@ -158,6 +165,7 @@ def test_post_picks_first_instance_of_param_gets_it_right(app, clear_database): 
     response_data = r.json()
     assert response_data["success"] is True
     assert response_data["note"] == "Released"
+    shutil.rmtree(app.base_storage_location)
 
 
 # Confirm 3 releases lists 3 actions, with 3 different locations
@@ -195,6 +203,7 @@ def test_post_location_different_each_time(app, clear_database):  # noqa: F811
     assert paths[1] != paths[2]  # 2nd not the same as 3rd
     assert paths[0] != paths[2]  # 1st not the same as third
     assert actions == ["released", "released", "released"]
+    shutil.rmtree(app.base_storage_location)
 
 
 @pytest.mark.gen_test
@@ -213,3 +222,12 @@ def test_blocks_filesize(app, clear_database):  # noqa: F811
         response_data["note"]
         == "File upload oversize, and rejected. Please reduce the contents of the assignment, re-generate, and re-release"  # noqa: E501 W503
     )
+
+
+# fakes something going wrong in the "write to disk" code
+@pytest.mark.gen_test
+def test_post_file_save_error(app, clear_database, caplog):  # noqa: F811
+    with patch.object(Assignment, "post", side_effect=web.HTTPError(500, "Upload failed: foo")):
+        r = yield async_requests.post(app.url + "/assignment?course_id=course_2&assignment_id=assign_a")
+    assert r.status_code == 500
+    assert "Upload failed: foo" in caplog.text

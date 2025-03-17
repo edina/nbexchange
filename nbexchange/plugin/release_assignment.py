@@ -6,6 +6,7 @@ import sys
 from urllib.parse import quote_plus
 
 import nbgrader.exchange.abc as abc
+import requests
 
 from .exchange import Exchange
 
@@ -75,12 +76,17 @@ class ExchangeReleaseAssignment(abc.ExchangeReleaseAssignment, Exchange):
 
         url = f"assignment?course_id={quote_plus(self.coursedir.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}"  # noqa: E501
 
-        r = self.api_request(url, method="POST", data={"notebooks": self.notebooks}, files=files)
+        try:
+            r = self.api_request(url, method="POST", data={"notebooks": self.notebooks}, files=files)
+        except requests.exceptions.Timeout:
+            self.fail("Timed out trying to reach the exchange service to release assignment.")
+
         self.log.debug(f"Got back {r.status_code} after file upload")
 
         try:
             data = r.json()
-        except json.decoder.JSONDecodeError:
+        except json.decoder.JSONDecodeError as err:
+            self.log.error("release_assignment failed upload\n" f"response text: {r.text}\n" f"JSONDecodeError: {err}")
             self.fail(r.text)
 
         if not data["success"]:

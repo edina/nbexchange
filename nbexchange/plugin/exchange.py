@@ -73,6 +73,12 @@ class Exchange(abc.Exchange):
         ),
     ).tag(config=True)
 
+    api_timeout = Integer(
+        10,
+        help="Timeout for plugin enquiries to the Exchange in seconds. Defaults to 10 seconds",
+        config=True,
+    )
+
     def check_timezone(self, value: datetime) -> datetime:
         if value.tzinfo is None or value.tzinfo.utcoffset(value) is None:
             value = value.replace(tzinfo=ZoneInfo(self.timezone))
@@ -95,13 +101,13 @@ class Exchange(abc.Exchange):
         self.log.debug(f"Exchange.api_request calling exchange with url {url}")
 
         if method == "GET":
-            get_req = partial(requests.get, url, headers=headers, cookies=cookies)
+            get_req = partial(requests.get, url, headers=headers, cookies=cookies, timeout=self.api_timeout)
             return get_req(*args, **kwargs)
         elif method == "POST":
-            post_req = partial(requests.post, url, headers=headers, cookies=cookies)
+            post_req = partial(requests.post, url, headers=headers, cookies=cookies, timeout=self.api_timeout)
             return post_req(*args, **kwargs)
         elif method == "DELETE":
-            delete_req = partial(requests.delete, url, headers=headers, cookies=cookies)
+            delete_req = partial(requests.delete, url, headers=headers, cookies=cookies, timeout=self.api_timeout)
             return delete_req(*args, **kwargs)
         else:
             raise NotImplementedError(f"HTTP Method {method} is not implemented")

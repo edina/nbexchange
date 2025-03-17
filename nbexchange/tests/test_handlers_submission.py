@@ -1,4 +1,5 @@
 import logging
+import shutil
 
 import pytest
 from mock import patch
@@ -38,6 +39,20 @@ def test_get_submission_501_even_authenticated(app):
 
 # #### POST /submission (submit assignment) ##### #
 
+#################################
+#
+# Very Important Note
+#
+# The `clear_database` fixture removed all database records.
+# In this suite of tests, we do that FOR EVERY TEST
+# This means that every single test is run in isolation, and therefore will need to have the full Release, Fetch,
+#   Submit steps done before the collection can be tested.
+# (On the plus side, adding or changing a test will no longer affect those below)
+#
+# Note you also want to clear the exchange filestore too.... again, so files from 1 test don't throw another test
+#
+#################################
+
 
 # require authenticated user
 @pytest.mark.gen_test
@@ -47,7 +62,7 @@ def test_post_403_if_not_authenticated(app):
     assert r.status_code == 403
 
 
-# Requires both params (none)
+# Requires both params (none)Error
 @pytest.mark.gen_test
 def test_post_submision_requires_two_params(app, clear_database):  # noqa: F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
@@ -114,6 +129,7 @@ def test_post_submision_student_can_submit(app, clear_database):  # noqa: F811
     response_data = r.json()
     assert response_data["success"] is True
     assert response_data["note"] == "Submitted"
+    shutil.rmtree(app.base_storage_location)
 
 
 # Autogenerates a timestamp if one isn't given
@@ -138,6 +154,7 @@ def test_post_submision_timestamp_autocreated(app, clear_database):  # noqa: F81
     response_data = r.json()
     assert response_data["success"] is True
     assert response_data["note"] == "Submitted"
+    shutil.rmtree(app.base_storage_location)
 
 
 # broken nbex_user throws a 500 error on the server
@@ -160,6 +177,7 @@ def test_post_submision_broken_nbex_user(app, clear_database, caplog):  # noqa: 
         )
     assert r.status_code == 500
     assert "Both current_course ('None') and current_role ('None') must have values. User was '1-kiz'" in caplog.text
+    shutil.rmtree(app.base_storage_location)
 
 
 # instructor can submit
@@ -184,13 +202,14 @@ def test_post_submision_instructor_can_submit(app, clear_database):  # noqa: F81
     response_data = r.json()
     assert response_data["success"] is True
     assert response_data["note"] == "Submitted"
+    shutil.rmtree(app.base_storage_location)
 
 
 # fails if no file is part of post request
 # (needs to be fetched before it can be submitted )
 # (needs to be released before it can be fetched )
 @pytest.mark.gen_test
-def test_post_submision_requires_files(app, clear_database):  # noqa: F811
+def test_post_submision_requires_files(app, clear_database, caplog):  # noqa: F811
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
@@ -202,6 +221,9 @@ def test_post_submision_requires_files(app, clear_database):  # noqa: F811
         params = "/submission?course_id=course_2&assignment_id=assign_a&timestamp=2020-01-01%2000%3A00%3A00.0%20UTC"
         r = yield async_requests.post(app.url + params)
     assert r.status_code == 412
+    assert "submission handler post: No file supplied in upload" in caplog.text
+
+    shutil.rmtree(app.base_storage_location)
 
 
 # Picks up the first attribute if more than 1 (wrong course)
@@ -228,6 +250,7 @@ def test_post_submision_picks_first_instance_of_param_a(app, clear_database):  #
     response_data = r.json()
     assert response_data["success"] is False
     assert response_data["note"] == "User not subscribed to course course_1"
+    shutil.rmtree(app.base_storage_location)
 
 
 # Picks up the first attribute if more than 1 (right course)
@@ -252,6 +275,7 @@ def test_post_submision_piks_first_instance_of_param_b(app, clear_database):  # 
     response_data = r.json()
     assert response_data["success"] is True
     assert response_data["note"] == "Submitted"
+    shutil.rmtree(app.base_storage_location)
 
 
 @pytest.mark.gen_test

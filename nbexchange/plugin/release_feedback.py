@@ -5,6 +5,7 @@ import re
 from urllib.parse import quote_plus
 
 import nbgrader.exchange.abc as abc
+import requests
 from dateutil import parser
 from nbgrader.utils import make_unique_key, notebook_hash
 
@@ -121,13 +122,17 @@ class ExchangeReleaseFeedback(abc.ExchangeReleaseFeedback, Exchange):
             f"&checksum={quote_plus(checksum)}"
         )
 
-        r = self.api_request(url, method="POST", files=files)
+        try:
+            r = self.api_request(url, method="POST", files=files)
+        except requests.exceptions.Timeout:
+            self.fail("Timed out trying to reach the exchange service to release feedback.")
 
         self.log.debug(f"Got back {r.status_code} after feedback upload")
 
         try:
             data = r.json()
-        except json.decoder.JSONDecodeError:
+        except json.decoder.JSONDecodeError as err:
+            self.log.error("release_feedback failed upload\n" f"response text: {r.text}\n" f"JSONDecodeError: {err}")
             self.fail(r.text)
 
         if not data["success"]:

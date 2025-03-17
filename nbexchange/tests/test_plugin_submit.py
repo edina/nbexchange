@@ -8,6 +8,7 @@ from os.path import basename
 from shutil import copyfile
 
 import pytest
+import requests
 from mock import patch
 from nbgrader.coursedir import CourseDirectory
 from nbgrader.exchange import ExchangeError
@@ -1720,3 +1721,27 @@ def test_submit_fails_oversize(plugin_config, tmpdir):
 
     finally:
         shutil.rmtree(assignment_id1)
+
+
+# Check the client-side oversizxe limit works
+@pytest.mark.gen_test
+def test_submit_timeout(plugin_config, tmpdir, caplog):
+    # plugin_config.CourseDirectory.course_id = course_id
+    # plugin_config.CourseDirectory.assignment_id = assignment_id1
+
+    # os.makedirs(assignment_id1, exist_ok=True)
+    # copyfile(
+    #     notebook1_filename,
+    #     os.path.join(assignment_id1, basename(notebook1_filename)),
+    # )
+
+    plugin = ExchangeSubmit(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
+
+    def api_request(*args, **kwargs):
+        raise requests.exceptions.Timeout
+
+    expected_message = "Timed out trying to reach the exchange service to list available assignments."
+    with patch.object(Exchange, "api_request", side_effect=api_request):
+        with pytest.raises(ExchangeError, match=expected_message):
+            plugin.start()
+    assert expected_message in caplog.text

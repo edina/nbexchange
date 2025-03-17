@@ -225,14 +225,11 @@ class Assignment(BaseHandler):
 
             if release_file:
                 try:
+                    # Hmmm this seems to raise it's own 500: No such file or directory if not present
                     with open(release_file, "r+b") as handle:
                         data = handle.read()
                 except Exception as e:  # TODO: exception handling
-                    self.log.warning(f"Error: {e}")  # TODO: improve error message
-                    self.log.info("Unable to open file")
-
-                    # error 500??
-                    raise Exception
+                    raise web.HTTPError(500, f"assignment get handler unable to open '{release_file}': {e}")
 
                 self.log.info(
                     f"Adding action {AssignmentActions.fetched.value} for user {this_user['id']} against assignment {assignment.id}"  # noqa: E501
@@ -247,8 +244,7 @@ class Assignment(BaseHandler):
                 self.log.info("record of fetch action committed")
                 self.finish(data)
             else:
-                self.log.info("no release file found")
-                raise Exception
+                raise web.HTTPError(500, f"assignment get handler found no release file {release_file}")
 
     # This is releasing an **assignment**, not a student submission
     @authenticated
@@ -322,8 +318,8 @@ class Assignment(BaseHandler):
             )
 
             if not self.request.files:
-                self.log.warning("Error: No file supplied in upload")  # TODO: improve error message
-                raise web.HTTPError(412)  # precondition failed
+                # self.log.warning("Error: No file supplied in upload")  # TODO: improve error message
+                raise web.HTTPError(412, "assignment handler upload: No file supplied in upload")  # precondition failed
 
             try:
                 # Write the uploaded file to the desired location
@@ -347,11 +343,7 @@ class Assignment(BaseHandler):
                     handle.write(file_info["body"])
 
             except Exception as e:  # TODO: exception handling
-                self.log.warning(f"Error: {e}")  # TODO: improve error message
-
-                self.log.info("Upload failed")
-                # error 500??
-                raise Exception
+                raise web.HTTPError(500, f"assignment handler Upload failed: {e}")
 
             # Check the file exists on disk
             if not (

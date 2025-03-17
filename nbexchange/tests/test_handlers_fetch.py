@@ -1,4 +1,5 @@
 import logging
+import shutil
 
 import pytest
 from mock import patch
@@ -30,6 +31,8 @@ notebooks = []
 # This means that every single test is run in isolation, and therefore will need to have the full Release, Fetch,
 #   Submit steps done before the collection can be tested.
 # (On the plus side, adding or changing a test will no longer affect those below)
+#
+# Note you also want to clear the exchange filestore too.... again, so files from 1 test don't throw another test
 #
 #################################
 
@@ -138,6 +141,7 @@ def test_instructor_can_fetch(app, clear_database):  # noqa: F811
     assert r.status_code == 200
     assert r.headers["Content-Type"] == "application/gzip"
     assert int(r.headers["Content-Length"]) > 0
+    shutil.rmtree(app.base_storage_location)
 
 
 # broken nbex_user throws a 500 error on the server
@@ -155,6 +159,7 @@ def test_fetch_broken_nbex_user(app, clear_database, caplog):  # noqa: F811
         assert (
             "Both current_course ('None') and current_role ('None') must have values. User was '1-kiz'" in caplog.text
         )
+    shutil.rmtree(app.base_storage_location)
 
 
 # fetch assignment, correct details, different user, different role
@@ -171,6 +176,7 @@ def test_student_can_fetch(app, clear_database):  # noqa: F811
     assert r.status_code == 200
     assert r.headers["Content-Type"] == "application/gzip"
     assert int(r.headers["Content-Length"]) > 0
+    shutil.rmtree(app.base_storage_location)
 
 
 # Confirm that a fetch always matches the last release
@@ -218,3 +224,47 @@ def test_fetch_after_rerelease_gets_different_file(app, clear_database):  # noqa
     assert paths[2] == paths[3]  # First fetch = third release
     assert paths[4] == paths[5]  # Second fetch = fourth release
     assert paths[3] != paths[5]  # First fetch is not the same as the second fetch
+    shutil.rmtree(app.base_storage_location)
+
+
+# File present, but not readable
+# lets release a file, then nobble it on the server, before trying to fetch it
+@pytest.mark.gen_test
+def test_fetch_errors_when_file_not_readable(app, clear_database, caplog):  # noqa: F811
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
+        r = yield async_requests.post(
+            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
+            files=release_files,
+        )
+
+    # make the file non-readable, so the fetch fails to open it
+    exchange_path = app.base_storage_location
+    import os
+    import pathlib
+
+    files = list(pathlib.Path(exchange_path).rglob("*"))
+    os.chmod(files[-1], 0o333)
+    with patch.object(BaseHandler, "get_current_user", return_value=user_brobbere_student):
+        r = yield async_requests.get(app.url + "/assignment?course_id=course_2&assignment_id=assign_a")
+        assert r.status_code == 500
+        assert "assignment get handler unable to open " in caplog.text
+    shutil.rmtree(app.base_storage_location)
+
+
+# File somehow missing
+# lets release a file, then nobble it on the server, before trying to fetch it
+@pytest.mark.gen_test
+def test_fetch_errors_when_file_physically_missing(app, clear_database, caplog):  # noqa: F811
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
+        r = yield async_requests.post(
+            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
+            files=release_files,
+        )
+
+    # Now move the file to a different location, so the fetch fails to open it
+    shutil.move(f"{app.base_storage_location}/1/", f"{app.base_storage_location}/2/")
+    with patch.object(BaseHandler, "get_current_user", return_value=user_brobbere_student):
+        r = yield async_requests.get(app.url + "/assignment?course_id=course_2&assignment_id=assign_a")
+        assert r.status_code == 500
+        assert "No such file or directory:" in caplog.text
+    shutil.rmtree(app.base_storage_location)

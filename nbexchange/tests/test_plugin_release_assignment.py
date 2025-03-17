@@ -4,9 +4,11 @@ import re
 from shutil import copyfile
 
 import pytest
+import requests
 from mock import patch
 from nbgrader.coursedir import CourseDirectory
 from nbgrader.exchange import ExchangeError
+from tornado import web
 
 from nbexchange.plugin import Exchange, ExchangeReleaseAssignment
 from nbexchange.tests.utils import get_feedback_file
@@ -308,3 +310,75 @@ def test_release_oversize_blocked(plugin_config, tmpdir):
             str(e_info.value)
             == "Assignment assign_1 not released. The contents of your assignment are too large:\nYou may have data files, temporary files, and/or working files that should not be included - try deleting them."  # noqa: E501 W503
         )
+
+
+@pytest.mark.gen_test
+def test_release_does_timeout(plugin_config, tmpdir, caplog):
+    plugin_config.CourseDirectory.root = "/"
+
+    plugin_config.CourseDirectory.release_directory = str(tmpdir.mkdir(release_dir).realpath())
+    plugin_config.CourseDirectory.assignment_id = "assign_1"
+    os.makedirs(
+        os.path.join(plugin_config.CourseDirectory.release_directory, "assign_1"),
+        exist_ok=True,
+    )
+    copyfile(
+        notebook1_filename,
+        os.path.join(
+            plugin_config.CourseDirectory.release_directory,
+            "assign_1",
+            "feedback.ipynb",
+        ),
+    )
+    with open(
+        os.path.join(plugin_config.CourseDirectory.release_directory, "assign_1", "timestamp.txt"),
+        "w",
+    ) as fp:
+        fp.write("2020-01-01 00:00:00.0 UTC")
+
+    plugin = ExchangeReleaseAssignment(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
+
+    def api_request(*args, **kwargs):
+        raise requests.exceptions.Timeout
+
+    expected_message = "Timed out trying to reach the exchange service to release assignment."
+    with patch.object(Exchange, "api_request", side_effect=api_request):
+        with pytest.raises(ExchangeError, match=expected_message):
+            plugin.start()
+    assert expected_message in caplog.text
+
+
+@pytest.mark.gen_test
+def test_release_assignment_exchange_fail(plugin_config, tmpdir, caplog):
+    plugin_config.CourseDirectory.root = "/"
+
+    plugin_config.CourseDirectory.release_directory = str(tmpdir.mkdir(release_dir).realpath())
+    plugin_config.CourseDirectory.assignment_id = "assign_1"
+    os.makedirs(
+        os.path.join(plugin_config.CourseDirectory.release_directory, "assign_1"),
+        exist_ok=True,
+    )
+    copyfile(
+        notebook1_filename,
+        os.path.join(
+            plugin_config.CourseDirectory.release_directory,
+            "assign_1",
+            "feedback.ipynb",
+        ),
+    )
+    with open(
+        os.path.join(plugin_config.CourseDirectory.release_directory, "assign_1", "timestamp.txt"),
+        "w",
+    ) as fp:
+        fp.write("2020-01-01 00:00:00.0 UTC")
+
+    plugin = ExchangeReleaseAssignment(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
+
+    def api_request(*args, **kwargs):
+        raise web.HTTPError(status_code=418, log_message="Use leaves, not bags")
+
+    with patch.object(Exchange, "api_request", side_effect=api_request):
+        with pytest.raises(Exception) as e_info:
+            plugin.start()
+        assert e_info.type is web.HTTPError
+        assert str(e_info.value) == "HTTP 418: I'm a Teapot (Use leaves, not bags)"

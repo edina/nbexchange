@@ -204,11 +204,10 @@ class Collection(BaseHandler):
             # I do not want to assume there will just be one.
             for assignment in assignments:
                 self.log.debug(f"Assignment: {assignment}")
-                print(f"collect opening {path}")
                 try:
                     with open(path, "r+b") as handle:
                         data = handle.read()
-                except Exception as e:  # TODO: exception handling
+                except Exception as e:
                     raise web.HTTPError(500, f"collection handler unable to open '{path}': {e}")
 
                 self.log.info(

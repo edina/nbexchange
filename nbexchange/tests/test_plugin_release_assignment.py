@@ -222,8 +222,23 @@ def test_release_assignment_several_normal(plugin_config, tmpdir):
         plugin.start()
 
 
+# This has no release directory
 @pytest.mark.gen_test
-def test_release_assignment_fail(plugin_config, tmpdir):
+def test_release_assignment_missing_files(plugin_config, tmpdir, caplog):
+    plugin_config.CourseDirectory.root = "/"
+
+    plugin_config.CourseDirectory.release_directory = str(tmpdir.mkdir(release_dir).realpath())
+    plugin_config.CourseDirectory.assignment_id = "assign_1"
+
+    plugin = ExchangeReleaseAssignment(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
+
+    with pytest.raises(ExchangeError, match="Assignment not found at:"):
+        plugin.start()
+    assert "Assignment not found at:" in caplog.text
+
+
+@pytest.mark.gen_test
+def test_release_assignment_known_failure_from_exchange(plugin_config, tmpdir):
     plugin_config.CourseDirectory.root = "/"
 
     plugin_config.CourseDirectory.release_directory = str(tmpdir.mkdir(release_dir).realpath())
@@ -349,7 +364,7 @@ def test_release_does_timeout(plugin_config, tmpdir, caplog):
 
 
 @pytest.mark.gen_test
-def test_release_assignment_exchange_fail(plugin_config, tmpdir, caplog):
+def test_release_assignment_exchange_failure_code(plugin_config, tmpdir, caplog):
     plugin_config.CourseDirectory.root = "/"
 
     plugin_config.CourseDirectory.release_directory = str(tmpdir.mkdir(release_dir).realpath())

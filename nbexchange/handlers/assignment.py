@@ -228,7 +228,7 @@ class Assignment(BaseHandler):
                     # Hmmm this seems to raise it's own 500: No such file or directory if not present
                     with open(release_file, "r+b") as handle:
                         data = handle.read()
-                except Exception as e:  # TODO: exception handling
+                except Exception as e:
                     raise web.HTTPError(500, f"assignment get handler unable to open '{release_file}': {e}")
 
                 self.log.info(

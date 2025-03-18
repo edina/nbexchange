@@ -75,10 +75,15 @@ class ExchangeReleaseFeedback(abc.ExchangeReleaseFeedback, Exchange):
                 self.coursedir.assignment_id,
             )
 
-            timestamp = open(os.path.join(feedback_dir, "timestamp.txt")).read()
+            try:
+                timestamp = open(os.path.join(feedback_dir, "timestamp.txt")).read()
+            except Exception:
+                self.fail(f"timestamp file missing from {feedback_dir}")
             timestamp = self.check_timezone(parser.parse(timestamp)).strftime(self.timestamp_format)
 
             nbfile = os.path.join(submission_dir, "{}.ipynb".format(notebook_id))
+            if not os.path.isfile(nbfile):
+                self.fail(f"unable to find {nbfile} in submission files")
             unique_key = make_unique_key(
                 self.coursedir.course_id,
                 self.coursedir.assignment_id,

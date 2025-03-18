@@ -350,5 +350,79 @@ def test_release_feedback_timeout(plugin_config, tmpdir, caplog):
 
 
 # Should really capture:
-# FileNotFoundError: [Errno 2] No such file or directory: '$tmpdir/feedback_test/1/assign_1/timestamp.txt'
 # FileNotFoundError: [Errno 2] No such file or directory: '$tmpdir/submitted_test/1/assign_1/feedback.ipynb'
+
+
+@pytest.mark.gen_test
+def test_release_feedback_missing_timestamp_file(plugin_config, tmpdir, caplog):
+    plugin_config.CourseDirectory.root = "/"
+    plugin_config.CourseDirectory.feedback_directory = str(tmpdir.mkdir("feedback_test").realpath())
+    plugin_config.CourseDirectory.submitted_directory = str(tmpdir.mkdir("submitted_test").realpath())
+    plugin_config.CourseDirectory.assignment_id = assignment_id
+    os.makedirs(
+        os.path.join(plugin_config.CourseDirectory.feedback_directory, student_id, assignment_id),
+        exist_ok=True,
+    )
+    os.makedirs(
+        os.path.join(plugin_config.CourseDirectory.submitted_directory, student_id, assignment_id),
+        exist_ok=True,
+    )
+
+    feedback_filename_uploaded = os.path.join(
+        plugin_config.CourseDirectory.feedback_directory,
+        student_id,
+        assignment_id,
+        "feedback.html",
+    )
+    copyfile(feedback1_filename, feedback_filename_uploaded)
+
+    plugin = ExchangeReleaseFeedback(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
+
+    with pytest.raises(ExchangeError, match="timestamp file missing from"):
+        plugin.start()
+    assert "timestamp file missing from" in caplog.text
+
+
+# This is when there's no matching .ipynb file for a given feedback .html file
+@pytest.mark.gen_test
+def test_release_feedback_missing_notebook_file(plugin_config, tmpdir, caplog):
+    plugin_config.CourseDirectory.root = "/"
+    plugin_config.CourseDirectory.feedback_directory = str(tmpdir.mkdir("feedback_test").realpath())
+    plugin_config.CourseDirectory.submitted_directory = str(tmpdir.mkdir("submitted_test").realpath())
+    plugin_config.CourseDirectory.assignment_id = assignment_id
+    os.makedirs(
+        os.path.join(plugin_config.CourseDirectory.feedback_directory, student_id, assignment_id),
+        exist_ok=True,
+    )
+    os.makedirs(
+        os.path.join(plugin_config.CourseDirectory.submitted_directory, student_id, assignment_id),
+        exist_ok=True,
+    )
+
+    feedback_filename_uploaded = os.path.join(
+        plugin_config.CourseDirectory.feedback_directory,
+        student_id,
+        assignment_id,
+        "feedback.html",
+    )
+    copyfile(feedback1_filename, feedback_filename_uploaded)
+
+    with open(
+        os.path.join(
+            plugin_config.CourseDirectory.feedback_directory,
+            student_id,
+            assignment_id,
+            "timestamp.txt",
+        ),
+        "w",
+    ) as fp:
+        fp.write("2020-01-01 00:00:00.000000 UTC")
+
+    plugin = ExchangeReleaseFeedback(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
+
+    with pytest.raises(
+        ExchangeError,
+        match=r"unable to find [\w\/\-]+\/submitted_test\/1\/assign_1\/feedback.ipynb in submission files",
+    ):
+        plugin.start()
+    assert "unable to find" in caplog.text

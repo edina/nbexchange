@@ -21,7 +21,7 @@ class NoteableAuthPlugin(BaseAuthPlugin):
         try:
             r = Exchange.api_request(self, "courses")  # use method in Exchange
         except requests.exceptions.Timeout:
-            self.fail("Timed out trying to reach the exchange service to fetch feedback.")
+            self.fail("Timed out trying to reach the exchange service to get a list of courses.")
 
         self.log.debug(f"Got back {r} when listing courses")
 

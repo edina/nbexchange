@@ -5,6 +5,7 @@ import re
 from urllib.parse import quote_plus
 
 import nbgrader.exchange.abc as abc
+import requests
 from dateutil import parser
 from nbgrader.utils import make_unique_key, notebook_hash
 
@@ -74,10 +75,15 @@ class ExchangeReleaseFeedback(abc.ExchangeReleaseFeedback, Exchange):
                 self.coursedir.assignment_id,
             )
 
-            timestamp = open(os.path.join(feedback_dir, "timestamp.txt")).read()
+            try:
+                timestamp = open(os.path.join(feedback_dir, "timestamp.txt")).read()
+            except Exception:
+                self.fail(f"timestamp file missing from {feedback_dir}")
             timestamp = self.check_timezone(parser.parse(timestamp)).strftime(self.timestamp_format)
 
             nbfile = os.path.join(submission_dir, "{}.ipynb".format(notebook_id))
+            if not os.path.isfile(nbfile):
+                self.fail(f"unable to find {nbfile} in submission files")
             unique_key = make_unique_key(
                 self.coursedir.course_id,
                 self.coursedir.assignment_id,
@@ -121,13 +127,17 @@ class ExchangeReleaseFeedback(abc.ExchangeReleaseFeedback, Exchange):
             f"&checksum={quote_plus(checksum)}"
         )
 
-        r = self.api_request(url, method="POST", files=files)
+        try:
+            r = self.api_request(url, method="POST", files=files)
+        except requests.exceptions.Timeout:
+            self.fail("Timed out trying to reach the exchange service to release feedback.")
 
         self.log.debug(f"Got back {r.status_code} after feedback upload")
 
         try:
             data = r.json()
-        except json.decoder.JSONDecodeError:
+        except json.decoder.JSONDecodeError as err:
+            self.log.error("release_feedback failed upload\n" f"response text: {r.text}\n" f"JSONDecodeError: {err}")
             self.fail(r.text)
 
         if not data["success"]:

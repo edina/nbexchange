@@ -204,15 +204,11 @@ class Collection(BaseHandler):
             # I do not want to assume there will just be one.
             for assignment in assignments:
                 self.log.debug(f"Assignment: {assignment}")
-
                 try:
                     with open(path, "r+b") as handle:
                         data = handle.read()
-                except Exception as e:  # TODO: exception handling
-                    self.log.warning(f"Error: {e}")  # TODO: improve error message
-
-                    # error 500??
-                    raise Exception
+                except Exception as e:
+                    raise web.HTTPError(500, f"collection handler unable to open '{path}': {e}")
 
                 self.log.info(
                     f"Adding action {AssignmentActions.collected.value} for user {this_user['id']} against assignment {assignment.id}"  # noqa: E501

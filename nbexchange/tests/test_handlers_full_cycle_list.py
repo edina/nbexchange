@@ -1,5 +1,6 @@
 import logging
 import os
+import shutil
 from pathlib import Path
 from time import sleep
 from unittest.mock import ANY
@@ -24,6 +25,19 @@ from nbexchange.tests.utils import (  # noqa: F401 "clear_database"
 logger = logging.getLogger(__file__)
 logger.setLevel(logging.ERROR)
 
+#################################
+#
+# Very Important Note
+#
+# The `clear_database` fixture removed all database records.
+# In this suite of tests, we do that FOR EVERY TEST
+# This means that every single test is run in isolation, and therefore will need to have the full Release, Fetch,
+#   Submit steps done before the collection can be tested.
+# (On the plus side, adding or changing a test will no longer affect those below)
+#
+# Note you also want to clear the exchange filestore too.... again, so files from 1 test don't throw another test
+#
+#################################
 
 # These data elements get repeated below, fairly often
 released_match = {
@@ -162,6 +176,7 @@ class TestHandlersFetchFullCycle(BaseTestHandlers):
     # test actual rerurn data-structure for the "list" call after every action
     @pytest.mark.gen_test
     def test_list_datastructure(self, app, clear_database):  # noqa: F811
+
         # set up the file to be uploaded
         release_files, notebooks, timestamp = get_files_dict()
         # release & list
@@ -352,6 +367,7 @@ class TestHandlersFetchFullCycle(BaseTestHandlers):
                 "timestamp": ANY,
             },
         ]
+        shutil.rmtree(app.base_storage_location)
 
     # assume submit, submit, feedback, submit, submit, feedback, submit
     # the list should match timestamps to submissions 2 & 4 only
@@ -549,6 +565,7 @@ class TestHandlersFetchFullCycle(BaseTestHandlers):
 
         # no feedback
         _test_assignment_feedback(my_assignments[5])
+        shutil.rmtree(app.base_storage_location)
 
     # assume submit, submit, feedback, submit, submit, feedback, submit
     # the list should match timestamps to submissions 2 & 4 only
@@ -751,3 +768,4 @@ class TestHandlersFetchFullCycle(BaseTestHandlers):
 
         # no feedback
         _test_assignment_feedback(my_assignments[5])
+        shutil.rmtree(app.base_storage_location)

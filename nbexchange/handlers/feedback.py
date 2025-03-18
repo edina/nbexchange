@@ -55,17 +55,11 @@ class FeedbackHandler(BaseHandler):
             course = Course.find_by_code(db=session, code=course_id, org_id=this_user["org_id"], log=self.log)
             if not course:
                 note = f"Course {course_id} not found"
-                self.log.info(note)
-                # self.finish({"success": False, "note": note, "value": []})
-                # return
                 raise web.HTTPError(404, note)
 
             assignment = AssignmentModel.find_by_code(db=session, code=assignment_id, course_id=course.id, log=self.log)
             if not assignment:
                 note = f"Assignment {assignment_id} for Course {course_id} not found"
-                self.log.info(note)
-                # self.finish({"success": False, "note": note, "value": []})
-                # return
                 raise web.HTTPError(404, note)
 
             student = User.find_by_name(db=session, name=this_user["name"], log=self.log)
@@ -162,7 +156,6 @@ class FeedbackHandler(BaseHandler):
             course = Course.find_by_code(db=session, code=course_id, org_id=this_user["org_id"], log=self.log)
 
             if not course:
-                self.log.info(f"Could not find requested resource course {course_id}")
                 raise web.HTTPError(404, f"Could not find requested resource course {course_id}")
 
             assignment = AssignmentModel.find_by_code(
@@ -173,27 +166,20 @@ class FeedbackHandler(BaseHandler):
             )
 
             if not assignment:
-                note = f"Could not find requested resource assignment {assignment_id}"
-                self.log.info(note)
-                raise web.HTTPError(404, note)
+                raise web.HTTPError(404, f"Could not find requested resource assignment {assignment_id}")
 
             notebook = Notebook.find_by_name(db=session, name=notebook_id, assignment_id=assignment.id, log=self.log)
             if not notebook:
-                note = f"Could not find requested resource notebook {notebook_id}"
-                self.log.info(note)
-                raise web.HTTPError(404, note)
+                raise web.HTTPError(404, f"Could not find requested resource notebook {notebook_id}")
 
             student = User.find_by_name(db=session, name=student_id, log=self.log)
 
             if not student:
-                note = f"Could not find requested resource student {student_id}"
-                self.log.info(note)
-                raise web.HTTPError(404, note)
+                raise web.HTTPError(404, f"Could not find requested resource student {student_id}")
 
             # Check whether there is an HTML file attached to the request
             if not self.request.files:
-                self.log.warning("Error: No file supplied in upload")  # TODO: improve error message
-                raise web.HTTPError(412)  # precondition failed
+                raise web.HTTPError(412, "Error: No file supplied in upload")
 
             try:
                 # Grab the file
@@ -210,8 +196,7 @@ class FeedbackHandler(BaseHandler):
 
             except Exception as e:
                 # Could not grab the feedback file
-                self.log.error(f"Error: {e}")
-                raise web.HTTPError(412)
+                raise web.HTTPError(412, f"Error: {e}")
 
             location = os.path.join(
                 self.base_storage_location,
@@ -231,8 +216,7 @@ class FeedbackHandler(BaseHandler):
                 with open(feedback_file, "w+b") as handle:
                     handle.write(file_info["body"])
             except Exception as e:
-                self.log.error(f"Could not save file. \n {e}")
-                raise web.HTTPError(500)
+                raise web.HTTPError(500, f"Could not save file. \n {e}")
 
             # convert to datetime object & ensure it's got a timezone
             timestamp = self.check_timezone(parser.parse(timestamp))  #

@@ -7,10 +7,11 @@ from shutil import copyfile
 from unittest.mock import ANY
 
 import pytest
+import requests
 from mock import patch
 from nbgrader.coursedir import CourseDirectory
 
-from nbexchange.plugin import Exchange, ExchangeList
+from nbexchange.plugin import Exchange, ExchangeError, ExchangeList
 from nbexchange.tests.utils import (
     get_feedback_file,
     mock_api_fetched_assign_a_0_seconds,
@@ -641,3 +642,19 @@ def test_list_with_5_submit_and_3_feedback(plugin_config, tmpdir):
 
     finally:
         shutil.rmtree(course_code)
+
+
+@pytest.mark.gen_test
+def test_list_does_timeout(plugin_config, caplog):
+    plugin_config.CourseDirectory.course_id = "no_course"
+    plugin_config.ExchangeList.inbound = True
+    plugin = ExchangeList(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
+
+    def api_request(*args, **kwargs):
+        raise requests.exceptions.Timeout
+
+    expected_message = "Timed out trying to reach the exchange service to list available assignments."
+    with patch.object(Exchange, "api_request", side_effect=api_request):
+        with pytest.raises(ExchangeError, match=expected_message):
+            plugin.start()
+    assert expected_message in caplog.text

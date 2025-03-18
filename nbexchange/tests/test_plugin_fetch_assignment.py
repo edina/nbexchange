@@ -7,6 +7,7 @@ import tarfile
 import urllib.parse
 
 import pytest
+import requests
 from mock import patch
 from nbgrader.coursedir import CourseDirectory
 from nbgrader.exchange import ExchangeError
@@ -397,3 +398,19 @@ def test_fetch_assignment_fetch_unicode(plugin_config, tmpdir):
             assert os.path.exists(os.path.join(plugin.dest_path, "assignment-0.6.ipynb"))
     finally:
         shutil.rmtree(plugin.dest_path)
+
+
+@pytest.mark.gen_test
+def test_fetch_does_timeout(plugin_config, caplog):
+    plugin_config.CourseDirectory.course_id = "no_course"
+
+    plugin = ExchangeFetchAssignment(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
+
+    def api_request(*args, **kwargs):
+        raise requests.exceptions.Timeout
+
+    expected_message = "Timed out trying to reach the exchange service to fetch the assignment."
+    with patch.object(Exchange, "api_request", side_effect=api_request):
+        with pytest.raises(ExchangeError, match=expected_message):
+            plugin.start()
+    assert expected_message in caplog.text

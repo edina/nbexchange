@@ -1,5 +1,7 @@
 import json
 
+import requests
+
 from .exchange import Exchange
 
 
@@ -21,7 +23,10 @@ class ExchangeCourse(Exchange):
 
     def query_exchange(self):
         """List of all courses"""
-        r = self.api_request("courses")
+        try:
+            r = self.api_request("courses")
+        except requests.exceptions.Timeout:
+            self.fail("Timed out trying to reach the exchange service to get a list of courses.")
 
         self.log.debug(f"Got back {r} when listing courses")
 

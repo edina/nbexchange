@@ -6,6 +6,7 @@ import urllib.parse
 from shutil import copyfile
 
 import pytest
+import requests
 from mock import patch
 from nbgrader.api import Gradebook
 from nbgrader.coursedir import CourseDirectory
@@ -1081,8 +1082,9 @@ def test_collect_handles_500_failure(plugin_config, tmpdir):
             )
 
     with patch.object(Exchange, "api_request", side_effect=api_request):
-        with pytest.raises(ExchangeError) as e_info:
+        with pytest.raises(Exception) as e_info:
             plugin.start()
+        assert e_info.type is ExchangeError
         assert (
             str(e_info.value)
             == f"Error failing to collect for assignment {ass_1_3} on course {course_id}: status code 500: error {http_error}"  # noqa: E501 W503
@@ -1291,3 +1293,19 @@ def test_collect_with_unicode_R2L_language(plugin_config, tmpdir):
                 os.path.basename(notebook1_filename),
             )
         )
+
+
+@pytest.mark.gen_test
+def test_collect_does_timeout(plugin_config, caplog):
+    plugin_config.CourseDirectory.course_id = "no_course"
+
+    plugin = ExchangeCollect(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
+
+    def api_request(*args, **kwargs):
+        raise requests.exceptions.Timeout
+
+    expected_message = "Timed out trying to reach the exchange service to get a list of submissions."
+    with patch.object(Exchange, "api_request", side_effect=api_request):
+        with pytest.raises(ExchangeError, match=expected_message):
+            plugin.start()
+    assert expected_message in caplog.text

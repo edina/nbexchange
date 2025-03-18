@@ -1,8 +1,10 @@
 import io
+import json
 import os
 import sys
 from urllib.parse import quote_plus
 
+import requests
 from dateutil import parser
 from nbgrader.exchange.abc import ExchangeSubmit as ABCExchangeSubmit
 from nbgrader.utils import find_all_notebooks
@@ -57,13 +59,21 @@ class ExchangeSubmit(Exchange, ABCExchangeSubmit):
         timestamp = self.check_timezone(parser.parse(timestamp)).strftime(self.timestamp_format)
 
         files = {"assignment": ("assignment.tar.gz", file)}
-        r = self.api_request(
-            f"submission?course_id={quote_plus(self.coursedir.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}&timestamp={quote_plus(timestamp)}",  # noqa: E501
-            method="POST",
-            files=files,
-        )
+        try:
+            r = self.api_request(
+                f"submission?course_id={quote_plus(self.coursedir.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}&timestamp={quote_plus(timestamp)}",  # noqa: E501
+                method="POST",
+                files=files,
+            )
+        except requests.exceptions.Timeout:
+            self.fail("Timed out trying to reach the exchange service to post submission.")
+
         self.log.debug(f"Got back {r.status_code} after file upload")
-        data = r.json()
+        try:
+            data = r.json()
+        except json.decoder.JSONDecodeError as err:
+            self.log.error("release_feedback failed upload\n" f"response text: {r.text}\n" f"JSONDecodeError: {err}")
+            self.fail(r.text)
         if not data["success"]:
             self.fail(data["note"])
 

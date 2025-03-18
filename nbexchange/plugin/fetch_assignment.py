@@ -1,11 +1,13 @@
 import glob
 import io
+import json
 import os
 import shutil
 import tarfile
 from urllib.parse import quote_plus
 
 import nbgrader.exchange.abc as abc
+import requests
 from nbgrader.api import new_uuid
 
 from .exchange import Exchange
@@ -59,9 +61,13 @@ class ExchangeFetchAssignment(abc.ExchangeFetchAssignment, Exchange):
 
     def download(self):
         self.log.debug(f"Download from {self.service_url}")
-        r = self.api_request(
-            f"assignment?course_id={quote_plus(self.coursedir.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}"  # noqa: E501
-        )
+        try:
+            r = self.api_request(
+                f"assignment?course_id={quote_plus(self.coursedir.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}"  # noqa: E501
+            )
+        except requests.exceptions.Timeout:
+            self.fail("Timed out trying to reach the exchange service to fetch the assignment.")
+
         self.log.debug(f"Got back {r.status_code}  {r.headers['content-type']} after file download")
 
         if r.status_code > 399:
@@ -87,7 +93,13 @@ class ExchangeFetchAssignment(abc.ExchangeFetchAssignment, Exchange):
                     )
         else:
             # Fails, even if the json response is a success (for now)
-            data = r.json()
+            try:
+                data = r.json()
+            except json.decoder.JSONDecodeError as err:
+                self.log.error(
+                    "release_feedback failed upload\n" f"response text: {r.text}\n" f"JSONDecodeError: {err}"
+                )
+                self.fail(r.text)
             if not data["success"]:
                 self.fail(
                     f"Error failing to fetch assignment {self.coursedir.assignment_id} on course {self.coursedir.course_id}"  # noqa: E501

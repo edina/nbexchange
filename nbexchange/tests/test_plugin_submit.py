@@ -8,6 +8,7 @@ from os.path import basename
 from shutil import copyfile
 
 import pytest
+import requests
 from mock import patch
 from nbgrader.coursedir import CourseDirectory
 from nbgrader.exchange import ExchangeError
@@ -425,70 +426,67 @@ def test_submit_multiple_notebooks_in_assignment(plugin_config, tmpdir):
 # Note the execption is raised around the "start()"
 @pytest.mark.gen_test
 def test_submit_fail_no_folder(plugin_config, tmpdir):
-    try:
-        plugin_config.strict = False
+    plugin_config.strict = False
 
-        plugin_config.CourseDirectory.course_id = course_id
-        plugin_config.CourseDirectory.assignment_id = assignment_id1
+    plugin_config.CourseDirectory.course_id = course_id
+    plugin_config.CourseDirectory.assignment_id = assignment_id1
 
-        plugin = ExchangeSubmit(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
+    plugin = ExchangeSubmit(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
 
-        def api_request(*args, **kwargs):
-            if args[0].startswith("assignments"):
-                return type(
-                    "Request",
-                    (object,),
-                    {
-                        "status_code": 200,
-                        "json": (
-                            lambda: {
-                                "success": True,
-                                "value": [
-                                    {
-                                        "assignment_id": assignment_id1,
-                                        "student_id": "1",
-                                        "course_id": course_id,
-                                        "status": "released",
-                                        "path": "",
-                                        "notebooks": [
-                                            {
-                                                "notebook_id": "assignment-0.6",
-                                                "has_exchange_feedback": False,
-                                                "feedback_updated": False,
-                                                "feedback_timestamp": False,
-                                            }
-                                        ],
-                                        "timestamp": "2020-01-01 00:00:00.000000 UTC",
-                                    }
-                                ],
-                            }
-                        ),
-                    },
-                )
-            else:
-                pth = str(tmpdir.mkdir("submit_several").realpath())
-                assert args[0].startswith(f"submission?course_id={course_id}&assignment_id={assignment_id1}&timestamp=")
-                assert "method" not in kwargs or kwargs.get("method").lower() == "post"
-                files = kwargs.get("files")
-                assert "assignment" in files
-                assert "assignment.tar.gz" == files["assignment"][0]
-                tar_file = io.BytesIO(files["assignment"][1])
-                with tarfile.open(fileobj=tar_file) as handle:
-                    handle.extractall(path=pth)
+    def api_request(*args, **kwargs):
+        if args[0].startswith("assignments"):
+            return type(
+                "Request",
+                (object,),
+                {
+                    "status_code": 200,
+                    "json": (
+                        lambda: {
+                            "success": True,
+                            "value": [
+                                {
+                                    "assignment_id": assignment_id1,
+                                    "student_id": "1",
+                                    "course_id": course_id,
+                                    "status": "released",
+                                    "path": "",
+                                    "notebooks": [
+                                        {
+                                            "notebook_id": "assignment-0.6",
+                                            "has_exchange_feedback": False,
+                                            "feedback_updated": False,
+                                            "feedback_timestamp": False,
+                                        }
+                                    ],
+                                    "timestamp": "2020-01-01 00:00:00.000000 UTC",
+                                }
+                            ],
+                        }
+                    ),
+                },
+            )
+        else:
+            pth = str(tmpdir.mkdir("submit_several").realpath())
+            assert args[0].startswith(f"submission?course_id={course_id}&assignment_id={assignment_id1}&timestamp=")
+            assert "method" not in kwargs or kwargs.get("method").lower() == "post"
+            files = kwargs.get("files")
+            assert "assignment" in files
+            assert "assignment.tar.gz" == files["assignment"][0]
+            tar_file = io.BytesIO(files["assignment"][1])
+            with tarfile.open(fileobj=tar_file) as handle:
+                handle.extractall(path=pth)
 
-                assert os.path.exists(os.path.join(pth, "assignment-0.6.ipynb"))
-                assert os.path.exists(os.path.join(pth, "timestamp.txt"))
-                return type(
-                    "Request",
-                    (object,),
-                    {"status_code": 200, "json": (lambda: {"success": True})},
-                )
+            assert os.path.exists(os.path.join(pth, "assignment-0.6.ipynb"))
+            assert os.path.exists(os.path.join(pth, "timestamp.txt"))
+            return type(
+                "Request",
+                (object,),
+                {"status_code": 200, "json": (lambda: {"success": True})},
+            )
 
-        with pytest.raises(ExchangeError, match=r"Assignment not found at"):
-            with patch.object(Exchange, "api_request", side_effect=api_request):
-                plugin.start()
-    finally:
-        pass  # shutil.rmtree(assignment_id1)
+    with pytest.raises(ExchangeError, match=r"Assignment not found at"):
+        with patch.object(Exchange, "api_request", side_effect=api_request):
+            plugin.start()
 
 
 # Failure: assignment folder exists, but no files when submitting
@@ -722,7 +720,7 @@ def test_submit_no_notebook_strict_means_fail(plugin_config, tmpdir):
 
 # Failure: assignment folder exists, but wrong files
 @pytest.mark.gen_test
-def test_submit_wrong_notebook_strict_means_faile(plugin_config, tmpdir):
+def test_submit_wrong_notebook_strict_means_fail(plugin_config, tmpdir):
     try:
         plugin_config.strict = True
 
@@ -1720,3 +1718,27 @@ def test_submit_fails_oversize(plugin_config, tmpdir):
 
     finally:
         shutil.rmtree(assignment_id1)
+
+
+# Check the client-side oversizxe limit works
+@pytest.mark.gen_test
+def test_submit_timeout(plugin_config, tmpdir, caplog):
+    # plugin_config.CourseDirectory.course_id = course_id
+    # plugin_config.CourseDirectory.assignment_id = assignment_id1
+
+    # os.makedirs(assignment_id1, exist_ok=True)
+    # copyfile(
+    #     notebook1_filename,
+    #     os.path.join(assignment_id1, basename(notebook1_filename)),
+    # )
+
+    plugin = ExchangeSubmit(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
+
+    def api_request(*args, **kwargs):
+        raise requests.exceptions.Timeout
+
+    expected_message = "Timed out trying to reach the exchange service to list available assignments."
+    with patch.object(Exchange, "api_request", side_effect=api_request):
+        with pytest.raises(ExchangeError, match=expected_message):
+            plugin.start()
+    assert expected_message in caplog.text

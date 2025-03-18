@@ -5,6 +5,7 @@ import os
 from urllib.parse import quote_plus
 
 import nbgrader.exchange.abc as abc
+import requests
 from nbgrader.exchange.default.list import ExchangeList as DefaultExchangeList
 from traitlets import Unicode
 
@@ -43,19 +44,26 @@ class ExchangeList(abc.ExchangeList, Exchange):
 
         (it doesn't care about feedback or collected actions)
         """
-        if self.coursedir.course_id:
-            """List assignments for specific course"""
-            r = self.api_request(f"assignments?course_id={quote_plus(self.coursedir.course_id)}")
-        else:
-            """List assignments for all courses"""
-            r = self.api_request("assignments")
+        try:
+            if self.coursedir.course_id:
+                """List assignments for specific course"""
+                r = self.api_request(f"assignments?course_id={quote_plus(self.coursedir.course_id)}")
+            else:
+                """List assignments for all courses"""
+                r = self.api_request("assignments")
+        except requests.exceptions.Timeout:
+            self.fail("Timed out trying to reach the exchange service to list available assignments.")
 
         self.log.debug(f"Got back {r} when listing assignments")
 
         try:
             assignments = r.json()
-        except json.decoder.JSONDecodeError:
-            self.log.error("Got back an invalid response when listing assignments")
+        except json.decoder.JSONDecodeError as err:
+            self.log.error(
+                "Got back an invalid response when listing assignments\n"
+                f"response text: {r.text}\n"
+                f"JSONDecodeError: {err}"
+            )
             return []
 
         return assignments["value"]
@@ -330,7 +338,10 @@ class ExchangeList(abc.ExchangeList, Exchange):
 
             url = f"assignment?course_id={quote_plus(self.coursedir.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}"  # noqa: E501
 
-            r = self.api_request(url, method="DELETE")
+            try:
+                r = self.api_request(url, method="DELETE")
+            except requests.exceptions.Timeout:
+                self.fail("Timed out trying to reach the exchange service to 'delete' an assignment.")
 
             self.log.info(f"Got back {r.status_code} after assignment unrelease")
 

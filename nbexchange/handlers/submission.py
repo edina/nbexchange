@@ -98,8 +98,7 @@ class Submission(BaseHandler):
             )
 
             if not self.request.files:
-                self.log.warning("Error: No file supplies in upload")  # TODO: improve error message
-                raise web.HTTPError(412)  # precondition failed
+                raise web.HTTPError(412, "submission handler post: No file supplied in upload")  # precondition failed
 
             try:
                 # Write the uploaded file to the desired location
@@ -119,15 +118,13 @@ class Submission(BaseHandler):
                 release_file = release_file + "/" + cname
                 # Ensure the directory exists
                 os.makedirs(os.path.dirname(release_file), exist_ok=True)
+
+                # Hmmm this seems to raise it's own 500: No such file or directory if not present
                 with open(release_file, "w+b") as handle:
                     handle.write(file_info["body"])
 
             except Exception as e:  # TODO: exception handling
-                self.log.warning(f"Error: {e}")  # TODO: improve error message
-
-                self.log.info("Upload failed")
-                # error 500??
-                raise web.HTTPError(418)
+                raise web.HTTPError(500, f"submission handler Upload failed: {e}")
 
             # Check the file exists on disk
             if not (

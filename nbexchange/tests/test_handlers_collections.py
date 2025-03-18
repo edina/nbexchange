@@ -1,4 +1,5 @@
 import logging
+import shutil
 
 import pytest
 from mock import patch
@@ -41,6 +42,7 @@ def test_collections_no_post_action_even_authenticated(app, clear_database):  # 
 
 # #### GET /collections (list available assignments for collection) #### #
 
+
 #################################
 #
 # Very Important Note
@@ -50,6 +52,8 @@ def test_collections_no_post_action_even_authenticated(app, clear_database):  # 
 # This means that every single test is run in isolation, and therefore will need to have the full Release, Fetch,
 #   Submit steps done before the collection can be tested.
 # (On the plus side, adding or changing a test will no longer affect those below)
+#
+# Note you also want to clear the exchange filestore too.... again, so files from 1 test don't throw another test
 #
 #################################
 
@@ -184,6 +188,7 @@ def test_collections_repeated_parameters_right_first(app, clear_database):  # no
     assert response_data["success"] is True
     assert "note" not in response_data  # just that it's missing
     assert response_data["value"] == []
+    shutil.rmtree(app.base_storage_location)
 
 
 @pytest.mark.gen_test
@@ -228,6 +233,7 @@ def test_collections_with_two_users_submitting(app, clear_database):  # noqa: F8
     response_data = r.json()
     assert response_data["success"] is True
     assert len(response_data["value"]) == 2
+    shutil.rmtree(app.base_storage_location)
 
 
 @pytest.mark.gen_test
@@ -265,6 +271,7 @@ def test_collections_with_one_user_submits_2nd_time(app, clear_database):  # noq
     response_data = r.json()
     assert response_data["success"] is True
     assert len(response_data["value"]) == 2
+    shutil.rmtree(app.base_storage_location)
 
 
 @pytest.mark.gen_test
@@ -304,6 +311,7 @@ def test_collections_with_named_user(app, clear_database):  # noqa: F811
     response_data = r.json()
     assert response_data["success"] is True
     assert len(response_data["value"]) == 1
+    shutil.rmtree(app.base_storage_location)
 
 
 @pytest.mark.gen_test
@@ -342,6 +350,7 @@ def test_collections_with_named_user_check_full_definition(app, clear_database):
         assert value["full_name"] == user_zik_student["full_name"]
         assert value["email"] == user_zik_student["email"]
         assert value["lms_user_id"] == user_zik_student["lms_user_id"]
+    shutil.rmtree(app.base_storage_location)
 
 
 @pytest.mark.gen_test
@@ -380,6 +389,7 @@ def test_collections_with_named_user_check_minimal_definition(app, clear_databas
         assert value["full_name"] is None
         assert value["email"] is None
         assert value["lms_user_id"] is None
+    shutil.rmtree(app.base_storage_location)
 
 
 @pytest.mark.gen_test
@@ -436,3 +446,4 @@ def test_collections_with_a_blank_feedback_path_injected(app, clear_database):  
     response_data = r.json()
     assert response_data["success"] is True
     assert len(response_data["value"]) == 3
+    shutil.rmtree(app.base_storage_location)

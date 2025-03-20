@@ -658,3 +658,112 @@ def test_list_does_timeout(plugin_config, caplog):
         with pytest.raises(ExchangeError, match=expected_message):
             plugin.start()
     assert expected_message in caplog.text
+
+
+@pytest.mark.gen_test
+def test_list_feedback_available_but_second_notebook_has_no_feedback(plugin_config, tmpdir):
+    try:
+        course_code = "no_course"
+        assignment_id = "assign_a"
+        timestamp = "2020-01-01 00:02:00.000000 UTC"
+        plugin_config.CourseDirectory.course_id = course_code
+        plugin_config.CourseDirectory.assignment_id = assignment_id
+
+        plugin_config.ExchangeList.inbound = True
+
+        my_feedback_dir = os.path.join(assignment_id, "feedback", timestamp)
+        os.makedirs(my_feedback_dir, exist_ok=True)
+        copyfile(
+            feedback1_filename,
+            os.path.join(
+                my_feedback_dir,
+                basename(feedback1_filename),
+            ),
+        )
+        copyfile(
+            feedback2_filename,
+            os.path.join(
+                my_feedback_dir,
+                basename(feedback1_filename),
+            ),
+        )
+
+        plugin = ExchangeList(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
+
+        submit_1 = deepcopy(mock_api_submit_assign_a_0_seconds)
+        submit_1["timestamp"] = timestamp
+        submit_1["notebooks"][0]["has_exchange_feedback"] = True
+        submit_1["notebooks"][0]["feedback_timestamp"] = timestamp
+        submit_1["notebooks"].append(
+            {
+                "notebook_id": root_notebook_name + "-part_2",
+                "has_exchange_feedback": False,
+                "feedback_updated": False,
+                "feedback_timestamp": None,
+            }
+        )
+
+        def api_request(*args, **kwargs):
+            assert args[0] == ("assignments?course_id=no_course")
+            assert "method" not in kwargs or kwargs.get("method").lower() == "get"
+            return type(
+                "Request",
+                (object,),
+                {
+                    "status_code": 200,
+                    "json": (
+                        lambda: {
+                            "success": True,
+                            "value": [
+                                submit_1,
+                            ],
+                        }
+                    ),
+                },
+            )
+
+        with patch.object(Exchange, "api_request", side_effect=api_request):
+            called = plugin.start()
+            assert called == [
+                {
+                    "assignment_id": assignment_id,
+                    "course_id": course_code,
+                    "student_id": 1,
+                    "status": "submitted",
+                    "submissions": [
+                        {
+                            "assignment_id": assignment_id,
+                            "course_id": course_code,
+                            "path": "submitted/1/assign_a/1/foo",
+                            "status": "submitted",
+                            "student_id": 1,
+                            "notebooks": [
+                                {
+                                    "feedback_timestamp": timestamp,
+                                    "has_exchange_feedback": True,
+                                    "has_local_feedback": True,
+                                    "local_feedback_path": f"{assignment_id}/feedback/{timestamp}/{root_notebook_name}.html",  # noqa: E501
+                                    "feedback_updated": False,
+                                    "notebook_id": root_notebook_name,
+                                },
+                                {
+                                    "feedback_timestamp": None,
+                                    "has_exchange_feedback": False,
+                                    "has_local_feedback": False,
+                                    "local_feedback_path": None,
+                                    "feedback_updated": False,
+                                    "notebook_id": root_notebook_name + "-part_2",
+                                },
+                            ],
+                            "timestamp": timestamp,
+                            "feedback_updated": False,
+                            "has_exchange_feedback": True,
+                            "has_local_feedback": True,
+                            "local_feedback_path": f"{assignment_id}/feedback/{timestamp}",
+                        }
+                    ],
+                }
+            ]
+
+    finally:
+        shutil.rmtree(assignment_id)

@@ -69,7 +69,7 @@ class ExchangeFetchAssignment(abc.ExchangeFetchAssignment, Exchange):
             self.fail("Timed out trying to reach the exchange service to fetch the assignment.")
         except Exception as err:
             self.fail(f"fetch_assignment failed: {err}")
-        self.log.debug(f"Got back {r.status_code}  after file download")  # {r.headers['content-type']}
+        self.log.debug(f"Got back {r.status_code} ({r.headers['content-type']}) after file download")
 
         if r.status_code > 399:
             self.fail(

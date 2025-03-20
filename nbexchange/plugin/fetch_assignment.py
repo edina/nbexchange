@@ -67,8 +67,9 @@ class ExchangeFetchAssignment(abc.ExchangeFetchAssignment, Exchange):
             )
         except requests.exceptions.Timeout:
             self.fail("Timed out trying to reach the exchange service to fetch the assignment.")
-
-        self.log.debug(f"Got back {r.status_code}  {r.headers['content-type']} after file download")
+        except Exception as err:
+            self.fail(f"fetch_assignment failed: {err}")
+        self.log.debug(f"Got back {r.status_code}  after file download")  # {r.headers['content-type']}
 
         if r.status_code > 399:
             self.fail(
@@ -96,17 +97,15 @@ class ExchangeFetchAssignment(abc.ExchangeFetchAssignment, Exchange):
             try:
                 data = r.json()
             except json.decoder.JSONDecodeError as err:
-                self.log.error(
-                    "release_feedback failed upload\n" f"response text: {r.text}\n" f"JSONDecodeError: {err}"
-                )
+                self.log.error("fetch_assignment download\n" f"response text: {r.text}\n" f"JSONDecodeError: {err}")
                 self.fail(r.text)
             if not data["success"]:
                 self.fail(
-                    f"Error failing to fetch assignment {self.coursedir.assignment_id} on course {self.coursedir.course_id}"  # noqa: E501
+                    f"Error failing to fetch assignment {self.coursedir.assignment_id} on course {self.coursedir.course_id}: message: {data.get('note')}"  # noqa: E501
                 )
             else:
                 self.fail(
-                    f"Error failing to fetch assignment {self.coursedir.assignment_id} on course {self.coursedir.course_id}: {data['note']}"  # noqa: E501
+                    f"Error failing to fetch assignment {self.coursedir.assignment_id} on course {self.coursedir.course_id}: {data.get('note')}"  # noqa: E501
                 )
 
     def copy_if_missing(self, src, dest, ignore=None):

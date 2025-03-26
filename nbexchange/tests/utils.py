@@ -119,7 +119,7 @@ mock_api_released_assign_b_0_seconds = {
     "path": "released/1/assign_b/foo",
     "notebooks": [
         {
-            "notebook_id": "assignment-0.6-wrong",
+            "notebook_id": root_notebook_name + "-wrong",
             "has_exchange_feedback": False,
             "feedback_updated": False,
             "feedback_timestamp": None,

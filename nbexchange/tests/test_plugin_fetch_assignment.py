@@ -414,3 +414,37 @@ def test_fetch_does_timeout(plugin_config, caplog):
         with pytest.raises(ExchangeError, match=expected_message):
             plugin.start()
     assert expected_message in caplog.text
+
+
+# This is the various "not subscribed" & "don't exist" messages
+@pytest.mark.gen_test
+def test_fetch_assignment_handles_json_not_success(plugin_config):
+    plugin_config.CourseDirectory.course_id = course_id
+    plugin_config.CourseDirectory.assignment_id = ass_1_2
+
+    plugin = ExchangeFetchAssignment(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
+
+    # This is an error *from the exchange* (not the plugin)
+    def api_request(*args, **kwargs):
+        return type(
+            "Response",
+            (object,),
+            {
+                "status_code": 200,
+                "headers": {"content-type": "text/jsom"},
+                "json": (
+                    lambda: {
+                        "success": False,
+                        "note": "This is a note",
+                    }
+                ),
+            },
+        )
+
+    with patch.object(Exchange, "api_request", side_effect=api_request):
+        with pytest.raises(ExchangeError) as e_info:
+            plugin.start()
+        assert (
+            str(e_info.value)
+            == "Error failing to fetch assignment assign_1_2 on course no_course: message: This is a note"  # noqa W503
+        )

@@ -508,7 +508,6 @@ def test_get_collection_unable_to_read_file(app, clear_database, caplog):  # noq
     exchange_path = app.base_storage_location
 
     files = list(pathlib.Path(exchange_path).rglob("*"))
-    print(f"chmodding {files[-1]}")
     os.chmod(files[-1], 0o333)
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         collected_data = None

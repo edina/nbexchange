@@ -229,16 +229,28 @@ class ExchangeList(abc.ExchangeList, Exchange):
                 local_feedback_path = None
                 has_local_feedback = False
 
+                # There's a flaw: if the last notebook in the list does not have a matching submitted
+                #  .ipynb file, then 'release_feedback' does not push a .html file to the exchange, which
+                # therefore has no record in it's database. This means the the assignments lister in the
+                # exchange doesn't add a feedback_timestamp to _that_ notebook. Therefore we need to note
+                # if _any_ notebooks in the assignment [for that student] has a timestamp, and use that
+                # rather than rely on the last notebook having a timestamp
+                group_nb_timestamp = None
                 for notebook in assignment["notebooks"]:
+                    local_feedback_path = None
+                    has_local_feedback = False
                     nb_timestamp = notebook["feedback_timestamp"]
-
                     # This has to match timestamp in fetch_feedback.download
                     if nb_timestamp:
+                        # Note the timestamp, unless we already have a note
+                        if group_nb_timestamp is None:
+                            group_nb_timestamp = nb_timestamp
                         # get the individual notebook details
                         timestamped_feedback_dir = os.path.join(
                             feedback_dir,
                             nb_timestamp,
                         )
+
                         if os.path.isdir(timestamped_feedback_dir):
                             local_feedback_path = os.path.join(
                                 timestamped_feedback_dir,
@@ -250,7 +262,6 @@ class ExchangeList(abc.ExchangeList, Exchange):
                                     f"{notebook['notebook_id']}.html",
                                 )
                             )
-
                     notebook["has_local_feedback"] = has_local_feedback
                     notebook["local_feedback_path"] = local_feedback_path
 
@@ -271,7 +282,7 @@ class ExchangeList(abc.ExchangeList, Exchange):
                 if has_local_feedback:
                     assignment["local_feedback_path"] = os.path.join(
                         feedback_dir,
-                        nb_timestamp,
+                        group_nb_timestamp,
                     )
                 else:
                     assignment["local_feedback_path"] = None

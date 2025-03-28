@@ -14,7 +14,7 @@ from nbgrader.coursedir import CourseDirectory
 from nbgrader.exchange import ExchangeError
 
 from nbexchange.plugin import Exchange, ExchangeSubmit
-from nbexchange.tests.utils import get_feedback_file
+from nbexchange.tests.utils import create_any_tarball, get_feedback_file
 
 logger = logging.getLogger(__file__)
 logger.setLevel(logging.ERROR)
@@ -1641,7 +1641,7 @@ def test_submit_with_multiple_assignments_oldest_first(plugin_config, tmpdir):
 
 # Check the client-side oversizxe limit works
 @pytest.mark.gen_test
-def test_submit_fails_oversize(plugin_config, tmpdir):
+def test_submit_reducing_max_buffer_size_honoured(plugin_config, tmpdir):
     try:
         plugin_config.CourseDirectory.course_id = course_id
         plugin_config.CourseDirectory.assignment_id = assignment_id1
@@ -1715,6 +1715,160 @@ def test_submit_fails_oversize(plugin_config, tmpdir):
                 str(e_info.value)
                 == "Assignment assign_1_1 not submitted. The contents of your submission are too large:\nYou may have data files, temporary files, and/or working files that are not needed - try deleting them."  # noqa: E501 W503
             )
+
+    finally:
+        shutil.rmtree(assignment_id1)
+
+
+@pytest.mark.gen_test
+def test_release_105MB_not_blocked(plugin_config, tmpdir):
+    try:
+        plugin_config.CourseDirectory.course_id = course_id
+        plugin_config.CourseDirectory.assignment_id = assignment_id1
+
+        os.makedirs(assignment_id1, exist_ok=True)
+        copyfile(
+            notebook1_filename,
+            os.path.join(assignment_id1, basename(notebook1_filename)),
+        )
+
+        plugin = ExchangeSubmit(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
+
+        def api_request(*args, **kwargs):
+            if args[0].startswith("assignments"):
+                return type(
+                    "Request",
+                    (object,),
+                    {
+                        "status_code": 200,
+                        "json": (
+                            lambda: {
+                                "success": True,
+                                "value": [
+                                    {
+                                        "assignment_id": assignment_id1,
+                                        "student_id": "1",
+                                        "course_id": course_id,
+                                        "status": "released",
+                                        "path": "",
+                                        "notebooks": [
+                                            {
+                                                "notebook_id": "assignment-0.6",
+                                                "has_exchange_feedback": False,
+                                                "feedback_updated": False,
+                                                "feedback_timestamp": False,
+                                            }
+                                        ],
+                                        "timestamp": "2020-01-01 00:00:00.000000 UTC",
+                                    }
+                                ],
+                            }
+                        ),
+                    },
+                )
+            else:
+
+                assert args[0].startswith(f"submission?course_id={course_id}&assignment_id={assignment_id1}&timestamp=")
+                assert "method" not in kwargs or kwargs.get("method").lower() == "post"
+                files = kwargs.get("files")
+                assert "assignment" in files
+                assert "assignment.tar.gz" == files["assignment"][0]
+
+                return type(
+                    "Request",
+                    (object,),
+                    {"status_code": 200, "json": (lambda: {"success": True})},
+                )
+
+        with patch.object(Exchange, "api_request", side_effect=api_request):
+            with patch.object(
+                ExchangeSubmit,
+                "tar_source",
+                return_value=(create_any_tarball(110100480), "2020-01-01 00:00:00.000000 UTC"),  # 105MB
+            ):
+                plugin.start()
+        assert True  # No failure
+
+    finally:
+        shutil.rmtree(assignment_id1)
+
+
+# @pytest.mark.gen_test
+def test_release_5point1GB_is_blocked__long_test(plugin_config, tmpdir):
+    try:
+        plugin_config.CourseDirectory.course_id = course_id
+        plugin_config.CourseDirectory.assignment_id = assignment_id1
+
+        os.makedirs(assignment_id1, exist_ok=True)
+        copyfile(
+            notebook1_filename,
+            os.path.join(assignment_id1, basename(notebook1_filename)),
+        )
+
+        plugin = ExchangeSubmit(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
+
+        def api_request(*args, **kwargs):
+            if args[0].startswith("assignments"):
+                return type(
+                    "Request",
+                    (object,),
+                    {
+                        "status_code": 200,
+                        "json": (
+                            lambda: {
+                                "success": True,
+                                "value": [
+                                    {
+                                        "assignment_id": assignment_id1,
+                                        "student_id": "1",
+                                        "course_id": course_id,
+                                        "status": "released",
+                                        "path": "",
+                                        "notebooks": [
+                                            {
+                                                "notebook_id": "assignment-0.6",
+                                                "has_exchange_feedback": False,
+                                                "feedback_updated": False,
+                                                "feedback_timestamp": False,
+                                            }
+                                        ],
+                                        "timestamp": "2020-01-01 00:00:00.000000 UTC",
+                                    }
+                                ],
+                            }
+                        ),
+                    },
+                )
+            else:
+                pth = str(tmpdir.mkdir("submit_several").realpath())
+
+                assert args[0].startswith(f"submission?course_id={course_id}&assignment_id={assignment_id1}&timestamp=")
+                assert "method" not in kwargs or kwargs.get("method").lower() == "post"
+                files = kwargs.get("files")
+                assert "assignment" in files
+                assert "assignment.tar.gz" == files["assignment"][0]
+                tar_file = io.BytesIO(files["assignment"][1])
+                with tarfile.open(fileobj=tar_file) as handle:
+                    handle.extractall(path=pth)
+
+                return type(
+                    "Request",
+                    (object,),
+                    {"status_code": 200, "json": (lambda: {"success": True})},
+                )
+
+        with patch.object(Exchange, "api_request", side_effect=api_request):
+            with patch.object(
+                ExchangeSubmit,
+                "tar_source",
+                return_value=(create_any_tarball(5476083302), "2020-01-01 00:00:00.000000 UTC"),  # 5.1GB
+            ):
+                with pytest.raises(ExchangeError) as e_info:
+                    plugin.start()
+                assert (
+                    str(e_info.value)
+                    == "Assignment assign_1_1 not submitted. The contents of your submission are too large:\nYou may have data files, temporary files, and/or working files that are not needed - try deleting them."  # noqa: E501 W503
+                )
 
     finally:
         shutil.rmtree(assignment_id1)

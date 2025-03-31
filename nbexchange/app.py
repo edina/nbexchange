@@ -320,9 +320,9 @@ Defaults to 'sqlite:///:memory:' (an in-memory SQLite database)
             return
         logging.info("app.start not a subapp")
 
-        # *NOT* adding 'max_buffer_size=self.max_buffer_size' here, as we handle the
-        # size-checks in code (both plugin & exchange side)
-        self.http_server = HTTPServer(self.tornado_application, xheaders=True)
+        # We need to set 'max_buffer_size=self.max_buffer_size' here, to avoid the default 100MB limnit
+        # we _also_ do size-checks in code (both plugin & exchange side)
+        self.http_server = HTTPServer(self.tornado_application, xheaders=True, max_buffer_size=self.max_buffer_size)
         self.http_server.listen(self.port, address=self.ip)
         logging.info("app.start about to hit the IOLoop start")
         if run_loop:

@@ -268,6 +268,24 @@ def get_feedback_file(filename):
     return files
 
 
+# Another method created by ELM - does this make me a lazy programmer?
+def create_any_tarball(target_size_bytes=int(1e9)):  # Default size set to about 1GB
+    data = os.urandom(target_size_bytes)
+    tar_file = io.BytesIO()
+
+    with tarfile.open(fileobj=tar_file, mode="w:gz") as tar_handle:
+
+        with closing(io.BytesIO(data)) as fobj:
+            tarinfo = tarfile.TarInfo("filler.bin")
+            tarinfo.size = len(fobj.getvalue())
+            tarinfo.mtime = time.time()
+            tar_handle.addfile(tarinfo, fileobj=fobj)
+
+    tar_file.seek(0)
+
+    return tar_file.read()
+
+
 class _AsyncRequests:
     """Wrapper around requests to return a Future from request methods
     A single thread is allocated to avoid blocking the IOLoop thread.

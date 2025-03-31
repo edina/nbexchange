@@ -283,9 +283,6 @@ def create_any_tarball(target_size_bytes=int(1e9)):  # Default size set to about
 
     tar_file.seek(0)
 
-    # To check the file size, uncomment the next line
-    print(f"Created Tarball Size: {len(tar_file.getvalue())} bytes")
-
     return tar_file.read()
 
 

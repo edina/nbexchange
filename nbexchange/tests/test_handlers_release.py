@@ -208,29 +208,9 @@ def test_post_location_different_each_time(app, clear_database):  # noqa: F811
 
 
 @pytest.mark.gen_test
-def test_reducing_max_buffer_size_honoured(app, clear_database):  # noqa: F811
-    with patch.object(BaseHandler, "max_buffer_size", return_value=int(50)):
-        with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
-            r = yield async_requests.post(
-                app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-                data={"notebooks": notebooks},
-                files=release_files,
-            )
-    assert r.status_code == 200
-    response_data = r.json()
-    assert response_data["success"] is False
-    assert (
-        response_data["note"]
-        == "File upload oversize, and rejected. Please reduce the contents of the assignment, re-generate, and re-release"  # noqa: E501 W503
-    )
-
-
-# instructor can release
-@pytest.mark.gen_test
 def test_105MB_not_blocked(app, clear_database):  # noqa: F811
     faked_tarball = create_any_tarball(104857600)  # 105MB
     faked_files = {"assignment": ("assignment.tar.gz", faked_tarball)}
-
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
@@ -241,7 +221,23 @@ def test_105MB_not_blocked(app, clear_database):  # noqa: F811
     response_data = r.json()
     assert response_data["success"] is True
     assert response_data["note"] == "Released"
-    assert False
+    shutil.rmtree(app.base_storage_location)
+
+
+# Note, the web HTTPServer just throws a 400 error for an oversized file
+# There is no way to catch/handle that _server side_
+@pytest.mark.gen_test
+def test_5point1GB_is_blocked__long_test(app, clear_database):  # noqa: F811
+    faked_tarball = create_any_tarball(5476083302)  # 5.1GB
+    faked_files = {"assignment": ("assignment.tar.gz", faked_tarball)}
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
+        r = yield async_requests.post(
+            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
+            data={"notebooks": notebooks},
+            files=faked_files,
+        )
+    assert r.status_code == 400
+    assert r.content == b""
 
 
 # fakes something going wrong in the "write to disk" code

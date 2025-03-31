@@ -378,30 +378,11 @@ def test_release_5point1GB_is_blocked__long_test(plugin_config, tmpdir):
         os.path.join(plugin_config.CourseDirectory.release_directory, "assign_1"),
         exist_ok=True,
     )
-    copyfile(
-        notebook1_filename,
-        os.path.join(plugin_config.CourseDirectory.release_directory, "assign_1", "release.ipynb"),
-    )
-    with open(
-        os.path.join(plugin_config.CourseDirectory.release_directory, "assign_1", "timestamp.txt"),
-        "w",
-    ) as fp:
-        fp.write("2020-01-01 00:00:00.0 UTC")
 
     plugin = ExchangeReleaseAssignment(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
 
     def api_request(*args, **kwargs):
-        assert args[0] == ("assignment?course_id=no_course&assignment_id=assign_1")
-        assert kwargs.get("method").lower() == "post"
-        assert kwargs.get("data").get("notebooks") == ["release"]
-        assert "assignment" in kwargs.get("files")
-        assert "assignment.tar.gz" == kwargs.get("files").get("assignment")[0]
-
-        return type(
-            "Request",
-            (object,),
-            {"status_code": 200, "json": (lambda: {"success": True})},
-        )
+        raise web.HTTPError(status_code=400, log_message="Bad Request")
 
     with patch.object(Exchange, "api_request", side_effect=api_request):
         with patch.object(

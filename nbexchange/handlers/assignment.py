@@ -249,14 +249,8 @@ class Assignment(BaseHandler):
     # This is releasing an **assignment**, not a student submission
     @authenticated
     def post(self):
-        # Do a content-length check, before we go any further
-        if "Content-Length" in self.request.headers and int(self.request.headers["Content-Length"]) > int(
-            self.max_buffer_size
-        ):
-            note = "File upload oversize, and rejected. Please reduce the contents of the assignment, re-generate, and re-release"  # noqa: E501
-            self.log.info(note)
-            self.finish({"success": False, "note": note})
-            return
+        # Reminder: the `max_buffer_size` we have set is in config is the size given to the underlying HTTPServer
+        # Oversized content is rejected by the underlying HTTPServer, and never gets here.
 
         [course_code, assignment_code] = self.get_params(["course_id", "assignment_id"])
         self.log.debug(

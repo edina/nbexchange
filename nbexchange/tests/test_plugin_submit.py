@@ -12,6 +12,7 @@ import requests
 from mock import patch
 from nbgrader.coursedir import CourseDirectory
 from nbgrader.exchange import ExchangeError
+from tornado import web
 
 from nbexchange.plugin import Exchange, ExchangeSubmit
 from nbexchange.tests.utils import create_any_tarball, get_feedback_file
@@ -1840,22 +1841,7 @@ def test_release_5point1GB_is_blocked__long_test(plugin_config, tmpdir):
                     },
                 )
             else:
-                pth = str(tmpdir.mkdir("submit_several").realpath())
-
-                assert args[0].startswith(f"submission?course_id={course_id}&assignment_id={assignment_id1}&timestamp=")
-                assert "method" not in kwargs or kwargs.get("method").lower() == "post"
-                files = kwargs.get("files")
-                assert "assignment" in files
-                assert "assignment.tar.gz" == files["assignment"][0]
-                tar_file = io.BytesIO(files["assignment"][1])
-                with tarfile.open(fileobj=tar_file) as handle:
-                    handle.extractall(path=pth)
-
-                return type(
-                    "Request",
-                    (object,),
-                    {"status_code": 200, "json": (lambda: {"success": True})},
-                )
+                raise web.HTTPError(status_code=400, log_message="Bad Request")
 
         with patch.object(Exchange, "api_request", side_effect=api_request):
             with patch.object(
@@ -1877,14 +1863,6 @@ def test_release_5point1GB_is_blocked__long_test(plugin_config, tmpdir):
 # Check the client-side oversizxe limit works
 @pytest.mark.gen_test
 def test_submit_timeout(plugin_config, tmpdir, caplog):
-    # plugin_config.CourseDirectory.course_id = course_id
-    # plugin_config.CourseDirectory.assignment_id = assignment_id1
-
-    # os.makedirs(assignment_id1, exist_ok=True)
-    # copyfile(
-    #     notebook1_filename,
-    #     os.path.join(assignment_id1, basename(notebook1_filename)),
-    # )
 
     plugin = ExchangeSubmit(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
 
@@ -1896,3 +1874,84 @@ def test_submit_timeout(plugin_config, tmpdir, caplog):
         with pytest.raises(ExchangeError, match=expected_message):
             plugin.start()
     assert expected_message in caplog.text
+
+
+@pytest.mark.gen_test
+def test_submit_exchange_failure_code(plugin_config, tmpdir, caplog):
+    try:
+        plugin_config.CourseDirectory.course_id = course_id
+        plugin_config.CourseDirectory.assignment_id = assignment_id1
+
+        os.makedirs(assignment_id1, exist_ok=True)
+        copyfile(
+            notebook1_filename,
+            os.path.join(assignment_id1, basename(notebook1_filename)),
+        )
+
+        plugin = ExchangeSubmit(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
+
+        def api_request(*args, **kwargs):
+            if args[0].startswith("assignments"):
+                return type(
+                    "Request",
+                    (object,),
+                    {
+                        "status_code": 200,
+                        "json": (
+                            lambda: {
+                                "success": True,
+                                "value": [
+                                    {
+                                        "assignment_id": assignment_id1,
+                                        "student_id": "1",
+                                        "course_id": course_id,
+                                        "status": "released",
+                                        "path": "",
+                                        "notebooks": [
+                                            {
+                                                "notebook_id": "assignment-0.6",
+                                                "has_exchange_feedback": False,
+                                                "feedback_updated": False,
+                                                "feedback_timestamp": False,
+                                            }
+                                        ],
+                                        "timestamp": "2020-01-01 00:00:00.000000 UTC",
+                                    }
+                                ],
+                            }
+                        ),
+                    },
+                )
+            else:
+                pth = str(tmpdir.mkdir("submit_several").realpath())
+
+                assert args[0].startswith(f"submission?course_id={course_id}&assignment_id={assignment_id1}&timestamp=")
+                assert "method" not in kwargs or kwargs.get("method").lower() == "post"
+                files = kwargs.get("files")
+                assert "assignment" in files
+                assert "assignment.tar.gz" == files["assignment"][0]
+                tar_file = io.BytesIO(files["assignment"][1])
+                with tarfile.open(fileobj=tar_file) as handle:
+                    handle.extractall(path=pth)
+
+                assert os.path.exists(os.path.join(pth, "assignment-0.6.ipynb"))
+                assert os.path.exists(os.path.join(pth, "timestamp.txt"))
+                return type(
+                    "Request",
+                    (object,),
+                    {"status_code": 200, "json": (lambda: {"success": True})},
+                )
+
+        with patch.object(Exchange, "api_request", side_effect=api_request):
+            plugin.start()
+
+        def api_request_418(*args, **kwargs):
+            raise web.HTTPError(status_code=418, log_message="Use leaves, not bags")
+
+        with patch.object(Exchange, "api_request", side_effect=api_request_418):
+            with pytest.raises(Exception) as e_info:
+                plugin.start()
+            assert e_info.type is web.HTTPError
+            assert str(e_info.value) == "HTTP 418: I'm a Teapot (Use leaves, not bags)"
+    finally:
+        shutil.rmtree(assignment_id1)

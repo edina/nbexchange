@@ -2,6 +2,9 @@ import io
 import json
 import os
 import sys
+import tarfile
+import time
+from contextlib import closing
 from urllib.parse import quote_plus
 
 import requests
@@ -34,10 +37,6 @@ class ExchangeSubmit(Exchange, ABCExchangeSubmit):
 
     # The submitted files have a timestamp.txt file with them.
     def tar_source(self):
-        import tarfile
-        import time
-        from contextlib import closing
-
         timestamp = self.timestamp  # This is a string object
         tar_file = io.BytesIO()
         with tarfile.open(fileobj=tar_file, mode="w:gz") as tar_handle:

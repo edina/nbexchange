@@ -113,7 +113,7 @@ class Exchange(abc.Exchange):
             raise NotImplementedError(f"HTTP Method {method} is not implemented")
 
     # Function from ELM
-    def add_to_tar(self, tar_file, dir_path, exclude_patterns):
+    def add_to_tar(self, tar_file, dir_path, exclude_patterns=[]):
         """
         Adds files to the tar file recursively from the directory path while excluding
         certain patterns.

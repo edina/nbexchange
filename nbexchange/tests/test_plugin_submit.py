@@ -1640,6 +1640,100 @@ def test_submit_with_multiple_assignments_oldest_first(plugin_config, tmpdir):
         shutil.rmtree(assignment_id3)
 
 
+# A quick test to show submit honours the ignore list
+# We setup 4 files, 3 of which should be ignored, and expect a timestamp to be added
+@pytest.mark.gen_test
+def test_submit_honours_ignore_lost(plugin_config, tmpdir):
+    try:
+        plugin_config.CourseDirectory.course_id = course_id
+        plugin_config.CourseDirectory.assignment_id = assignment_id1
+
+        feedback_dir = os.path.join(assignment_id1, "feedback")
+        checkpoints_dir = os.path.join(assignment_id1, ".ipynb_checkpoints")
+        pycache_dir = os.path.join(assignment_id1, "__pycache__")
+
+        os.makedirs(assignment_id1, exist_ok=True)
+        os.makedirs(feedback_dir, exist_ok=True)
+        os.makedirs(checkpoints_dir, exist_ok=True)
+        os.makedirs(pycache_dir, exist_ok=True)
+        copyfile(
+            notebook1_filename,
+            os.path.join(assignment_id1, basename(notebook1_filename)),
+        )
+        copyfile(
+            notebook1_filename,
+            os.path.join(feedback_dir, basename(notebook1_filename)),
+        )
+        copyfile(
+            notebook1_filename,
+            os.path.join(checkpoints_dir, basename(notebook1_filename)),
+        )
+        copyfile(
+            notebook1_filename,
+            os.path.join(pycache_dir, basename(notebook1_filename)),
+        )
+
+        plugin = ExchangeSubmit(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
+
+        def api_request(*args, **kwargs):
+            if args[0].startswith("assignments"):
+                return type(
+                    "Request",
+                    (object,),
+                    {
+                        "status_code": 200,
+                        "json": (
+                            lambda: {
+                                "success": True,
+                                "value": [
+                                    {
+                                        "assignment_id": assignment_id1,
+                                        "student_id": "1",
+                                        "course_id": course_id,
+                                        "status": "released",
+                                        "path": "",
+                                        "notebooks": [
+                                            {
+                                                "notebook_id": "assignment-0.6",
+                                                "has_exchange_feedback": False,
+                                                "feedback_updated": False,
+                                                "feedback_timestamp": False,
+                                            }
+                                        ],
+                                        "timestamp": "2020-01-01 00:00:00.000000 UTC",
+                                    }
+                                ],
+                            }
+                        ),
+                    },
+                )
+            else:
+                pth = str(tmpdir.mkdir("submit_several").realpath())
+
+                assert args[0].startswith(f"submission?course_id={course_id}&assignment_id={assignment_id1}&timestamp=")
+                assert "method" not in kwargs or kwargs.get("method").lower() == "post"
+                files = kwargs.get("files")
+                assert "assignment" in files
+                assert "assignment.tar.gz" == files["assignment"][0]
+                tar_file = io.BytesIO(files["assignment"][1])
+                with tarfile.open(fileobj=tar_file) as handle:
+                    assert len(handle.getmembers()) == 2
+                    handle.extractall(path=pth)
+
+                assert os.path.exists(os.path.join(pth, "assignment-0.6.ipynb"))
+                assert os.path.exists(os.path.join(pth, "timestamp.txt"))
+                return type(
+                    "Request",
+                    (object,),
+                    {"status_code": 200, "json": (lambda: {"success": True})},
+                )
+
+        with patch.object(Exchange, "api_request", side_effect=api_request):
+            plugin.start()
+    finally:
+        shutil.rmtree(assignment_id1)
+
+
 # Check the client-side oversizxe limit works
 @pytest.mark.gen_test
 def test_submit_reducing_max_buffer_size_honoured(plugin_config, tmpdir):

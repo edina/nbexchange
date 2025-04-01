@@ -143,10 +143,12 @@ class ExchangeSubmit(Exchange, ABCExchangeSubmit):
         file, timestamp = self.tar_source()
         if sys.getsizeof(file) > self.max_buffer_size:
             self.fail(
-                "Assignment {} not submitted. "
-                "The contents of your submission are too large:\n"
-                "You may have data files, temporary files, and/or working files that are not needed - try deleting them."  # noqa: E501
-                "".format(self.coursedir.assignment_id)
+                f"Assignment {self.coursedir.assignment_id} not submitted. "
+                "The contents of your assignment are too large:\n"
+                "The total size of all files in your assignment directory [excluding any feedback], when compressed "
+                f"using tar -czvf must be less than {self.max_buffer_size}.\n"
+                "You may have large data files, temporary files, and/or working files that should not be included"
+                " - try deleting them."
             )
         # Upload files to exchange
         self.upload(file, timestamp)

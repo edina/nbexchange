@@ -88,7 +88,9 @@ class ExchangeReleaseAssignment(abc.ExchangeReleaseAssignment, Exchange):
             self.fail(
                 f"Assignment {self.coursedir.assignment_id} not released. "
                 "The contents of your assignment are too large:\n"
-                "You may have data files, temporary files, and/or working files that should not be included"
+                "The total size of all files in the 'generated' directory, when compressed "
+                f"using tar -czvf must be less than {self.max_buffer_size}.\n"
+                "You may have large data files, temporary files, and/or working files that should not be included"
                 " - try deleting them."
             )
         try:
@@ -109,7 +111,9 @@ class ExchangeReleaseAssignment(abc.ExchangeReleaseAssignment, Exchange):
             self.fail(
                 f"Assignment {self.coursedir.assignment_id} not released. "
                 "The contents of your assignment are too large:\n"
-                "You may have data files, temporary files, and/or working files that should not be included"
+                "The total size of all files in the 'generated' directory, when compressed "
+                f"using tar -czvf must be less than {self.max_buffer_size}.\n"
+                "You may have large data files, temporary files, and/or working files that should not be included"
                 " - try deleting them."
             )
         # Upload files to exchange

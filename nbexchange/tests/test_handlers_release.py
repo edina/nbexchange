@@ -224,20 +224,21 @@ def test_105MB_not_blocked(app, clear_database):  # noqa: F811
     shutil.rmtree(app.base_storage_location)
 
 
-# # Note, the web HTTPServer just throws a 400 error for an oversized file
-# # There is no way to catch/handle that _server side_
-# @pytest.mark.gen_test
-# def test_5point1GB_is_blocked__long_test(app, clear_database):  # noqa: F811
-#     faked_tarball = create_any_tarball(5476083302)  # 5.1GB
-#     faked_files = {"assignment": ("assignment.tar.gz", faked_tarball)}
-#     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
-#         r = yield async_requests.post(
-#             app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-#             data={"notebooks": notebooks},
-#             files=faked_files,
-#         )
-#     assert r.status_code == 400
-#     assert r.content == b""
+# Note, the web HTTPServer just throws a 400 error for an oversized file
+# There is no way to catch/handle that _server side_
+@pytest.mark.skip
+@pytest.mark.gen_test
+def test_5point1GB_is_blocked__long_test(app, clear_database):  # noqa: F811
+    faked_tarball = create_any_tarball(5476083302)  # 5.1GB
+    faked_files = {"assignment": ("assignment.tar.gz", faked_tarball)}
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
+        r = yield async_requests.post(
+            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
+            data={"notebooks": notebooks},
+            files=faked_files,
+        )
+    assert r.status_code == 400
+    assert r.content == b""
 
 
 # fakes something going wrong in the "write to disk" code

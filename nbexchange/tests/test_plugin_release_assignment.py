@@ -11,7 +11,7 @@ from nbgrader.exchange import ExchangeError
 from tornado import web
 
 from nbexchange.plugin import Exchange, ExchangeReleaseAssignment
-from nbexchange.tests.utils import get_feedback_file
+from nbexchange.tests.utils import create_any_tarball, get_feedback_file
 
 logger = logging.getLogger(__file__)
 logger.setLevel(logging.ERROR)
@@ -280,7 +280,7 @@ def test_release_assignment_known_failure_from_exchange(plugin_config, tmpdir):
 
 
 @pytest.mark.gen_test
-def test_release_oversize_blocked(plugin_config, tmpdir):
+def test_release_reducing_max_buffer_size_honoured(plugin_config, tmpdir):
     plugin_config.CourseDirectory.root = "/"
 
     plugin_config.CourseDirectory.release_directory = str(tmpdir.mkdir(release_dir).realpath())
@@ -321,10 +321,75 @@ def test_release_oversize_blocked(plugin_config, tmpdir):
     with patch.object(Exchange, "api_request", side_effect=api_request):
         with pytest.raises(ExchangeError) as e_info:
             plugin.start()
-        assert (
-            str(e_info.value)
-            == "Assignment assign_1 not released. The contents of your assignment are too large:\nYou may have data files, temporary files, and/or working files that should not be included - try deleting them."  # noqa: E501 W503
+    assert "Assignment assign_1 not released." in str(e_info.value)
+    assert "50 bytes" in str(e_info.value)
+
+
+@pytest.mark.gen_test
+def test_release_105MB_not_blocked(plugin_config, tmpdir):
+    plugin_config.CourseDirectory.root = "/"
+
+    plugin_config.CourseDirectory.release_directory = str(tmpdir.mkdir(release_dir).realpath())
+    plugin_config.CourseDirectory.assignment_id = "assign_1"
+    os.makedirs(
+        os.path.join(plugin_config.CourseDirectory.release_directory, "assign_1"),
+        exist_ok=True,
+    )
+    copyfile(
+        notebook1_filename,
+        os.path.join(plugin_config.CourseDirectory.release_directory, "assign_1", "release.ipynb"),
+    )
+    with open(
+        os.path.join(plugin_config.CourseDirectory.release_directory, "assign_1", "timestamp.txt"),
+        "w",
+    ) as fp:
+        fp.write("2020-01-01 00:00:00.0 UTC")
+
+    plugin = ExchangeReleaseAssignment(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
+
+    def api_request(*args, **kwargs):
+        assert args[0] == ("assignment?course_id=no_course&assignment_id=assign_1")
+        assert kwargs.get("method").lower() == "post"
+        assert kwargs.get("data").get("notebooks") == ["release"]
+        assert "assignment" in kwargs.get("files")
+        assert "assignment.tar.gz" == kwargs.get("files").get("assignment")[0]
+
+        return type(
+            "Request",
+            (object,),
+            {"status_code": 200, "json": (lambda: {"success": True})},
         )
+
+    with patch.object(Exchange, "api_request", side_effect=api_request):
+        with patch.object(ExchangeReleaseAssignment, "tar_source", return_value=create_any_tarball(110100480)):  # 105MB
+            plugin.start()
+    assert True  # No failure
+
+
+# @pytest.mark.gen_test
+def test_release_5point1GB_is_blocked__long_test(plugin_config, tmpdir):
+    plugin_config.CourseDirectory.root = "/"
+
+    plugin_config.CourseDirectory.release_directory = str(tmpdir.mkdir(release_dir).realpath())
+    plugin_config.CourseDirectory.assignment_id = "assign_1"
+    os.makedirs(
+        os.path.join(plugin_config.CourseDirectory.release_directory, "assign_1"),
+        exist_ok=True,
+    )
+
+    plugin = ExchangeReleaseAssignment(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
+
+    def api_request(*args, **kwargs):
+        raise web.HTTPError(status_code=400, log_message="Bad Request")
+
+    with patch.object(Exchange, "api_request", side_effect=api_request):
+        with patch.object(
+            ExchangeReleaseAssignment, "tar_source", return_value=create_any_tarball(5476083302)  # 5.1GB
+        ):
+            with pytest.raises(ExchangeError) as e_info:
+                plugin.start()
+            assert "Assignment assign_1 not released." in str(e_info.value)
+            assert "5253530000 bytes" in str(e_info.value)
 
 
 @pytest.mark.gen_test

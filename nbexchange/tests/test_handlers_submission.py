@@ -8,6 +8,7 @@ from nbexchange.handlers.base import BaseHandler
 from nbexchange.tests.utils import (  # noqa: F401 "clear_database"
     async_requests,
     clear_database,
+    create_any_tarball,
     get_files_dict,
     user_kiz,
     user_kiz_instructor,
@@ -301,3 +302,52 @@ def test_post_submision_oversize_blocked(app, clear_database):  # noqa: F811
         response_data["note"]
         == "File upload oversize, and rejected. Please reduce the files in your submission and try again."  # noqa: E501 W503
     )
+
+
+@pytest.mark.gen_test
+def test_105MB_not_blocked(app, clear_database):  # noqa: F811
+    faked_tarball = create_any_tarball(104857600)  # 105MB
+    faked_files = {"assignment": ("assignment.tar.gz", faked_tarball)}
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
+        r = yield async_requests.post(
+            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
+            files=release_files,
+        )
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+        r = yield async_requests.get(app.url + "/assignment?course_id=course_2&assignment_id=assign_a")
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+        params = "/submission?course_id=course_2&assignment_id=assign_a&timestamp=2020-01-01%2000%3A00%3A00.0%20UTC"
+        r = yield async_requests.post(
+            app.url + params,
+            files=faked_files,
+        )
+    assert r.status_code == 200
+    response_data = r.json()
+    assert response_data["success"] is True
+    assert response_data["note"] == "Submitted"
+    shutil.rmtree(app.base_storage_location)
+
+
+# Note, the web HTTPServer just throws a 400 error for an oversized file
+# There is no way to catch/handle that _server side_
+@pytest.mark.skip
+@pytest.mark.gen_test
+def test_5point1GB_is_blocked__long_test(app, clear_database):  # noqa: F811
+    faked_tarball = create_any_tarball(5476083302)  # 5.1GB
+    faked_files = {"assignment": ("assignment.tar.gz", faked_tarball)}
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
+        r = yield async_requests.post(
+            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
+            files=release_files,
+        )
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+        r = yield async_requests.get(app.url + "/assignment?course_id=course_2&assignment_id=assign_a")
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
+        params = "/submission?course_id=course_2&assignment_id=assign_a&timestamp=2020-01-01%2000%3A00%3A00.0%20UTC"
+        r = yield async_requests.post(
+            app.url + params,
+            files=faked_files,
+        )
+    assert r.status_code == 400
+    assert r.content == b""
+    shutil.rmtree(app.base_storage_location)

@@ -83,6 +83,16 @@ class ExchangeReleaseAssignment(abc.ExchangeReleaseAssignment, Exchange):
 
         self.log.debug(f"Got back {r.status_code} after file upload")
 
+        # In theory, we should never hit this, as the file size _should_ be caught in `copy_files`
+        if r.status_code == 400 and sys.getsizeof(file) > self.max_buffer_size:
+            self.fail(
+                f"Assignment {self.coursedir.assignment_id} not released. "
+                "The contents of your assignment are too large:\n"
+                "The total size of all files in the 'generated' directory, when compressed "
+                f"using tar -czvf must be less than {self.max_buffer_size} bytes.\n"
+                "You may have large data files, temporary files, and/or working files that should not be included"
+                " - try deleting them."
+            )
         try:
             data = r.json()
         except json.decoder.JSONDecodeError as err:
@@ -99,10 +109,12 @@ class ExchangeReleaseAssignment(abc.ExchangeReleaseAssignment, Exchange):
         file = self.tar_source()
         if sys.getsizeof(file) > self.max_buffer_size:
             self.fail(
-                "Assignment {} not released. "
+                f"Assignment {self.coursedir.assignment_id} not released. "
                 "The contents of your assignment are too large:\n"
-                "You may have data files, temporary files, and/or working files that should not be included - try deleting them."  # noqa: E501
-                "".format(self.coursedir.assignment_id)
+                "The total size of all files in the 'generated' directory, when compressed "
+                f"using tar -czvf must be less than {self.max_buffer_size} bytes.\n"
+                "You may have large data files, temporary files, and/or working files that should not be included"
+                " - try deleting them."
             )
         # Upload files to exchange
         self.get_notebooks()

@@ -146,7 +146,7 @@ class ExchangeSubmit(Exchange, ABCExchangeSubmit):
                 f"Assignment {self.coursedir.assignment_id} not submitted. "
                 "The contents of your assignment are too large:\n"
                 "The total size of all files in your assignment directory [excluding any feedback], when compressed "
-                f"using tar -czvf must be less than {self.max_buffer_size}.\n"
+                f"using tar -czvf must be less than {self.max_buffer_size} bytes.\n"
                 "You may have large data files, temporary files, and/or working files that should not be included"
                 " - try deleting them."
             )

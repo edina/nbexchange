@@ -1712,11 +1712,8 @@ def test_submit_reducing_max_buffer_size_honoured(plugin_config, tmpdir):
         with patch.object(Exchange, "api_request", side_effect=api_request):
             with pytest.raises(ExchangeError) as e_info:
                 plugin.start()
-            assert (
-                str(e_info.value)
-                == "Assignment assign_1_1 not submitted. The contents of your submission are too large:\nYou may have data files, temporary files, and/or working files that are not needed - try deleting them."  # noqa: E501 W503
-            )
-
+            assert "Assignment assign_1_1 not submitted." in str(e_info.value)
+            assert "50 bytes" in str(e_info.value)
     finally:
         shutil.rmtree(assignment_id1)
 
@@ -1851,11 +1848,8 @@ def test_release_5point1GB_is_blocked__long_test(plugin_config, tmpdir):
             ):
                 with pytest.raises(ExchangeError) as e_info:
                     plugin.start()
-                assert (
-                    str(e_info.value)
-                    == "Assignment assign_1_1 not submitted. The contents of your submission are too large:\nYou may have data files, temporary files, and/or working files that are not needed - try deleting them."  # noqa: E501 W503
-                )
-
+                assert "Assignment assign_1_1 not submitted." in str(e_info.value)
+                assert "5253530000 bytes" in str(e_info.value)
     finally:
         shutil.rmtree(assignment_id1)
 

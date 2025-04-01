@@ -89,7 +89,7 @@ class ExchangeReleaseAssignment(abc.ExchangeReleaseAssignment, Exchange):
                 f"Assignment {self.coursedir.assignment_id} not released. "
                 "The contents of your assignment are too large:\n"
                 "The total size of all files in the 'generated' directory, when compressed "
-                f"using tar -czvf must be less than {self.max_buffer_size}.\n"
+                f"using tar -czvf must be less than {self.max_buffer_size} bytes.\n"
                 "You may have large data files, temporary files, and/or working files that should not be included"
                 " - try deleting them."
             )
@@ -112,7 +112,7 @@ class ExchangeReleaseAssignment(abc.ExchangeReleaseAssignment, Exchange):
                 f"Assignment {self.coursedir.assignment_id} not released. "
                 "The contents of your assignment are too large:\n"
                 "The total size of all files in the 'generated' directory, when compressed "
-                f"using tar -czvf must be less than {self.max_buffer_size}.\n"
+                f"using tar -czvf must be less than {self.max_buffer_size} bytes.\n"
                 "You may have large data files, temporary files, and/or working files that should not be included"
                 " - try deleting them."
             )

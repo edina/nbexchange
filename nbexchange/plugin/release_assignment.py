@@ -58,7 +58,7 @@ class ExchangeReleaseAssignment(abc.ExchangeReleaseAssignment, Exchange):
         tar_file = io.BytesIO()
 
         with tarfile.open(fileobj=tar_file, mode="w:gz") as tar_handle:
-            self.add_to_tar(tar_handle, self.src_path, self.ignore)
+            self.add_to_tar(tar_handle, self.src_path, self.coursedir.ignore)
         tar_file.seek(0)
         return tar_file.read()
 

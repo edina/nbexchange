@@ -40,7 +40,7 @@ class ExchangeSubmit(Exchange, ABCExchangeSubmit):
         timestamp = self.timestamp  # This is a string object
         tar_file = io.BytesIO()
         with tarfile.open(fileobj=tar_file, mode="w:gz") as tar_handle:
-            self.add_to_tar(tar_handle, self.src_path, self.ignore)
+            self.add_to_tar(tar_handle, self.src_path, self.coursedir.ignore)
             with closing(io.BytesIO(timestamp.encode())) as fobj:
                 tarinfo = tarfile.TarInfo("timestamp.txt")
                 tarinfo.size = len(fobj.getvalue())

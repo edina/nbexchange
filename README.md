@@ -224,6 +224,8 @@ These plugins will also check the size of _releases_ & _submissions_
 
 `c.Exchange.max_buffer_size = 204800  # 200KB`
 
+[or even a more specific `c.ExchangeSubmit.max_buffer_size = 204800  # 200KB`]
+
 By default, upload sizes are limited to 5GB (5253530000)
 The figure is bytes
 

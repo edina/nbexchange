@@ -322,7 +322,7 @@ def test_release_reducing_max_buffer_size_honoured(plugin_config, tmpdir):
         with pytest.raises(ExchangeError) as e_info:
             plugin.start()
     assert "Assignment assign_1 not released." in str(e_info.value)
-    assert "50 bytes" in str(e_info.value)
+    assert "50B" in str(e_info.value)
 
 
 @pytest.mark.gen_test
@@ -389,7 +389,7 @@ def test_release_5point1GB_is_blocked__long_test(plugin_config, tmpdir):
             with pytest.raises(ExchangeError) as e_info:
                 plugin.start()
             assert "Assignment assign_1 not released." in str(e_info.value)
-            assert "5253530000 bytes" in str(e_info.value)
+            assert "4.9G" in str(e_info.value)
 
 
 @pytest.mark.gen_test

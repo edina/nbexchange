@@ -7,6 +7,7 @@ import time
 from contextlib import closing
 from urllib.parse import quote_plus
 
+import humanize
 import requests
 from dateutil import parser
 from nbgrader.exchange.abc import ExchangeSubmit as ABCExchangeSubmit
@@ -40,7 +41,7 @@ class ExchangeSubmit(Exchange, ABCExchangeSubmit):
         timestamp = self.timestamp  # This is a string object
         tar_file = io.BytesIO()
         with tarfile.open(fileobj=tar_file, mode="w:gz") as tar_handle:
-            self.add_to_tar(tar_handle, self.src_path, self.ignore)
+            self.add_to_tar(tar_handle, self.src_path, self.coursedir.ignore)
             with closing(io.BytesIO(timestamp.encode())) as fobj:
                 tarinfo = tarfile.TarInfo("timestamp.txt")
                 tarinfo.size = len(fobj.getvalue())
@@ -145,7 +146,7 @@ class ExchangeSubmit(Exchange, ABCExchangeSubmit):
                 f"Assignment {self.coursedir.assignment_id} not submitted. "
                 "The contents of your assignment are too large:\n"
                 "The total size of all files in your assignment directory [excluding any feedback], when compressed "
-                f"using tar -czvf must be less than {self.max_buffer_size} bytes.\n"
+                f"using tar -czvf must be less than {humanize.naturalsize(self.max_buffer_size, gnu=True)}.\n"
                 "You may have large data files, temporary files, and/or working files that should not be included"
                 " - try deleting them."
             )

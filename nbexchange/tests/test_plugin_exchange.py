@@ -205,7 +205,7 @@ def test_add_to_tar_honours_ignore_list(plugin_config, tmpdir):
         ),
     )
     plugin = Exchange(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
-
+    print(plugin.max_buffer_size)
     # Without the ignore pattern included, we tar up all 5 files
     tar_file = io.BytesIO()
     with tarfile.open(fileobj=tar_file, mode="w:gz") as tar_handle:
@@ -217,7 +217,7 @@ def test_add_to_tar_honours_ignore_list(plugin_config, tmpdir):
     # With the ignore pattern included, we only tar up 2 files
     tar_file = io.BytesIO()
     with tarfile.open(fileobj=tar_file, mode="w:gz") as tar_handle:
-        plugin.add_to_tar(tar_handle, main_dir, plugin.ignore)
+        plugin.add_to_tar(tar_handle, main_dir, plugin.coursedir.ignore)
     tar_file.seek(0)
     with tarfile.open(fileobj=tar_file) as handle:
         assert len(handle.getmembers()) == 2

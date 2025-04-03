@@ -7,11 +7,11 @@ from textwrap import dedent
 from urllib.parse import urljoin
 from zoneinfo import ZoneInfo
 
-import nbgrader.exchange.abc as abc
 import requests
 from nbgrader.auth import Authenticator
 from nbgrader.exchange import ExchangeError
-from traitlets import Bool, Integer, List, Unicode
+from nbgrader.exchange.abc import Exchange as ABCExchange
+from traitlets import Bool, Integer, Unicode
 
 
 class MockAuthenticator(Authenticator):
@@ -21,7 +21,7 @@ class MockAuthenticator(Authenticator):
         pass
 
 
-class Exchange(abc.Exchange):
+class Exchange(ABCExchange):
 
     path_includes_course = Bool(
         False,
@@ -57,21 +57,6 @@ class Exchange(abc.Exchange):
     max_buffer_size = Integer(5253530000, help="The maximum size, in bytes, of an upload (defaults to 5GB)").tag(
         config=True
     )
-
-    ignore = List(
-        [
-            ".ipynb_checkpoints",
-            "*.pyc",
-            "__pycache__",
-            "feedback",
-        ],
-        help=dedent(
-            """
-            List of file names or file globs.
-            Upon submit, matching files and directories will be ignored.
-            """
-        ),
-    ).tag(config=True)
 
     api_timeout = Integer(
         10,

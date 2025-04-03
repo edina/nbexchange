@@ -33,6 +33,7 @@ classifiers = [
 dependencies = [
   "nbgrader==0.9.5",
   "alembic>=1.7",
+  "humanize",
   "jupyter_server>=2",
   "sqlalchemy>=1.4,<3",
   "psycopg2-binary>=2.9.9",

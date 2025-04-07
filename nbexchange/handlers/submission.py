@@ -36,13 +36,13 @@ class Submission(BaseHandler):
     # This is a student submitting an assignment, not an instructor "release"
     @authenticated
     def post(self):
-        if "Content-Length" in self.request.headers and int(self.request.headers["Content-Length"]) > int(
-            self.max_buffer_size
-        ):
-            note = "File upload oversize, and rejected. Please reduce the files in your submission and try again."
-            self.log.info(note)
-            self.finish({"success": False, "note": note})
-            return
+        # if "Content-Length" in self.request.headers and int(self.request.headers["Content-Length"]) > int(
+        #     self.max_buffer_size
+        # ):
+        #     note = "File upload oversize, and rejected. Please reduce the files in your submission and try again."
+        #     self.log.info(note)
+        #     self.finish({"success": False, "note": note})
+        #     return
 
         [course_code, assignment_code, timestamp] = self.get_params(["course_id", "assignment_id", "timestamp"])
         self.log.debug(

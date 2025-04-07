@@ -279,29 +279,9 @@ def test_post_submision_piks_first_instance_of_param_b(app, clear_database):  # 
     shutil.rmtree(app.base_storage_location)
 
 
-@pytest.mark.gen_test
-def test_post_submision_oversize_blocked(app, clear_database):  # noqa: F811
-    with patch.object(BaseHandler, "max_buffer_size", return_value=int(50)):
-        with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
-            r = yield async_requests.post(
-                app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
-                files=release_files,
-            )
-        with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
-            r = yield async_requests.get(app.url + "/assignment?course_id=course_2&assignment_id=assign_a")
-        with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
-            params = "/submission?course_id=course_2&assignment_id=assign_a&timestamp=2020-01-01%2000%3A00%3A00.0%20UTC"
-            r = yield async_requests.post(
-                app.url + params,
-                files=release_files,
-            )
-    assert r.status_code == 200
-    response_data = r.json()
-    assert response_data["success"] is False
-    assert (
-        response_data["note"]
-        == "File upload oversize, and rejected. Please reduce the files in your submission and try again."  # noqa: E501 W503
-    )
+# Meaningless test: for the handler, this value is used to set the value in the httpd server
+# def test_post_submision_oversize_blocked(app, clear_database):  # noqa: F811
+#    pass
 
 
 @pytest.mark.gen_test

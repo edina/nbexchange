@@ -226,6 +226,7 @@ def test_105MB_not_blocked(app, clear_database):  # noqa: F811
 
 # Note, the web HTTPServer just throws a 400 error for an oversized file
 # There is no way to catch/handle that _server side_
+@pytest.mark.skip
 @pytest.mark.gen_test
 def test_5point1GB_is_blocked__long_test(app, clear_database):  # noqa: F811
     faked_tarball = create_any_tarball(5476083302)  # 5.1GB

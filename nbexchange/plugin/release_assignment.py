@@ -5,6 +5,7 @@ import os
 import sys
 from urllib.parse import quote_plus
 
+import humanize
 import nbgrader.exchange.abc as abc
 import requests
 
@@ -58,7 +59,7 @@ class ExchangeReleaseAssignment(abc.ExchangeReleaseAssignment, Exchange):
         tar_file = io.BytesIO()
 
         with tarfile.open(fileobj=tar_file, mode="w:gz") as tar_handle:
-            self.add_to_tar(tar_handle, self.src_path, self.ignore)
+            self.add_to_tar(tar_handle, self.src_path, self.coursedir.ignore)
         tar_file.seek(0)
         return tar_file.read()
 
@@ -88,7 +89,9 @@ class ExchangeReleaseAssignment(abc.ExchangeReleaseAssignment, Exchange):
             self.fail(
                 f"Assignment {self.coursedir.assignment_id} not released. "
                 "The contents of your assignment are too large:\n"
-                "You may have data files, temporary files, and/or working files that should not be included"
+                "The total size of all files in the 'generated' directory, when compressed "
+                f"using tar -czvf must be less than {humanize.naturalsize(self.max_buffer_size, gnu=True)}.\n"
+                "You may have large data files, temporary files, and/or working files that should not be included"
                 " - try deleting them."
             )
         try:
@@ -109,7 +112,9 @@ class ExchangeReleaseAssignment(abc.ExchangeReleaseAssignment, Exchange):
             self.fail(
                 f"Assignment {self.coursedir.assignment_id} not released. "
                 "The contents of your assignment are too large:\n"
-                "You may have data files, temporary files, and/or working files that should not be included"
+                "The total size of all files in the 'generated' directory, when compressed "
+                f"using tar -czvf must be less than {humanize.naturalsize(self.max_buffer_size, gnu=True)}.\n"
+                "You may have large data files, temporary files, and/or working files that should not be included"
                 " - try deleting them."
             )
         # Upload files to exchange

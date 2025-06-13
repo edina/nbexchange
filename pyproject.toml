@@ -8,7 +8,7 @@ name = "nbexchange"
 version = "1.4.0"
 description = "Jupyter extension that provides an external exchange service for nbgrader."
 readme = "README.md"
-requires-python = ">=3.9,<3.12"
+requires-python = ">=3.13,<3.14"
 license = {file = "LICENSE"}
 keywords = ["nbgrader", "jupyter", "notebook"]
 authors = [

@@ -132,10 +132,11 @@ class History(BaseHandler):
                         f"{models[subscription.course.id]['course_code']}",
                     )
                 )
+
+                temp_dict = dict()
                 for assignment in subscription.course.assignments:
                     self.log.debug(f"           ... assignment: {assignment}")
 
-                    temp_dict = dict()
                     if assignment.active:
                         if assignment.id not in temp_dict:
                             temp_dict[assignment.id] = {

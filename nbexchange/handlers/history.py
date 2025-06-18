@@ -132,10 +132,10 @@ class History(BaseHandler):
                         f"{models[subscription.course.id]['course_code']}",
                     )
                 )
+                temp_dict = dict()
                 for assignment in subscription.course.assignments:
                     self.log.debug(f"           ... assignment: {assignment}")
 
-                    temp_dict = dict()
                     if assignment.active:
                         if assignment.id not in temp_dict:
                             temp_dict[assignment.id] = {
@@ -146,7 +146,7 @@ class History(BaseHandler):
                             }
 
                             for action in assignment.actions:
-                                # You see releases, your own actions, or anything if you're an isntructor
+                                # You see releases, your own actions, or anything if you're an instructor
                                 if (
                                     action.action == AssignmentActions.released
                                     or action.user_id == this_user["id"]  # noqa: W503

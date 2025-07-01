@@ -103,7 +103,7 @@ Installing nbexchange in a jupyter notebook will automatically install nbgrader.
 nbexchange is not released to Pypy or anaconda, however you can install direct from GitHub - eg:
 
 ```
-pip install https://github.com/edina/nbexchange/archive/v1.4.0.tar.gz
+pip install https://github.com/edina/nbexchange/archive/v1.5.0.tar.gz
 ....
 ```
 

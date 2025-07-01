@@ -1,4 +1,13 @@
-FROM python:3.11.7-slim-bullseye
+#FROM python:3.11.7-slim-bullseye
+
+# Know vuln in "pam"
+FROM python:3.13.5-slim-bullseye
+
+RUN apt update && \
+    apt install -yq make build-essential \
+    libbz2-dev libffi-dev liblzma-dev libreadline-dev \
+    libncursesw5-dev libsqlite3-dev libssl-dev libxml2-dev libxmlsec1-dev  \
+    curl git tk-dev xz-utils zlib1g-dev
 
 ARG COMMIT=""
 LABEL commit=${COMMIT}

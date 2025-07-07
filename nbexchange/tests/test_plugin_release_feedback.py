@@ -2,6 +2,7 @@ import logging
 import os
 import re
 from shutil import copyfile
+from urllib.parse import quote_plus
 
 import pytest
 import requests
@@ -347,6 +348,86 @@ def test_release_feedback_timeout(plugin_config, tmpdir, caplog):
         with pytest.raises(ExchangeError, match=expected_message):
             plugin.start()
     assert expected_message in caplog.text
+
+
+# We prove the exchange is good with
+@pytest.mark.gen_test
+def test_release_feedback_filename_with_surrounding_whitespace(plugin_config, tmpdir):
+    notebook_id = " test with spaces "
+    plugin_config.CourseDirectory.root = "/"
+    plugin_config.CourseDirectory.feedback_directory = str(tmpdir.mkdir("feedback_test").realpath())
+    plugin_config.CourseDirectory.submitted_directory = str(tmpdir.mkdir("submitted_test").realpath())
+    plugin_config.CourseDirectory.assignment_id = assignment_id
+    os.makedirs(
+        os.path.join(plugin_config.CourseDirectory.feedback_directory, student_id, assignment_id),
+        exist_ok=True,
+    )
+    os.makedirs(
+        os.path.join(plugin_config.CourseDirectory.submitted_directory, student_id, assignment_id),
+        exist_ok=True,
+    )
+
+    feedback_filename_uploaded = os.path.join(
+        plugin_config.CourseDirectory.feedback_directory,
+        student_id,
+        assignment_id,
+        f"{notebook_id}.html",
+    )
+    copyfile(feedback1_filename, feedback_filename_uploaded)
+
+    copyfile(
+        notebook1_filename,
+        os.path.join(
+            plugin_config.CourseDirectory.submitted_directory,
+            student_id,
+            assignment_id,
+            f"{notebook_id}.ipynb",
+        ),
+    )
+    with open(
+        os.path.join(
+            plugin_config.CourseDirectory.feedback_directory,
+            student_id,
+            assignment_id,
+            "timestamp.txt",
+        ),
+        "w",
+    ) as fp:
+        fp.write("2020-01-01 00:00:00.000000 UTC")
+
+    unique_key = make_unique_key("no_course", assignment_id, notebook_id, student_id, "2020-01-01 00:00:00.000000 UTC")
+    checksum = notebook_hash(
+        os.path.join(
+            plugin_config.CourseDirectory.submitted_directory,
+            student_id,
+            assignment_id,
+            f"{notebook_id}.ipynb",
+        ),
+        unique_key,
+    )
+
+    plugin = ExchangeReleaseFeedback(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
+
+    def api_request(*args, **kwargs):
+        assert args[0] == (
+            "feedback?course_id=no_course"
+            f"&assignment_id={assignment_id}"
+            f"&notebook={quote_plus(notebook_id)}"
+            f"&student={student_id}"
+            "&timestamp=2020-01-01+00%3A00%3A00.000000+UTC"
+            "&checksum=" + checksum
+        )
+        assert kwargs.get("method").lower() == "post"
+        assert "feedback" in kwargs.get("files")
+        assert ("feedback.html", open(feedback_filename_uploaded).read()) == kwargs.get("files").get("feedback")
+        return type(
+            "Request",
+            (object,),
+            {"status_code": 200, "json": (lambda: {"success": True})},
+        )
+
+    with patch.object(Exchange, "api_request", side_effect=api_request):
+        plugin.start()
 
 
 # Should really capture:

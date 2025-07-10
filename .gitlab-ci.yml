@@ -1,28 +1,31 @@
-variables:
-  VERSION: $CI_PIPELINE_ID-$CI_COMMIT_REF_SLUG
+# This file is specific to the EDINA in-house gitlab repo... where we internally
+# build & distribute our instance of the service
+include:
+  - project: "naas/Group-issues"
+    file: "/common-templates.yml"
 
-image: registry.gitlab.edina.ac.uk:1875/shared/gitlab-ci-tools
+variables:
+  IMAGE_NAME: $CI_REGISTRY_IMAGE # Needs to match production.yml
+  LOCATION: "."
 
 stages:
   - build
-  - publish
+  - release-branch
+  - release-master
+  - delete
 
-build:
-  stage: build
-  script:
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - docker-compose build
-    - docker tag edina/nbexchange:$VERSION $CI_REGISTRY_IMAGE:$VERSION
-    - docker push $CI_REGISTRY_IMAGE:$VERSION
 
-publish-python:
-  stage: publish
-  variables:
-    FLIT_INDEX_URL: https://gitlab.edina.ac.uk/api/v4/projects/${CI_PROJECT_ID}/packages/pypi
-  script:
-    - pip install flit
-    - flit build
-    - FLIT_PASSWORD=${CI_JOB_TOKEN} FLIT_USERNAME=gitlab-ci-token flit publish
-  only:
-    - tags
+# master branch builds CI-SLUG & latest
+build-app:
+  extends: .build-template
+
+# working branch only builds C_-SLUG
+release-branch:
+  extends: .release-branch-template
+
+release-master:
+  extends: .release-master-template
+
+delete-image:
+  extends: .delete-template
 

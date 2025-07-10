@@ -14,6 +14,7 @@ stages:
   - release-master
   - delete
 
+## There is no test stage here: testing is run on github
 
 # master branch builds CI-SLUG & latest
 build-app:

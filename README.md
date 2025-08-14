@@ -15,6 +15,7 @@ A dockerised service that replaces the defaukt nbgrader Exchange.
   - [Configuring the `nbexchange` service](#configuring-the-nbexchange-service)
     - [**`user_plugin_class`** revisited](#user_plugin_class-revisited)
   - [Configuring `nbgrader` to use the alternative exchange in Jupyterlab/Jupyter-Notebook](#configuring-nbgrader-to-use-the-alternative-exchange-in-jupyterlabjupyter-notebook)
+    - [Confuguring the NbExchange plugins to talk to the NbExchange server](#confuguring-the-nbexchange-plugins-to-talk-to-the-nbexchange-server)
 - [Contributing](#contributing)
   - [Releasing new versions](#releasing-new-versions)
 
@@ -59,6 +60,7 @@ This exchange has some assumptions because of the environment required it.
 There are the following assumptions:
 
 - You have an API for authenticating users who connect to the exchange (possibly Jupyterhub, but not always)
+  - In our service, we use a JSON Web Token for this
 - Usernames will be unique across the whole system 
 - Internal storage is in two parts:
   - An sql database for metadata, and
@@ -228,6 +230,37 @@ These plugins will also check the size of _releases_ & _submissions_
 
 By default, upload sizes are limited to 5GB (5253530000)
 The figure is bytes
+
+### Confuguring the NbExchange plugins to talk to the NbExchange server
+
+The plugins make http requests to the server, which requires it to prepare several things:
+
+- `base_service_url` is the `http origin` of the NbExchange service - we default this to `https://noteable.edina.ac.uk`, 'cos.... _advertising_
+- `base_path` is the path-part of requests into the exchange. This needs to match `base_url` defined in the NbExchange service, and (likewise) defaults to `/services/nbexchange/`.
+- `api_plugin_class` is the name of the class [which has subclassed `nbexchange.plugin.exchange.BaseApiPlugin`] (see `DefaultApiPlugin` in the same file, and the `test_plugin_exchange_with_bespoke_apiPlugin.py` test file.)
+
+eg:
+
+
+
+
+```python
+from nbexchange.plugin import BaseApiPlugin
+
+class JWTApiPlugin(BaseApiPlugin):
+    def prep_api_call(self, path):
+        jwt_token = os.environ.get("DEMO_JWT")
+        cookies = dict()
+        headers = dict()
+
+        if jwt_token:
+            cookies["demo_auth"] = jwt_token
+
+        url = self.service_url() + path
+        return url, cookies, headers
+        
+c.ExchangeFactory.Exchange.api_plugin_class = JWTApiPlugin
+```
 
 # Contributing
 

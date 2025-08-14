@@ -1,6 +1,7 @@
 import fnmatch
 import glob
 import os
+from abc import ABC, abstractmethod
 from datetime import datetime
 from functools import partial
 from textwrap import dedent
@@ -8,17 +9,50 @@ from urllib.parse import urljoin
 from zoneinfo import ZoneInfo
 
 import requests
-from nbgrader.auth import Authenticator
 from nbgrader.exchange import ExchangeError
 from nbgrader.exchange.abc import Exchange as ABCExchange
-from traitlets import Bool, Integer, Unicode
+from traitlets import Bool, Integer, Type, Unicode
 
 
-class MockAuthenticator(Authenticator):
-    super(Authenticator)
+class BaseApiPlugin(ABC):
+    @abstractmethod
+    def prep_api_call(self, path: str) -> dict:
+        """
+        Sets up the url, any cookies, and any headers needed by the jupyterlab plugins
+        to call the NBExchange service.
 
-    def api_request(self, path, method="GET", *args, **kwargs):
+        This allows implimentors to create their own methods for creating authenticated
+        connections between the notebook plugins and the NBExchange service
+
+        :param path: The path for the request being made: path-part + parameters
+        :return: the url, cookies, and headers to use in the api_request call
+        """
         pass
+
+
+class DefaultApiPlugin(BaseApiPlugin):
+
+    def prep_api_call(self, path):
+        self.log.warning("The plugins are using the default prep_api_call. This is probably wrong.")
+
+        url = self.service_url() + path
+        cookies = dict()
+        headers = dict()
+
+        return url, cookies, headers
+
+
+class NaasApiPlugin(BaseApiPlugin):
+    def prep_api_call(self, path):
+        jwt_token = os.environ.get("NAAS_JWT")
+        cookies = dict()
+        headers = dict()
+
+        if jwt_token:
+            cookies["noteable_auth"] = jwt_token
+
+        url = self.service_url() + path
+        return url, cookies, headers
 
 
 class Exchange(ABCExchange):
@@ -46,9 +80,17 @@ class Exchange(ABCExchange):
     ).tag(config=True)
 
     base_service_url = Unicode(os.environ.get("NAAS_BASE_URL", "https://noteable.edina.ac.uk")).tag(config=True)
+    base_path = Unicode(
+        "/services/nbexchange/",
+        help="""
+Base path for api queries into the exchange - should match 'base_url' in the NbExchange App configuration.
+Defaults to '/services/nbexchange/'
+""",
+        config=True,
+    )
 
     def service_url(self):
-        this_url = urljoin(self.base_service_url, "/services/nbexchange/")
+        this_url = urljoin(self.base_service_url, self.base_path)
         self.log.debug(f"service_url: {this_url}")
         return this_url
 
@@ -64,6 +106,13 @@ class Exchange(ABCExchange):
         config=True,
     )
 
+    api_plugin_class = Type(
+        DefaultApiPlugin,
+        klass=BaseApiPlugin,
+        config=True,
+        help="The class to use for prepping connections to the exchange",
+    )
+
     def check_timezone(self, value: datetime) -> datetime:
         if value.tzinfo is None or value.tzinfo.utcoffset(value) is None:
             value = value.replace(tzinfo=ZoneInfo(self.timezone))
@@ -73,15 +122,12 @@ class Exchange(ABCExchange):
         self.log.fatal(msg)
         raise ExchangeError(msg)
 
+    def prep_api_call(self, path):
+        return self.api_plugin_class.prep_api_call(self, path)
+
     def api_request(self, path, method="GET", *args, **kwargs):
-        jwt_token = os.environ.get("NAAS_JWT")
-        cookies = dict()
-        headers = dict()
 
-        if jwt_token:
-            cookies["noteable_auth"] = jwt_token
-
-        url = self.service_url() + path
+        url, cookies, headers = self.prep_api_call(path)
 
         self.log.debug(f"Exchange.api_request calling exchange with url {url}")
 

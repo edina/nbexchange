@@ -9,7 +9,7 @@ in your root `nbgrader_config.py` file.
 """
 
 from .collect import ExchangeCollect
-from .exchange import Exchange, ExchangeError
+from .exchange import BaseApiPlugin, Exchange, ExchangeError
 from .fetch import ExchangeFetch
 from .fetch_assignment import ExchangeFetchAssignment
 from .fetch_feedback import ExchangeFetchFeedback
@@ -20,6 +20,7 @@ from .release_feedback import ExchangeReleaseFeedback
 from .submit import ExchangeSubmit
 
 __all__ = [
+    "BaseApiPlugin",
     "Exchange",
     "ExchangeError",
     "ExchangeCollect",

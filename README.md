@@ -15,7 +15,7 @@ A dockerised service that replaces the defaukt nbgrader Exchange.
   - [Configuring the `nbexchange` service](#configuring-the-nbexchange-service)
     - [**`user_plugin_class`** revisited](#user_plugin_class-revisited)
   - [Configuring `nbgrader` to use the alternative exchange in Jupyterlab/Jupyter-Notebook](#configuring-nbgrader-to-use-the-alternative-exchange-in-jupyterlabjupyter-notebook)
-    - [Confuguring the NbExchange plugins to talk to the NbExchange server](#confuguring-the-nbexchange-plugins-to-talk-to-the-nbexchange-server)
+    - [Configuring the plugins to talk to the NbExchange server](#configuring-the-plugins-to-talk-to-the-nbexchange-server)
 - [Contributing](#contributing)
   - [Releasing new versions](#releasing-new-versions)
 
@@ -139,9 +139,9 @@ class MyUserHandler(BaseUserHandler):
 
 c.NbExchange.user_plugin_class = MyUserHandler
 
-c.NbExchange.base_url = /services/exchange
-c.NbExchange.base_storage_location = /var/data/exchange/storage
-c.NbExchange.db_url = mysql://username:password@my.msql.server.host:3306/db_name
+c.NbExchange.base_url = '/services/exchange'
+c.NbExchange.base_storage_location = '/var/data/exchange/storage'
+c.NbExchange.db_url = 'mysql://username:password@my.msql.server.host:3306/db_name'
 ```
 
 - **`user_plugin_class`**
@@ -231,18 +231,15 @@ These plugins will also check the size of _releases_ & _submissions_
 By default, upload sizes are limited to 5GB (5253530000)
 The figure is bytes
 
-### Confuguring the NbExchange plugins to talk to the NbExchange server
+### Configuring the plugins to talk to the NbExchange server
 
 The plugins make http requests to the server, which requires it to prepare several things:
 
 - `base_service_url` is the `http origin` of the NbExchange service - we default this to `https://noteable.edina.ac.uk`, 'cos.... _advertising_
 - `base_path` is the path-part of requests into the exchange. This needs to match `base_url` defined in the NbExchange service, and (likewise) defaults to `/services/nbexchange/`.
-- `api_plugin_class` is the name of the class [which has subclassed `nbexchange.plugin.exchange.BaseApiPlugin`] (see `DefaultApiPlugin` in the same file, and the `test_plugin_exchange_with_bespoke_apiPlugin.py` test file.)
+- `api_plugin_class` is the name of the class that sets up headers, cookies, etc for the `api_request` to call the external exchange (see the `test_plugin_exchange_with_bespoke_apiPlugin.py` test file.)
 
 eg:
-
-
-
 
 ```python
 from nbexchange.plugin import BaseApiPlugin
@@ -259,7 +256,10 @@ class JWTApiPlugin(BaseApiPlugin):
         url = self.service_url() + path
         return url, cookies, headers
         
-c.ExchangeFactory.Exchange.api_plugin_class = JWTApiPlugin
+c.Exchange.api_plugin_class = JWTApiPlugin
+c.Exchange.base_service_url = 'https://nbexchange.example.com'
+c.Exchange.base_path = '/services/exchange'
+
 ```
 
 # Contributing

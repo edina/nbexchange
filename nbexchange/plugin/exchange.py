@@ -16,7 +16,7 @@ from traitlets import Bool, Integer, Type, Unicode
 
 class BaseApiPlugin(ABC):
     @abstractmethod
-    def prep_api_call(self, path: str) -> dict:
+    def prep_api_call(self, path: str) -> list:
         """
         Sets up the url, any cookies, and any headers needed by the jupyterlab plugins
         to call the NBExchange service.
@@ -32,26 +32,13 @@ class BaseApiPlugin(ABC):
 
 class DefaultApiPlugin(BaseApiPlugin):
 
-    def prep_api_call(self, path):
+    def prep_api_call(self, path: str) -> list:
         self.log.warning("The plugins are using the default prep_api_call. This is probably wrong.")
 
         url = self.service_url() + path
         cookies = dict()
         headers = dict()
 
-        return url, cookies, headers
-
-
-class NaasApiPlugin(BaseApiPlugin):
-    def prep_api_call(self, path):
-        jwt_token = os.environ.get("NAAS_JWT")
-        cookies = dict()
-        headers = dict()
-
-        if jwt_token:
-            cookies["noteable_auth"] = jwt_token
-
-        url = self.service_url() + path
         return url, cookies, headers
 
 

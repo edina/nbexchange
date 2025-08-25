@@ -20,13 +20,16 @@ RUN apt update && apt install  --yes --quiet --no-install-recommends sqlite3 && 
 
 # Supervisord
 RUN pip install supervisor
-COPY supervisord.conf /usr/src/app
+COPY docker/supervisord.conf /usr/src/app
 
 # Copy package
 COPY pyproject.toml README.md LICENSE /usr/src/app/
 COPY nbexchange /usr/src/app/nbexchange
 # Install dependencies
 RUN pip install .
+
+# Add nbexchange config
+COPY docker/nbexchange_config.py /etc/config/nbexchange_config.py
 
 # Set commit sha as an environment variable
 ENV COMMIT_SHA=${COMMIT}

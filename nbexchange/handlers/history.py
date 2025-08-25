@@ -107,13 +107,14 @@ class History(BaseHandler):
                 )
 
             subscriptions = subscriptions_query.all()
-            self.log.debug(f"History rows: {subscriptions}")
+            # self.log.debug(f"History rows: {subscriptions}")
+            self.log.debug(f"History rows count: {subscriptions}")
 
             for subscription in subscriptions:
                 if subscription.course.id not in models:
                     models[subscription.course.id] = {
-                        "role": dict(),
-                        "user_id": dict(),
+                        "role": subscription.role,
+                        "user": dict(),
                         "assignments": list(),
                         "isInstructor": False,
                         "course_id": subscription.course.id,
@@ -122,8 +123,8 @@ class History(BaseHandler):
                     }
 
                 # add to data-structures
-                models[subscription.course.id]["role"][subscription.role] = 1
-                models[subscription.course.id]["user_id"][subscription.user_id] = 1
+                models[subscription.course.id]["user"]["id"] = subscription.user.id
+                models[subscription.course.id]["user"]["name"] = subscription.user.name
                 if subscription.role == "Instructor":
                     models[subscription.course.id]["isInstructor"] = True
                 self.log.debug(

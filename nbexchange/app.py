@@ -3,6 +3,7 @@ import os
 import sys
 from datetime import datetime
 from getpass import getuser
+# import pydevd_pycharm
 
 import sentry_sdk
 from jupyter_server.log import log_request
@@ -62,6 +63,8 @@ class NbExchange(PrometheusMixIn, Application):
     description = """
         Manage notebook submissions and collections for nbgrader
     """
+
+    # pydevd_pycharm.settrace('host.docker.internal', port=5678, stdout_to_server=True, stderr_to_server=True, suspend=False)
 
     flags = Dict(flags)
 

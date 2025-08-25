@@ -1,0 +1,26 @@
+version: '3.2'
+services:
+  nbexchange:
+    build:
+      dockerfile: Dockerfile.local
+      platforms:
+        - "linux/amd64"
+    environment:
+      NBEX_DB_URL: 'postgresql://myuser@db:5432/nbexchange'
+      NAAS_EXBASE_URL: 'http://localhost:9000'
+    ports:
+      - "9000:9000"
+    image: edina/nbexchange:${VERSION:-latest}
+  db:
+    image: bitnami/postgresql:16.3.0
+    restart: always
+    shm_size: 128mb
+    volumes:
+      - ./docker/initdb:/docker-entrypoint-initdb.d
+    environment:
+      POSTGRES_DB: 'nbexchange'
+      POSTGRES_USER: 'myuser'
+      POSTGRESQL_POSTGRES_PASSWORD: 'mysuperpassword'
+      ALLOW_EMPTY_PASSWORD: 'yes'
+    ports:
+      - "5432:5432"

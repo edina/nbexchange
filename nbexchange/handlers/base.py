@@ -102,12 +102,9 @@ class BaseHandler(web.RequestHandler):
         with scoped_session() as session:
             user = User.find_by_name(db=session, name=hub_username, log=self.log)
             if user is None:
-                self.log.debug(f"Couldn't find user with name:{hub_username}")
                 self.log.debug(f"New user details: name:{hub_username}, org_id:{org_id}")
                 user = User(name=hub_username, org_id=org_id, email=email, lms_user_id=lms_user_id)
                 session.add(user)
-            else:
-                self.log.debug(f"Found user: id:{user.id}, name:{user.name}, full_name:{user.full_name}, org_id:{user.org_id}")
             if user.full_name != full_name:
                 user.full_name = full_name
 

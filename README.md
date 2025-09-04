@@ -1,4 +1,4 @@
-A dockerised service that replaces the defaukt nbgrader Exchange.
+A dockerised service that replaces the default nbgrader Exchange.
 
 <!-- TOC -->
 
@@ -30,7 +30,8 @@ The default for nbgrader is to assume all users are on the same computer, and fi
 When using jupyter notebooks in a distributed [dockerised] system, there is no common filesystem - so an alternative mechanism is needed - something that allows files to be transfered via some independant service - eg: 
 ![exchange mechanism in a dockerised environment](dockerised_exchange.png) 
 
-nbexchange provides both that intermediate filestore, and the plugins for nbgrader to use it.
+nbexchange provides both that intermediate filestore that is covered by this project, and the plugins for nbgrader to use it that is provided by a separate project:
+[nbexchange_jlab_plugin](https://github.com/edina/nbexchange_jlab_plugin)
 
 # Why nbexchange
 
@@ -80,7 +81,7 @@ There are the following assumptions:
 
 nbexchange is a two-part system: it requires
 1. the `nbexchange` service to be running (in a docker container)
-2. the plugins to be installed in the jupyter notebook (which will also install `nbgrader`)
+2. the plugins to be installed in the jupyter notebook (which will also install `nbgrader`): [nbexchange_jlab_plugin](https://github.com/edina/nbexchange_jlab_plugin)
 
 ## nbexchange service
 
@@ -96,15 +97,14 @@ The service can be deployed via `helm`, ie
 helm install --name nbexchange --namespace default ./chart -f myconfiguration.yaml
 ```
 
-## nbgrader plugin
+## nbgrader jlab plugin
 
 Installing nbexchange in a jupyter notebook will automatically install nbgrader.
 
 nbexchange is not released to Pypy or anaconda, however you can install direct from GitHub - eg:
 
 ```
-pip install https://github.com/edina/nbexchange/archive/v1.5.0.tar.gz
-....
+pip install https://github.com/edina/nbexchange_jlab_plugin/archive/refs/tags/v0.2.2-beta.tar.gz
 ```
 
 Note that nbgrader installs and enables the jupyter extensions automatically - you may wish to switch *off* `formgrader` and `create_assignment` for non-teachers: YMMV
@@ -202,7 +202,10 @@ For the exchange to work, it needs some details about the user connecting to it 
 - `course_role`: The role of the user, normally `Student` or `Instructor`. (currently only `Instructor` get privilaged actions).
 - `org_id`: As mentioned above, nbexchange divides courses and users across organisations. This is an id (numeric) for the org_id for the user. It defaults to `1` if not given.
 
-## Configuring `nbgrader` to use the alternative exchange in Jupyterlab/Jupyter-Notebook
+## Configuring `nbgrader` on JupyterLab
+
+Once [nbexchange_jlab_plugin](https://github.com/edina/nbexchange_jlab_plugin) is installed, `nbgrader` needs to be
+configured to use the alternative exchange in Jupyterlab/Jupyter-Notebook.
 
 The primary reference for this should be the `nbgrader` documentation - but in short:
 

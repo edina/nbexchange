@@ -1,4 +1,3 @@
-version: '3.2'
 services:
   nbexchange:
     build:
@@ -24,3 +23,8 @@ services:
       ALLOW_EMPTY_PASSWORD: 'yes'
     ports:
       - "5432:5432"
+
+networks:
+  default:
+    external:
+      name: naas

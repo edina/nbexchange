@@ -202,36 +202,6 @@ For the exchange to work, it needs some details about the user connecting to it 
 - `course_role`: The role of the user, normally `Student` or `Instructor`. (currently only `Instructor` get privilaged actions).
 - `org_id`: As mentioned above, nbexchange divides courses and users across organisations. This is an id (numeric) for the org_id for the user. It defaults to `1` if not given.
 
-## Configuring `nbgrader` on JupyterLab
-
-Once [nbexchange_jlab_plugin](https://github.com/edina/nbexchange_jlab_plugin) is installed, `nbgrader` needs to be
-configured to use the alternative exchange in Jupyterlab/Jupyter-Notebook.
-
-The primary reference for this should be the `nbgrader` documentation - but in short:
-
-1. Install `nbexchange` into your jupyter environment [from github, using pip]
-2. Include the following in your `nbgrader_config.py` file:
-
-```python
-c.ExchangeFactory.exchange = 'nbexchange.plugin.Exchange'
-c.ExchangeFactory.list = 'nbexchange.plugin.ExchangeList'
-c.ExchangeFactory.release_assignment = 'nbexchange.plugin.ExchangeReleaseAssignment'
-c.ExchangeFactory.fetch_assignment = 'nbexchange.plugin.ExchangeFetchAssignment'
-c.ExchangeFactory.submit = 'nbexchange.plugin.ExchangeSubmit'
-c.ExchangeFactory.collect = 'nbexchange.plugin.ExchangeCollect'
-c.ExchangeFactory.release_feedback = 'nbexchange.plugin.ExchangeReleaseFeedback'
-c.ExchangeFactory.fetch_feedback = 'nbexchange.plugin.ExchangeFetchFeedback'
-```
-
-These plugins will also check the size of _releases_ & _submissions_
-
-`c.Exchange.max_buffer_size = 204800  # 200KB`
-
-[or even a more specific `c.ExchangeSubmit.max_buffer_size = 204800  # 200KB`]
-
-By default, upload sizes are limited to 5GB (5253530000)
-The figure is bytes
-
 # Contributing
 
 See [how_it_works.md](how_it_works.md) for an extended explanation as to how the exchange works, internally

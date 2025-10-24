@@ -50,8 +50,8 @@ class nbexchangeSoakTest:
             "-c",
             "--cluster",
             type=str,
-            default="noteable-dev",
-            help="The kubernetes cluster to use. Defaults to noteable-dev.",
+            default="tkgi-naas-dev-naas",
+            help="The kubernetes cluster to use. Defaults to tkgi-naas-dev-naas.",
         )
         parser.add_argument(
             "-j",
@@ -78,8 +78,8 @@ class nbexchangeSoakTest:
             "-n",
             "--namespace",
             type=str,
-            default="default",
-            help="The namespace in the cluster to use. Defaults to 'default'",
+            default="naas-dev",
+            help="The namespace in the cluster to use. Defaults to 'naas-dev'",
         )
         parser.add_argument(
             "-s",
@@ -146,6 +146,7 @@ class nbexchangeSoakTest:
 
         config.load_kube_config(context=self.args.cluster)
         self.k8_api = client.CoreV1Api()
+        self.log.debug(f"Searching {self.args.namespace} for pods")
         pods = self.k8_api.list_namespaced_pod(self.args.namespace)
         self.log.debug(f"found pods: {pods}")
         items = list()
@@ -717,7 +718,7 @@ class nbexchangeSoakTest:
         self.log.warning(
             f"""
         SQL Tidy-up instructions, until the new 'purge' code is in the exchange
-            delete from from assignment where assignment_code = '{self.assignment_code}';
+            delete from assignment where assignment_code = '{self.assignment_code}';
         """
         )
 

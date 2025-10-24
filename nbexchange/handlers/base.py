@@ -1,8 +1,11 @@
 import functools
 import re
+from datetime import datetime
 from typing import Awaitable, Callable, Optional
 from urllib.parse import unquote, unquote_plus
+from zoneinfo import ZoneInfo
 
+from dateutil.tz import gettz
 from tornado import web
 from tornado.log import app_log
 
@@ -37,6 +40,28 @@ class BaseHandler(web.RequestHandler):
         super(BaseHandler, self).__init__(application, request, **kwargs)
         self.set_header("Content-type", "application/json")
 
+    # hard-coded copy of nbgrader.exchange.timezone
+    timezone = "UTC"
+    # @property
+    # def timezone(self):
+    #     return self.settings["timezone"]
+
+    # hard-coded copy of nbgrader.exchange.timestamp_format
+    timestamp_format = "%Y-%m-%d %H:%M:%S.%f %Z"
+    # @property
+    # def timestamp_format(self):
+    #     return self.settings['timestamp_format']
+
+    def get_timestamp(self) -> datetime:
+        tz = gettz(self.timezone)
+        timestamp = datetime.now(tz).strftime(self.timestamp_format)
+        return timestamp
+
+    def check_timezone(self, value: datetime) -> datetime:
+        if value.tzinfo is None or value.tzinfo.utcoffset(value) is None:
+            value = value.replace(tzinfo=ZoneInfo(self.timezone))
+        return value
+
     # Root location for data to be written to
     @property
     def base_storage_location(self):
@@ -63,7 +88,8 @@ class BaseHandler(web.RequestHandler):
         current_role = hub_user.get("course_role")
         course_title = hub_user.get("course_title", "no_title")
         org_id = hub_user.get("org_id", 1)
-        lms_user_id = hub_user.get("lms_user_id", None)
+        email = hub_user.get("email")
+        lms_user_id = hub_user.get("lms_user_id")
 
         # Raising an error appears to have no detrimental affect when running.
         if not (current_course and current_role):
@@ -77,7 +103,7 @@ class BaseHandler(web.RequestHandler):
             user = User.find_by_name(db=session, name=hub_username, log=self.log)
             if user is None:
                 self.log.debug(f"New user details: name:{hub_username}, org_id:{org_id}")
-                user = User(name=hub_username, org_id=org_id)
+                user = User(name=hub_username, org_id=org_id, email=email, lms_user_id=lms_user_id)
                 session.add(user)
             if user.full_name != full_name:
                 user.full_name = full_name
@@ -96,15 +122,8 @@ class BaseHandler(web.RequestHandler):
 
             subscription = Subscription.find_by_set(db=session, user_id=user.id, course_id=course.id, role=current_role)
             if subscription is None:
-                self.log.debug(
-                    (
-                        f"New subscription details: user:{user.id}, course:{course.id}, role:{current_role}, ",
-                        f"and lms_user_id:{lms_user_id}",
-                    )
-                )
-                subscription = Subscription(
-                    user_id=user.id, course_id=course.id, role=current_role, lms_user_id=lms_user_id
-                )
+                self.log.debug(f"New subscription details: user:{user.id}, course:{course.id}, role:{current_role}")
+                subscription = Subscription(user_id=user.id, course_id=course.id, role=current_role)
                 session.add(subscription)
 
             courses = {}
@@ -117,8 +136,9 @@ class BaseHandler(web.RequestHandler):
             model = {
                 "kind": "user",
                 "id": user.id,
-                "lms_user_id": lms_user_id,
                 "name": user.name,
+                "email": email,
+                "lms_user_id": lms_user_id,
                 "org_id": user.org_id,
                 "current_course": current_course,
                 "current_role": current_role,

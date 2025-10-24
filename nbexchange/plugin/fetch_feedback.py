@@ -1,8 +1,10 @@
 import base64
+import json
 import os
 from urllib.parse import quote_plus
 
 import nbgrader.exchange.abc as abc
+import requests
 
 from .exchange import Exchange
 
@@ -25,29 +27,28 @@ class ExchangeFetchFeedback(abc.ExchangeFetchFeedback, Exchange):
 
     def download(self):
         self.log.debug(f"Download feedback for {quote_plus(self.coursedir.notebook_id)} from {self.service_url}")
-        r = self.api_request(
-            f"feedback?course_id={quote_plus(self.coursedir.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}"  # noqa: E501
-        )
+        try:
+            r = self.api_request(
+                f"feedback?course_id={quote_plus(self.coursedir.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}"  # noqa: E501
+            )
+        except requests.exceptions.Timeout:
+            self.fail("Timed out trying to reach the exchange service to fetch feedback.")
+
         self.log.debug(f"Got back {r.status_code} {r.headers['content-type']} after file download")
-        content = r.json()
+        try:
+            content = r.json()
+        except json.decoder.JSONDecodeError as err:
+            self.log.error("release_feedback failed upload\n" f"response text: {r.text}\n" f"JSONDecodeError: {err}")
+            self.fail(r.text)
 
         # Feedback, here, is the time the feedback was generated, not the time of the submission
         if "feedback" in content:
             for f in content["feedback"]:
-                self.log.debug(f"##### fetch-feedback.download has {f['filename']}, {f['timestamp']}")
+                self.log.debug(f"fetch-feedback.download has {f['filename']}, {f['timestamp']}")
                 try:
-                    # This matches nb_timestamp in list.parse_assignments, "status" == "submitted"
-                    # The format should match the nbgrader default "%Y-%m-%d %H:%M:%S.%f %Z"
-                    # timestamp = (
-                    #     parser.parse(str(f["timestamp"]))
-                    #     .strftime(self.timestamp_format)
-                    #     .strip()
-                    # )
                     timestamp = f["timestamp"]
                     os.makedirs(os.path.join(self.dest_path, timestamp), exist_ok=True)
-                    self.log.debug(
-                        f"##### fetch-feedback.download writing to {os.path.join(self.dest_path, timestamp)}"
-                    )
+                    self.log.info(f"Downloading feedback to {os.path.join(self.dest_path, timestamp)}")
                     with open(os.path.join(self.dest_path, timestamp, f["filename"]), "wb") as handle:
                         handle.write(base64.b64decode(f["content"]))
                 except Exception as e:  # TODO: exception handling
@@ -56,6 +57,6 @@ class ExchangeFetchFeedback(abc.ExchangeFetchFeedback, Exchange):
             self.fail(content.get("note", "could not get feedback"))
 
     def copy_files(self):
-        self.log.debug(f"Destination: {self.dest_path}")
+        self.log.info(f"Destination: {self.dest_path}")
         self.download()
         self.log.debug(f"Fetched as: {self.coursedir.notebook_id}")

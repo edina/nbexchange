@@ -12,7 +12,7 @@ from tempfile import TemporaryDirectory
 import alembic.command
 import alembic.config
 from alembic.script import ScriptDirectory
-from sqlalchemy import create_engine, event, exc, inspect, select
+from sqlalchemy import create_engine, event, exc, inspect, select, text
 from sqlalchemy.orm import Session, interfaces, object_session
 from sqlalchemy.pool import StaticPool
 
@@ -86,6 +86,7 @@ def upgrade(db_url, revision="head"):
     revision: str [default: head]
         The alembic revision to upgrade to.
     """
+
     with _temp_alembic_ini(db_url) as alembic_ini:
         check_call(["alembic", "-c", alembic_ini, "upgrade", revision])
 
@@ -149,7 +150,6 @@ def main(args=None):
     # to subcommands
     choices = ["alembic"]
     if not args or args[0] not in choices:
-        print("Select a command from: %s" % ", ".join(choices))
         return 1
     cmd, args = args[0], args[1:]
 
@@ -301,33 +301,37 @@ def check_db_revision(engine, log=None):
 
     # check database schema version
     # it should always be defined at this point
-    alembic_revision = engine.execute("SELECT version_num FROM alembic_version").first()[0]
-    if alembic_revision == head:
-        log.debug(f"database schema version found: {alembic_revision}")
-        pass
-    else:
-        raise DatabaseSchemaMismatch(
-            f"Found database schema version {alembic_revision} != {head}. "
-            "Backup your database and run `nbexchange --upgrade-db`"
-            " to upgrade to the latest schema."
-        )
+    with engine.connect() as connection:
+        alembic_revision = connection.execute(text("SELECT version_num FROM alembic_version")).first()[0]
+        if alembic_revision == head:
+            log.debug(f"database schema version found: {alembic_revision}")
+            pass
+        else:
+            raise DatabaseSchemaMismatch(
+                f"Found database schema version {alembic_revision} != {head}. "
+                "Backup your database and run `nbexchange --upgrade-db`"
+                " to upgrade to the latest schema."
+            )
 
 
 def mysql_large_prefix_check(engine):
     """Check mysql has innodb_large_prefix set"""
     if not str(engine.url).startswith("mysql"):
         return False
-    variables = dict(
-        engine.execute(
-            "show variables where variable_name like "
-            '"innodb_large_prefix" or '
-            'variable_name like "innodb_file_format";'
-        ).fetchall()
-    )
-    if variables["innodb_file_format"] == "Barracuda" and variables["innodb_large_prefix"] == "ON":
-        return True
-    else:
-        return False
+    with engine.connect() as connection:
+        variables = dict(
+            connection.execute(
+                text(
+                    "show variables where variable_name like "
+                    '"innodb_large_prefix" or '
+                    'variable_name like "innodb_file_format";'
+                )
+            ).fetchall()
+        )
+        if variables["innodb_file_format"] == "Barracuda" and variables["innodb_large_prefix"] == "ON":
+            return True
+        else:
+            return False
 
 
 def add_row_format(base):
@@ -352,7 +356,6 @@ def setup_db(url="sqlite:///:memory:", reset=False, log=None, **kwargs):
 
     # From sqlalchemy 2.0, testing pools is now built in
     engine = create_engine(url, pool_pre_ping=True, **kwargs)
-
     if url.startswith("sqlite"):
         register_foreign_keys(engine)
 

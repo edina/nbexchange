@@ -6,6 +6,7 @@ import tarfile
 from urllib.parse import quote_plus
 
 import nbgrader.exchange.abc as abc
+import requests
 from nbgrader.api import Gradebook, MissingEntry
 
 from .exchange import Exchange
@@ -26,9 +27,13 @@ class ExchangeCollect(abc.ExchangeCollect, Exchange):
 
     def download(self, submission, dest_path):
         self.log.debug(f"ExchangeCollect.download - record {submission} to {dest_path}")
-        r = self.api_request(
-            f"collection?course_id={quote_plus(self.coursedir.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}&path={quote_plus(submission['path'])}"  # noqa: E501
-        )
+        try:
+            r = self.api_request(
+                f"collection?course_id={quote_plus(self.coursedir.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}&path={quote_plus(submission['path'])}"  # noqa: E501
+            )
+        except requests.exceptions.Timeout:
+            self.fail("Timed out trying to reach the exchange service to collect submissions.")
+
         self.log.debug(f"Got back {r.status_code}  {r.headers['content-type']} after file download")
 
         if r.status_code > 399:
@@ -54,7 +59,11 @@ class ExchangeCollect(abc.ExchangeCollect, Exchange):
                     )
         else:
             # Fails, even if the json response is a success (for now)
-            data = r.json()
+            try:
+                data = r.json()
+            except json.decoder.JSONDecodeError as err:
+                self.log.error("collect failed to download:\n" f"response text: {r.text}\n" f"JSONDecodeError: {err}")
+
             if not data["success"]:
                 self.fail(
                     f"Error failing to collect for assignment {self.coursedir.assignment_id} on course {self.coursedir.course_id}"  # noqa: E501
@@ -74,14 +83,17 @@ class ExchangeCollect(abc.ExchangeCollect, Exchange):
         url = f"collections?course_id={quote_plus(self.coursedir.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}"  # noqa: E501
         if self.coursedir.student_id != "*":
             url = url + f"&user_id={quote_plus(self.coursedir.student_id)}"
-        r = self.api_request(url)
+        try:
+            r = self.api_request(url)
+        except requests.exceptions.Timeout:
+            self.fail("Timed out trying to reach the exchange service to get a list of submissions.")
 
         self.log.debug(f"Got back {r} when listing collectable assignments")
 
         try:
             data = r.json()
-        except json.decoder.JSONDecodeError:
-            self.log.error("Got back an invalid response when listing assignments")
+        except json.decoder.JSONDecodeError as err:
+            self.log.error(f"Got back an invalid response when listing assignments: {err}")
             return []
 
         if not data["success"]:
@@ -96,7 +108,7 @@ class ExchangeCollect(abc.ExchangeCollect, Exchange):
                 f"No submissions of '{self.coursedir.assignment_id}' for course '{self.coursedir.course_id}' to collect"
             )
         else:
-            self.log.debug(
+            self.log.info(
                 f"Processing {len(submissions)} submissions of '{self.coursedir.assignment_id}' for course '{self.coursedir.course_id}'"  # noqa: E501
             )
 
@@ -110,12 +122,12 @@ class ExchangeCollect(abc.ExchangeCollect, Exchange):
                     full_name,
                     "",
                 )  # TODO: should we prefer first or last name here?
+            email = submission.get("email") or ""
+            lms_user_id = submission.get("lms_user_id") or ""
 
             # self.coursedir.submitted_directory gets defined in `list.py`
             #   otherwise this is consistent with the upstream code
             if student_id:
-                lms_user_id = submission.get("lms_user_id", None)
-
                 local_dest_path = self.coursedir.format_path(
                     self.coursedir.submitted_directory,
                     student_id,
@@ -151,7 +163,11 @@ class ExchangeCollect(abc.ExchangeCollect, Exchange):
                     with Gradebook(self.coursedir.db_url, self.coursedir.course_id) as gb:
                         try:
                             gb.update_or_create_student(
-                                student_id, first_name=first_name, last_name=last_name, lms_user_id=lms_user_id
+                                student_id,
+                                first_name=first_name,
+                                last_name=last_name,
+                                email=email,
+                                lms_user_id=lms_user_id,
                             )
                         except MissingEntry:
                             self.log.info(

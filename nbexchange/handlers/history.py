@@ -132,10 +132,11 @@ class History(BaseHandler):
                         f"{models[subscription.course.id]['course_code']}",
                     )
                 )
+
+                temp_dict = dict()
                 for assignment in subscription.course.assignments:
                     self.log.debug(f"           ... assignment: {assignment}")
 
-                    temp_dict = dict()
                     if assignment.active:
                         if assignment.id not in temp_dict:
                             temp_dict[assignment.id] = {
@@ -167,7 +168,9 @@ class History(BaseHandler):
                                     temp_dict[assignment.id]["action_summary"][action_string] += 1
                                     this_action["action"] = str(action.action)
                                     self.log.debug(f"action: {action}")
-                                    this_action["timestamp"] = action.timestamp.strftime("%Y-%m-%d %H:%M:%S.%f %Z")
+                                    this_action["timestamp"] = self.check_timezone(action.timestamp).strftime(
+                                        self.timestamp_format
+                                    )
                                     # I thought about this - and actually, there is merit in students knowing
                                     # _which_ instructor released an assignment when
                                     user = nbexchange.models.users.User.find_by_pk(db=session, pk=action.user_id)

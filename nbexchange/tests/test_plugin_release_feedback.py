@@ -2,8 +2,10 @@ import logging
 import os
 import re
 from shutil import copyfile
+from urllib.parse import quote_plus
 
 import pytest
+import requests
 from mock import patch
 from nbgrader.coursedir import CourseDirectory
 from nbgrader.exchange import ExchangeError
@@ -38,7 +40,6 @@ def test_release_feedback_methods(plugin_config, tmpdir):
 
     plugin = ExchangeReleaseFeedback(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
     plugin.init_src()
-    print(f"asserting plugin.src_path: {plugin.src_path}")
     assert re.search(r"test_release_feedback_methods0/feedback_test/\*/assign_1$", plugin.src_path)
     plugin.coursedir.student_id = student_id
     plugin.init_src()
@@ -50,7 +51,7 @@ def test_release_feedback_methods(plugin_config, tmpdir):
 
 
 @pytest.mark.gen_test
-def test_release_feedback_fetch_normal(plugin_config, tmpdir):
+def test_release_feedback_normal(plugin_config, tmpdir):
     plugin_config.CourseDirectory.root = "/"
     plugin_config.CourseDirectory.feedback_directory = str(tmpdir.mkdir("feedback_test").realpath())
     plugin_config.CourseDirectory.submitted_directory = str(tmpdir.mkdir("submitted_test").realpath())
@@ -90,9 +91,9 @@ def test_release_feedback_fetch_normal(plugin_config, tmpdir):
         ),
         "w",
     ) as fp:
-        fp.write("2020-01-01 00:00:00.0 UTC")
+        fp.write("2020-01-01 00:00:00.000000 UTC")
 
-    unique_key = make_unique_key("no_course", assignment_id, "feedback", student_id, "2020-01-01 00:00:00.0 UTC")
+    unique_key = make_unique_key("no_course", assignment_id, "feedback", student_id, "2020-01-01 00:00:00.000000 UTC")
     checksum = notebook_hash(
         os.path.join(
             plugin_config.CourseDirectory.submitted_directory,
@@ -128,7 +129,7 @@ def test_release_feedback_fetch_normal(plugin_config, tmpdir):
 
 
 @pytest.mark.gen_test
-def test_release_feedback_fetch_several_normal(plugin_config, tmpdir):
+def test_release_feedback_several_normal(plugin_config, tmpdir):
     # set up the submitted & feeback directories
     feedback_directory = str(tmpdir.mkdir("feedback_test").realpath())
     submitted_directory = str(tmpdir.mkdir("submitted_test").realpath())
@@ -161,15 +162,15 @@ def test_release_feedback_fetch_several_normal(plugin_config, tmpdir):
         os.path.join(feedback_directory, student_id, assignment_id, "timestamp.txt"),
         "w",
     ) as fp:
-        fp.write("2020-01-01 00:01:00.0 UTC")
+        fp.write("2020-01-01 00:01:00.000000 UTC")
 
     # this makes the unique key & checksums for the submission
-    unique_key1 = make_unique_key("no_course", assignment_id, "feedback1", student_id, "2020-01-01 00:01:00.0 UTC")
+    unique_key1 = make_unique_key("no_course", assignment_id, "feedback1", student_id, "2020-01-01 00:01:00.000000 UTC")
     checksum1 = notebook_hash(
         os.path.join(submitted_directory, student_id, assignment_id, "feedback1.ipynb"),
         unique_key1,
     )
-    unique_key2 = make_unique_key("no_course", assignment_id, "feedback2", student_id, "2020-01-01 00:01:00.0 UTC")
+    unique_key2 = make_unique_key("no_course", assignment_id, "feedback2", student_id, "2020-01-01 00:01:00.000000 UTC")
     checksum2 = notebook_hash(
         os.path.join(submitted_directory, student_id, assignment_id, "feedback2.ipynb"),
         unique_key2,
@@ -234,7 +235,7 @@ def test_release_feedback_fetch_several_normal(plugin_config, tmpdir):
 
 
 @pytest.mark.gen_test
-def test_release_feedback_fetch_fail(plugin_config, tmpdir):
+def test_release_feedback_fail(plugin_config, tmpdir):
     plugin_config.CourseDirectory.root = "/"
     plugin_config.CourseDirectory.feedback_directory = str(tmpdir.mkdir("feedback_test").realpath())
     plugin_config.CourseDirectory.submitted_directory = str(tmpdir.mkdir("submitted_test").realpath())
@@ -274,7 +275,7 @@ def test_release_feedback_fetch_fail(plugin_config, tmpdir):
         ),
         "w",
     ) as fp:
-        fp.write("2020-01-01 00:00:00.0 UTC")
+        fp.write("2020-01-01 00:00:00.000000 UTC")
 
     plugin = ExchangeReleaseFeedback(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
 
@@ -292,3 +293,217 @@ def test_release_feedback_fetch_fail(plugin_config, tmpdir):
         with pytest.raises(ExchangeError) as e_info:
             plugin.start()
         assert str(e_info.value) == "failure note"
+
+
+@pytest.mark.gen_test
+def test_release_feedback_timeout(plugin_config, tmpdir, caplog):
+    plugin_config.CourseDirectory.root = "/"
+    plugin_config.CourseDirectory.feedback_directory = str(tmpdir.mkdir("feedback_test").realpath())
+    plugin_config.CourseDirectory.submitted_directory = str(tmpdir.mkdir("submitted_test").realpath())
+    plugin_config.CourseDirectory.assignment_id = assignment_id
+    os.makedirs(
+        os.path.join(plugin_config.CourseDirectory.feedback_directory, student_id, assignment_id),
+        exist_ok=True,
+    )
+    os.makedirs(
+        os.path.join(plugin_config.CourseDirectory.submitted_directory, student_id, assignment_id),
+        exist_ok=True,
+    )
+
+    feedback_filename_uploaded = os.path.join(
+        plugin_config.CourseDirectory.feedback_directory,
+        student_id,
+        assignment_id,
+        "feedback.html",
+    )
+    copyfile(feedback1_filename, feedback_filename_uploaded)
+
+    copyfile(
+        notebook1_filename,
+        os.path.join(
+            plugin_config.CourseDirectory.submitted_directory,
+            student_id,
+            assignment_id,
+            "feedback.ipynb",
+        ),
+    )
+    with open(
+        os.path.join(
+            plugin_config.CourseDirectory.feedback_directory,
+            student_id,
+            assignment_id,
+            "timestamp.txt",
+        ),
+        "w",
+    ) as fp:
+        fp.write("2020-01-01 00:00:00.000000 UTC")
+
+    plugin = ExchangeReleaseFeedback(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
+
+    def api_request(*args, **kwargs):
+        raise requests.exceptions.Timeout
+
+    expected_message = "Timed out trying to reach the exchange service to release feedback."
+    with patch.object(Exchange, "api_request", side_effect=api_request):
+        with pytest.raises(ExchangeError, match=expected_message):
+            plugin.start()
+    assert expected_message in caplog.text
+
+
+# We prove the exchange is good with
+@pytest.mark.gen_test
+def test_release_feedback_filename_with_surrounding_whitespace(plugin_config, tmpdir):
+    notebook_id = " test with spaces "
+    plugin_config.CourseDirectory.root = "/"
+    plugin_config.CourseDirectory.feedback_directory = str(tmpdir.mkdir("feedback_test").realpath())
+    plugin_config.CourseDirectory.submitted_directory = str(tmpdir.mkdir("submitted_test").realpath())
+    plugin_config.CourseDirectory.assignment_id = assignment_id
+    os.makedirs(
+        os.path.join(plugin_config.CourseDirectory.feedback_directory, student_id, assignment_id),
+        exist_ok=True,
+    )
+    os.makedirs(
+        os.path.join(plugin_config.CourseDirectory.submitted_directory, student_id, assignment_id),
+        exist_ok=True,
+    )
+
+    feedback_filename_uploaded = os.path.join(
+        plugin_config.CourseDirectory.feedback_directory,
+        student_id,
+        assignment_id,
+        f"{notebook_id}.html",
+    )
+    copyfile(feedback1_filename, feedback_filename_uploaded)
+
+    copyfile(
+        notebook1_filename,
+        os.path.join(
+            plugin_config.CourseDirectory.submitted_directory,
+            student_id,
+            assignment_id,
+            f"{notebook_id}.ipynb",
+        ),
+    )
+    with open(
+        os.path.join(
+            plugin_config.CourseDirectory.feedback_directory,
+            student_id,
+            assignment_id,
+            "timestamp.txt",
+        ),
+        "w",
+    ) as fp:
+        fp.write("2020-01-01 00:00:00.000000 UTC")
+
+    unique_key = make_unique_key("no_course", assignment_id, notebook_id, student_id, "2020-01-01 00:00:00.000000 UTC")
+    checksum = notebook_hash(
+        os.path.join(
+            plugin_config.CourseDirectory.submitted_directory,
+            student_id,
+            assignment_id,
+            f"{notebook_id}.ipynb",
+        ),
+        unique_key,
+    )
+
+    plugin = ExchangeReleaseFeedback(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
+
+    def api_request(*args, **kwargs):
+        assert args[0] == (
+            "feedback?course_id=no_course"
+            f"&assignment_id={assignment_id}"
+            f"&notebook={quote_plus(notebook_id)}"
+            f"&student={student_id}"
+            "&timestamp=2020-01-01+00%3A00%3A00.000000+UTC"
+            "&checksum=" + checksum
+        )
+        assert kwargs.get("method").lower() == "post"
+        assert "feedback" in kwargs.get("files")
+        assert ("feedback.html", open(feedback_filename_uploaded).read()) == kwargs.get("files").get("feedback")
+        return type(
+            "Request",
+            (object,),
+            {"status_code": 200, "json": (lambda: {"success": True})},
+        )
+
+    with patch.object(Exchange, "api_request", side_effect=api_request):
+        plugin.start()
+
+
+# Should really capture:
+# FileNotFoundError: [Errno 2] No such file or directory: '$tmpdir/submitted_test/1/assign_1/feedback.ipynb'
+
+
+@pytest.mark.gen_test
+def test_release_feedback_missing_timestamp_file(plugin_config, tmpdir, caplog):
+    plugin_config.CourseDirectory.root = "/"
+    plugin_config.CourseDirectory.feedback_directory = str(tmpdir.mkdir("feedback_test").realpath())
+    plugin_config.CourseDirectory.submitted_directory = str(tmpdir.mkdir("submitted_test").realpath())
+    plugin_config.CourseDirectory.assignment_id = assignment_id
+    os.makedirs(
+        os.path.join(plugin_config.CourseDirectory.feedback_directory, student_id, assignment_id),
+        exist_ok=True,
+    )
+    os.makedirs(
+        os.path.join(plugin_config.CourseDirectory.submitted_directory, student_id, assignment_id),
+        exist_ok=True,
+    )
+
+    feedback_filename_uploaded = os.path.join(
+        plugin_config.CourseDirectory.feedback_directory,
+        student_id,
+        assignment_id,
+        "feedback.html",
+    )
+    copyfile(feedback1_filename, feedback_filename_uploaded)
+
+    plugin = ExchangeReleaseFeedback(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
+
+    with pytest.raises(ExchangeError, match="timestamp file missing from"):
+        plugin.start()
+    assert "timestamp file missing from" in caplog.text
+
+
+# This is when there's no matching .ipynb file for a given feedback .html file
+@pytest.mark.gen_test
+def test_release_feedback_missing_notebook_file(plugin_config, tmpdir, caplog):
+    plugin_config.CourseDirectory.root = "/"
+    plugin_config.CourseDirectory.feedback_directory = str(tmpdir.mkdir("feedback_test").realpath())
+    plugin_config.CourseDirectory.submitted_directory = str(tmpdir.mkdir("submitted_test").realpath())
+    plugin_config.CourseDirectory.assignment_id = assignment_id
+    os.makedirs(
+        os.path.join(plugin_config.CourseDirectory.feedback_directory, student_id, assignment_id),
+        exist_ok=True,
+    )
+    os.makedirs(
+        os.path.join(plugin_config.CourseDirectory.submitted_directory, student_id, assignment_id),
+        exist_ok=True,
+    )
+
+    feedback_filename_uploaded = os.path.join(
+        plugin_config.CourseDirectory.feedback_directory,
+        student_id,
+        assignment_id,
+        "feedback.html",
+    )
+    copyfile(feedback1_filename, feedback_filename_uploaded)
+
+    with open(
+        os.path.join(
+            plugin_config.CourseDirectory.feedback_directory,
+            student_id,
+            assignment_id,
+            "timestamp.txt",
+        ),
+        "w",
+    ) as fp:
+        fp.write("2020-01-01 00:00:00.000000 UTC")
+
+    plugin = ExchangeReleaseFeedback(coursedir=CourseDirectory(config=plugin_config), config=plugin_config)
+
+    with pytest.raises(
+        ExchangeError,
+        match=r"unable to find [\w\/\-]+\/submitted_test\/1\/assign_1\/feedback.ipynb in submission files",
+    ):
+        plugin.start()
+    assert "unable to find" in caplog.text

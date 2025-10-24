@@ -55,17 +55,11 @@ class FeedbackHandler(BaseHandler):
             course = Course.find_by_code(db=session, code=course_id, org_id=this_user["org_id"], log=self.log)
             if not course:
                 note = f"Course {course_id} not found"
-                self.log.info(note)
-                # self.finish({"success": False, "note": note, "value": []})
-                # return
                 raise web.HTTPError(404, note)
 
             assignment = AssignmentModel.find_by_code(db=session, code=assignment_id, course_id=course.id, log=self.log)
             if not assignment:
                 note = f"Assignment {assignment_id} for Course {course_id} not found"
-                self.log.info(note)
-                # self.finish({"success": False, "note": note, "value": []})
-                # return
                 raise web.HTTPError(404, note)
 
             student = User.find_by_name(db=session, name=this_user["name"], log=self.log)
@@ -87,8 +81,9 @@ class FeedbackHandler(BaseHandler):
                 with open(r.location, "r+b") as fp:
                     f["content"] = base64.b64encode(fp.read()).decode("utf-8")
                 f["filename"] = feedback_name
+
                 # This matches self.timestamp_format
-                f["timestamp"] = r.timestamp.strftime("%Y-%m-%d %H:%M:%S.%f %Z")
+                f["timestamp"] = self.check_timezone(r.timestamp).strftime(self.timestamp_format)
                 f["checksum"] = r.checksum
                 feedbacks.append(f)
 
@@ -106,11 +101,18 @@ class FeedbackHandler(BaseHandler):
             self.finish({"success": True, "feedback": feedbacks})
 
     @authenticated
-    def post(self):
+    def post(self) -> None:
         """
         This endpoint accepts feedback files for a notebook.
-        It requires a notebook id, student id, feedback timestamp and
-        a checksum.
+        Parameters:
+
+        course_id: course_code [eg 'Made up`]
+        assignment_id: assignment code [eg 'Lab 1 final test'],
+        student_id: the "username" of the student [eg '1-ug241234'],
+        notebook_id: the name of the notebook without the extension [eg 'Main test'],
+        timestamp: the timestap for the submission that this feedback belongs to [eg '2025-01-17 15:17:58.447679 UTC']
+
+        [checksum: not used]
 
         The endpoint return {'success': true} for all successful feedback releases.
         """
@@ -154,7 +156,6 @@ class FeedbackHandler(BaseHandler):
             course = Course.find_by_code(db=session, code=course_id, org_id=this_user["org_id"], log=self.log)
 
             if not course:
-                self.log.info(f"Could not find requested resource course {course_id}")
                 raise web.HTTPError(404, f"Could not find requested resource course {course_id}")
 
             assignment = AssignmentModel.find_by_code(
@@ -165,29 +166,20 @@ class FeedbackHandler(BaseHandler):
             )
 
             if not assignment:
-                note = f"Could not find requested resource assignment {assignment_id}"
-                self.log.info(note)
-                raise web.HTTPError(404, note)
+                raise web.HTTPError(404, f"Could not find requested resource assignment {assignment_id}")
 
             notebook = Notebook.find_by_name(db=session, name=notebook_id, assignment_id=assignment.id, log=self.log)
             if not notebook:
-                note = f"Could not find requested resource notebook {notebook_id}"
-                self.log.info(note)
-                raise web.HTTPError(404, note)
+                raise web.HTTPError(404, f"Could not find requested resource notebook {notebook_id}")
 
             student = User.find_by_name(db=session, name=student_id, log=self.log)
 
             if not student:
-                note = f"Could not find requested resource student {student_id}"
-                self.log.info(note)
-                raise web.HTTPError(404, note)
-
-            # TODO: check access. Is the user an instructor on the course to which the notebook belongs
+                raise web.HTTPError(404, f"Could not find requested resource student {student_id}")
 
             # Check whether there is an HTML file attached to the request
             if not self.request.files:
-                self.log.warning("Error: No file supplied in upload")  # TODO: improve error message
-                raise web.HTTPError(412)  # precondition failed
+                raise web.HTTPError(412, "Error: No file supplied in upload")
 
             try:
                 # Grab the file
@@ -204,39 +196,15 @@ class FeedbackHandler(BaseHandler):
 
             except Exception as e:
                 # Could not grab the feedback file
-                self.log.error(f"Error: {e}")
-                raise web.HTTPError(412)
-            # TODO: should we check the checksum?
-            # unique_key = make_unique_key(
-            #     course_id,
-            #     assignment_id,
-            #     notebook_id,
-            #     student_id,
-            #     str(timestamp).strip(),
-            # )
-            # check_checksum = notebook_hash(fbfile.name, unique_key)
-            #
-            # if check_checksum != checksum:
-            #     self.log.info(f"Checksum {checksum} does not match {check_checksum}")
-            #     raise web.HTTPError(403, f"Checksum {checksum} does not match {check_checksum}")
+                raise web.HTTPError(412, f"Error: {e}")
 
-            # TODO: What is file of the original notebook we are getting the feedback for?
-            # assignment_dir = "collected/student_id/assignment_name"
-            # nbfile = os.path.join(assignment_dir, "{}.ipynb".format(notebook.name))
-            # calc_checksum = notebook_hash(nbfile.name, unique_key)
-            # if calc_checksum != checksum:
-            #     self.log.info(f"Mismatched checksums {calc_checksum} and {checksum}.")
-            #     raise web.HTTPError(412)
-
-            location = "/".join(
-                [
-                    self.base_storage_location,
-                    str(this_user["org_id"]),
-                    "feedback",
-                    notebook.assignment.course.course_code,
-                    notebook.assignment.assignment_code,
-                    str(int(time.time())),
-                ]
+            location = os.path.join(
+                self.base_storage_location,
+                str(this_user["org_id"]),
+                "feedback",
+                notebook.assignment.course.course_code,
+                notebook.assignment.assignment_code,
+                str(int(time.time())),
             )
 
             # This should be abstracted, so it can be overloaded to store in other manners (eg AWS)
@@ -248,16 +216,17 @@ class FeedbackHandler(BaseHandler):
                 with open(feedback_file, "w+b") as handle:
                     handle.write(file_info["body"])
             except Exception as e:
-                self.log.error(f"Could not save file. \n {e}")
-                raise web.HTTPError(500)
+                raise web.HTTPError(500, f"Could not save file. \n {e}")
 
+            # convert to datetime object & ensure it's got a timezone
+            timestamp = self.check_timezone(parser.parse(timestamp))  #
             feedback = Feedback(
                 notebook_id=notebook.id,
                 checksum=checksum,
                 location=feedback_file,
                 student_id=student.id,
                 instructor_id=this_user.get("id"),
-                timestamp=parser.parse(timestamp),
+                timestamp=timestamp,
             )
 
             session.add(feedback)

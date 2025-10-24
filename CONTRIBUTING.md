@@ -61,7 +61,9 @@ GitHub `Actions` run Tests. These teste include checking that files are _linted_
 
 When you add/change/improve functionality, please _please_ **please** write tests as well.
 
-Tests should check that error cases are handled, and that [where applicable] both singular & multiple actions are handled correctly.
+Tests should check that error cases are handled, that bad data does not break the system, and and that [where applicable] both singular & multiple actions are handled correctly.
+
+When adding functionality that impacts both the `handlers` and the `plugin`, please try to use the outputs the `handler` tests check for in the _mocked_ `api_request` methods.
 
 There is no such thing as _too many tests_
 

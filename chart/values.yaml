@@ -11,8 +11,8 @@ image:
 
 environment:
   NBEX_DB_URL: ""
-  NAAS_URL: "https://noteable-dev.edina.ac.uk"
   SENTRY_DSN: ""
+  DEBUG: "0"
 
 nameOverride: ""
 fullnameOverride: ""
@@ -23,7 +23,7 @@ service:
 
 ingress:
   enable: true
-  url: nbexchange.noteable-dev.edina.ac.uk
+  url: nbexchange.cluster-dev.example.com
 
 resources:
   requests:
@@ -35,3 +35,7 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+paths:
+  service_prefix: /services/nbexchange/
+  base_store: /tmp/courses

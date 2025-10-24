@@ -1,5 +1,14 @@
 # Changelog
 
+## V1.5.0
+
+* Update to nbgrader 0.9.5
+* Update to pythion 3.13
+* Ensure feedback timestamps match submittion timestamp
+* Move "get_current_user" to an external class
+* Improve max-buffer (submitted file) size handling
+* General improvement in test coverage
+
 ## V1.4.1
 
 * add a history api [but no UI]

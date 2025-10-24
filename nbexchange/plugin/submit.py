@@ -1,16 +1,23 @@
 import io
+import json
 import os
 import sys
+import tarfile
+import time
+from contextlib import closing
 from urllib.parse import quote_plus
 
-import nbgrader.exchange.abc as abc
+import humanize
+import requests
+from dateutil import parser
+from nbgrader.exchange.abc import ExchangeSubmit as ABCExchangeSubmit
 from nbgrader.utils import find_all_notebooks
 
 from .exchange import Exchange
 from .list import ExchangeList
 
 
-class ExchangeSubmit(abc.ExchangeSubmit, Exchange):
+class ExchangeSubmit(Exchange, ABCExchangeSubmit):
     def do_copy(self, src, dest):
         pass
 
@@ -31,37 +38,48 @@ class ExchangeSubmit(abc.ExchangeSubmit, Exchange):
 
     # The submitted files have a timestamp.txt file with them.
     def tar_source(self):
-        import tarfile
-        import time
-        from contextlib import closing
-        from datetime import datetime
-
-        timestamp = datetime.now().strftime(self.timestamp_format).strip()
+        timestamp = self.timestamp  # This is a string object
         tar_file = io.BytesIO()
         with tarfile.open(fileobj=tar_file, mode="w:gz") as tar_handle:
-            tar_handle.add(self.src_path, arcname=".")
+            self.add_to_tar(tar_handle, self.src_path, self.coursedir.ignore)
             with closing(io.BytesIO(timestamp.encode())) as fobj:
                 tarinfo = tarfile.TarInfo("timestamp.txt")
                 tarinfo.size = len(fobj.getvalue())
                 tarinfo.mtime = time.time()
                 tar_handle.addfile(tarinfo, fileobj=fobj)
         tar_file.seek(0)
-        return tar_file.read()
+        return tar_file.read(), timestamp
 
-    def upload(self, file):
+    def upload(self, file: bytes, timestamp: str):
         self.log.debug(f"ExchangeSubmit uploading to: {self.service_url()}")
+        self.log.info(f"Source: {self.src_path}")
+        self.log.info("Destination: The exhange service")
+
+        # validate timestamp
+        timestamp = self.check_timezone(parser.parse(timestamp)).strftime(self.timestamp_format)
+
         files = {"assignment": ("assignment.tar.gz", file)}
-        r = self.api_request(
-            f"submission?course_id={quote_plus(self.coursedir.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}",  # noqa: E501
-            method="POST",
-            files=files,
-        )
+        try:
+            r = self.api_request(
+                f"submission?course_id={quote_plus(self.coursedir.course_id)}&assignment_id={quote_plus(self.coursedir.assignment_id)}&timestamp={quote_plus(timestamp)}",  # noqa: E501
+                method="POST",
+                files=files,
+            )
+        except requests.exceptions.Timeout:
+            self.fail("Timed out trying to reach the exchange service to post submission.")
+
         self.log.debug(f"Got back {r.status_code} after file upload")
-        data = r.json()
+        try:
+            data = r.json()
+        except json.decoder.JSONDecodeError as err:
+            self.log.error("release_feedback failed upload\n" f"response text: {r.text}\n" f"JSONDecodeError: {err}")
+            self.fail(r.text)
         if not data["success"]:
             self.fail(data["note"])
 
-    # Like the default Submit, we log differences, and do not rener then in the display
+        self.log.info(f"Submitted as: {self.coursedir.course_id} {self.coursedir.assignment_id} {timestamp}")
+
+    # Like the default Submit, we log differences, and do not render then in the display
     # (not sure that's any ues to anyone - but that's what the original does)
     def check_filename_diff(self):
         # List of filenames, no paths
@@ -121,14 +139,16 @@ class ExchangeSubmit(abc.ExchangeSubmit, Exchange):
 
     def copy_files(self):
         self.check_filename_diff()
-        # Grab files from hard drive
-        file = self.tar_source()
+        # Grab files from hard drive, and the timestamp string we put in the timestamp file
+        file, timestamp = self.tar_source()
         if sys.getsizeof(file) > self.max_buffer_size:
             self.fail(
-                "Assignment {} not submitted. "
-                "The contents of your submission are too large:\n"
-                "You may have data files, temporary files, and/or working files that are not needed - try deleting them."  # noqa: E501
-                "".format(self.coursedir.assignment_id)
+                f"Assignment {self.coursedir.assignment_id} not submitted. "
+                "The contents of your assignment are too large:\n"
+                "The total size of all files in your assignment directory [excluding any feedback], when compressed "
+                f"using tar -czvf must be less than {humanize.naturalsize(self.max_buffer_size, gnu=True)}.\n"
+                "You may have large data files, temporary files, and/or working files that should not be included"
+                " - try deleting them."
             )
         # Upload files to exchange
-        self.upload(file)
+        self.upload(file, timestamp)

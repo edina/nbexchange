@@ -24,6 +24,25 @@ class Collections(BaseHandler):
         user_id: user_id - optional
 
     GET: gets list of actions for the assignment
+
+    returns: list of notebooks available for collection
+
+    {'success': True,
+     'value': [
+           {'assignment_id': <assignment_code>,
+            'course_id': <course_code?,
+            'full_name': user_id.full_name,
+            'email': user_id.email,
+            'lms_user_id': user_id.lms_user_id,
+            'notebooks': [{'notebook_id': 'test'}],
+            'path': </full/path/to/gzip/file/on/exchange/server.gz>,
+            'status': <status.code>,
+            'student_id': <user_id.name>,
+            'timestamp': <timestamp of action>.strftime("%Y-%m-%d %H:%M:%S.%f %Z")
+           },
+           {....}, ....
+        ]
+    }
     """
 
     urls = ["collections"]
@@ -103,6 +122,8 @@ class Collections(BaseHandler):
                     {
                         "student_id": action.user.name,
                         "full_name": action.user.full_name,
+                        "email": action.user.email,
+                        "lms_user_id": action.user.lms_user_id,
                         "assignment_id": assignment.assignment_code,
                         "course_id": assignment.course.course_code,
                         "lms_user_id": lms_user_id,
@@ -110,7 +131,7 @@ class Collections(BaseHandler):
                         "path": action.location,
                         # 'name' in db, 'notebook_id' id nbgrader
                         "notebooks": [{"notebook_id": x.name} for x in assignment.notebooks],
-                        "timestamp": action.timestamp.strftime("%Y-%m-%d %H:%M:%S.%f %Z"),
+                        "timestamp": self.check_timezone(action.timestamp).strftime(self.timestamp_format),
                     }
                 )
 
@@ -189,15 +210,11 @@ class Collection(BaseHandler):
             # I do not want to assume there will just be one.
             for assignment in assignments:
                 self.log.debug(f"Assignment: {assignment}")
-
                 try:
                     with open(path, "r+b") as handle:
                         data = handle.read()
-                except Exception as e:  # TODO: exception handling
-                    self.log.warning(f"Error: {e}")  # TODO: improve error message
-
-                    # error 500??
-                    raise Exception
+                except Exception as e:
+                    raise web.HTTPError(500, f"collection handler unable to open '{path}': {e}")
 
                 self.log.info(
                     f"Adding action {AssignmentActions.collected.value} for user {this_user['id']} against assignment {assignment.id}"  # noqa: E501

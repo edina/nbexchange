@@ -1,3 +1,4 @@
+import datetime
 import os
 import time
 import uuid
@@ -69,6 +70,28 @@ class Assignments(BaseHandler):
             for assignment in assignments:
                 self.log.debug("==========")
                 self.log.debug(f"Assignment: {assignment}")
+
+                # To maintain backward compatibility we need to test to see if any feedback timestamps match any
+                #   submission timestamps. New code will, old code won't.
+                # New code matches feedback to submission on timestamp
+                # Old code adds latest feedback to all submissions
+                # To test old vs new, we check to see if any submit timestamps exist in the set of feedback timestamps
+                #   .... if any do, we're new stylee.... and thus _include_ the timestamp in the feedback query.
+                feedback_timestamps = set()
+                notebook_ids = [notebook.id for notebook in assignment.notebooks]
+                submit_timestamps = [
+                    action.timestamp
+                    for action in assignment.actions
+                    if action.action == AssignmentActions.submitted and this_user.get("id") == action.user_id
+                ]
+
+                for f in session.query(Feedback).filter(
+                    Feedback.notebook_id.in_(notebook_ids), Feedback.timestamp.in_(submit_timestamps)
+                ):
+                    feedback_timestamps.add(f.timestamp)
+                new_stylee = [sub_ts for sub_ts in submit_timestamps if sub_ts in feedback_timestamps]
+                # End of new_stylee discovery
+
                 for action in assignment.actions:
                     # For every action that is not "released" checked if the user id matches
                     if action.action != AssignmentActions.released and this_user.get("id") != action.user_id:
@@ -76,21 +99,25 @@ class Assignments(BaseHandler):
                         self.log.debug("Action does not belong to user, skip action")
                         continue
                     notebooks = []
-
+                    action_timestamp = self.check_timezone(action.timestamp)
                     for notebook in assignment.notebooks:
                         feedback_available = False
                         feedback_timestamp = None
                         if action.action == AssignmentActions.submitted:
-                            feedback = Feedback.find_notebook_for_student(
-                                db=session,
-                                notebook_id=notebook.id,
-                                student_id=this_user.get("id"),
-                                log=self.log,
-                            )
+                            query_params = {
+                                "db": session,
+                                "notebook_id": notebook.id,
+                                "student_id": this_user.get("id"),
+                                "log": self.log,
+                            }
+                            if new_stylee:
+                                query_params["timestamp"] = action_timestamp
+                            feedback = Feedback.find_notebook_for_student(**query_params)
                             if feedback:
                                 feedback_available = bool(feedback)
-                                feedback_timestamp = feedback.timestamp.strftime("%Y-%m-%d %H:%M:%S.%f %Z")
-
+                                feedback_timestamp = self.check_timezone(feedback.timestamp).strftime(
+                                    self.timestamp_format
+                                )
                         notebooks.append(
                             {
                                 "notebook_id": notebook.name,
@@ -107,7 +134,7 @@ class Assignments(BaseHandler):
                             "status": action.action.value,  # currently called 'action' in our db
                             "path": action.location,
                             "notebooks": notebooks,
-                            "timestamp": action.timestamp.strftime("%Y-%m-%d %H:%M:%S.%f %Z"),
+                            "timestamp": action_timestamp.strftime(self.timestamp_format),
                         }
                     )
 
@@ -198,14 +225,11 @@ class Assignment(BaseHandler):
 
             if release_file:
                 try:
+                    # Hmmm this seems to raise it's own 500: No such file or directory if not present
                     with open(release_file, "r+b") as handle:
                         data = handle.read()
-                except Exception as e:  # TODO: exception handling
-                    self.log.warning(f"Error: {e}")  # TODO: improve error message
-                    self.log.info("Unable to open file")
-
-                    # error 500??
-                    raise Exception
+                except Exception as e:
+                    raise web.HTTPError(500, f"assignment get handler unable to open '{release_file}': {e}")
 
                 self.log.info(
                     f"Adding action {AssignmentActions.fetched.value} for user {this_user['id']} against assignment {assignment.id}"  # noqa: E501
@@ -220,20 +244,13 @@ class Assignment(BaseHandler):
                 self.log.info("record of fetch action committed")
                 self.finish(data)
             else:
-                self.log.info("no release file found")
-                raise Exception
+                raise web.HTTPError(500, f"assignment get handler found no release file {release_file}")
 
     # This is releasing an **assignment**, not a student submission
     @authenticated
     def post(self):
-        # Do a content-length check, before we go any further
-        if "Content-Length" in self.request.headers and int(self.request.headers["Content-Length"]) > int(
-            self.max_buffer_size
-        ):
-            note = "File upload oversize, and rejected. Please reduce the contents of the assignment, re-generate, and re-release"  # noqa: E501
-            self.log.info(note)
-            self.finish({"success": False, "note": note})
-            return
+        # Reminder: the `max_buffer_size` we have set is in config is the size given to the underlying HTTPServer
+        # Oversized content is rejected by the underlying HTTPServer, and never gets here.
 
         [course_code, assignment_code] = self.get_params(["course_id", "assignment_id"])
         self.log.debug(
@@ -285,20 +302,18 @@ class Assignment(BaseHandler):
 
             # storage is dynamically in $path/release/$course_code/$assignment_code/<timestamp>/
             # Note - this means we can have multiple versions of the same release on the system
-            release_file = "/".join(
-                [
-                    self.base_storage_location,
-                    str(this_user["org_id"]),
-                    AssignmentActions.released.value,
-                    course_code,
-                    assignment_code,
-                    str(int(time.time())),
-                ]
+            release_file = os.path.join(
+                self.base_storage_location,
+                str(this_user["org_id"]),
+                AssignmentActions.released.value,
+                course_code,
+                assignment_code,
+                str(int(time.time())),
             )
 
             if not self.request.files:
-                self.log.warning("Error: No file supplied in upload")  # TODO: improve error message
-                raise web.HTTPError(412)  # precondition failed
+                # self.log.warning("Error: No file supplied in upload")  # TODO: improve error message
+                raise web.HTTPError(412, "assignment handler upload: No file supplied in upload")  # precondition failed
 
             try:
                 # Write the uploaded file to the desired location
@@ -322,11 +337,7 @@ class Assignment(BaseHandler):
                     handle.write(file_info["body"])
 
             except Exception as e:  # TODO: exception handling
-                self.log.warning(f"Error: {e}")  # TODO: improve error message
-
-                self.log.info("Upload failed")
-                # error 500??
-                raise Exception
+                raise web.HTTPError(500, f"assignment handler Upload failed: {e}")
 
             # Check the file exists on disk
             if not (
@@ -361,13 +372,18 @@ class Assignment(BaseHandler):
             self.log.info(
                 f"Adding action {AssignmentActions.released.value} for user {this_user['id']} against assignment {assignment.id}"  # noqa: E501
             )
+            timestamp = self.get_timestamp()  # this is a string object
             action = Action(
                 user_id=this_user["id"],
                 assignment_id=assignment.id,
                 action=AssignmentActions.released,
                 location=release_file,
+                timestamp=datetime.datetime.strptime(
+                    timestamp, self.timestamp_format
+                ),  # database wants a datetime object
             )
             session.add(action)
+
             self.finish({"success": True, "note": "Released"})
 
     # This is unreleasing an assignment

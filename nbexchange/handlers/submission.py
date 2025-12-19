@@ -100,6 +100,18 @@ class Submission(BaseHandler):
             if not self.request.files:
                 raise web.HTTPError(412, "submission handler post: No file supplied in upload")  # precondition failed
 
+                # import tornado.web
+
+                # class FileUploadHandler(tornado.web.RequestHandler):
+                #     def post(self):
+                #         # Check if the file is in the request
+                #         if 'file' not in self.request.files:
+                #             raise tornado.web.HTTPError(400, "File not found in the request")
+
+                #         # Process the file if it exists
+                #         file_info = self.request.files['file'][0]
+                #         # Further processing of the file can be done here
+
             try:
                 # Write the uploaded file to the desired location
                 file_info = self.request.files["assignment"][0]

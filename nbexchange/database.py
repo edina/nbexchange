@@ -7,12 +7,10 @@ Notes:
      commit or rollback the db if a exception occurs.
 """
 
-import logging
 import os
 from contextlib import contextmanager
 
 from sqlalchemy import create_engine
-from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import sessionmaker
 
 from nbexchange.models import Base
@@ -30,12 +28,8 @@ def scoped_session():
     try:
         yield session
         session.commit()
-    except SQLAlchemyError as err:
-        logging.error("Database session rollback due to: ", str(err))
-        raise
-    except Exception as err:
+    except Exception:
         session.rollback()
-        logging.error("Unexpected error: ", str(err))
         raise
     finally:
         session.close()

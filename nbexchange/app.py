@@ -4,8 +4,6 @@ import sys
 from datetime import datetime
 from getpass import getuser
 
-# import pydevd_pycharm
-
 import sentry_sdk
 from jupyter_server.log import log_request
 from jupyter_server.utils import url_path_join as ujoin
@@ -23,6 +21,9 @@ import nbexchange.dbutil
 from nbexchange import dbutil, handlers
 from nbexchange.handlers import base
 from nbexchange.handlers.auth.user_handler import BaseUserHandler
+
+# import pydevd_pycharm
+
 
 ROOT = os.path.dirname(__file__)
 STATIC_FILES_DIR = os.path.join(ROOT, "static")
@@ -65,7 +66,11 @@ class NbExchange(PrometheusMixIn, Application):
         Manage notebook submissions and collections for nbgrader
     """
 
-    # pydevd_pycharm.settrace('host.docker.internal', port=5678, stdout_to_server=True, stderr_to_server=True, suspend=False)
+    # pydevd_pycharm.settrace('host.docker.internal',
+    #  port=5678,
+    #  stdout_to_server=True,
+    #  stderr_to_server=True,
+    #  suspend=False)
 
     flags = Dict(flags)
 

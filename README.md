@@ -10,11 +10,10 @@ A dockerised service that replaces the default nbgrader Exchange.
 - [Installing](#installing)
   - [nbexchange service](#nbexchange-service)
     - [Helm](#helm)
-  - [nbgrader plugin](#nbgrader-plugin)
+  - [nbgrader jlab plugin](#nbgrader-jlab-plugin)
 - [Configuration](#configuration)
   - [Configuring the `nbexchange` service](#configuring-the-nbexchange-service)
     - [**`user_plugin_class`** revisited](#user_plugin_class-revisited)
-  - [Configuring `nbgrader` to use the alternative exchange in Jupyterlab/Jupyter-Notebook](#configuring-nbgrader-to-use-the-alternative-exchange-in-jupyterlabjupyter-notebook)
 - [Contributing](#contributing)
   - [Releasing new versions](#releasing-new-versions)
 
@@ -30,7 +29,7 @@ The default for nbgrader is to assume all users are on the same computer, and fi
 When using jupyter notebooks in a distributed [dockerised] system, there is no common filesystem - so an alternative mechanism is needed - something that allows files to be transfered via some independant service - eg: 
 ![exchange mechanism in a dockerised environment](dockerised_exchange.png) 
 
-nbexchange provides both that intermediate filestore that is covered by this project, and the plugins for nbgrader to use it that is provided by a separate project:
+nbexchange provides that intermediate filestore that is covered by this project. The plugins for nbgrader to use this exchange service are provided by a separate project:
 [nbexchange_jlab_plugin](https://github.com/edina/nbexchange_jlab_plugin)
 
 # Why nbexchange
@@ -80,8 +79,8 @@ There are the following assumptions:
 # Installing
 
 nbexchange is a two-part system: it requires
-1. the `nbexchange` service to be running (in a docker container)
-2. the plugins to be installed in the jupyter notebook (which will also install `nbgrader`): [nbexchange_jlab_plugin](https://github.com/edina/nbexchange_jlab_plugin)
+1. This service, the `nbexchange` service, to be running (we run it in a docker container.)
+2. The plugins to be installed in the jupyter notebook (which will also install `nbgrader`): [nbexchange_jlab_plugin](https://github.com/edina/nbexchange_jlab_plugin)
 
 ## nbexchange service
 

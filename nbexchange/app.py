@@ -22,9 +22,6 @@ from nbexchange import dbutil, handlers
 from nbexchange.handlers import base
 from nbexchange.handlers.auth.user_handler import BaseUserHandler
 
-# import pydevd_pycharm
-
-
 ROOT = os.path.dirname(__file__)
 STATIC_FILES_DIR = os.path.join(ROOT, "static")
 
@@ -65,12 +62,6 @@ class NbExchange(PrometheusMixIn, Application):
     description = """
         Manage notebook submissions and collections for nbgrader
     """
-
-    # pydevd_pycharm.settrace('host.docker.internal',
-    #  port=5678,
-    #  stdout_to_server=True,
-    #  stderr_to_server=True,
-    #  suspend=False)
 
     flags = Dict(flags)
 

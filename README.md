@@ -1,4 +1,4 @@
-A dockerised service that replaces the defaukt nbgrader Exchange.
+A dockerised service that replaces the default nbgrader Exchange.
 
 <!-- TOC -->
 
@@ -10,11 +10,10 @@ A dockerised service that replaces the defaukt nbgrader Exchange.
 - [Installing](#installing)
   - [nbexchange service](#nbexchange-service)
     - [Helm](#helm)
-  - [nbgrader plugin](#nbgrader-plugin)
+  - [nbgrader jlab plugin](#nbgrader-jlab-plugin)
 - [Configuration](#configuration)
   - [Configuring the `nbexchange` service](#configuring-the-nbexchange-service)
     - [**`user_plugin_class`** revisited](#user_plugin_class-revisited)
-  - [Configuring `nbgrader` to use the alternative exchange in Jupyterlab/Jupyter-Notebook](#configuring-nbgrader-to-use-the-alternative-exchange-in-jupyterlabjupyter-notebook)
 - [Contributing](#contributing)
   - [Releasing new versions](#releasing-new-versions)
 
@@ -30,7 +29,8 @@ The default for nbgrader is to assume all users are on the same computer, and fi
 When using jupyter notebooks in a distributed [dockerised] system, there is no common filesystem - so an alternative mechanism is needed - something that allows files to be transfered via some independant service - eg: 
 ![exchange mechanism in a dockerised environment](dockerised_exchange.png) 
 
-nbexchange provides both that intermediate filestore, and the plugins for nbgrader to use it.
+nbexchange provides that intermediate filestore that is covered by this project. The plugins for nbgrader to use this exchange service are provided by a separate project:
+[nbexchange_jlab_plugin](https://github.com/edina/nbexchange_jlab_plugin)
 
 # Why nbexchange
 
@@ -79,8 +79,8 @@ There are the following assumptions:
 # Installing
 
 nbexchange is a two-part system: it requires
-1. the `nbexchange` service to be running (in a docker container)
-2. the plugins to be installed in the jupyter notebook (which will also install `nbgrader`)
+1. This service, the `nbexchange` service, to be running (we run it in a docker container.)
+2. The plugins to be installed in the jupyter notebook (which will also install `nbgrader`): [nbexchange_jlab_plugin](https://github.com/edina/nbexchange_jlab_plugin)
 
 ## nbexchange service
 
@@ -96,15 +96,14 @@ The service can be deployed via `helm`, ie
 helm install --name nbexchange --namespace default ./chart -f myconfiguration.yaml
 ```
 
-## nbgrader plugin
+## nbgrader jlab plugin
 
 Installing nbexchange in a jupyter notebook will automatically install nbgrader.
 
 nbexchange is not released to Pypy or anaconda, however you can install direct from GitHub - eg:
 
 ```
-pip install https://github.com/edina/nbexchange/archive/v1.5.0.tar.gz
-....
+pip install https://github.com/edina/nbexchange_jlab_plugin/archive/refs/tags/v0.2.2-beta.tar.gz
 ```
 
 Note that nbgrader installs and enables the jupyter extensions automatically - you may wish to switch *off* `formgrader` and `create_assignment` for non-teachers: YMMV
@@ -201,33 +200,6 @@ For the exchange to work, it needs some details about the user connecting to it 
 - `course_title`: A long name for the course (eg `A course of understanding thermondynamics in bulk refrigerant transport`).
 - `course_role`: The role of the user, normally `Student` or `Instructor`. (currently only `Instructor` get privilaged actions).
 - `org_id`: As mentioned above, nbexchange divides courses and users across organisations. This is an id (numeric) for the org_id for the user. It defaults to `1` if not given.
-
-## Configuring `nbgrader` to use the alternative exchange in Jupyterlab/Jupyter-Notebook
-
-The primary reference for this should be the `nbgrader` documentation - but in short:
-
-1. Install `nbexchange` into your jupyter environment [from github, using pip]
-2. Include the following in your `nbgrader_config.py` file:
-
-```python
-c.ExchangeFactory.exchange = 'nbexchange.plugin.Exchange'
-c.ExchangeFactory.list = 'nbexchange.plugin.ExchangeList'
-c.ExchangeFactory.release_assignment = 'nbexchange.plugin.ExchangeReleaseAssignment'
-c.ExchangeFactory.fetch_assignment = 'nbexchange.plugin.ExchangeFetchAssignment'
-c.ExchangeFactory.submit = 'nbexchange.plugin.ExchangeSubmit'
-c.ExchangeFactory.collect = 'nbexchange.plugin.ExchangeCollect'
-c.ExchangeFactory.release_feedback = 'nbexchange.plugin.ExchangeReleaseFeedback'
-c.ExchangeFactory.fetch_feedback = 'nbexchange.plugin.ExchangeFetchFeedback'
-```
-
-These plugins will also check the size of _releases_ & _submissions_
-
-`c.Exchange.max_buffer_size = 204800  # 200KB`
-
-[or even a more specific `c.ExchangeSubmit.max_buffer_size = 204800  # 200KB`]
-
-By default, upload sizes are limited to 5GB (5253530000)
-The figure is bytes
 
 # Contributing
 

@@ -4,9 +4,6 @@
 
 from tornado import web
 
-import nbexchange.models.assignments
-import nbexchange.models.courses
-import nbexchange.models.notebooks
 import nbexchange.models.subscriptions
 from nbexchange.database import scoped_session
 from nbexchange.handlers.base import BaseHandler, authenticated
@@ -55,6 +52,7 @@ class History(BaseHandler):
                     actions: [
                         {
                             action: Str,
+                            path: Str,
                             timestamp: Str,
                             user: Str
                         },
@@ -171,6 +169,9 @@ class History(BaseHandler):
                                     this_action["timestamp"] = self.check_timezone(action.timestamp).strftime(
                                         self.timestamp_format
                                     )
+                                    # Adding path info to action as we want it for the buttons in the history view
+                                    this_action["path"] = action.location
+
                                     # I thought about this - and actually, there is merit in students knowing
                                     # _which_ instructor released an assignment when
                                     user = nbexchange.models.users.User.find_by_pk(db=session, pk=action.user_id)

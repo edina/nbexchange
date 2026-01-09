@@ -120,6 +120,7 @@ dmypy.json
 # IDE
 .idea/
 .vscode/
+*.iml
 # Helm values
 prod-values.yaml
 beta-values.yaml

@@ -31,10 +31,19 @@ spec:
             httpGet:
               path: /services/nbexchange/
               port: http
+            initialDelaySeconds: {{ .Values.probes.liveness.initialDelaySeconds | default 30 }}
+            periodSeconds: {{ .Values.probes.liveness.periodSeconds | default 15 }}
+            timeoutSeconds: {{ .Values.probes.liveness.timeoutSeconds | default 5 }}
+            failureThreshold: {{ .Values.probes.liveness.failureThreshold | default 4 }}
           readinessProbe:
             httpGet:
               path: /services/nbexchange/
               port: http
+            initialDelaySeconds: {{ .Values.probes.readiness.initialDelaySeconds | default 15 }}
+            periodSeconds: {{ .Values.probes.readiness.periodSeconds | default 10 }}
+            timeoutSeconds: {{ .Values.probes.readiness.timeoutSeconds | default 5 }}
+            failureThreshold: {{ .Values.probes.readiness.failureThreshold | default 6 }}
+            successThreshold: {{ .Values.probes.readiness.successThreshold | default 1 }}
           volumeMounts:
             - mountPath: /disk/remote/courses/
               name: courses

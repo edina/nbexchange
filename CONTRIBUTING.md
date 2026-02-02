@@ -130,3 +130,38 @@ WARNING:__main__:
             delete from from assignment where assignment_code = '1d9ac160-3400-470f-894d-90c245284b8a';
         
 ```
+
+## Running in Docker for Local Development
+
+A docker compose file is provided in order to run NbExchange locally: `docker-compose.local.yml`
+It can be used to start nbexchange for local development with the following command line:
+
+```shell
+docker compose --file docker-compose.local.yml up
+```
+
+This will use the config files in the `/docker` directory and start 2 docker services:
+
+- a postgresql database which will be initiated with the sql script at `docker/initdb/schema-data-init.sql`
+- the nbexchange service running at: http://localhost:9000/services/nbexchange
+
+
+### Install jupyterlab and nbexchange plugin
+
+In order to test `nbexchange` you'll probably want to have jupyter-lab running with the `nbexchange_jlab_plugin` extension.
+
+```shell
+conda create -n nbexchange jupyterlab
+conda activate nbexchange
+pip install https://github.com/edina/nbexchange_jlab_plugin.git
+```
+
+A couple of environment variables, would need to be setup to use the nbexchange service running locally:
+
+```shell
+export NAAS_BASE_URL="http://localhost:9000/"
+export NAAS_COURSE_ID="My Course"
+```
+
+You'll find more information about the configuration of `nbexchange_jlab_plugin` on its project's 
+[github page](https://github.com/edina/nbexchange_jlab_plugin)

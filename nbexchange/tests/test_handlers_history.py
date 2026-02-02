@@ -131,7 +131,8 @@ def test_history_no_action_param(app, clear_database):  # noqa: F811
                     "actions": [
                         {
                             "action": "AssignmentActions.released",
-                            "timestamp": ANY,  # The wonderful <ANY> effectively wildcards this
+                            "path": ANY,  # The wonderful <ANY> effectively wildcards this
+                            "timestamp": ANY,
                             "user": "1-kiz",
                         }
                     ],
@@ -209,6 +210,7 @@ def test_history_multiple_courses_if_subscribed(app, clear_database):  # noqa: F
                     "actions": [
                         {
                             "action": "AssignmentActions.released",
+                            "path": ANY,
                             "timestamp": ANY,
                             "user": "1-kiz",
                         }
@@ -231,6 +233,7 @@ def test_history_multiple_courses_if_subscribed(app, clear_database):  # noqa: F
                     "actions": [
                         {
                             "action": "AssignmentActions.released",
+                            "path": ANY,
                             "timestamp": ANY,
                             "user": "1-kiz",
                         }
@@ -281,6 +284,7 @@ def test_history_actions_filtered_by_course(app, clear_database):  # noqa: F811
                     "actions": [
                         {
                             "action": "AssignmentActions.released",
+                            "path": ANY,
                             "timestamp": ANY,
                             "user": "1-kiz",
                         }
@@ -483,11 +487,13 @@ def test_history_action_feedback_released(app, clear_database):  # noqa: F811
                     "actions": [
                         {
                             "action": "AssignmentActions.feedback_released",
+                            "path": ANY,
                             "timestamp": ANY,
                             "user": "1-kiz",
                         },
                         {
                             "action": "AssignmentActions.feedback_released",
+                            "path": ANY,
                             "timestamp": ANY,
                             "user": "1-kiz",
                         },
@@ -593,16 +599,19 @@ def test_history_action_students_much_limited(app, clear_database):  # noqa: F81
                     "actions": [
                         {
                             "action": "AssignmentActions.released",
+                            "path": ANY,
                             "timestamp": ANY,
                             "user": "1-kiz",
                         },
                         {
                             "action": "AssignmentActions.released",
+                            "path": ANY,
                             "timestamp": ANY,
                             "user": "1-kiz",
                         },
                         {
                             "action": "AssignmentActions.submitted",
+                            "path": ANY,
                             "timestamp": ANY,
                             "user": "1-brobbere",
                         },

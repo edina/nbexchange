@@ -72,6 +72,10 @@ def _temp_alembic_ini(db_url):
         The path to the temporary alembic.ini that we have created.
         This file will be cleaned up on exit from the context manager.
     """
+    if hasattr(db_url, "render_as_string"):
+        db_url = db_url.render_as_string(hide_password=False)
+    else:
+        db_url = str(db_url)
     with TemporaryDirectory() as td:
         alembic_ini = os.path.join(td, "alembic.ini")
         write_alembic_ini(alembic_ini, db_url)

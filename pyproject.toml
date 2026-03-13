@@ -37,7 +37,7 @@ dependencies = [
   "jupyter_server>=2",
   "sqlalchemy>=1.4,<3",
   "psycopg2-binary>=2.9.9",
-  "pyjwt<2",
+  "pyjwt<3",
   "sentry-sdk==2.44.0",
   # matches jupyterlab
   "tornado>=6.2",

@@ -42,6 +42,7 @@ dependencies = [
   # matches jupyterlab
   "tornado>=6.2",
   "tornado-prometheus==0.1.2",
+  "standard-pkg-resources>=1.0.0",
 ]
 
 [project.optional-dependencies]

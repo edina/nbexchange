@@ -11,7 +11,7 @@ services:
       - "9000:9000"
     image: edina/nbexchange:${VERSION:-latest}
   db:
-    image: bitnami/postgresql:16.3.0
+    image: ghcr.io/cloudnative-pg/:16.3.0
     restart: always
     shm_size: 128mb
     volumes:

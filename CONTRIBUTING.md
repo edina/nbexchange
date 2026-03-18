@@ -1,6 +1,6 @@
 # Contributing to nbexchange
 
-We're thrilled you want to contribute to this nbgrader exchange package.
+We're thrilled you  want to contribute to this nbgrader exchange package.
 
 ## Opening an Issue
 

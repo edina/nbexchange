@@ -268,6 +268,56 @@ def test_history_actions_filtered_by_course(app, clear_database):  # noqa: F811
         )
 
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
+        r = yield async_requests.get(app.url + "/history?course_id=course_2b")
+    assert r.status_code == 200
+    response_data = r.json()
+    assert response_data["success"] is True
+    assert "value" in response_data
+    assert response_data["value"] == [
+        {
+            "role": {"Instructor": 1},
+            "user_id": {"1": 1},
+            "assignments": [
+                {
+                    "assignment_id": 2,
+                    "assignment_code": "assign_a2",
+                    "actions": [
+                        {
+                            "action": "AssignmentActions.released",
+                            "path": ANY,
+                            "timestamp": ANY,
+                            "user": "1-kiz",
+                        }
+                    ],
+                    "action_summary": {"released": 1},
+                }
+            ],
+            "isInstructor": True,
+            "course_id": 2,
+            "course_code": "course_2b",
+            "course_title": "A title",
+        },
+    ]
+    shutil.rmtree(app.base_storage_location)
+
+
+# as above, but using the depreciated "course_code" param instead of "course_id" - should work the same
+@pytest.mark.gen_test
+def test_history_actions_filtered_by_course_depreciated_code_param(app, clear_database):  # noqa: F811
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
+        r = yield async_requests.post(
+            app.url + "/assignment?course_id=course_2&assignment_id=assign_a",
+            files=release_files,
+        )
+    user_kiz2_instructor = dict(user_kiz_instructor)  # duplicate, not reference
+    user_kiz2_instructor["course_id"] = "course_2b"
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz2_instructor):
+        r = yield async_requests.post(
+            app.url + "/assignment?course_id=course_2b&assignment_id=assign_a2",
+            files=release_files,
+        )
+
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.get(app.url + "/history?course_code=course_2b")
     assert r.status_code == 200
     response_data = r.json()

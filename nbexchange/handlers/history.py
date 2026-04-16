@@ -20,8 +20,11 @@ This relys on users being logged in, and the user-object having additional data:
 class History(BaseHandler):
     """.../actions/
     parmas:
-        course_id: course_code - optional
+        action: action string - optional. If provided, only returns actions of this type.
+        course_id: course code string - optional
+        course_code: course code string - optional. Depreciated.
 
+    "action string" must be one of the values in nbexchange.models.actions.AssignmentActions
 
     GET: gets list of actions relevent to the user.
 
@@ -83,7 +86,14 @@ class History(BaseHandler):
 
         models = {}
 
-        [action_param, course_code_param] = self.get_params(["action", "course_code"])
+        [action_param, course_id_param, course_code_param] = self.get_params(["action", "course_id", "course_code"])
+        self.log.info("History called")
+        if course_code_param:
+            self.log.info(
+                "History: course_code parameter is deprecated and will be removed in a future release. Please use course_id instead."  # noqa: E501
+            )
+        if course_code_param and not course_id_param:
+            course_id_param = course_code_param
 
         # Python 3.12 required to do "str" in Enum so use __members__ instead
         if action_param and action_param not in AssignmentActions.__members__:
@@ -99,9 +109,9 @@ class History(BaseHandler):
         # Find all the course_codes this user should be able to see
         with scoped_session() as session:
             subscriptions_query = session.query(nbexchange.models.Subscription).filter_by(user_id=this_user["id"])
-            if course_code_param:
+            if course_id_param:
                 subscriptions_query = subscriptions_query.filter(
-                    nbexchange.models.Subscription.course.has(course_code=course_code_param)
+                    nbexchange.models.Subscription.course.has(course_code=course_id_param)
                 )
 
             subscriptions = subscriptions_query.all()

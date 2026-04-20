@@ -26,10 +26,13 @@ ROOT = os.path.dirname(__file__)
 STATIC_FILES_DIR = os.path.join(ROOT, "static")
 
 
-class MockUserHandler(BaseUserHandler):
+class NotAUserHandler(BaseUserHandler):
 
     def get_current_user(self, request):
-        return
+        raise web.HTTPError(
+            status_code=500,
+            reason="This is not a user handler. You must configure a real user handler plugin to use nbexchange.",
+        )
 
 
 flags = {
@@ -123,8 +126,7 @@ Defaults to 'sqlite:///:memory:' (an in-memory SQLite database)
     )
 
     user_plugin_class = Type(
-        MockUserHandler,
-        # NaasUserHandler,
+        NotAUserHandler,
         klass=BaseUserHandler,
         config=True,
         help="The class to use for handling users",
@@ -253,16 +255,19 @@ Defaults to 'sqlite:///:memory:' (an in-memory SQLite database)
         settings = dict(
             log_function=log_request,
             config=self.config,
+            debug=self.debug,
             log=self.log,
             base_url=self.base_url,
             base_storage_location=self.base_storage_location,
             # naas_url=self.naas_url,
             max_buffer_size=self.max_buffer_size,
+            timezone=self.timezone,
+            timestamp_format=self.timestamp_format,
             user_plugin=self.user_plugin_class(),
             version_hash=version_hash,
             xsrf_cookies=False,
-            debug=self.debug,
         )
+
         # allow configured settings to have priority
         settings.update(self.tornado_settings)
         self.log.info(settings)

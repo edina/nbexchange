@@ -30,6 +30,7 @@ def authenticated(method: Callable[..., Optional[Awaitable[None]]]) -> Callable[
     return wrapper
 
 
+# Reminder: `settings` comes from app.py.
 class BaseHandler(web.RequestHandler):
     """An nbexchange base handler"""
 
@@ -40,17 +41,13 @@ class BaseHandler(web.RequestHandler):
         super(BaseHandler, self).__init__(application, request, **kwargs)
         self.set_header("Content-type", "application/json")
 
-    # hard-coded copy of nbgrader.exchange.timezone
-    timezone = "UTC"
-    # @property
-    # def timezone(self):
-    #     return self.settings["timezone"]
+    @property
+    def timezone(self):
+        return self.settings["timezone"]
 
-    # hard-coded copy of nbgrader.exchange.timestamp_format
-    timestamp_format = "%Y-%m-%d %H:%M:%S.%f %Z"
-    # @property
-    # def timestamp_format(self):
-    #     return self.settings['timestamp_format']
+    @property
+    def timestamp_format(self):
+        return self.settings["timestamp_format"]
 
     def get_timestamp(self) -> datetime:
         tz = gettz(self.timezone)

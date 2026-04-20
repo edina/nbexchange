@@ -32,3 +32,4 @@ This is the sequence, as of 2025-01-15, is:
 | bfe19408f64f_add_full_name_to_user | bfe19408f64f | f3345539f08d |
 | 2021-08-20-15-24-21_change_subscription_column_width | 2540572282f2 | bfe19408f64f |
 | 2024093001_add_emal_and_lms_to_user | 2024093001 | 2540572282f2 |
+| 2026-04-17_make_timestamps_timezone_aware | 2026041701 | 2024093001 |

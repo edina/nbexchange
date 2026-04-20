@@ -19,10 +19,18 @@ logger.setLevel(logging.ERROR)
 class TestHandlersFetch(BaseTestHandlers):
     """GET /assignments (list assignments)"""
 
-    # require authenticated user (404 because the bounce to login fails)
+    # require authentication method
     @pytest.mark.gen_test
-    def test_assignments0(self, app):
-        r = yield async_requests.get(app.url + "/assignments")
+    def test_post_missing_authenticator(self, app):
+        r = yield async_requests.post(app.url + "/submission")
+        assert r.status_code == 500
+        assert "<html><title>500: This is not a user handler." in r.text
+
+    # require authenticated user
+    @pytest.mark.gen_test
+    def test_post_403_if_not_authenticated(self, app):
+        with patch.object(BaseHandler, "get_current_user", return_value={}):
+            r = yield async_requests.post(app.url + "/submission")
         assert r.status_code == 403
 
     # Requires a course_id param

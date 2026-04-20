@@ -55,6 +55,14 @@ def test_get_submission_501_even_authenticated(app):
 #################################
 
 
+# require authentication method
+@pytest.mark.gen_test
+def test_post_missing_authenticator(app):
+    r = yield async_requests.post(app.url + "/submission")
+    assert r.status_code == 500
+    assert "<html><title>500: This is not a user handler." in r.text
+
+
 # require authenticated user
 @pytest.mark.gen_test
 def test_post_403_if_not_authenticated(app):

@@ -60,10 +60,19 @@ def test_post_collection_is_501_even_authenticaated(app, clear_database):  # noq
 #################################
 
 
+# require authentication method
+@pytest.mark.gen_test
+def test_post_missing_authenticator(app):
+    r = yield async_requests.post(app.url + "/submission")
+    assert r.status_code == 500
+    assert "<html><title>500: This is not a user handler." in r.text
+
+
 # require authenticated user
 @pytest.mark.gen_test
-def test_get_collection_requires_authentication(app, clear_database):  # noqa: F811
-    r = yield async_requests.get(app.url + "/collection")
+def test_post_403_if_not_authenticated(app):
+    with patch.object(BaseHandler, "get_current_user", return_value={}):
+        r = yield async_requests.post(app.url + "/submission")
     assert r.status_code == 403
 
 

@@ -149,6 +149,8 @@ For the exchange to determine how to handle a connection, it needs some details 
 
 You need to write this method for your own application.
 
+If you do not, the server will raise an internal exception, and fail with an HTTP-500 error.
+
 Notice that the example above creates the class that provides the method in the config file.
 
 See below for more details on that.
@@ -159,7 +161,7 @@ This is the url the service listens to. It is essentially the _service_ url used
 
 - **`base_storage_location`**
 
-This is where the exchange will store the files uploaded, and defaults to `/tmp/courses`
+This is where the exchange will store the files uploaded, and defaults to `/tmp/nbexchange_data`
 
 - **`db_url`**
 
@@ -168,6 +170,19 @@ This is the database connector, and defaults to an in-memory SQLite (`sqlite:///
 - **`db_kwargs`** 
 
 Where to include any kwargs to pass to the database connection.
+
+- **`timezone`**
+
+Format string for timestamps. Defaults to `UTC`.
+
+This really needs to match whatever you define in `Exchange.timezone` in the jupyter notebook-server.
+
+- **`timestamp_format`**
+
+The timezone the exchange operates in. Defaults to `'%Y-%m-%d %H:%M:%S.%f %Z'`.
+
+This really needs to match whatever you define in `Exchange.timestamp_format` in the jupyter notebook-server.
+
 
 - **`max_buffer_size`**
 

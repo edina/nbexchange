@@ -6,6 +6,7 @@ from dateutil.tz import gettz
 from sqlalchemy import Column, DateTime, Enum, ForeignKey, Integer, Unicode
 from sqlalchemy.orm import relationship, validates
 
+from nbexchange.config import Config
 from nbexchange.models import Base
 
 
@@ -46,8 +47,7 @@ class Action(Base):
 
     """
 
-    time_zone = "UTC"  # How to get this from a central configuration??
-    tz = gettz(time_zone)
+    tz = gettz(Config.get("timezone"))
 
     __tablename__ = "action"
 
@@ -109,5 +109,5 @@ class Action(Base):
     @validates("timestamp")  # a datetime object, need to ensure it's returned with a timezone!
     def validate_timestamp(self, key, value):
         if value.tzinfo is None or value.tzinfo.utcoffset(value) is None:
-            value = value.replace(tzinfo=ZoneInfo(self.time_zone))
+            value = value.replace(tzinfo=ZoneInfo(Config.get("timezone")))
         return value

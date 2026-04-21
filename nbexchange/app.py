@@ -25,16 +25,6 @@ from nbexchange.handlers.auth.user_handler import BaseUserHandler
 ROOT = os.path.dirname(__file__)
 STATIC_FILES_DIR = os.path.join(ROOT, "static")
 
-
-class NotAUserHandler(BaseUserHandler):
-
-    def get_current_user(self, request):
-        raise web.HTTPError(
-            status_code=500,
-            reason="This is not a user handler. You must configure a real user handler plugin to use nbexchange.",
-        )
-
-
 flags = {
     "debug": (
         {"Application": {"log_level": logging.DEBUG}},
@@ -49,6 +39,15 @@ flags = {
         """,
     ),
 }
+
+
+class NotAUserHandler(BaseUserHandler):
+
+    def get_current_user(self, request):
+        raise web.HTTPError(
+            status_code=500,
+            reason="This is not a user handler. You must configure a real user handler plugin to use nbexchange.",
+        )
 
 
 class NbExchange(PrometheusMixIn, Application):
@@ -305,6 +304,12 @@ Defaults to 'sqlite:///:memory:' (an in-memory SQLite database)
         self.load_config_file(self.config_file)
         if self.subapp:
             return
+
+        # Initialize configuration
+        from .config import Config
+
+        Config.initialize(timezone=self.timezone, timestamp_format=self.timestamp_format)
+
         logging.info(f"app.initialisze - db_url: {self.db_url}")
         self.init_db()
         logging.info("app.initialisze init_db completed")

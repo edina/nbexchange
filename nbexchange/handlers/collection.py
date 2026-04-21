@@ -125,6 +125,7 @@ class Collections(BaseHandler):
                         "path": action.location,
                         # 'name' in db, 'notebook_id' id nbgrader
                         "notebooks": [{"notebook_id": x.name} for x in assignment.notebooks],
+                        # This timestamp should be the same as the one in the submission timestamp.txt file.
                         "timestamp": self.check_timezone(action.timestamp).strftime(self.timestamp_format),
                     }
                 )

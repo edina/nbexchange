@@ -76,6 +76,16 @@ There are the following assumptions:
 
 ![Diagram of table relationships](table_relationships.png)
 
+**IMPORTANT**
+
+- `action.timestamp` is deliberately set to whatever the value in a submissions `timestamp.txt` file contains - this is how we can tie an action to a submission.
+- `feedback.timestamp` is deliberately set to match whatever value `action.timrstamp` is - this is how we can tie a piece of feedback to a submission
+- `feedback.created_at` is always a UTC time
+
+Note that nbexchange (internally) doesn't really care about timezones - for the most part it is given times to store as part of a POST request, and returns the same.
+
+The time _stamp_, the string representation of that time, **does** need to match what it defined in the jupyterlab Exchange plugins.
+  
 # Installing
 
 nbexchange is a two-part system: it requires

@@ -55,7 +55,8 @@ class Submission(BaseHandler):
             self.finish({"success": False, "note": note})
             return
 
-        # If this happens, then any feedback isn't going to sync with this submission
+        # submission is supposed to include a timestamp, but if it doesn't, we'll set it to now() and log a warning.
+        # Reminder: the timestamp is used to determine which feedback files tie to the submission.
         if not timestamp:
             timestamp = self.get_timestamp()
             note = f"Submission was posted without a timestamp. We've set it to {timestamp}, but feedback will not sync to this."  # noqa: E501

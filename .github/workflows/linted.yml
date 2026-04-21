@@ -20,6 +20,6 @@ jobs:
       run: pip install .
     - name: Lint with black
       run: |
-        pip install black
+        pip install black==26.3.1
         # stop the build if it's not linted as per black
-        black --check --diff nbexchange/
+        black --target-version py312 --check --diff nbexchange/

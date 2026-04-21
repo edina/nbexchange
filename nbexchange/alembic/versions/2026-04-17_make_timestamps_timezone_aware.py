@@ -50,14 +50,12 @@ def upgrade():
 
     # Check if the current type is TIMESTAMP WITHOUT TIMEZONE
     if isinstance(column_type, sa.TIMESTAMP) and not column_type.timezone:
-        op.execute(
-            """
+        op.execute("""
             ALTER TABLE action
             ALTER COLUMN timestamp
             TYPE TIMESTAMP WITH TIME ZONE
             USING timestamp AT TIME ZONE 'UTC'
-        """
-        )
+        """)
     else:
         raise Exception("Migration aborted: the column type is not TIMESTAMP WITHOUT TIMEZONE")
 

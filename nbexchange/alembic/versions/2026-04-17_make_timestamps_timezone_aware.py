@@ -57,7 +57,7 @@ def upgrade():
             USING timestamp AT TIME ZONE 'UTC'
         """)
     else:
-        raise Exception("Migration aborted: the column type is not TIMESTAMP WITHOUT TIMEZONE")
+        pass
 
 
 def downgrade():

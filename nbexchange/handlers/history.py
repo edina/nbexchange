@@ -85,9 +85,8 @@ class History(BaseHandler):
     def get(self):
 
         models = {}
-
         [action_param, course_id_param, course_code_param] = self.get_params(["action", "course_id", "course_code"])
-        self.log.info("History called")
+
         if course_code_param:
             self.log.info(
                 "History: course_code parameter is deprecated and will be removed in a future release. Please use course_id instead."  # noqa: E501
@@ -109,13 +108,12 @@ class History(BaseHandler):
         # Find all the course_codes this user should be able to see
         with scoped_session() as session:
             subscriptions_query = session.query(nbexchange.models.Subscription).filter_by(user_id=this_user["id"])
-            if course_id_param:
+            if course_id_param and course_id_param != "moot":
                 subscriptions_query = subscriptions_query.filter(
                     nbexchange.models.Subscription.course.has(course_code=course_id_param)
                 )
 
             subscriptions = subscriptions_query.all()
-            self.log.debug(f"History rows: {subscriptions}")
 
             for subscription in subscriptions:
                 if subscription.course.id not in models:

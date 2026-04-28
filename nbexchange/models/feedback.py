@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, Unicode
@@ -27,7 +27,7 @@ class Feedback(Base):
     location = Column(Unicode(200), nullable=True)  # Location for the file of this action
     checksum = Column(Unicode(200), nullable=True)  # Checksum for the feedback file
     timestamp = Column(DateTime(timezone=True), nullable=False)
-    created_at = Column(DateTime(timezone=True), default=datetime.now(ZoneInfo("UTC")))
+    created_at = Column(DateTime(timezone=True), default=datetime.now(timezone.utc))
 
     # relationships: a specific piece of feedback is for a specific notebook, for a specific
     # student and a specific instructor

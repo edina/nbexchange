@@ -1,5 +1,6 @@
 import os
 import uuid
+from datetime import datetime, timezone
 
 from dateutil import parser
 from tornado import web
@@ -55,12 +56,15 @@ class Submission(BaseHandler):
             self.finish({"success": False, "note": note})
             return
 
-        # submission is supposed to include a timestamp, but if it doesn't, we'll set it to now() and log a warning.
+        # submission is supposed to include a timestamp _string_. If it doesn't, create it and log a warning.
         # Reminder: the timestamp is used to determine which feedback files tie to the submission.
         if not timestamp:
-            timestamp = self.get_timestamp()
+            timestamp = datetime.now(timezone.utc)
             note = f"Submission was posted without a timestamp. We've set it to {timestamp}, but feedback will not sync to this."  # noqa: E501
             self.log.info(note)
+        else:
+            # validate timestamp: convert to datetime object & ensure it's got a timezone
+            timestamp = self.check_timezone(parser.parse(timestamp))
 
         this_user = self.nbex_user
 
@@ -82,9 +86,6 @@ class Submission(BaseHandler):
                 self.log.info(note)
                 self.finish({"success": False, "note": note})
                 return
-
-            # validate timestamp: convert to datetime object & ensure it's got a timezone
-            timestamp = self.check_timezone(parser.parse(timestamp))
 
             # storage is dynamically in $path/submitted/$course_code/$assignment_code/$username/<timestamp>/
             # Note - this means that a user can submit multiple times, and we have all copies
@@ -154,6 +155,7 @@ class Submission(BaseHandler):
             )
 
             # The action timestamp _must_ be the same value as in the timestamp.txt file in the submission
+            # if feedback is to be correctly linked to this submission.
             action = Action(
                 user_id=this_user["id"],
                 assignment_id=assignment.id,

@@ -5,7 +5,6 @@ from typing import Awaitable, Callable, Optional
 from urllib.parse import unquote, unquote_plus
 from zoneinfo import ZoneInfo
 
-from dateutil.tz import gettz
 from tornado import web
 from tornado.log import app_log
 
@@ -48,11 +47,6 @@ class BaseHandler(web.RequestHandler):
     @property
     def timestamp_format(self):
         return self.settings["timestamp_format"]
-
-    def get_timestamp(self) -> datetime:
-        tz = gettz(self.timezone)
-        timestamp = datetime.now(tz).strftime(self.timestamp_format)
-        return timestamp
 
     def check_timezone(self, value: datetime) -> datetime:
         if value.tzinfo is None or value.tzinfo.utcoffset(value) is None:

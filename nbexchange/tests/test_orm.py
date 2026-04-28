@@ -505,7 +505,7 @@ def test_action_object_creation_errors(db, course_strange, assignment_tree, user
     db.commit()
 
 
-def test_action_base_mathods_and_find_by_pk(db, assignment_tree, user_johaannes):
+def test_action_base_methods_and_find_by_pk(db, assignment_tree, user_johaannes):
     # subscription set up earlier
     release_file = "/some/random/path/to/a/file.tzg"
 

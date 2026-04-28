@@ -1,11 +1,9 @@
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-from dateutil.tz import gettz
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, Unicode
 from sqlalchemy.orm import relationship, validates
 
-from nbexchange.config import Config
 from nbexchange.models import Base
 from nbexchange.models.notebooks import Notebook
 
@@ -29,7 +27,7 @@ class Feedback(Base):
     location = Column(Unicode(200), nullable=True)  # Location for the file of this action
     checksum = Column(Unicode(200), nullable=True)  # Checksum for the feedback file
     timestamp = Column(DateTime(timezone=True), nullable=False)
-    created_at = Column(DateTime(timezone=True), default=datetime.now(gettz("UTC")))
+    created_at = Column(DateTime(timezone=True), default=datetime.now(ZoneInfo("Etc/UTC")))
 
     # relationships: a specific piece of feedback is for a specific notebook, for a specific
     # student and a specific instructor
@@ -102,5 +100,5 @@ class Feedback(Base):
     @validates("timestamp")  # a datetime object, need to ensure it's returned with a timezone!
     def validate_timestamp(self, key, value):
         if value.tzinfo is None or value.tzinfo.utcoffset(value) is None:
-            value = value.replace(tzinfo=ZoneInfo(Config.get("timezone")))
+            value = value.replace(tzinfo=ZoneInfo("Etc/UTC"))
         return value

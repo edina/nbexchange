@@ -11,12 +11,10 @@ User -> Course -> Subscription -> Assignment -> Action -> Notebook -> Feedback
 """
 
 import pytest
-from mock import patch
 from sqlalchemy.exc import IntegrityError
 
 # NOTE: All objects & relationships that are built up remain until the end of
 # the test-run.
-from nbexchange.config import Config
 from nbexchange.models.actions import Action, AssignmentActions
 from nbexchange.models.assignments import Assignment as AssignmentModel
 from nbexchange.models.courses import Course
@@ -146,11 +144,6 @@ def assignment_a2ovi(db):
         db.add(orm_thing)
         db.commit()
     return orm_thing
-
-
-@pytest.fixture
-def mock_config(timezone="UTC", timestamp_format="%Y-%m-%d %H:%M:%S.%f %Z"):
-    return Config.initialize(timezone=timezone, timestamp_format=timestamp_format)
 
 
 # ## User tests
@@ -698,8 +691,7 @@ def test_notebook_find_all(db, assignment_tree):
 
 # notebook and action previously added, so we can use those
 # kylee = instructor, johaanes = student
-@patch("nbexchange.models.feedback.Config", Config)
-def test_feedback_base_methods_and_find_by_pk(db, assignment_tree, user_kaylee, user_johaannes, mock_config):
+def test_feedback_base_methods_and_find_by_pk(db, assignment_tree, user_kaylee, user_johaannes):
 
     # previous subscriptions & notebooks still in the db
     notebook = Notebook.find_by_name(db, "Exam 2", assignment_tree.id)

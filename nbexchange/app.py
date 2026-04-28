@@ -3,10 +3,9 @@ import os
 import sys
 from datetime import datetime
 from getpass import getuser
+from urllib.parse import urljoin
 
 import sentry_sdk
-from jupyter_server.log import log_request
-from jupyter_server.utils import url_path_join as ujoin
 from sentry_sdk.integrations.tornado import TornadoIntegration
 from sqlalchemy.exc import OperationalError
 from tornado import web
@@ -166,7 +165,7 @@ Defaults to 'sqlite:///:memory:' (an in-memory SQLite database)
         """add a url prefix to handlers"""
         for i, tup in enumerate(handlers):
             lis = list(tup)
-            lis[0] = ujoin(prefix, tup[0])
+            lis[0] = urljoin(prefix, tup[0])
             handlers[i] = tuple(lis)
 
         return handlers
@@ -252,7 +251,6 @@ Defaults to 'sqlite:///:memory:' (an in-memory SQLite database)
             version_hash = datetime.now().strftime("%Y%m%d%H%M%S")
 
         settings = dict(
-            log_function=log_request,
             config=self.config,
             debug=self.debug,
             log=self.log,
@@ -278,8 +276,11 @@ Defaults to 'sqlite:///:memory:' (an in-memory SQLite database)
 
         for handler in handlers.default_handlers:
             for url in handler.urls:
-                self.handlers.append((ujoin(self.base_url, url), handler))
-
+                # urljoin hiccups if the url is just '/', so we need to handle that case separately
+                if url == "/":
+                    self.handlers.append((self.base_url, handler))
+                else:
+                    self.handlers.append((urljoin(self.base_url, url), handler))
         self.handlers.append((r"/metrics", MetricsHandler))
 
         self.handlers.append((r".*", base.Template404))
@@ -304,11 +305,6 @@ Defaults to 'sqlite:///:memory:' (an in-memory SQLite database)
         self.load_config_file(self.config_file)
         if self.subapp:
             return
-
-        # Initialize configuration
-        from .config import Config
-
-        Config.initialize(timezone=self.timezone, timestamp_format=self.timestamp_format)
 
         logging.info(f"app.initialisze - db_url: {self.db_url}")
         self.init_db()

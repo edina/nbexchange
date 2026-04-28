@@ -10,7 +10,6 @@ A dockerised service that replaces the default nbgrader Exchange.
 - [Installing](#installing)
   - [nbexchange service](#nbexchange-service)
     - [Helm](#helm)
-  - [nbgrader jlab plugin](#nbgrader-jlab-plugin)
 - [Configuration](#configuration)
   - [Configuring the `nbexchange` service](#configuring-the-nbexchange-service)
     - [**`user_plugin_class`** revisited](#user_plugin_class-revisited)
@@ -29,8 +28,7 @@ The default for nbgrader is to assume all users are on the same computer, and fi
 When using jupyter notebooks in a distributed [dockerised] system, there is no common filesystem - so an alternative mechanism is needed - something that allows files to be transfered via some independant service - eg: 
 ![exchange mechanism in a dockerised environment](dockerised_exchange.png) 
 
-nbexchange provides that intermediate filestore that is covered by this project. The plugins for nbgrader to use this exchange service are provided by a separate project:
-[nbexchange_jlab_plugin](https://github.com/edina/nbexchange_jlab_plugin)
+nbexchange provides that intermediate filestore that is covered by this project. The plugins for nbgrader to use this exchange service are provided by the separate [nbexchange-jlab-plugin project](https://github.com/edina/nbexchange-jlab-plugin)
 
 # Why nbexchange
 
@@ -40,17 +38,17 @@ The exchange is responsible for recieving _release_/_fetch_ path, and _submit_/_
 
 In doing this, the exchange is the authoritative place to get a list of what's what.
 
-`nbexchange` is an external exchange plugin, designed to be run as a docker instance (probably inside a K8 cluster)
+`nbexchange` is an external exchange service, designed to be run as a docker instance (probably inside a K8 cluster)
 
 It's provides an external store for released & submitted assignments, and the feeback cycle.
 
 Following the lead of other Jupyter services, it is a `tornado` application.
 
-The team that created the inital code use nbexchange in a cloud environment, with multiple organisations using a central exchange service. Courses [and this assignments] are differentiated using an `org_id` - if you do not need this feature, just set it to `1` for everthing.
+The team that created the inital code use nbexchange in a cloud environment, with multiple organisations using a central exchange service. Courses [and thus assignments] are differentiated using an `org_id` - if you do not need this feature, effectively ignore it as it defaults to `1`.
 
 ## Compatibility
 
-This version installs `nbgrader`  0.9.5 (which makes it compatible with JupyterLab & Notebook 7)
+This version matches the exchange APIs for `nbgrader`  0.9.5 (which makes it compatible with JupyterLab & Notebook 7)
 
 # Documentation
 
@@ -70,7 +68,7 @@ There are the following assumptions:
     - Note that default nbgrader does not distinguish `assignment_code`s across different `course_codes`, within the same `gradebook` database.
 - There will always be an `organisation_id`
   - `course_code`s must be uniqie within an `organisation_id`,
-  - `course_code`s may be repeated in different `organisation_id`
+  - `course_code`s may be repeated across different `organisation_id`
 
 ## Database relationships
 
@@ -79,10 +77,12 @@ There are the following assumptions:
 **IMPORTANT**
 
 - `action.timestamp` is deliberately set to whatever the value in a submissions `timestamp.txt` file contains - this is how we can tie an action to a submission.
+  - This value should be one of the parameters passed in from the client
 - `feedback.timestamp` is deliberately set to match whatever value `action.timrstamp` is - this is how we can tie a piece of feedback to a submission
-- `feedback.created_at` is always a UTC time
+  - This value should be one of the parameters passed in from the client
+- all other `action.timestamp`, and `feedback.created_at`, entries are _now(UTC)_ 
 
-Note that nbexchange (internally) doesn't really care about timezones - for the most part it is given times to store as part of a POST request, and returns the same.
+Internally, nbexchange doesn't care about timezones - unless it's specticially given a datetime, it uses UTC.
 
 The time _stamp_, the string representation of that time, **does** need to match what it defined in the jupyterlab Exchange plugins.
   
@@ -105,18 +105,6 @@ The service can be deployed via `helm`, ie
 ```
 helm install --name nbexchange --namespace default ./chart -f myconfiguration.yaml
 ```
-
-## nbgrader jlab plugin
-
-Installing nbexchange in a jupyter notebook will automatically install nbgrader.
-
-nbexchange is not released to Pypy or anaconda, however you can install direct from GitHub - eg:
-
-```
-pip install https://github.com/edina/nbexchange_jlab_plugin/archive/refs/tags/v0.2.2-beta.tar.gz
-```
-
-Note that nbgrader installs and enables the jupyter extensions automatically - you may wish to switch *off* `formgrader` and `create_assignment` for non-teachers: YMMV
 
 # Configuration
 
@@ -218,10 +206,11 @@ For the exchange to work, it needs some details about the user connecting to it 
   - This is an nbgrader field, nbexchange doesn't use it itself
 - `lms_user_id`: This is the identifier for the user in the LMS/VLE, if supplied by the remote authenticator.
   - This is an nbgrader field, nbexchange doesn't use it itself
-  - _username_ to access the system running notebooks is probably not the same as the ID the LMS uses to idnetify the user.
+  - The _username_ to access the system running notebooks is probably not the same as the ID the LMS uses to idnetify the user.
+  - This field is needed for things like LTI Assignments and grade services
 - `course_id`: The course code as used in nbgrader (eg `cool course`). 
   - This is `course_id` not `course_code`, as nbgrader uses `course_id` for this piece of data.
-  - Note that any of the characters `{}(){}/\` will give nbgrader a problem [beyond nbexchange]
+  - Note that any of the characters `?+*{}()[]/\` will give nbgrader a problem [beyond nbexchange]
 - `course_title`: A long name for the course (eg `A course of understanding thermondynamics in bulk refrigerant transport`).
 - `course_role`: The role of the user, normally `Student` or `Instructor`. (currently only `Instructor` get privilaged actions).
 - `org_id`: As mentioned above, nbexchange divides courses and users across organisations. This is an id (numeric) for the org_id for the user. It defaults to `1` if not given.

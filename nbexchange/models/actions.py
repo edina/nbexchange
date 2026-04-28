@@ -2,11 +2,9 @@ import enum
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-from dateutil.tz import gettz
 from sqlalchemy import Column, DateTime, Enum, ForeignKey, Integer, Unicode
 from sqlalchemy.orm import relationship, validates
 
-from nbexchange.config import Config
 from nbexchange.models import Base
 
 
@@ -47,8 +45,6 @@ class Action(Base):
 
     """
 
-    tz = gettz(Config.get("timezone"))
-
     __tablename__ = "action"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -57,7 +53,7 @@ class Action(Base):
     action = Column(Enum(AssignmentActions), nullable=False, index=True)
     location = Column(Unicode(200), nullable=True)  # Location for the file of this action
     checksum = Column(Unicode(200), nullable=True)  # Checksum for the saved file
-    timestamp = Column(DateTime(timezone=True), default=datetime.now(tz))
+    timestamp = Column(DateTime(timezone=True), default=datetime.now(ZoneInfo("Etc/UTC")))
 
     # These are the relationship handles: a specific subscription has a single user to a single course
     user = relationship("User", back_populates="actions")
@@ -109,5 +105,5 @@ class Action(Base):
     @validates("timestamp")  # a datetime object, need to ensure it's returned with a timezone!
     def validate_timestamp(self, key, value):
         if value.tzinfo is None or value.tzinfo.utcoffset(value) is None:
-            value = value.replace(tzinfo=ZoneInfo(Config.get("timezone")))
+            value = value.replace(tzinfo=ZoneInfo("Etc/UTC"))
         return value

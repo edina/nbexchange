@@ -82,11 +82,11 @@ Defaults to '/services/nbexchange/'
     )
 
     base_storage_location = Unicode(
-        "/tmp/courses",
+        "/tmp/nbexchange_data",
         config=True,
         help="""
 Where the exchange stores the files uploaded.
-Defaults to '/tmp/courses'
+Defaults to '/tmp/nbexchange_data'
 """,
     )
 

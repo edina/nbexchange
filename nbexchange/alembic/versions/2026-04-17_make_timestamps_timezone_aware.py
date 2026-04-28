@@ -1,27 +1,5 @@
 """Ensure all timestamps are timezone aware
 
-At the time this migration was created, this is the state across three databases:
-
-developer-environment:
-- action.timestamp : TIMESTAMP WITH TIMEZONE
-- feedback_2.timestamp : TIMESTAMP WITH TIMEZONE
-- feedback_2.created_at : TIMESTAMP WITH TIMEZONE
-
-dev:
-- action.timestamp : TIMESTAMP WITH TIMEZONE
-- feedback_2.timestamp : TIMESTAMP WITH TIMEZONE
-- feedback_2.created_at : TIMESTAMP WITH TIMEZONE
-
-beta:
-- action.timestamp : TIMESTAMP WITHOUT TIMEZONE
-- feedback_2.timestamp : TIMESTAMP WITH TIMEZONE
-- feedback_2.created_at : TIMESTAMP WITH TIMEZONE
-
-prod:
-- action.timestamp : TIMESTAMP WITHOUT TIMEZONE
-- feedback_2.timestamp : TIMESTAMP WITH TIMEZONE
-- feedback_2.created_at : TIMESTAMP WITH TIMEZONE
-
 Revision ID: 2026041701
 Revises: 2024093001
 Create Date: 2026-04-17 08:25

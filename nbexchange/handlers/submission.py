@@ -37,14 +37,6 @@ class Submission(BaseHandler):
     # This is a student submitting an assignment, not an instructor "release"
     @authenticated
     def post(self):
-        # if "Content-Length" in self.request.headers and int(self.request.headers["Content-Length"]) > int(
-        #     self.max_buffer_size
-        # ):
-        #     note = "File upload oversize, and rejected. Please reduce the files in your submission and try again."
-        #     self.log.info(note)
-        #     self.finish({"success": False, "note": note})
-        #     return
-
         [course_code, assignment_code, timestamp] = self.get_params(["course_id", "assignment_id", "timestamp"])
         self.log.debug(
             f"Called POST /submission with arguments: course {course_code} and ",
@@ -58,13 +50,18 @@ class Submission(BaseHandler):
 
         # submission is supposed to include a timestamp _string_. If it doesn't, create it and log a warning.
         # Reminder: the timestamp is used to determine which feedback files tie to the submission.
+        try:
+            timestamp = parser.parse(timestamp)
+        except Exception:
+            pass
+
         if not timestamp:
             timestamp = datetime.now(timezone.utc)
             note = f"Submission was posted without a timestamp. We've set it to {timestamp}, but feedback will not sync to this."  # noqa: E501
             self.log.info(note)
         else:
-            # validate timestamp: convert to datetime object & ensure it's got a timezone
-            timestamp = self.check_timezone(parser.parse(timestamp))
+            # validate given timestamp string: convert to datetime object & ensure it's got a timezone
+            timestamp = self.check_timezone(timestamp)
 
         this_user = self.nbex_user
 

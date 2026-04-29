@@ -3,10 +3,9 @@ import os
 import sys
 from datetime import datetime
 from getpass import getuser
+from urllib.parse import urljoin
 
 import sentry_sdk
-from jupyter_server.log import log_request
-from jupyter_server.utils import url_path_join as ujoin
 from sentry_sdk.integrations.tornado import TornadoIntegration
 from sqlalchemy.exc import OperationalError
 from tornado import web
@@ -25,13 +24,6 @@ from nbexchange.handlers.auth.user_handler import BaseUserHandler
 ROOT = os.path.dirname(__file__)
 STATIC_FILES_DIR = os.path.join(ROOT, "static")
 
-
-class MockUserHandler(BaseUserHandler):
-
-    def get_current_user(self, request):
-        return
-
-
 flags = {
     "debug": (
         {"Application": {"log_level": logging.DEBUG}},
@@ -46,6 +38,15 @@ flags = {
         """,
     ),
 }
+
+
+class NotAUserHandler(BaseUserHandler):
+
+    def get_current_user(self, request):
+        raise web.HTTPError(
+            status_code=500,
+            reason="This is not a user handler. You must configure a real user handler plugin to use nbexchange.",
+        )
 
 
 class NbExchange(PrometheusMixIn, Application):
@@ -81,11 +82,11 @@ Defaults to '/services/nbexchange/'
     )
 
     base_storage_location = Unicode(
-        "/tmp/courses",
+        "/tmp/nbexchange_data",
         config=True,
         help="""
 Where the exchange stores the files uploaded.
-Defaults to '/tmp/courses'
+Defaults to '/tmp/nbexchange_data'
 """,
     )
 
@@ -123,8 +124,7 @@ Defaults to 'sqlite:///:memory:' (an in-memory SQLite database)
     )
 
     user_plugin_class = Type(
-        MockUserHandler,
-        # NaasUserHandler,
+        NotAUserHandler,
         klass=BaseUserHandler,
         config=True,
         help="The class to use for handling users",
@@ -165,7 +165,7 @@ Defaults to 'sqlite:///:memory:' (an in-memory SQLite database)
         """add a url prefix to handlers"""
         for i, tup in enumerate(handlers):
             lis = list(tup)
-            lis[0] = ujoin(prefix, tup[0])
+            lis[0] = urljoin(prefix, tup[0])
             handlers[i] = tuple(lis)
 
         return handlers
@@ -251,18 +251,20 @@ Defaults to 'sqlite:///:memory:' (an in-memory SQLite database)
             version_hash = datetime.now().strftime("%Y%m%d%H%M%S")
 
         settings = dict(
-            log_function=log_request,
             config=self.config,
+            debug=self.debug,
             log=self.log,
             base_url=self.base_url,
             base_storage_location=self.base_storage_location,
             # naas_url=self.naas_url,
             max_buffer_size=self.max_buffer_size,
+            timezone=self.timezone,
+            timestamp_format=self.timestamp_format,
             user_plugin=self.user_plugin_class(),
             version_hash=version_hash,
             xsrf_cookies=False,
-            debug=self.debug,
         )
+
         # allow configured settings to have priority
         settings.update(self.tornado_settings)
         self.log.info(settings)
@@ -274,8 +276,11 @@ Defaults to 'sqlite:///:memory:' (an in-memory SQLite database)
 
         for handler in handlers.default_handlers:
             for url in handler.urls:
-                self.handlers.append((ujoin(self.base_url, url), handler))
-
+                # urljoin hiccups if the url is just '/', so we need to handle that case separately
+                if url == "/":
+                    self.handlers.append((self.base_url, handler))
+                else:
+                    self.handlers.append((urljoin(self.base_url, url), handler))
         self.handlers.append((r"/metrics", MetricsHandler))
 
         self.handlers.append((r".*", base.Template404))
@@ -300,6 +305,7 @@ Defaults to 'sqlite:///:memory:' (an in-memory SQLite database)
         self.load_config_file(self.config_file)
         if self.subapp:
             return
+
         logging.info(f"app.initialisze - db_url: {self.db_url}")
         self.init_db()
         logging.info("app.initialisze init_db completed")

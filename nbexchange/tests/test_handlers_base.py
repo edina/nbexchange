@@ -24,4 +24,10 @@ class TestHandlersBasic(BaseTestHandlers):
 
     def test_base_location_story(self, app):
         # Not "/services/nbexchange/", the tests move it
-        assert app.base_storage_location in ["/tmp/exchange/", "/tmp/courses"]
+        assert app.base_storage_location in ["/tmp/nbexchange_data", "/tmp/courses"]
+
+    @pytest.mark.gen_test
+    def test_assignments0(self, app, caplog):
+        r = yield async_requests.get(app.url + "/assignments")
+        assert r.status_code == 500
+        assert "<html><title>500: This is not a user handler." in r.text

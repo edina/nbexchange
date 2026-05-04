@@ -505,7 +505,7 @@ def test_action_object_creation_errors(db, course_strange, assignment_tree, user
     db.commit()
 
 
-def test_action_base_mathods_and_find_by_pk(db, assignment_tree, user_johaannes):
+def test_action_base_methods_and_find_by_pk(db, assignment_tree, user_johaannes):
     # subscription set up earlier
     release_file = "/some/random/path/to/a/file.tzg"
 
@@ -606,9 +606,7 @@ def test_action_can_restrict_assignment_searches(db, assignment_tree):
 
 # ## Notebook tests
 # Remember Users, Courses, Subscriptions, Assignments, and Actions are already in the DB
-
-
-def test_notebook_base_mathods_and_find_by_pk(db, assignment_tree):
+def test_notebook_base_methods_and_find_by_pk(db, assignment_tree):
     # name is required
     orm_notebook = Notebook(
         # name="Test 1",
@@ -691,8 +689,10 @@ def test_notebook_find_all(db, assignment_tree):
     assert len(found_all_for_assignment) == 2
 
 
+# notebook and action previously added, so we can use those
 # kylee = instructor, johaanes = student
-def test_feedback_base_mathods_and_find_by_pk(db, assignment_tree, user_kaylee, user_johaannes):
+def test_feedback_base_methods_and_find_by_pk(db, assignment_tree, user_kaylee, user_johaannes):
+
     # previous subscriptions & notebooks still in the db
     notebook = Notebook.find_by_name(db, "Exam 2", assignment_tree.id)
     released = Action.find_most_recent_action(db, assignment_tree.id, AssignmentActions.released)

@@ -1,8 +1,7 @@
 import enum
-from datetime import datetime
+from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 
-from dateutil.tz import gettz
 from sqlalchemy import Column, DateTime, Enum, ForeignKey, Integer, Unicode
 from sqlalchemy.orm import relationship, validates
 
@@ -46,9 +45,6 @@ class Action(Base):
 
     """
 
-    time_zone = "UTC"  # How to get this from a central configuration??
-    tz = gettz(time_zone)
-
     __tablename__ = "action"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -57,7 +53,7 @@ class Action(Base):
     action = Column(Enum(AssignmentActions), nullable=False, index=True)
     location = Column(Unicode(200), nullable=True)  # Location for the file of this action
     checksum = Column(Unicode(200), nullable=True)  # Checksum for the saved file
-    timestamp = Column(DateTime(timezone=True), default=datetime.now(tz))
+    timestamp = Column(DateTime(timezone=True), default=datetime.now(timezone.utc))
 
     # These are the relationship handles: a specific subscription has a single user to a single course
     user = relationship("User", back_populates="actions")
@@ -109,5 +105,5 @@ class Action(Base):
     @validates("timestamp")  # a datetime object, need to ensure it's returned with a timezone!
     def validate_timestamp(self, key, value):
         if value.tzinfo is None or value.tzinfo.utcoffset(value) is None:
-            value = value.replace(tzinfo=ZoneInfo(self.time_zone))
+            value = value.replace(tzinfo=ZoneInfo("UTC"))
         return value

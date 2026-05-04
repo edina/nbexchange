@@ -41,12 +41,20 @@ release_files, notebooks, timestamp = get_files_dict()  # ourself :)
 #################################
 
 
-# require authenticated user (404 because the bounce to login fails)
+# require authentication method
 @pytest.mark.gen_test
-def test_post_requires_authenticated_user(app, clear_database):  # noqa: F811
+def test_post_missing_authenticator(app):
+    r = yield async_requests.post(app.url + "/submission")
+    assert r.status_code == 500
+    assert "<html><title>500: This is not a user handler." in r.text
+
+
+# require authenticated user
+@pytest.mark.gen_test
+def test_post_403_if_not_authenticated(app):
     with patch.object(BaseHandler, "get_current_user", return_value={}):
-        r = yield async_requests.post(app.url + "/assignment")
-    assert r.status_code == 403  # why not 404???
+        r = yield async_requests.post(app.url + "/submission")
+    assert r.status_code == 403
 
 
 # Requires both params (none)

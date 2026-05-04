@@ -1,5 +1,6 @@
 import os
 import uuid
+from datetime import datetime, timezone
 
 from dateutil import parser
 from tornado import web
@@ -36,14 +37,6 @@ class Submission(BaseHandler):
     # This is a student submitting an assignment, not an instructor "release"
     @authenticated
     def post(self):
-        # if "Content-Length" in self.request.headers and int(self.request.headers["Content-Length"]) > int(
-        #     self.max_buffer_size
-        # ):
-        #     note = "File upload oversize, and rejected. Please reduce the files in your submission and try again."
-        #     self.log.info(note)
-        #     self.finish({"success": False, "note": note})
-        #     return
-
         [course_code, assignment_code, timestamp] = self.get_params(["course_id", "assignment_id", "timestamp"])
         self.log.debug(
             f"Called POST /submission with arguments: course {course_code} and ",
@@ -55,11 +48,20 @@ class Submission(BaseHandler):
             self.finish({"success": False, "note": note})
             return
 
-        # If this happens, then any feedback isn't going to sync with this submission
+        # submission is supposed to include a timestamp _string_. If it doesn't, create it and log a warning.
+        # Reminder: the timestamp is used to determine which feedback files tie to the submission.
+        try:
+            timestamp = parser.parse(timestamp)
+        except Exception:
+            pass
+
         if not timestamp:
-            timestamp = self.get_timestamp()
+            timestamp = datetime.now(timezone.utc)
             note = f"Submission was posted without a timestamp. We've set it to {timestamp}, but feedback will not sync to this."  # noqa: E501
             self.log.info(note)
+        else:
+            # validate given timestamp string: convert to datetime object & ensure it's got a timezone
+            timestamp = self.check_timezone(timestamp)
 
         this_user = self.nbex_user
 
@@ -81,9 +83,6 @@ class Submission(BaseHandler):
                 self.log.info(note)
                 self.finish({"success": False, "note": note})
                 return
-
-            # validate timestamp: convert to datetime object & ensure it's got a timezone
-            timestamp = self.check_timezone(parser.parse(timestamp))
 
             # storage is dynamically in $path/submitted/$course_code/$assignment_code/$username/<timestamp>/
             # Note - this means that a user can submit multiple times, and we have all copies
@@ -153,6 +152,7 @@ class Submission(BaseHandler):
             )
 
             # The action timestamp _must_ be the same value as in the timestamp.txt file in the submission
+            # if feedback is to be correctly linked to this submission.
             action = Action(
                 user_id=this_user["id"],
                 assignment_id=assignment.id,

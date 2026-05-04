@@ -715,12 +715,10 @@ class nbexchangeSoakTest:
         except Exception:
             self.log.warning("Something went wrong... still tidying up though")
         self.tidy_up(username="1-instructor")
-        self.log.warning(
-            f"""
+        self.log.warning(f"""
         SQL Tidy-up instructions, until the new 'purge' code is in the exchange
             delete from assignment where assignment_code = '{self.assignment_code}';
-        """
-        )
+        """)
 
 
 if __name__ == "__main__":

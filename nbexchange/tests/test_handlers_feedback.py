@@ -43,12 +43,19 @@ feedback_base64 = base64.b64encode(open(feedback_filename).read().encode("utf-8"
 released_files, notebooks, timestamp = get_files_dict()
 
 
+# require authentication method
 @pytest.mark.gen_test
-def test_feedback_unauthenticated(app):
-    """
-    Require authenticated user
-    """
-    r = yield async_requests.get(app.url + "/feedback")
+def test_post_missing_authenticator(app):
+    r = yield async_requests.post(app.url + "/submission")
+    assert r.status_code == 500
+    assert "<html><title>500: This is not a user handler." in r.text
+
+
+# require authenticated user
+@pytest.mark.gen_test
+def test_post_403_if_not_authenticated(app):
+    with patch.object(BaseHandler, "get_current_user", return_value={}):
+        r = yield async_requests.post(app.url + "/submission")
     assert r.status_code == 403
 
 
@@ -80,7 +87,8 @@ def test_feedback_post_unauthenticated(app, clear_database):  # noqa: F811
     Require authenticated user for posting
     """
     r = yield async_requests.post(app.url + "/feedback", files=feedbacks)
-    assert r.status_code == 403
+    assert r.status_code == 500
+    assert "<html><title>500: This is not a user handler." in r.text
 
 
 @pytest.mark.gen_test

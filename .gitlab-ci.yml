@@ -12,6 +12,7 @@ stages:
   - build
   - release-branch
   - release-master
+  - container_scanning
   - delete
 
 ## There is no test stage here: testing is run on github
@@ -26,6 +27,13 @@ release-branch:
 
 release-master:
   extends: .release-master-template
+
+container_scanning_nbexchange:
+  stage: container_scanning
+  extends: .container_scanning
+  variables:
+    FULL_IMAGE_NAME: $CI_REGISTRY_IMAGE:$CI_PIPELINE_ID-$CI_COMMIT_REF_SLUG
+  needs: ["release-master"]
 
 delete-image:
   extends: .delete-template

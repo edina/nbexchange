@@ -1,7 +1,8 @@
 import enum
+from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 
-from sqlalchemy import Column, DateTime, Enum, ForeignKey, Integer, Unicode, func
+from sqlalchemy import Column, DateTime, Enum, ForeignKey, Integer, Unicode
 from sqlalchemy.orm import relationship, validates
 
 from nbexchange.models import Base
@@ -52,7 +53,7 @@ class Action(Base):
     action = Column(Enum(AssignmentActions), nullable=False, index=True)
     location = Column(Unicode(200), nullable=True)  # Location for the file of this action
     checksum = Column(Unicode(200), nullable=True)  # Checksum for the saved file
-    timestamp = Column(DateTime(timezone=True), default=func.now())  # datetime.now(timezone.utc))
+    timestamp = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))  # pythonic solution
 
     # These are the relationship handles: a specific subscription has a single user to a single course
     user = relationship("User", back_populates="actions")

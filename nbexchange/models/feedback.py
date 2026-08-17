@@ -1,6 +1,7 @@
+from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, Unicode, func
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, Unicode
 from sqlalchemy.orm import relationship, validates
 
 from nbexchange.models import Base
@@ -26,7 +27,7 @@ class Feedback(Base):
     location = Column(Unicode(200), nullable=True)  # Location for the file of this action
     checksum = Column(Unicode(200), nullable=True)  # Checksum for the feedback file
     timestamp = Column(DateTime(timezone=True), nullable=False)
-    created_at = Column(DateTime(timezone=True), default=func.now())  # datetime.now(timezone.utc))
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))  # pythonic solution
 
     # relationships: a specific piece of feedback is for a specific notebook, for a specific
     # student and a specific instructor

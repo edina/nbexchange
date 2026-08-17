@@ -383,13 +383,13 @@ def test_history_full_set_of_actions_with_duplicates(app, clear_database):  # no
         )  # re-release
     # Submissions check for a released action, not a fetched one
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
-        params = "/submission?course_id=course_2&assignment_id=assign_a&timestamp=2020-01-01%2000%3A00%3A00.0%20UTC"
+        params = "/submission?course_id=course_2&assignment_id=assign_a&timestamp=2020-01-01%2000%3A00%3A01.0%20UTC"
         r = yield async_requests.post(
             app.url + params,
             files=release_files,
         )  # Submitted
     with patch.object(BaseHandler, "get_current_user", return_value=user_brobbere_student):
-        params = "/submission?course_id=course_2&assignment_id=assign_a&timestamp=2020-01-01%2000%3A00%3A00.0%20UTC"
+        params = "/submission?course_id=course_2&assignment_id=assign_a&timestamp=2020-01-01%2000%3A00%3A01.0%20UTC"
         r = yield async_requests.post(
             app.url + params,
             files=release_files,
@@ -413,7 +413,7 @@ def test_history_full_set_of_actions_with_duplicates(app, clear_database):  # no
     )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(app.url + url, files=feedbacks)
-
+        print("feedback 1 ", r.status_code, r.text)
     # feedback 2
     timestamp = datetime.now(tz).strftime(timestamp_format)
     checksum = notebook_hash(
@@ -430,7 +430,6 @@ def test_history_full_set_of_actions_with_duplicates(app, clear_database):  # no
     )
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(app.url + url, files=feedbacks)
-
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.get(app.url + "/history")
     assert r.status_code == 200

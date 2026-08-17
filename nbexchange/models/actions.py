@@ -53,7 +53,10 @@ class Action(Base):
     action = Column(Enum(AssignmentActions), nullable=False, index=True)
     location = Column(Unicode(200), nullable=True)  # Location for the file of this action
     checksum = Column(Unicode(200), nullable=True)  # Checksum for the saved file
-    timestamp = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))  # pythonic solution
+
+    # Use a pythonic solution for the default - to allow variable timezones in the future.
+    # note the lambda to ensure that the default is evaluated at runtime, not at import time
+    timestamp = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
     # These are the relationship handles: a specific subscription has a single user to a single course
     user = relationship("User", back_populates="actions")

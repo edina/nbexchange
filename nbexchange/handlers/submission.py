@@ -39,8 +39,8 @@ class Submission(BaseHandler):
     def post(self):
         [course_code, assignment_code, timestamp] = self.get_params(["course_id", "assignment_id", "timestamp"])
         self.log.debug(
-            f"Called POST /submission with arguments: course {course_code} and ",
-            f"assignment {assignment_code}, giving a timestamp of {timestamp}",
+            f"Called POST /submission with arguments: course {course_code} and "
+            f"assignment {assignment_code}, giving a timestamp of {timestamp}"
         )
         if not (course_code and assignment_code):
             note = "Submission call requires a course code and an assignment code"

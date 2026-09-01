@@ -11,6 +11,8 @@ from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
 
+from .action_history_view import ActionHistoryView  # noqa: E402 F401
+
 # E402 : module level import not at top of file
 # F401 : module imported but unused
 from .actions import Action  # noqa: E402 F401

@@ -85,7 +85,6 @@ class History(BaseHandler):
 
     @authenticated
     def get(self):
-
         [action_param, course_id_param, course_code_param] = self.get_params(["action", "course_id", "course_code"])
 
         if course_code_param:
@@ -146,7 +145,7 @@ class History(BaseHandler):
             query += " ORDER BY c.course_code, ass.assignment_code, act.id ASC"
             rows = session.execute(text(query), params).all()
 
-            self.log.info(f"History: {len(rows)} rows returned for user {this_user['name']}")
+            self.log.debug(f"History: {len(rows)} rows returned for user {this_user['name']}")
 
             roles_query = text("SELECT s.course_id, s.role FROM subscription s WHERE s.user_id=:this_user_id")
             params["this_user_id"] = this_user["id"]
@@ -160,7 +159,6 @@ class History(BaseHandler):
 
             models = {}
             for row in rows:
-                self.log.debug(f"History: row: {row}")
                 course_is_instructor = "Instructor" in course_roles.get(row.course_id, {})
                 if course_is_instructor:
                     pass
@@ -200,7 +198,7 @@ class History(BaseHandler):
                     # because the jlab extensions expects this format... :sigh:
                     "action": "AssignmentActions." + str(row.action),
                     "path": row.location,
-                    # timestamp comes through as a string.
+                    # timestamp comes through as a string - but lets be sure it has a timezone!
                     "timestamp": self.check_timezone(date_util_parse(str(row.timestamp))).strftime(
                         self.timestamp_format
                     ),
@@ -208,9 +206,10 @@ class History(BaseHandler):
                 }
                 models[row.course_id]["assignments"][row.assignment_id]["actions"].append(this_action)
 
-            for course_data in models.values():
-                course_data["assignments"] = list(course_data["assignments"].values())
+        for course_data in models.values():
+            course_data["assignments"] = list(course_data["assignments"].values())
 
+        self.log.debug(f"History returning : {len(models)} items")
         self.finish({"success": True, "value": sorted(models.values(), key=lambda x: (x["course_id"]))})
 
     def post(self):

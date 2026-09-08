@@ -427,7 +427,6 @@ def test_history_full_set_of_actions_with_duplicates(app, clear_database):  # no
     response_data = r.json()
     assert response_data["success"] is True
     assert "value" in response_data
-    print(response_data["value"])
     assert response_data["value"] == [
         {
             "role": {"Instructor": 1, "Student": 1},

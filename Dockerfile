@@ -1,7 +1,8 @@
 #FROM python:3.11.7-slim-bullseye
 
 # Know vuln in "pam"
-FROM python:3.13.5-slim-bullseye
+#FROM python:3.13.5-slim-bullseye
+FROM python:3.13.15-slim-trixie
 
 RUN apt update && \
     apt install -yq make build-essential \

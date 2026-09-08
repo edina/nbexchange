@@ -1,10 +1,7 @@
-# import os
-# import time
-# import uuid
-
+from dateutil.parser import parse as date_util_parse
+from sqlalchemy import text
 from tornado import web
 
-import nbexchange.models.subscriptions
 from nbexchange.database import scoped_session
 from nbexchange.handlers.base import BaseHandler, authenticated
 from nbexchange.models.actions import AssignmentActions
@@ -45,8 +42,14 @@ class History(BaseHandler):
             course_id: Int,
             course_code: Str,
             course_title: Str,
-            role: [Str, Str, ..],
-            user_id: [Str, Str, ..],
+            role: {
+                $role: str,
+                $count: Int
+            },
+            user_id: {
+                $user_id: Str,
+                $count: Int
+            },
             isInstructor: Bool,
             assignments: [
                 {
@@ -80,11 +83,8 @@ class History(BaseHandler):
 
     urls = ["history"]
 
-    # want to add in stuff so "customer-admin" users see all courses for their org.
     @authenticated
     def get(self):
-
-        models = {}
         [action_param, course_id_param, course_code_param] = self.get_params(["action", "course_id", "course_code"])
 
         if course_code_param:
@@ -94,100 +94,123 @@ class History(BaseHandler):
         if course_code_param and not course_id_param:
             course_id_param = course_code_param
 
-        # Python 3.12 required to do "str" in Enum so use __members__ instead
         if action_param and action_param not in AssignmentActions.__members__:
             note = f"{action_param} is not a valid assignment action."
             self.log.info(note)
             self.finish({"success": False, "note": note, "value": []})
             return
 
-        # Who is my user?
         this_user = self.nbex_user
         self.log.debug(f"History authenticated User: {this_user.get('name')}")
 
-        # Find all the course_codes this user should be able to see
+        # This gets a bit complicated: we need to separate the role from the courses & actions because
+        # when a user has both roles on a course, a single query create a duplicate row for each role.
+        # We avoid this by getting the roles separately, then merge them into the final model.
+        params = {"user_id": this_user["id"]}
+
         with scoped_session() as session:
-            subscriptions_query = session.query(nbexchange.models.Subscription).filter_by(user_id=this_user["id"])
-            if course_id_param and course_id_param != "moot":
-                subscriptions_query = subscriptions_query.filter(
-                    nbexchange.models.Subscription.course.has(course_code=course_id_param)
+            query = """
+            SELECT
+              c.id as course_id,
+              c.course_code,
+              c.course_title,
+              ass.id as assignment_id,
+              ass.assignment_code,
+              act.id as action_id,
+              act.user_id,
+              u.name,
+              act.action,
+              act.location,
+              act.timestamp
+            FROM course c, assignment ass, action act, "user" u
+            WHERE act.user_id=u.id
+              and act.assignment_id=ass.id
+              and ass.course_id=c.id
+              and ass.active=True
+              and c.id in (
+                SELECT s.course_id
+                FROM subscription s
+                WHERE s.user_id=:user_id
                 )
+            """
 
-            subscriptions = subscriptions_query.all()
+            if course_id_param and course_id_param != "moot":
+                query += " AND c.course_code = :course_code"
+                params["course_code"] = course_id_param
 
-            for subscription in subscriptions:
-                if subscription.course.id not in models:
-                    models[subscription.course.id] = {
-                        "role": dict(),
-                        "user_id": dict(),
-                        "assignments": list(),
-                        "isInstructor": False,
-                        "course_id": subscription.course.id,
-                        "course_code": subscription.course.course_code,
-                        "course_title": subscription.course.course_title,
+            if action_param:
+                query += " AND act.action=:action"
+                params["action"] = action_param
+
+            query += " ORDER BY c.course_code, ass.assignment_code, act.id ASC"
+            rows = session.execute(text(query), params).all()
+
+            self.log.debug(f"History: {len(rows)} rows returned for user {this_user['name']}")
+
+            roles_query = text("SELECT s.course_id, s.role FROM subscription s WHERE s.user_id=:this_user_id")
+            params["this_user_id"] = this_user["id"]
+            roles_rows = session.execute(roles_query, params).all()
+            course_roles = {}
+            for role_row in roles_rows:
+                if role_row.course_id not in course_roles:
+                    course_roles[role_row.course_id] = {}
+                if role_row.role not in course_roles[role_row.course_id]:
+                    course_roles[role_row.course_id][role_row.role] = 1
+
+            models = {}
+            for row in rows:
+                course_is_instructor = "Instructor" in course_roles.get(row.course_id, {})
+                if course_is_instructor:
+                    pass
+                elif row.action != "released" and row.user_id != this_user["id"]:
+                    self.log.debug(
+                        f"History: skipping : {row.action} != 'released' and user {row.user_id} != {this_user['id']}"
+                    )
+                    continue
+
+                # set up the top-level course model if it doesn't exist yet.
+                # `user_id` is a dict to note who the querant is... I never promised great code.
+                if row.course_id not in models:
+                    models[row.course_id] = {
+                        "user_id": {this_user["id"]: 1},
+                        "role": course_roles.get(row.course_id, {}),
+                        "isInstructor": course_is_instructor,
+                        "assignments": {},
+                        "course_id": row.course_id,
+                        "course_code": row.course_code,
+                        "course_title": row.course_title,
                     }
 
-                # add to data-structures
-                models[subscription.course.id]["role"][subscription.role] = 1
-                models[subscription.course.id]["user_id"][subscription.user_id] = 1
-                if subscription.role == "Instructor":
-                    models[subscription.course.id]["isInstructor"] = True
-                self.log.debug(
-                    (
-                        f"       ... course: {models[subscription.course.id]['course_id']} | ",
-                        f"{models[subscription.course.id]['course_code']}",
-                    )
-                )
+                # Now set up the assignment sub-models if they doesn't exist already.
+                if row.assignment_id not in models[row.course_id]["assignments"]:
+                    models[row.course_id]["assignments"][row.assignment_id] = {
+                        "assignment_id": row.assignment_id,
+                        "assignment_code": row.assignment_code,
+                        "actions": [],
+                        "action_summary": {},
+                    }
 
-                temp_dict = dict()
-                for assignment in subscription.course.assignments:
-                    self.log.debug(f"           ... assignment: {assignment}")
+                if row.action not in models[row.course_id]["assignments"][row.assignment_id]["action_summary"]:
+                    models[row.course_id]["assignments"][row.assignment_id]["action_summary"][row.action] = 0
+                models[row.course_id]["assignments"][row.assignment_id]["action_summary"][row.action] += 1
 
-                    if assignment.active:
-                        if assignment.id not in temp_dict:
-                            temp_dict[assignment.id] = {
-                                "assignment_id": assignment.id,
-                                "assignment_code": assignment.assignment_code,
-                                "actions": list(),
-                                "action_summary": dict(),
-                            }
+                this_action = {
+                    # because the jlab extensions expects this format... :sigh:
+                    "action": "AssignmentActions." + str(row.action),
+                    "path": row.location,
+                    # timestamp comes through as a string - but lets be sure it has a timezone!
+                    "timestamp": self.check_timezone(date_util_parse(str(row.timestamp))).strftime(
+                        self.timestamp_format
+                    ),
+                    "user": row.name,
+                }
+                models[row.course_id]["assignments"][row.assignment_id]["actions"].append(this_action)
 
-                            for action in assignment.actions:
-                                # You see releases, your own actions, or anything if you're an isntructor
-                                if (
-                                    action.action == AssignmentActions.released
-                                    or action.user_id == this_user["id"]  # noqa: W503
-                                    or models[subscription.course.id]["isInstructor"] is True  # noqa: W503
-                                ):
-                                    this_action = dict()
-                                    action_string = str(action.action).replace("AssignmentActions.", "")
-                                    if action_param and action_string != action_param:
-                                        self.log.debug(
-                                            (
-                                                f"History: ignoring action {action_string} because it ",
-                                                f"isn't of type {action_param}",
-                                            )
-                                        )
-                                        continue
-                                    if action_string not in temp_dict[assignment.id]["action_summary"]:
-                                        temp_dict[assignment.id]["action_summary"][action_string] = 0
-                                    temp_dict[assignment.id]["action_summary"][action_string] += 1
-                                    this_action["action"] = str(action.action)
-                                    self.log.debug(f"action: {action}")
-                                    this_action["timestamp"] = self.check_timezone(action.timestamp).strftime(
-                                        self.timestamp_format
-                                    )
-                                    # Adding path info to action as we want it for the buttons in the history view
-                                    this_action["path"] = action.location
+        for course_data in models.values():
+            course_data["assignments"] = list(course_data["assignments"].values())
 
-                                    # I thought about this - and actually, there is merit in students knowing
-                                    # _which_ instructor released an assignment when
-                                    user = nbexchange.models.users.User.find_by_pk(db=session, pk=action.user_id)
-                                    this_action["user"] = user.name
-                                    temp_dict[assignment.id]["actions"].append(this_action)
-                    models[subscription.course.id]["assignments"] = list(temp_dict.values())
+        self.log.debug(f"History returning : {len(models)} items")
         self.finish({"success": True, "value": sorted(models.values(), key=lambda x: (x["course_id"]))})
 
-    # This has no authentiction wrapper, so false implication os service
     def post(self):
         raise web.HTTPError(501)

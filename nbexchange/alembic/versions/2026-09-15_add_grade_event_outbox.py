@@ -1,7 +1,7 @@
 """Add durable grade-ready event outbox.
 
 Revision ID: 2026091501
-Revises: 2026082101
+Revises: 2026041701
 Create Date: 2026-09-15
 """
 
@@ -9,7 +9,7 @@ import sqlalchemy as sa
 from alembic import op
 
 revision = "2026091501"
-down_revision = "2026082101"
+down_revision = "2026041701"
 branch_labels = None
 depends_on = None
 

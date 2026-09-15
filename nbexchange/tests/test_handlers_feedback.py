@@ -7,7 +7,9 @@ import pytest
 from mock import patch
 from nbgrader.utils import make_unique_key, notebook_hash
 
+from nbexchange.database import scoped_session
 from nbexchange.handlers.base import BaseHandler
+from nbexchange.models.grade_events import GradeEventOutbox
 from nbexchange.tests.utils import (  # noqa: F401 "clear_database"
     async_requests,
     clear_database,
@@ -445,6 +447,12 @@ def test_feedback_post_authenticated_with_correct_params(app, clear_database):  
     assert r.status_code == 200
     response_data = r.json()
     assert response_data["success"] is True
+    with scoped_session() as session:
+        event = session.query(GradeEventOutbox).one()
+        assert event.course_code == course_id
+        assert event.assignment_code == assignment_id
+        assert event.learner_name == student["name"]
+        assert event.published_at is None
     shutil.rmtree(app.base_storage_location)
 
 

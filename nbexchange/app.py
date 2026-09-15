@@ -10,7 +10,7 @@ from sentry_sdk.integrations.tornado import TornadoIntegration
 from sqlalchemy.exc import OperationalError
 from tornado import web
 from tornado.httpserver import HTTPServer
-from tornado.ioloop import IOLoop
+from tornado.ioloop import IOLoop, PeriodicCallback
 from tornado.log import LogFormatter, access_log, app_log, gen_log
 from tornado_prometheus import MetricsHandler, PrometheusMixIn
 from traitlets import Bool, Dict, Integer, Type, Unicode, default
@@ -18,6 +18,7 @@ from traitlets.config import Application, catch_config_error
 
 import nbexchange.dbutil
 from nbexchange import dbutil, handlers
+from nbexchange.grade_events import publish_pending_grade_events
 from nbexchange.handlers import base
 from nbexchange.handlers.auth.user_handler import BaseUserHandler
 
@@ -122,6 +123,19 @@ Defaults to 'sqlite:///:memory:' (an in-memory SQLite database)
     max_buffer_size = Integer(
         5253530000, config=True, help="The maximum size, in bytes, of an upload (defaults to 5GB)"
     )
+
+    grade_event_endpoint = Unicode(
+        os.environ.get("GRADE_EVENT_ENDPOINT", ""),
+        config=True,
+        help="Internal Noteable API grade-ready event endpoint.",
+    )
+    grade_event_service_token = Unicode(
+        os.environ.get("GRADE_EVENT_SERVICE_TOKEN", ""),
+        config=True,
+        help="Shared service credential used only for the internal grade event endpoint.",
+    )
+    grade_event_publish_interval = Integer(30, config=True, help="Grade event outbox publish interval in seconds.")
+    grade_event_batch_size = Integer(100, config=True, help="Maximum grade events published per interval.")
 
     user_plugin_class = Type(
         NotAUserHandler,
@@ -317,6 +331,8 @@ Defaults to 'sqlite:///:memory:' (an in-memory SQLite database)
         logging.info("app.initialisze init_tornado_application completed")
 
     def stop(self):
+        if getattr(self, "grade_event_callback", None):
+            self.grade_event_callback.stop()
         self.http_server.stop()
 
     def start(self, run_loop=True):
@@ -330,6 +346,18 @@ Defaults to 'sqlite:///:memory:' (an in-memory SQLite database)
         # we _also_ do size-checks in code (both plugin & exchange side)
         self.http_server = HTTPServer(self.tornado_application, xheaders=True, max_buffer_size=self.max_buffer_size)
         self.http_server.listen(self.port, address=self.ip)
+        self.grade_event_callback = None
+        if self.grade_event_endpoint and self.grade_event_service_token:
+            self.grade_event_callback = PeriodicCallback(
+                lambda: publish_pending_grade_events(
+                    self.grade_event_endpoint,
+                    self.grade_event_service_token,
+                    batch_size=self.grade_event_batch_size,
+                    log=self.log,
+                ),
+                self.grade_event_publish_interval * 1000,
+            )
+            self.grade_event_callback.start()
         logging.info("app.start about to hit the IOLoop start")
         if run_loop:
             IOLoop.current().start()

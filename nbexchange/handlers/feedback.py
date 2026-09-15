@@ -7,6 +7,7 @@ from dateutil import parser
 from tornado import web
 
 from nbexchange.database import scoped_session
+from nbexchange.grade_events import record_grade_ready_event
 from nbexchange.handlers.base import BaseHandler, authenticated
 from nbexchange.models.actions import Action, AssignmentActions
 from nbexchange.models.assignments import Assignment as AssignmentModel
@@ -242,5 +243,12 @@ class FeedbackHandler(BaseHandler):
                 location=feedback_file,
             )
             session.add(action)
+            record_grade_ready_event(
+                session,
+                action=action,
+                course=course,
+                assignment=assignment,
+                learner=student,
+            )
 
         self.finish({"success": True, "note": "Feedback released"})

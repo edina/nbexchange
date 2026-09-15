@@ -131,8 +131,9 @@ def test_history_no_action_param(app, clear_database):  # noqa: F811
     assert "value" in response_data
     assert response_data["value"] == [
         {
-            "role": {"Instructor": 1},
             "user_id": {"1": 1},
+            "role": {"Instructor": 1},
+            "isInstructor": True,
             "assignments": [
                 {
                     "assignment_id": 1,
@@ -148,7 +149,6 @@ def test_history_no_action_param(app, clear_database):  # noqa: F811
                     "action_summary": {"released": 1},
                 }
             ],
-            "isInstructor": True,
             "course_id": 1,
             "course_code": "course_2",
             "course_title": "A title",
@@ -172,17 +172,7 @@ def test_history_no_courses_not_suscribed_to(app, clear_database):  # noqa: F811
     response_data = r.json()
     assert response_data["success"] is True
     assert "value" in response_data
-    assert response_data["value"] == [
-        {
-            "role": {"Instructor": 1},
-            "user_id": {"2": 1},
-            "assignments": [],
-            "isInstructor": True,
-            "course_id": 2,
-            "course_code": "course_2",
-            "course_title": "A title",
-        }
-    ]
+    assert response_data["value"] == []
     shutil.rmtree(app.base_storage_location)
 
 
@@ -437,7 +427,6 @@ def test_history_full_set_of_actions_with_duplicates(app, clear_database):  # no
     response_data = r.json()
     assert response_data["success"] is True
     assert "value" in response_data
-
     assert response_data["value"] == [
         {
             "role": {"Instructor": 1, "Student": 1},

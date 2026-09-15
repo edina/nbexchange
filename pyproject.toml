@@ -5,7 +5,7 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "nbexchange"
-version = "2.0.2"
+version = "2.0.3"
 description = "Jupyter extension that provides an external exchange service for nbgrader."
 readme = "README.md"
 requires-python = ">=3.9,<3.14"

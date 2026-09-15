@@ -2,6 +2,7 @@
 
 import logging
 import os
+import socket
 from getpass import getuser
 
 import pytest
@@ -64,6 +65,12 @@ def app(request, io_loop, _nbexchange_config):
     """Launch the NbExchange app"""
     nbexchange = NbExchange.instance(config=_nbexchange_config)
     nbexchange.initialize([])
+    # Avoid colliding with a developer's running nbexchange on the default
+    # port while retaining the real HTTP-server integration path.
+    with socket.socket() as available_port:
+        available_port.bind(("127.0.0.1", 0))
+        nbexchange.port = available_port.getsockname()[1]
+    nbexchange.ip = "127.0.0.1"
     nbexchange.start(run_loop=False)
     # instantiating nbexchange configures this
     # override again

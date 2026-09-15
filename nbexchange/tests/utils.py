@@ -18,6 +18,7 @@ from nbexchange.models.actions import Action
 from nbexchange.models.assignments import Assignment as AssignmentModel
 from nbexchange.models.courses import Course
 from nbexchange.models.feedback import Feedback
+from nbexchange.models.grade_events import GradeEventOutbox
 from nbexchange.models.notebooks import Notebook
 from nbexchange.models.subscriptions import Subscription
 from nbexchange.models.users import User
@@ -319,6 +320,7 @@ def clear_database(db):
 
     requires the db handler
     """
+    db.query(GradeEventOutbox).delete()
     db.query(Action).delete()
     db.query(AssignmentModel).delete()
     db.query(Course).delete()

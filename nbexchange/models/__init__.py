@@ -17,6 +17,7 @@ from .actions import Action  # noqa: E402 F401
 from .assignments import Assignment  # noqa: E402 F401
 from .courses import Course  # noqa: E402 F401
 from .feedback import Feedback  # noqa: E402 F401
+from .grade_events import GradeEventOutbox  # noqa: E402 F401
 from .notebooks import Notebook  # noqa: E402 F401
 from .subscriptions import Subscription  # noqa: E402 F401
 from .users import User  # noqa: E402 F401

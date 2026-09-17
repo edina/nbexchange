@@ -11,7 +11,7 @@ from traitlets.config.loader import PyFileConfigLoader
 
 import nbexchange.models.users
 from nbexchange.app import NbExchange
-from nbexchange.database import Session
+from nbexchange.database import get_session_factory, init_db
 
 here = os.path.abspath(os.path.dirname(__file__))
 root = os.path.join(here, os.pardir, os.pardir)
@@ -82,7 +82,10 @@ def app(request, io_loop, _nbexchange_config):
 @pytest.fixture(scope="session")
 def db():
     """Get a db session"""
-    _db = Session()  #
+    # Initialize database and create tables
+    init_db(reset=True)
+    session_factory = get_session_factory()
+    _db = session_factory()
     user = nbexchange.models.users.User(name=getuser(), org_id=1)  # TODO: remove Magic number
     _db.add(user)
     _db.commit()

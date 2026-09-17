@@ -410,7 +410,7 @@ async def test_collection_actions_show_correctly(app, clear_database):  # noqa: 
     shutil.rmtree(app.base_storage_location)
 
 
-# what happens the path doesn't match
+# Test that path traversal attempts are blocked
 # (needs to be submitted before it can listed for collection )
 # (needs to be fetched before it can be submitted )
 # (needs to be released before it can be fetched )
@@ -436,11 +436,14 @@ def test_get_collection_path_is_incorrect(app, clear_database):  # noqa: F811
         )  # Get the data we need to make test the call we want to make
         response_data = r.json()
         collected_data = response_data["value"][0]
+        # Test with a path outside the base_storage_location (path traversal attempt)
         params = f"/collection?course_id={collected_data['course_id']}&path=/some/random/path&assignment_id={collected_data['assignment_id']}"  # noqa: E501
         r = yield async_requests.get(app.url + params)
-    assert r.status_code == 200
-    assert r.headers["Content-Type"] == "application/gzip"
-    assert int(r.headers["Content-Length"]) == 0
+    # Path traversal attempts should be rejected
+    assert r.status_code == 400 or r.status_code == 403
+    response_data = r.json()
+    assert "success" in response_data
+    assert response_data["success"] is False
     shutil.rmtree(app.base_storage_location)
 
 

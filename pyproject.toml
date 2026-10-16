@@ -30,12 +30,13 @@ classifiers = [
 ]
 
 # These values need to match nbgrader, jupyterlab, and/or the api
+# In particular, sqlalchmey needs to be <2.1 to retain the psycopg2-binary dependency
 dependencies = [
   "nbgrader==0.9.5",
   "alembic>=1.7",
   "humanize",
   "jupyter_server>=2",
-  "sqlalchemy>=1.4,<3",
+  "sqlalchemy>=1.4,<2.1",
   "psycopg2-binary>=2.9.9",
   "pyjwt<2",
   "sentry-sdk==2.44.0",

@@ -1,3 +1,5 @@
+import os
+
 from tornado import web
 
 from nbexchange.database import scoped_session
@@ -145,6 +147,8 @@ class Collection(BaseHandler):
         assignment_id: assignment_code
         path: url_encoded_path
 
+    Note: the path is the full path to the file on the exchange server, and must be url-encoded
+
     GET: Downloads the specified file (checking that it's "submitted", for this course/assignment,
     and the user has access to do so)
     """
@@ -181,6 +185,17 @@ class Collection(BaseHandler):
             self.finish({"success": False, "note": note})
             return
 
+        # Validate path is within base_storage_location to prevent path traversal
+        base_path = os.path.realpath(self.base_storage_location)
+        requested_path = os.path.realpath(path)
+
+        if not requested_path.startswith(base_path + os.sep) and requested_path != base_path:
+            note = "Invalid path: access denied"
+            self.log.warning(f"Path traversal attempt blocked: {path} (resolved: {requested_path})")
+            self.set_status(400)
+            self.finish({"success": False, "note": note})
+            return
+
         # Find the course being referred to
         with scoped_session() as session:
             course = Course.find_by_code(db=session, code=course_code, org_id=this_user["org_id"], log=self.log)
@@ -206,10 +221,10 @@ class Collection(BaseHandler):
             for assignment in assignments:
                 self.log.debug(f"Assignment: {assignment}")
                 try:
-                    with open(path, "r+b") as handle:
+                    with open(requested_path, "r+b") as handle:
                         data = handle.read()
                 except Exception as e:
-                    raise web.HTTPError(500, f"collection handler unable to open '{path}': {e}")
+                    raise web.HTTPError(500, f"collection handler unable to open '{requested_path}': {e}")
 
                 self.log.info(
                     f"Adding action {AssignmentActions.collected.value} for user {this_user['id']} against assignment {assignment.id}"  # noqa: E501
@@ -218,7 +233,7 @@ class Collection(BaseHandler):
                     user_id=this_user["id"],
                     assignment_id=assignment.id,
                     action=AssignmentActions.collected,
-                    location=path,
+                    location=requested_path,
                 )
                 session.add(action)
 

@@ -3,6 +3,8 @@
 ## v2.0.5
 
 * Update to Python 3.15
+* Update to SQLAlchemy 2.1 (and thus psycopg v3)
+* nbgrader itself is moved to a development dependency (it's only used in tests)
   
 ## v2.0.4
 

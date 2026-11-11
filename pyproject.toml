@@ -6,7 +6,7 @@ build-backend = "flit_core.buildapi"
 [project]
 name = "nbexchange"
 version = "2.0.5"
-description = "Jupyter extension that provides an external exchange service for nbgrader."
+description = "A microservice which provides an external exchange service for nbgrader."
 readme = "README.md"
 requires-python = ">=3.9,<3.16"
 license = {file = "LICENSE"}
@@ -31,26 +31,22 @@ classifiers = [
   "Intended Audience :: Education",
 ]
 
-# These values need to match nbgrader, jupyterlab, and/or the api
-# In particular, sqlalchmey needs to be <2.1 to retain the psycopg2-binary dependency
 dependencies = [
-  "nbgrader==0.9.5",
   "alembic>=1.7",
   "humanize",
   "jupyter_server>=2",
-  "sqlalchemy>=1.4,<2.1",
-  "psycopg2-binary>=2.9.9",
+  "sqlalchemy>=2.1,<2.2",
   "PyJWT==2.14.0",
   "sentry-sdk==2.44.0",
-  # matches jupyterlab
+  # matches jupyterlab for convenience.
   "tornado>=6.5,<7",
   "tornado-prometheus==0.1.2",
   "standard-pkg-resources>=1.0.0",
 ]
-#  "pyjwt<2",
 
 [project.optional-dependencies]
 test = [
+  "nbgrader==0.9.5",
   "beautifulsoup4>=4.12.3",
   "html5lib>=1.1",
   "mock>=5.1",

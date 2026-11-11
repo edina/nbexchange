@@ -10,6 +10,7 @@ variables:
 
 stages:
   - build
+  - container_scanning
   - release-branch
   - release-master
   - delete
@@ -19,6 +20,12 @@ stages:
 # master branch builds CI-SLUG & latest
 build-app:
   extends: .build-template
+
+container_scanning:
+  stage: container_scanning
+  extends: .container_scanning
+  variables:
+    FULL_IMAGE_NAME: $IMAGE_NAME:$CI_PIPELINE_ID-$CI_COMMIT_REF_SLUG
 
 # working branch only builds C_-SLUG
 release-branch:

@@ -48,7 +48,7 @@ The team that created the inital code use nbexchange in a cloud environment, wit
 
 ## Compatibility
 
-This version matches the exchange APIs for `nbgrader`  0.9.5 (which makes it compatible with JupyterLab & Notebook 7)
+This version matches the exchange APIs for `nbgrader`  >d\f0.9.5 (which makes it compatible with JupyterLab & Notebook 7)
 
 # Documentation
 

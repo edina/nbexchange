@@ -1,14 +1,15 @@
-#FROM python:3.11.7-slim-bullseye
-
-# Know vuln in "pam"
-#FROM python:3.13.5-slim-bullseye
-FROM python:3.13.15-slim-trixie
+# FROM python:3.13.15-slim-trixie
+# 3.15.2-slim-trixie / amd64 @ 2026-11-11
+FROM python@sha256:65a65fc7b30b06cb6df4930fd4650697cb23f4c2698ab81fc87e4b031bc36928
 
 RUN apt update && \
     apt install -yq make build-essential \
     libbz2-dev libffi-dev liblzma-dev libreadline-dev \
     libncursesw5-dev libsqlite3-dev libssl-dev libxml2-dev libxmlsec1-dev  \
-    curl git tk-dev xz-utils zlib1g-dev
+    curl git tk-dev xz-utils zlib1g-dev \
+    && apt-get upgrade perl-base \
+    && rm -rf /var/lib/apt/lists/*
+
 
 ARG COMMIT=""
 LABEL commit=${COMMIT}

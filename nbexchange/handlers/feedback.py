@@ -9,12 +9,13 @@ from tornado import web
 
 from nbexchange.database import scoped_session
 from nbexchange.feedback_revision import read_feedback_revision
-from nbexchange.grade_events import record_grade_ready_event
+from nbexchange.grade_events import record_grade_ready_event, unavailable_grade
 from nbexchange.handlers.base import BaseHandler, authenticated
 from nbexchange.models.actions import Action, AssignmentActions
 from nbexchange.models.assignments import Assignment as AssignmentModel
 from nbexchange.models.courses import Course
 from nbexchange.models.feedback import Feedback
+from nbexchange.models.grade_events import GradeEventOutbox
 from nbexchange.models.notebooks import Notebook
 from nbexchange.models.users import User
 
@@ -104,7 +105,7 @@ class FeedbackHandler(BaseHandler):
             self.finish({"success": True, "feedback": feedbacks})
 
     @authenticated
-    def post(self) -> None:
+    async def post(self) -> None:
         """
         This endpoint accepts feedback files for a notebook.
         Parameters:
@@ -194,8 +195,21 @@ class FeedbackHandler(BaseHandler):
                 "learner": {"id": student.id, "name": student.name},
             }
 
-        timestamp = self.check_timezone(parser.parse(timestamp))
-        revision, released_grade = read_feedback_revision(
+            timestamp = self.check_timezone(parser.parse(timestamp))
+            submission = (
+                session.query(Action.id)
+                .filter_by(
+                    assignment_id=assignment.id,
+                    user_id=student.id,
+                    action=AssignmentActions.submitted,
+                    timestamp=timestamp,
+                )
+                .first()
+            )
+            previous_feedback = Feedback.find_notebook_for_student(session, notebook_pk, student.id, timestamp)
+            previous_feedback_id = previous_feedback.id if previous_feedback else None
+
+        revision, release = read_feedback_revision(
             body,
             course=course_id,
             assignment=assignment_id,
@@ -204,6 +218,21 @@ class FeedbackHandler(BaseHandler):
             timestamp=timestamp,
             notebooks=notebooks,
         )
+        if revision is None:
+            released_grade = {"grade_state": "unavailable", "grade": None}
+        elif submission is None:
+            released_grade = unavailable_grade("submission_not_found")
+        else:
+            released_grade = await self.settings["verify_feedback_grade"](
+                {
+                    **identity,
+                    "submission_timestamp": timestamp.isoformat(),
+                    "notebooks": release["notebooks"],
+                    "grade_state": release["grade_state"],
+                    "grade": release["grade"],
+                    "feedback_revision": revision,
+                }
+            )
 
         location = os.path.join(
             self.base_storage_location,
@@ -215,19 +244,23 @@ class FeedbackHandler(BaseHandler):
         )
         feedback_file = os.path.join(location, f"{uuid.uuid4().hex}.html")
 
-        try:
-            os.makedirs(os.path.dirname(feedback_file), exist_ok=True)
-            with open(feedback_file, "w+b") as handle:
-                handle.write(body)
-        except OSError as exc:
-            raise web.HTTPError(500, f"Could not save file. \n {exc}") from exc
-
         with scoped_session() as session:
-            # Serialize uploads for this learner. The file is already written,
-            # and the feedback row and any resulting event commit together.
+            # Serialize uploads for this learner and check for replacements
+            # made while the gradebook verification request was in flight.
             learner_pk = identity["learner"]["id"]
             session.query(User.id).filter_by(id=learner_pk).with_for_update().one()
-            previous = Feedback.find_notebook_for_student(session, notebook_pk, learner_pk, timestamp)
+            if revision is not None:
+                current = Feedback.find_notebook_for_student(session, notebook_pk, learner_pk, timestamp)
+                if (current.id if current else None) != previous_feedback_id:
+                    raise web.HTTPError(409, reason="Feedback changed during verification. Retry the release.")
+
+            try:
+                os.makedirs(os.path.dirname(feedback_file), exist_ok=True)
+                with open(feedback_file, "wb") as handle:
+                    handle.write(body)
+            except OSError as exc:
+                raise web.HTTPError(500, "Could not save feedback file") from exc
+
             feedback = Feedback(
                 notebook_id=notebook_pk,
                 checksum=checksum,
@@ -253,12 +286,8 @@ class FeedbackHandler(BaseHandler):
                 location=feedback_file,
             )
             session.add(action)
-            if revision is None:
-                released_grade = {"grade_state": "unavailable", "grade": None}
-            elif previous is not None and previous.grade_revision == revision:
-                released_grade = None
-            else:
-                latest_feedback = (
+            if revision is not None:
+                current_feedback_ids = (
                     session.query(func.max(Feedback.id))
                     .join(Notebook)
                     .filter(
@@ -268,18 +297,31 @@ class FeedbackHandler(BaseHandler):
                     )
                     .group_by(Feedback.notebook_id)
                 )
-                matching = (
-                    session.query(Feedback)
-                    .filter(
-                        Feedback.id.in_(latest_feedback),
-                        Feedback.grade_revision == revision,
-                    )
-                    .count()
-                )
-                if matching != len(notebooks):
+                revisions = [
+                    row.grade_revision
+                    for row in session.query(Feedback.grade_revision).filter(Feedback.id.in_(current_feedback_ids))
+                ]
+                if len(revisions) == len(notebooks):
+                    if any(current != revision for current in revisions):
+                        released_grade = unavailable_grade("feedback_revision_mismatch")
+                elif submission is not None:
                     released_grade = None
 
             if released_grade is not None:
-                record_grade_ready_event(session, action=action, identity=identity, released_grade=released_grade)
+                if revision is not None:
+                    released_grade["feedback_revision"] = revision
+                    previous = (
+                        session.query(GradeEventOutbox.released_grade)
+                        .filter_by(schema_version=2, assignment_id=identity["assignment"]["id"], learner_id=learner_pk)
+                        .order_by(GradeEventOutbox.source_sequence.desc())
+                        .first()
+                    )
+                else:
+                    previous = None
+                if previous is None or previous.released_grade != released_grade:
+                    record_grade_ready_event(session, action=action, identity=identity, released_grade=released_grade)
 
-        self.finish({"success": True, "note": "Feedback released"})
+        note = "Feedback released"
+        if released_grade and released_grade.get("release_error") == "feedback_revision_mismatch":
+            note = "Feedback released. Regenerate and release feedback for every notebook to sync the grade."
+        self.finish({"success": True, "note": note})

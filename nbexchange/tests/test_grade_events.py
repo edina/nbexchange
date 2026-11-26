@@ -1,7 +1,7 @@
 import json
 from datetime import datetime, timezone
 from types import SimpleNamespace
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 
@@ -9,6 +9,7 @@ from nbexchange.database import scoped_session
 from nbexchange.grade_events import (
     publish_pending_grade_events,
     record_grade_ready_event,
+    verify_released_grade,
 )
 from nbexchange.models.actions import Action, AssignmentActions
 from nbexchange.models.assignments import Assignment
@@ -99,3 +100,23 @@ def test_failed_publication_stays_in_outbox_for_retry(clear_database):  # noqa: 
         assert event.next_attempt_at is not None
         assert event.attempt_count == 1
         assert "503" in event.last_error
+
+
+@pytest.mark.gen_test
+def test_grade_verifier_uses_service_response():
+    expected = {
+        "grade_state": "ready",
+        "grade": {"assignment_id": "assignment-1", "score_given": "5.00000", "score_maximum": "10.00000"},
+    }
+    client = SimpleNamespace(fetch=AsyncMock(return_value=SimpleNamespace(body=json.dumps(expected).encode())))
+    with patch("nbexchange.grade_events.AsyncHTTPClient", return_value=client):
+        payload = {"feedback_revision": "a" * 64}
+        result = yield verify_released_grade(
+            "https://noteable/internal/grade-release-snapshot/", "secret", payload, log=Mock()
+        )
+
+    assert result == expected
+    request = client.fetch.call_args.args[0]
+    assert request.headers["Authorization"] == "Bearer secret"
+    assert not request.follow_redirects
+    assert json.loads(request.body) == payload

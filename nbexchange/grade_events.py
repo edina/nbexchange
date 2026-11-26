@@ -3,10 +3,40 @@ import uuid
 from datetime import datetime, timedelta, timezone
 
 from sqlalchemy import or_
-from tornado.httpclient import AsyncHTTPClient, HTTPRequest
+from tornado.httpclient import AsyncHTTPClient, HTTPClientError, HTTPRequest
 
 from nbexchange.database import scoped_session
 from nbexchange.models.grade_events import GradeEventOutbox
+
+
+def unavailable_grade(code):
+    return {"grade_state": "unavailable", "grade": None, "release_error": code}
+
+
+async def verify_released_grade(endpoint, service_token, payload, *, log):
+    if endpoint and service_token:
+        try:
+            response = await AsyncHTTPClient().fetch(
+                HTTPRequest(
+                    endpoint,
+                    method="POST",
+                    headers={
+                        "Authorization": f"Bearer {service_token}",
+                        "Content-Type": "application/json",
+                    },
+                    body=json.dumps(payload).encode(),
+                    request_timeout=10,
+                    follow_redirects=False,
+                )
+            )
+            result = json.loads(response.body)
+            if result["grade_state"] in ("ready", "ungraded"):
+                return {"grade_state": result["grade_state"], "grade": result["grade"]}
+            if result["release_error"] in ("submission_not_found", "grade_snapshot_mismatch"):
+                return unavailable_grade(result["release_error"])
+        except (HTTPClientError, OSError, ValueError, TypeError, KeyError) as exc:
+            log.warning("Grade snapshot verification failed: %s", type(exc).__name__)
+    return unavailable_grade("grade_verification_unavailable")
 
 
 def record_grade_ready_event(session, *, action, identity, released_grade):

@@ -18,7 +18,7 @@ from traitlets.config import Application, catch_config_error
 
 import nbexchange.dbutil
 from nbexchange import dbutil, handlers
-from nbexchange.grade_events import publish_pending_grade_events
+from nbexchange.grade_events import publish_pending_grade_events, verify_released_grade
 from nbexchange.handlers import base
 from nbexchange.handlers.auth.user_handler import BaseUserHandler
 
@@ -129,10 +129,15 @@ Defaults to 'sqlite:///:memory:' (an in-memory SQLite database)
         config=True,
         help="Internal Noteable API grade-ready event endpoint.",
     )
+    grade_release_snapshot_endpoint = Unicode(
+        os.environ.get("GRADE_RELEASE_SNAPSHOT_ENDPOINT", ""),
+        config=True,
+        help="Internal Noteable API endpoint for verifying the grade behind released feedback.",
+    )
     grade_event_service_token = Unicode(
         os.environ.get("GRADE_EVENT_SERVICE_TOKEN", ""),
         config=True,
-        help="Shared service credential used only for the internal grade event endpoint.",
+        help="Shared service credential for the internal grade event and verification endpoints.",
     )
     grade_event_publish_interval = Integer(30, config=True, help="Grade event outbox publish interval in seconds.")
     grade_event_batch_size = Integer(100, config=True, help="Maximum grade events published per interval.")
@@ -253,6 +258,11 @@ Defaults to 'sqlite:///:memory:' (an in-memory SQLite database)
         except nbexchange.dbutil.DatabaseSchemaMismatch as e:
             self.exit(e)
 
+    async def verify_feedback_grade(self, payload):
+        return await verify_released_grade(
+            self.grade_release_snapshot_endpoint, self.grade_event_service_token, payload, log=self.log
+        )
+
     def init_tornado_settings(self):
         """Initialize tornado config"""
 
@@ -275,6 +285,7 @@ Defaults to 'sqlite:///:memory:' (an in-memory SQLite database)
             timezone=self.timezone,
             timestamp_format=self.timestamp_format,
             user_plugin=self.user_plugin_class(),
+            verify_feedback_grade=self.verify_feedback_grade,
             version_hash=version_hash,
             xsrf_cookies=False,
         )

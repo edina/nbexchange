@@ -4,6 +4,7 @@ import json
 import os
 import shutil
 from datetime import datetime
+from unittest.mock import AsyncMock
 
 import pytest
 from mock import patch
@@ -409,98 +410,102 @@ def test_feedback_post_authenticated_with_incorrect_checksum(app, clear_database
 
 
 @pytest.mark.gen_test
-@pytest.mark.parametrize("another_notebook", [None, "another"])
-def test_feedback_post_authenticated_with_correct_params(app, clear_database, another_notebook):  # noqa: F811
+@pytest.mark.parametrize("scenario", ["single", "multiple", "mixed", "missing_submission", "unverified"])
+def test_feedback_post_authenticated_with_correct_params(app, clear_database, scenario):  # noqa: F811
     assignment_id = "assign_a"
     course_id = "course_2"
     notebook = "notebook"
+    other_notebook = "another" if scenario in ("multiple", "mixed") else None
     student = user_kiz_student
-    timestamp = datetime.now(tz).strftime(timestamp_format)
-    checksum = notebook_hash(
-        feedback_filename,
-        make_unique_key(course_id, assignment_id, notebook, student["name"], timestamp),
-    )
+    submitted_at = datetime.now(tz)
+    timestamp = submitted_at.strftime(timestamp_format)
+    notebook_names = [notebook] + ([other_notebook] if other_notebook else [])
+    url = f"course_id={course_id}&assignment_id={assignment_id}"
 
-    # XXX: Doing this in a separate function doesn't work for some reason (Exchange doesn't get called)
-    notebook_names = [notebook] + ([another_notebook] if another_notebook else [])
-    kwargs = {"data": {"notebooks": notebook_names}}
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
-            app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}",
-            files=released_files,
-            **kwargs,
+            app.url + f"/assignment?{url}", files=released_files, data={"notebooks": notebook_names}
         )
+        assert r.json()["success"]
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
-        r = yield async_requests.get(app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}")
-    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_student):
-        r = yield async_requests.post(
-            app.url + f"/submission?course_id={course_id}&assignment_id={assignment_id}&timestamp={timestamp}",
-            files=released_files,
-        )
+        yield async_requests.get(app.url + f"/assignment?{url}")
+        if scenario != "missing_submission":
+            r = yield async_requests.post(app.url + f"/submission?{url}&timestamp={timestamp}", files=released_files)
+            assert r.json()["success"]
 
-    url = (
-        f"/feedback?assignment_id={assignment_id}"
-        f"&course_id={course_id}"
-        f"&notebook={notebook}"
-        f"&student={student['name']}"
-        f"&timestamp={timestamp}"
-        f"&checksum={checksum}"
-    )
+    grade = {"assignment_id": "nbgrader-assignment", "score_given": "5.00000", "score_maximum": "10.00000"}
+    verified = {"grade_state": "ready", "grade": grade}
+    if scenario == "unverified":
+        verified = {"grade_state": "unavailable", "grade": None, "release_error": "grade_snapshot_mismatch"}
+    verify = AsyncMock(side_effect=lambda payload: dict(verified))
+    app.tornado_application.settings["verify_feedback_grade"] = verify
 
-    html = b"<html><body>Score: 5 / 10</body></html>"
-    artifact = {
-        "html_sha256": hashlib.sha256(html).hexdigest(),
-        "notebook": notebook,
-        "release": {
-            "course_code": course_id,
-            "assignment_code": assignment_id,
-            "learner_name": student["name"],
-            "submission_timestamp": parser.parse(timestamp).replace(tzinfo=tz).isoformat(),
-            "notebooks": {name: {"score": 5} for name in notebook_names},
-            "grade_state": "ready",
-            "grade": {"assignment_id": "nbgrader-assignment", "score_given": "5", "score_maximum": "10"},
-        },
-    }
-    metadata = base64.b64encode(json.dumps(artifact).encode())
-    html += b"\n<!-- noteable-feedback-v1:" + metadata + b" -->\n"
-    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
-        r = yield async_requests.post(app.url + url, files={"feedback": ("feedback.html", html)})
-    if another_notebook:
-        with scoped_session() as session:
-            assert session.query(GradeEventOutbox).count() == 0
-        other_html = b"<html><body>Another notebook</body></html>"
-        other_artifact = {
-            **artifact,
-            "html_sha256": hashlib.sha256(other_html).hexdigest(),
-            "notebook": another_notebook,
+    def upload(name, score, *, change_html=False):
+        body = b"<html><body>Notebook feedback</body></html>"
+        artifact = {
+            "html_sha256": hashlib.sha256(body).hexdigest(),
+            "notebook": name,
+            "release": {
+                "course_code": course_id,
+                "assignment_code": assignment_id,
+                "learner_name": student["name"],
+                "submission_timestamp": submitted_at.isoformat(),
+                "notebooks": {name: {"score": score} for name in notebook_names},
+                "grade_state": "ready",
+                "grade": {"assignment_id": grade["assignment_id"], "score_given": str(score), "score_maximum": "10"},
+            },
         }
-        other_metadata = base64.b64encode(json.dumps(other_artifact).encode())
-        other_html += b"\n<!-- noteable-feedback-v1:" + other_metadata + b" -->\n"
-        other_url = url.replace(f"&notebook={notebook}", f"&notebook={another_notebook}")
-        with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
-            r = yield async_requests.post(app.url + other_url, files={"feedback": ("feedback.html", other_html)})
-    assert r.status_code == 200
-    response_data = r.json()
-    assert response_data["success"] is True
-    with scoped_session() as session:
-        event = session.query(GradeEventOutbox).one()
-        assert event.course_code == course_id
-        assert event.assignment_code == assignment_id
-        assert event.learner_name == student["name"]
-        assert event.published_at is None
-        assert event.payload()["grade"]["score_given"] == "5"
-        assert event.payload()["schema_version"] == 2
-        assert len(event.payload()["feedback_revision"]) == 64
+        if change_html:
+            body = body.replace(b"Notebook", b"Updated")
+        metadata = base64.b64encode(json.dumps(artifact).encode())
+        body += b"\n<!-- noteable-feedback-v1:" + metadata + b" -->\n"
+        return async_requests.post(
+            app.url + f"/feedback?{url}&notebook={name}&student={student['name']}&timestamp={timestamp}&checksum=saved",
+            files={"feedback": ("feedback.html", body)},
+        )
 
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
-        duplicate = yield async_requests.post(app.url + url, files={"feedback": ("feedback.html", html)})
-        altered = yield async_requests.post(
-            app.url + url, files={"feedback": ("feedback.html", html.replace(b"5 /", b"7 /"))}
-        )
-    assert duplicate.status_code == altered.status_code == 200
-    with scoped_session() as session:
-        events = session.query(GradeEventOutbox).order_by(GradeEventOutbox.source_sequence).all()
-        assert [event.payload()["grade_state"] for event in events] == ["ready", "unavailable"]
+        response = yield upload(notebook, 5)
+        assert response.json()["success"]
+        if other_notebook:
+            with scoped_session() as session:
+                assert session.query(GradeEventOutbox).count() == 0
+            response = yield upload(other_notebook, 7 if scenario == "mixed" else 5)
+            assert response.json()["success"]
+
+        with scoped_session() as session:
+            event = session.query(GradeEventOutbox).one()
+            assert event.course_code == course_id
+            assert event.assignment_code == assignment_id
+            assert event.learner_name == student["name"]
+            assert event.published_at is None
+            payload = event.payload()
+            assert payload["schema_version"] == 2
+            assert len(payload["feedback_revision"]) == 64
+
+        if scenario in ("single", "multiple"):
+            assert payload["grade"] == grade
+            assert verify.call_args.args[0]["submission_timestamp"] == submitted_at.isoformat()
+            assert (yield upload(notebook, 5)).json()["success"]
+            assert (yield upload(notebook, 5, change_html=True)).json()["success"]
+            with scoped_session() as session:
+                events = session.query(GradeEventOutbox).order_by(GradeEventOutbox.source_sequence).all()
+                assert [event.payload()["grade_state"] for event in events] == ["ready", "unavailable"]
+        elif scenario == "mixed":
+            assert payload["release_error"] == "feedback_revision_mismatch"
+            assert payload["grade"] is None
+            assert "Regenerate" in response.json()["note"]
+            assert (yield upload(other_notebook, 5)).json()["success"]
+            with scoped_session() as session:
+                events = session.query(GradeEventOutbox).order_by(GradeEventOutbox.source_sequence).all()
+                assert [event.payload()["grade_state"] for event in events] == ["unavailable", "ready"]
+        elif scenario == "missing_submission":
+            assert payload["release_error"] == "submission_not_found"
+            assert payload["grade"] is None
+            verify.assert_not_called()
+        else:
+            assert payload["release_error"] == "grade_snapshot_mismatch"
+            assert payload["grade"] is None
     shutil.rmtree(app.base_storage_location)
 
 

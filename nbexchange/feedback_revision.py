@@ -47,4 +47,4 @@ def read_feedback_revision(body, *, course, assignment, learner, notebook, times
     except (binascii.Error, DecimalException, ValueError, KeyError, TypeError):
         return None, None
 
-    return revision, {"grade_state": state, "grade": grade, "feedback_revision": revision}
+    return revision, release

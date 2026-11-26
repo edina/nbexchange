@@ -9,18 +9,22 @@ from nbexchange.database import scoped_session
 from nbexchange.models.grade_events import GradeEventOutbox
 
 
-def record_grade_ready_event(session, *, action, course, assignment, learner):
+def record_grade_ready_event(session, *, action, identity, released_grade):
     session.flush()
-    source_revision = f"feedback:{action.id}:learner:{learner.id}"
+    course, assignment, learner = identity["course"], identity["assignment"], identity["learner"]
+    source_revision = f"feedback:{action.id}:learner:{learner['id']}"
     event = GradeEventOutbox(
         event_id=str(uuid.uuid4()),
-        org_id=course.org_id,
-        course_id=course.id,
-        course_code=course.course_code,
-        assignment_id=assignment.id,
-        assignment_code=assignment.assignment_code,
-        learner_id=learner.id,
-        learner_name=learner.name,
+        schema_version=2,
+        released_grade=released_grade,
+        source_sequence=action.id,
+        org_id=identity["organisation_id"],
+        course_id=course["id"],
+        course_code=course["code"],
+        assignment_id=assignment["id"],
+        assignment_code=assignment["code"],
+        learner_id=learner["id"],
+        learner_name=learner["name"],
         source_revision=source_revision,
         occurred_at=action.timestamp,
     )
@@ -62,6 +66,7 @@ async def publish_pending_grade_events(endpoint, service_token, *, batch_size=10
             },
             body=json.dumps(payload).encode(),
             request_timeout=10,
+            follow_redirects=False,
         )
         try:
             response = await client.fetch(request, raise_error=False)

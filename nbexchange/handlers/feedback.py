@@ -1,12 +1,14 @@
 import base64
 import os
-import tempfile
 import time
+import uuid
 
 from dateutil import parser
+from sqlalchemy import func
 from tornado import web
 
 from nbexchange.database import scoped_session
+from nbexchange.feedback_revision import read_feedback_revision
 from nbexchange.grade_events import record_grade_ready_event
 from nbexchange.handlers.base import BaseHandler, authenticated
 from nbexchange.models.actions import Action, AssignmentActions
@@ -175,80 +177,109 @@ class FeedbackHandler(BaseHandler):
 
             student = User.find_by_name(db=session, name=student_id, log=self.log)
 
-            if not student:
+            if not student or student.org_id != course.org_id:
                 raise web.HTTPError(404, f"Could not find requested resource student {student_id}")
 
-            # Check whether there is an HTML file attached to the request
-            if not self.request.files:
-                raise web.HTTPError(412, "Error: No file supplied in upload")
-
             try:
-                # Grab the file
-                file_info = self.request.files["feedback"][0]
-                filename, content_type = (
-                    file_info["filename"],
-                    file_info["content_type"],
-                )
-                note = f"Received file {filename}, of type {content_type}"
-                self.log.info(note)
-                fbfile = tempfile.NamedTemporaryFile()
-                fbfile.write(file_info["body"])
-                fbfile.seek(0)
+                body = self.request.files["feedback"][0]["body"]
+            except (IndexError, KeyError) as exc:
+                raise web.HTTPError(412, "No feedback file supplied") from exc
 
-            except Exception as e:
-                # Could not grab the feedback file
-                raise web.HTTPError(412, f"Error: {e}")
+            notebooks = {item.name for item in Notebook.find_all_for_assignment(session, assignment.id)}
+            notebook_pk = notebook.id
+            identity = {
+                "organisation_id": course.org_id,
+                "course": {"id": course.id, "code": course.course_code},
+                "assignment": {"id": assignment.id, "code": assignment.assignment_code},
+                "learner": {"id": student.id, "name": student.name},
+            }
 
-            location = os.path.join(
-                self.base_storage_location,
-                str(this_user["org_id"]),
-                "feedback",
-                notebook.assignment.course.course_code,
-                notebook.assignment.assignment_code,
-                str(int(time.time())),
-            )
+        timestamp = self.check_timezone(parser.parse(timestamp))
+        revision, released_grade = read_feedback_revision(
+            body,
+            course=course_id,
+            assignment=assignment_id,
+            learner=student_id,
+            notebook=notebook_id,
+            timestamp=timestamp,
+            notebooks=notebooks,
+        )
 
-            # This should be abstracted, so it can be overloaded to store in other manners (eg AWS)
-            feedback_file = location + "/" + checksum + ".html"
+        location = os.path.join(
+            self.base_storage_location,
+            str(identity["organisation_id"]),
+            "feedback",
+            identity["course"]["code"],
+            identity["assignment"]["code"],
+            str(int(time.time())),
+        )
+        feedback_file = os.path.join(location, f"{uuid.uuid4().hex}.html")
 
-            try:
-                # Ensure the directory exists
-                os.makedirs(os.path.dirname(feedback_file), exist_ok=True)
-                with open(feedback_file, "w+b") as handle:
-                    handle.write(file_info["body"])
-            except Exception as e:
-                raise web.HTTPError(500, f"Could not save file. \n {e}")
+        try:
+            os.makedirs(os.path.dirname(feedback_file), exist_ok=True)
+            with open(feedback_file, "w+b") as handle:
+                handle.write(body)
+        except OSError as exc:
+            raise web.HTTPError(500, f"Could not save file. \n {exc}") from exc
 
-            # convert to datetime object & ensure it's got a timezone
-            timestamp = self.check_timezone(parser.parse(timestamp))  #
+        with scoped_session() as session:
+            # Serialize uploads for this learner. The file is already written,
+            # and the feedback row and any resulting event commit together.
+            learner_pk = identity["learner"]["id"]
+            session.query(User.id).filter_by(id=learner_pk).with_for_update().one()
+            previous = Feedback.find_notebook_for_student(session, notebook_pk, learner_pk, timestamp)
             feedback = Feedback(
-                notebook_id=notebook.id,
+                notebook_id=notebook_pk,
                 checksum=checksum,
                 location=feedback_file,
-                student_id=student.id,
+                student_id=identity["learner"]["id"],
                 instructor_id=this_user.get("id"),
                 timestamp=timestamp,
+                grade_revision=revision,
             )
 
             session.add(feedback)
 
             # Add action
             self.log.info(
-                f"Adding action {AssignmentActions.feedback_released.value} by user {this_user['id']}, for student {student.id}, against assignment {assignment.id}"  # noqa: E501
+                "Released feedback for student %s on assignment %s",
+                identity["learner"]["id"],
+                identity["assignment"]["id"],
             )
             action = Action(
                 user_id=this_user["id"],
-                assignment_id=notebook.assignment.id,
+                assignment_id=identity["assignment"]["id"],
                 action=AssignmentActions.feedback_released,
                 location=feedback_file,
             )
             session.add(action)
-            record_grade_ready_event(
-                session,
-                action=action,
-                course=course,
-                assignment=assignment,
-                learner=student,
-            )
+            if revision is None:
+                released_grade = {"grade_state": "unavailable", "grade": None}
+            elif previous is not None and previous.grade_revision == revision:
+                released_grade = None
+            else:
+                latest_feedback = (
+                    session.query(func.max(Feedback.id))
+                    .join(Notebook)
+                    .filter(
+                        Notebook.assignment_id == identity["assignment"]["id"],
+                        Feedback.student_id == learner_pk,
+                        Feedback.timestamp == timestamp,
+                    )
+                    .group_by(Feedback.notebook_id)
+                )
+                matching = (
+                    session.query(Feedback)
+                    .filter(
+                        Feedback.id.in_(latest_feedback),
+                        Feedback.grade_revision == revision,
+                    )
+                    .count()
+                )
+                if matching != len(notebooks):
+                    released_grade = None
+
+            if released_grade is not None:
+                record_grade_ready_event(session, action=action, identity=identity, released_grade=released_grade)
 
         self.finish({"success": True, "note": "Feedback released"})

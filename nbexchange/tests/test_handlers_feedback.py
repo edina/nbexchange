@@ -1,10 +1,13 @@
 import base64
+import hashlib
+import json
 import os
 import shutil
 from datetime import datetime
 
 import pytest
 from mock import patch
+from dateutil import parser
 from nbgrader.utils import make_unique_key, notebook_hash
 
 from nbexchange.database import scoped_session
@@ -406,7 +409,8 @@ def test_feedback_post_authenticated_with_incorrect_checksum(app, clear_database
 
 
 @pytest.mark.gen_test
-def test_feedback_post_authenticated_with_correct_params(app, clear_database):  # noqa: F811
+@pytest.mark.parametrize("another_notebook", [None, "another"])
+def test_feedback_post_authenticated_with_correct_params(app, clear_database, another_notebook):  # noqa: F811
     assignment_id = "assign_a"
     course_id = "course_2"
     notebook = "notebook"
@@ -418,7 +422,8 @@ def test_feedback_post_authenticated_with_correct_params(app, clear_database):  
     )
 
     # XXX: Doing this in a separate function doesn't work for some reason (Exchange doesn't get called)
-    kwargs = {"data": {"notebooks": [notebook]}}
+    notebook_names = [notebook] + ([another_notebook] if another_notebook else [])
+    kwargs = {"data": {"notebooks": notebook_names}}
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
         r = yield async_requests.post(
             app.url + f"/assignment?course_id={course_id}&assignment_id={assignment_id}",
@@ -442,8 +447,38 @@ def test_feedback_post_authenticated_with_correct_params(app, clear_database):  
         f"&checksum={checksum}"
     )
 
+    html = b"<html><body>Score: 5 / 10</body></html>"
+    artifact = {
+        "html_sha256": hashlib.sha256(html).hexdigest(),
+        "notebook": notebook,
+        "release": {
+            "course_code": course_id,
+            "assignment_code": assignment_id,
+            "learner_name": student["name"],
+            "submission_timestamp": parser.parse(timestamp).replace(tzinfo=tz).isoformat(),
+            "notebooks": {name: {"score": 5} for name in notebook_names},
+            "grade_state": "ready",
+            "grade": {"assignment_id": "nbgrader-assignment", "score_given": "5", "score_maximum": "10"},
+        },
+    }
+    metadata = base64.b64encode(json.dumps(artifact).encode())
+    html += b"\n<!-- noteable-feedback-v1:" + metadata + b" -->\n"
     with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
-        r = yield async_requests.post(app.url + url, files=feedbacks)
+        r = yield async_requests.post(app.url + url, files={"feedback": ("feedback.html", html)})
+    if another_notebook:
+        with scoped_session() as session:
+            assert session.query(GradeEventOutbox).count() == 0
+        other_html = b"<html><body>Another notebook</body></html>"
+        other_artifact = {
+            **artifact,
+            "html_sha256": hashlib.sha256(other_html).hexdigest(),
+            "notebook": another_notebook,
+        }
+        other_metadata = base64.b64encode(json.dumps(other_artifact).encode())
+        other_html += b"\n<!-- noteable-feedback-v1:" + other_metadata + b" -->\n"
+        other_url = url.replace(f"&notebook={notebook}", f"&notebook={another_notebook}")
+        with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
+            r = yield async_requests.post(app.url + other_url, files={"feedback": ("feedback.html", other_html)})
     assert r.status_code == 200
     response_data = r.json()
     assert response_data["success"] is True
@@ -453,6 +488,19 @@ def test_feedback_post_authenticated_with_correct_params(app, clear_database):  
         assert event.assignment_code == assignment_id
         assert event.learner_name == student["name"]
         assert event.published_at is None
+        assert event.payload()["grade"]["score_given"] == "5"
+        assert event.payload()["schema_version"] == 2
+        assert len(event.payload()["feedback_revision"]) == 64
+
+    with patch.object(BaseHandler, "get_current_user", return_value=user_kiz_instructor):
+        duplicate = yield async_requests.post(app.url + url, files={"feedback": ("feedback.html", html)})
+        altered = yield async_requests.post(
+            app.url + url, files={"feedback": ("feedback.html", html.replace(b"5 /", b"7 /"))}
+        )
+    assert duplicate.status_code == altered.status_code == 200
+    with scoped_session() as session:
+        events = session.query(GradeEventOutbox).order_by(GradeEventOutbox.source_sequence).all()
+        assert [event.payload()["grade_state"] for event in events] == ["ready", "unavailable"]
     shutil.rmtree(app.base_storage_location)
 
 

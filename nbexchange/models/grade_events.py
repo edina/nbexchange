@@ -1,7 +1,16 @@
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import Column, DateTime, Integer, Text, Unicode, UniqueConstraint
+from sqlalchemy import (
+    JSON,
+    BigInteger,
+    Column,
+    DateTime,
+    Integer,
+    Text,
+    Unicode,
+    UniqueConstraint,
+)
 
 from nbexchange.models import Base
 
@@ -20,6 +29,8 @@ class GradeEventOutbox(Base):
     learner_id = Column(Integer, nullable=False)
     learner_name = Column(Unicode(200), nullable=False)
     source_revision = Column(Unicode(200), nullable=False)
+    source_sequence = Column(BigInteger, nullable=True)
+    released_grade = Column(JSON, nullable=True)
     occurred_at = Column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
     attempt_count = Column(Integer, nullable=False, default=0)
     next_attempt_at = Column(DateTime(timezone=True), nullable=True)
@@ -27,7 +38,10 @@ class GradeEventOutbox(Base):
     last_error = Column(Text, nullable=False, default="")
 
     def payload(self):
-        return {
+        occurred_at = self.occurred_at
+        if occurred_at.tzinfo is None:
+            occurred_at = occurred_at.replace(tzinfo=timezone.utc)
+        payload = {
             "event_id": self.event_id,
             "schema_version": self.schema_version,
             "organisation_id": self.org_id,
@@ -35,5 +49,9 @@ class GradeEventOutbox(Base):
             "assignment": {"id": self.assignment_id, "code": self.assignment_code},
             "learner": {"id": self.learner_id, "name": self.learner_name},
             "source_revision": self.source_revision,
-            "occurred_at": self.occurred_at.isoformat(),
+            "occurred_at": occurred_at.isoformat(),
         }
+        if self.schema_version == 2:
+            payload.update(self.released_grade)
+            payload["source_sequence"] = self.source_sequence
+        return payload

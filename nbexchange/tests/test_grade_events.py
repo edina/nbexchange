@@ -1,3 +1,4 @@
+import json
 from datetime import datetime, timezone
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
@@ -37,9 +38,20 @@ def create_event():
         return record_grade_ready_event(
             session,
             action=action,
-            course=course,
-            assignment=assignment,
-            learner=learner,
+            identity={
+                "organisation_id": course.org_id,
+                "course": {"id": course.id, "code": course.course_code},
+                "assignment": {"id": assignment.id, "code": assignment.assignment_code},
+                "learner": {"id": learner.id, "name": learner.name},
+            },
+            released_grade={
+                "grade_state": "ready",
+                "grade": {
+                    "assignment_id": "nbgrader-assignment",
+                    "score_given": "5",
+                    "score_maximum": "10",
+                },
+            },
         ).event_id
 
 
@@ -58,6 +70,11 @@ def test_publisher_marks_event_only_after_api_acceptance(clear_database):  # noq
     request = client.fetch.call_args.args[0]
     assert request.headers["Authorization"] == "Bearer service-token"
     assert request.headers["Idempotency-Key"] == event_id
+    payload = json.loads(request.body)
+    assert payload["schema_version"] == 2
+    assert payload["source_sequence"] > 0
+    assert datetime.fromisoformat(payload["occurred_at"]).utcoffset() is not None
+    assert payload["grade"]["score_given"] == "5"
     with scoped_session() as session:
         event = session.query(GradeEventOutbox).filter_by(event_id=event_id).one()
         assert event.published_at is not None

@@ -26,6 +26,7 @@ class Feedback(Base):
 
     location = Column(Unicode(200), nullable=True)  # Location for the file of this action
     checksum = Column(Unicode(200), nullable=True)  # Checksum for the feedback file
+    grade_revision = Column(Unicode(64), nullable=True)
     timestamp = Column(DateTime(timezone=True), nullable=False)
 
     # Use a pythonic solution for the default - to allow variable timezones in the future.
@@ -98,7 +99,7 @@ class Feedback(Base):
             Notebook.assignment_id == assignment_id,
             cls.student_id == student_id,
         ]
-        return db.query(cls).join(Notebook).filter(*filters).all()
+        return db.query(cls).join(Notebook).filter(*filters).order_by(cls.id).all()
 
     @validates("timestamp")  # a datetime object, need to ensure it's returned with a timezone!
     def validate_timestamp(self, key, value):
